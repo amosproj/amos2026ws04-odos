@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+	<!-- OJ Publication before ABA.  not covered by AKN4EU 5.0 -->
+	<doc name="RES_EESC">
+		<meta>
+			<identification source="~PUBL">
+				<FRBRWork>
+					<!-- OJ Publication before ABA.  Proposed ELI-DL -->
+					<FRBRthis value="http://data.europa.eu/eli/dl/doc/EESC/C_47_15_2020/oj"/>
+					<FRBRuri value="http://data.europa.eu/eli/dl/doc/EESC/C_47_15_2020/oj"/>
+					<FRBRdate date="2020-02-11" name="publication"/>
+					<FRBRauthor href="~EESC"/>
+					<FRBRcountry value="EU"/>
+					<FRBRnumber value="eli/dl/doc/EESC/C_47_15_2020"/>
+				</FRBRWork>
+				<FRBRExpression>
+					<FRBRthis value="http://data.europa.eu/eli/dl/doc/EESC/C_47_15_2020/oj/eng"/>
+					<FRBRuri value="http://data.europa.eu/eli/dl/doc/EESC/C_47_15_2020/oj/eng"/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRlanguage xml:id="FRBRlanguage" language="en" refersTo="~ENG"/>
+				</FRBRExpression>
+				<FRBRManifestation>
+					<FRBRthis
+						value="http://data.europa.eu/eli/dl/doc/EESC/C_47_15_2020/oj/eng/akn4eu"/>
+					<FRBRuri
+						value="http://data.europa.eu/eli/dl/doc/EESC/C_47_15_2020/oj/eng/akn4eu"/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:akn4euVersion value="5.0.0.1"/>
+						<akn4eu:akn4euDocumentation
+							href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+						/>
+					</preservation>
+				</FRBRManifestation>
+			</identification>
+			<!-- publication to be defined for OJ document published before the ABA publication. -->
+			<publication date="2020-02-11" showAs="OJ C, 2020 C 47/02, 2020-02-11"
+				name="Official Journal of the European Union" number="2020/C 47/02"/>
+			<references source="~PUBL">
+				<TLCReference name="language" xml:id="ENG" eId="ENG" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+				<TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+				<TLCOrganization xml:id="EESC" href="http://publications.europa.eu/resource/authority/corporate-body/EESC" showAs=""/>
+				<TLCReference xml:id="RES_EESC" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/RES_EESC" showAs=""/>
+				<TLCRole xml:id="PRESID" href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+				<TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+				
+			</references>
+		</meta>
+		<preface xml:id="d2e82">
+			<longTitle xml:id="d2e84">
+				<p xml:id="d2e86"><docType xml:id="d2e87" refersTo="~RES_EESC">Resolution</docType>
+					<docPurpose xml:id="d2e90">on ‘Opening accession negotiations with North Macedonia and Albania: EU
+						credibility and geostrategic interests should be upheld’</docPurpose></p>
+			</longTitle>
+			<container xml:id="d2e93" name="mainDoc">
+				<block xml:id="d2e95" name="reference">(<docNumber xml:id="d2e97">2020/C 47/02</docNumber>)</block>
+			</container>
+		</preface>
+		<mainBody xml:id="d2e103">
+			<paragraph xml:id="d2e105">
+				<content xml:id="d2e107">
+					<p xml:id="d2e109">At its <session xml:id="d2e111">plenary session on 30 and 31 October
+						2019</session> (meeting of <date xml:id="d2e113" date="2019-10-31">31 October</date>), the European
+						Economic and Social Committee adopted the following resolution by 174 votes to 12 with
+						15 abstentions.</p>
+				</content>
+			</paragraph>
+			<level xml:id="d2e119">
+				<num xml:id="d2e121">1.</num>
+				<content xml:id="d2e123">
+					<p xml:id="d2e125">The European Economic and Social Committee (EESC) is deeply disappointed about EU
+						leaders’ decision to further postpone opening accession negotiations with North
+						Macedonia and Albania at the European Council of 17-18 October, due to the lack of
+						unanimity between the Member States.</p>
+				</content>
+			</level>
+			<level xml:id="d2e129">
+				<num xml:id="d2e131">2.</num>
+				<content xml:id="d2e133">
+					<p xml:id="d2e135">The EESC strongly regrets the failed respect of the engagements taken vis-à-vis those
+						two countries. Indeed, the European Council conclusions of 28 June 2018, which endorsed
+						the conclusions on enlargement and the stabilisation and association process adopted by
+						the Council on 26 June 2018, laid a clear path towards the opening of accession
+						negotiations in June 2019. On 18 June 2019 the European Council already decided to
+						revert, no later than October 2019, to the issue of the Commission’s recommendations to
+						open accession negotiations with North Macedonia and Albania.</p>
+				</content>
+			</level>
+			<level xml:id="d2e139">
+				<num xml:id="d2e141">3.</num>
+				<content xml:id="d2e143">
+					<p xml:id="d2e145">The EESC stresses that the non-decision, for the second time, on opening the accession
+						negotiations with these two countries that have fulfilled all the necessary
+						conditions<authorialNote xml:id="d2e147" marker="1" placement="bottom">
+							<p xml:id="d2e149">Council conclusions of June 2018.</p>
+						</authorialNote> is a geo-strategic and historic mistake and puts the EU’s credibility
+						and reliability at stake. The EU had the opportunity to open negotiations while applying
+						rigorous conditionality on good governance, insisting on the strict application of the
+						criteria for membership during the negotiations process and devising better instruments
+						to monitor the rule of law after accession.</p>
+				</content>
+			</level>
+			<level xml:id="d2e155">
+				<num xml:id="d2e157">4.</num>
+				<content xml:id="d2e159">
+					<p xml:id="d2e161">The EESC is convinced that the process of ‘Europeanising’ this region requires tough
+						structural reforms within the countries in the Western Balkans.</p>
+				</content>
+			</level>
+			<level xml:id="d2e166">
+				<num xml:id="d2e168">5.</num>
+				<content xml:id="d2e170">
+					<p xml:id="d2e172">It has no doubt that there is a widespread enlargement fatigue among EU citizens in
+						some of the Member States. It has no doubt that divide inside the EU on issues such as
+						immigration and the new budget diverted the necessary political attention away from the
+						enlargement policy. But political consensus and wide public support for the EU accession
+						in both North Macedonia and Albania cannot be ignored.</p>
+				</content>
+			</level>
+			<level xml:id="d2e176">
+				<num xml:id="d2e178">6.</num>
+				<content xml:id="d2e180">
+					<p xml:id="d2e182">Young people in the Western Balkans have high expectations from the EU and we should
+						not let them down. The EESC is convinced that we should give them a positive perspective
+						for their future, allowing them to live in a region that is stable and prosperous.</p>
+				</content>
+			</level>
+			<level xml:id="d2e186">
+				<num xml:id="d2e188">7.</num>
+				<content xml:id="d2e190">
+					<p xml:id="d2e192">Civil society organisations are strongly convinced that the Western Balkans are a key
+						geostrategic region of Europe, in our backyard, when other global players are looking
+						with interest at the region.</p>
+				</content>
+			</level>
+			<level xml:id="d2e196">
+				<num xml:id="d2e198">8.</num>
+				<content xml:id="d2e200">
+					<p xml:id="d2e202">At the 7th Western Balkans Civil Society Forum promoted by EESC in Tirana on 16-17
+						April 2019, civil society organisations have reiterated in the final declaration that
+						the enlargement of the EU, and in particular the spread of its democratic values and
+						legal standards to the Western Balkans, is in the interest of both the region and the
+						EU, despite the multitude of challenges it is currently facing<authorialNote xml:id="d2e204" marker="2" placement="bottom">
+							<p xml:id="d2e206">7th Western Balkans Civil Society Forum: Final declaration
+								https://www.eesc.europa.eu/en/agenda/our-events/events/7th-western-balkans-civil-society-forum/final-declarations</p>
+						</authorialNote>.</p>
+				</content>
+			</level>
+			<level xml:id="d2e212">
+				<num xml:id="d2e214">9.</num>
+				<content xml:id="d2e216">
+					<p xml:id="d2e218">The EESC has repeatedly expressed concern about the shrinking space for civil society
+						in a number of countries in the Western Balkans and called to encourage the authorities
+						in the Western Balkans to redouble their efforts to ensure respect for the rule of law,
+						fundamental human rights, judicial reform, the fight against corruption and
+						discrimination and the independence of journalists and freedom of the press – some of
+						the core European values that every EU Member State should respect. The social dialogue
+						and the role of the social partners and civil society organisations in economic and
+						social development must be strongly encouraged and promoted.</p>
+				</content>
+			</level>
+			<level xml:id="d2e222">
+				<num xml:id="d2e224">10.</num>
+				<content xml:id="d2e226">
+					<p xml:id="d2e228">The EESC will continue working closely and intensively with civil society in the
+						Western Balkans to support and reassure them that their place is in the European Union.
+						We will do whatever we can to promote reconciliation and European values in the region
+						and our position on EU enlargement will remain firm. We are convinced that a clear
+						perspective on EU accession is essential for the stability of the region and we express
+						hope that enlargement will remain one of the EU’s priorities, despite the multitude of
+						challenges it’s currently facing<authorialNote xml:id="d2e230" marker="3" placement="bottom">
+							<p xml:id="d2e232">https://www.eesc.europa.eu/sites/default/files/files/7th_eesc_western_balkans_civil_society_forum_-_final_declaration.pdf</p>
+						</authorialNote>.</p>
+				</content>
+			</level>
+			<level xml:id="d2e239">
+				<num xml:id="d2e241">11.</num>
+				<content xml:id="d2e243">
+					<p xml:id="d2e245">From our part, through our regular activities with our partners from the region — Civil
+						Society Joint Consultative Committees with Montenegro and Serbia, Western Balkans Civil
+						Society Forums, as well as High Level Civil Society Conferences organised before
+						EU-Western Balkans Summits — we shall continue to be the voice of the civil society of
+						the Western Balkans and act as a bridge towards EU institutions and their respective
+						governments.</p>
+				</content>
+			</level>
+			<level xml:id="d2e249">
+				<num xml:id="d2e251">12.</num>
+				<content xml:id="d2e253">
+					<p xml:id="d2e255">The EESC express its utmost appreciation of the European Parliament resolution adopted
+						last 24 October 2019 and confirms its full commitment to support the European Parliament
+						and the incoming European Commission to strengthen EU enlargement policy and to improve
+						EU toolbox for engagement with the Western Balkans.</p>
+				</content>
+			</level>
+			<level xml:id="d2e259">
+				<num xml:id="d2e261">13.</num>
+				<content xml:id="d2e263">
+					<p xml:id="d2e265">The EESC urges all stakeholders to take all the necessary steps so that the European
+						Council adopts a unanimous, positive decision before the EU-Western Balkans Summit in
+						Zagreb in May 2020. We also ask the upcoming Croatian Presidency of the EU Council to
+						bring new impetus to the enlargement process at the Summit.</p>
+				</content>
+			</level>
+		</mainBody>
+		<conclusions xml:id="d2e270">
+			<p xml:id="d2e272"><location xml:id="d2e273" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e276" date="2019-10-31">31 October
+				2019</date>.</p>
+			<block xml:id="d2e280" name="signatory">
+				<signature xml:id="d2e282">
+					<role xml:id="d2e284" refersTo="~PRESID">The President</role>
+					<organization xml:id="d2e287" refersTo="~EESC">of the European Economic and Social
+						Committee</organization>
+					<person xml:id="d2e290" refersTo="">Luca JAHIER</person>
+				</signature>
+			</block>
+		</conclusions>
+	</doc>
+</akomaNtoso>

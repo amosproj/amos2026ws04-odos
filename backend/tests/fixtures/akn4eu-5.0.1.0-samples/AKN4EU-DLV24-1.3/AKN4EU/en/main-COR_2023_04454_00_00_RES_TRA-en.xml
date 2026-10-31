@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+	<documentCollection name="RES_COR">
+		<meta xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<identification source="~PUBL">
+				<FRBRWork>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRcountry value="EU"/>
+					<FRBRnumber value="COR-2023-04454-00-00-RES-TRA"/>
+					<FRBRprescriptive value="false"/>
+				</FRBRWork>
+				<FRBRExpression>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+				</FRBRExpression>
+				<FRBRManifestation>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:akn4euVersion value="5.0.0.1"/>
+						<akn4eu:akn4euDocumentation
+							href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+						/>
+					</preservation>
+				</FRBRManifestation>
+			</identification>
+			<references source="~PUBL">
+				<TLCReference xml:id="ENG" name="language"
+					href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+				<TLCOrganization xml:id="COR"
+					href="http://publications.europa.eu/resource/authority/corporate-body/COR"
+					showAs=""/>
+				<TLCReference xml:id="RES_COR" name="docType"
+					href="http://publications.europa.eu/resource/authority/resource-type/RES_COR"
+					showAs=""/>
+				<TLCOrganization xml:id="PUBL"
+					href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+					showAs=""/>
+				<TLCReference xml:id="PNG" name="fileType"
+					href="http://publications.europa.eu/resource/authority/file-type/PNG" showAs=""
+				/>
+			</references>
+		</meta>
+		<coverPage xml:id="d2e76">
+			<container xml:id="d2e78" name="logo">
+				<p xml:id="d2e80">
+					<img xml:id="d2e81" src="RSC_PNG-cjk7q0l8r0000i3m3f5q1z8h0-en.png" refersTo="~PNG"/>
+				</p>
+			</container>
+			<container xml:id="d2e84" name="actingEntity">
+				<p xml:id="d2e86">
+					<organization xml:id="d2e87" refersTo="~COR">European Committee of the
+						Regions</organization>
+				</p>
+			</container>
+			<container xml:id="d2e91" name="procedureIdentifier">
+				<p xml:id="d2e911">
+					<docketNumber xml:id="d2e94">RESOL-VII/032</docketNumber>
+				</p>
+			</container>
+			<container xml:id="d2e98" name="sessionInfo">
+				<p xml:id="d2e100">
+					<session xml:id="d2e101">157th plenary session, <date xml:id="d2e105"
+							date="2023-10-09">9</date>-<date xml:id="d2e108" date="2023-10-10"
+							>10</date> and <date xml:id="d2e111" date="2023-10-11">11 October
+							2023</date></session>
+				</p>
+			</container>
+			<longTitle xml:id="d2e115">
+				<p xml:id="d2e117">
+					<docType xml:id="d2e118" refersTo="~RES_COR">RESOLUTION</docType>
+					<docPurpose xml:id="d2e121">on the Situation in Nagorno-Karabakh after
+						Azerbaijan's attack</docPurpose>
+				</p>
+			</longTitle>
+			<container xml:id="d2e125" name="mainDoc">
+				<block xml:id="d2e127" name="reference">
+					<docNumber xml:id="d2e128">COR-2023-04454-00-00-RES-TRA (EN)</docNumber>
+				</block>
+			</container>
+			<container xml:id="d2e131" name="mainDocLanguage">
+				<p xml:id="d2e133">
+					<inline xml:id="d2e134" name="language" refersTo="~FRBRlanguage">EN</inline>
+				</p>
+			</container>
+		</coverPage>
+		<collectionBody xml:id="d2e139">
+			<component xml:id="d2e141">
+				<documentRef xml:id="d2e143" href="RES_COR-clpgy2xly001r2a6bhk1l7w79-en.xml"
+					showAs=""/>
+			</component>
+		</collectionBody>
+	</documentCollection>
+</akomaNtoso>

@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <bill name="DEC_IMPL">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="cly8g82qj00000dl3cr720qki"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRsubtype value="DEC_IMPL" refersTo="~COM_AUTO_PROC"/>
+                    <FRBRnumber value="C(2022) 8515"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+                        />
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference xml:id="DEC_IMPL" name="docType"
+                    href="http://publications.europa.eu/resource/authority/resource-type/DEC_IMPL"
+                    showAs=""/>
+                <TLCProcess xml:id="COM_AUTO_PROC"
+                    href="http://publications.europa.eu/resource/authority/internal-procedure/COM_AUTO_PROC"
+                    showAs=""/>
+                <TLCReference name="language"
+                    href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference xml:id="legalBasis" name="contentSubject"
+                    href="http://eurovoc.europa.eu/5456" showAs=""/>
+                <TLCOrganization xml:id="PUBL"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+                    showAs=""/>
+                <TLCOrganization xml:id="COM"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/COM"
+                    showAs=""/>
+                <TLCLocation xml:id="BEL_BRU"
+                    href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCRole xml:id="MEMBER_COM"
+                    href="http://publications.europa.eu/resource/authority/role/MEMBER_COM"
+                    showAs=""/>
+                <TLCReference name="language" xml:id="POL"
+                    href="http://publications.europa.eu/resource/authority/language/POL" showAs="pl"/>
+                <TLCConcept xml:id="INP"
+                    href="http://publications.europa.eu/resource/authority/subdivision/INP"
+                    showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e103">
+            <longTitle xml:id="d2e105">
+                <p xml:id="d2e107"><docType xml:id="d2e108" refersTo="~DEC_IMPL">COMMISSION
+                        IMPLEMENTING DECISION </docType> of <date xml:id="d2e111" date="2022-11-29"
+                        >29.11.2022</date>
+                    <docPurpose xml:id="d2e114">approving the programme “European Funds for Opolskie
+                        2021-2027” for support from the European Regional Development Fund and the
+                        European Social Fund Plus under the Investment for jobs and growth goal for
+                        the region Opolskie in Poland</docPurpose></p>
+            </longTitle>
+            <container xml:id="d2e120" name="externalReference">
+                <p xml:id="d2e122">CCI 2021PL16FFPR008</p>
+            </container>
+            <container xml:id="d2e126" name="authenticLanguages">
+                <p xml:id="d2e128">(ONLY THE <inline xml:id="d2e130" name="language" refersTo="~POL"
+                        >POLISH</inline> TEXT IS AUTHENTIC)</p>
+            </container>
+        </preface>
+
+        <preamble xml:id="d2e136">
+            <formula xml:id="d2e138" name="actingEntity">
+                <p xml:id="d2e140">THE EUROPEAN COMMISSION,</p>
+            </formula>
+            <citations xml:id="d2e144">
+                <citation xml:id="d2e146" refersTo="~legalBasis">
+                    <p xml:id="d2e148">Having regard to the Treaty on the Functioning of the
+                        European Union,</p>
+                </citation>
+                <citation xml:id="d2e152">
+                    <p xml:id="d2e154">Having regard to the Treaty on the Functioning of the
+                        European Union,</p>
+                </citation>
+
+                <citation xml:id="d2e158">
+                    <p xml:id="d2e160">Having regard to Regulation (EU) 2021/1060 of the European
+                        Parliament and of the Council of 24 June 2021 laying down common provisions
+                        on the European Regional Development Fund, the European Social Fund Plus,
+                        the Cohesion Fund, the Just Transition Fund and the European Maritime,
+                        Fisheries and Aquaculture Fund and financial rules for those and for the
+                        Asylum, Migration and Integration Fund, the Internal Security Fund and the
+                        Instrument for Financial Support for Border Management and Visa
+                            Policy<authorialNote xml:id="d2e162" marker="1" placement="bottom">
+                            <p xml:id="d2e164">OJ L 231, 30.6.2021, p. 159</p>
+                        </authorialNote>, and in particular Article 23(4) thereof,</p>
+                </citation>
+            </citations>
+            <recitals xml:id="d2e171">
+                <intro xml:id="d2e173">
+                    <p xml:id="d2e175">Whereas:</p>
+                </intro>
+                <recital xml:id="d2e179">
+                    <num xml:id="d2e181">(1)</num>
+                    <p xml:id="d2e184">On 16 March 2022 Poland submitted, through the electronic
+                        data exchange system of the Commission, the programme "European Funds for
+                        Opolskie 2021-2027" for support from the European Regional Development Fund
+                        ('ERDF') and the European Social Fund Plus ('ESF+') under the Investment for
+                        jobs and growth goal for the region Opolskie in Poland.</p>
+                </recital>
+
+                <recital xml:id="d2e188">
+                    <num xml:id="d2e190">(2)</num>
+                    <p xml:id="d2e193">The programme was prepared by Poland in cooperation with the
+                        partners referred to in Article 8(1) of Regulation (EU) 2021/1060.</p>
+                </recital>
+
+                <recital xml:id="d2e197">
+                    <num xml:id="d2e199">(3)</num>
+                    <p xml:id="d2e202">The programme contains all the elements referred to in
+                        Article 22(3) of Regulation (EU) 2021/1060 and was prepared in accordance
+                        with the model set out in Annex V to Regulation (EU) 2021/1060.</p>
+                </recital>
+
+                <recital xml:id="d2e206">
+                    <num xml:id="d2e208">(4)</num>
+                    <p xml:id="d2e211">In accordance with Article 15(2) of Regulation (EU)
+                        2021/1060, the programme sets out Poland's assessment of the fulfilment of
+                        the horizontal enabling conditions and the thematic enabling conditions
+                        linked to the selected specific objectives for this programme. In its
+                        assessment, Poland concludes on the lack of fulfilment of the horizontal
+                        enabling condition on the 'Effective application and implementation of the
+                        Charter of Fundamental Rights' and of the thematic enabling conditions on
+                        'Comprehensive transport planning at the appropriate level', 'Strategic
+                        policy framework for active labour market policies', 'National strategic
+                        framework for gender equality', 'Strategic policy framework for the
+                        education and training system at all levels', 'National strategic policy
+                        framework for social inclusion and poverty reduction', 'National Roma
+                        inclusion strategic policy framework' and 'Strategic policy framework for
+                        health and long-term care'. In that respect, the conditions in question
+                        should be declared as non-fulfilled. In accordance with Article 15(5) of
+                        Regulation (EU) 2021/1060, expenditure related to operations linked to the
+                        specific objectives concerned by unfulfilled enabling conditions may be
+                        included in payment applications but cannot be reimbursed by the Commission
+                        until Poland has informed the Commission of its assessment that it considers
+                        the enabling condition fulfilled with a justification of the fulfilment in
+                        accordance with Article 15(3) of Regulation (EU) 2021/1060 and,
+                        subsequently, the Commission has informed the Member State that it agrees
+                        with the fulfilment of the enabling condition pursuant to the first
+                        subparagraph of Article 15(4) of that Regulation. Amounts paid as
+                        pre-financing for the years 2021 and 2022 are to be cleared from the
+                        Commission accounts each year in accordance with Article 90(5) of Regulation
+                        (EU) 2021/1060 and may thus be recovered. In addition, pursuant to Article
+                        15(6) of Regulation (EU) 2021/1060, it is recalled that Member States have
+                        to ensure that enabling conditions remain fulfilled and respected throughout
+                        the programming period.</p>
+                </recital>
+
+                <recital xml:id="d2e216">
+                    <num xml:id="d2e218">(5)</num>
+                    <p xml:id="d2e221">In accordance with Article 23 of Regulation (EU) 2021/1060,
+                        the Commission assessed the programme and made observations pursuant to
+                        paragraph 2 of that Article on 16 June 2022. Poland provided supplementary
+                        information between 11 July 2022 and 26 October 2022 and submitted a revised
+                        programme on 27 October 2022.</p>
+                </recital>
+
+                <recital xml:id="d2e225">
+                    <num xml:id="d2e227">(6)</num>
+                    <p xml:id="d2e230">Without prejudice to the situation as regards enabling
+                        conditions laid out in recital 4, Article 15(3) of Regulation (EU) 2021/1060
+                        requires the Commission to approve the programmes also where not all
+                        enabling conditions are fulfilled. The Commission concluded that the
+                        programme complies with Regulation (EU) 2021/1060 and with Regulations (EU)
+                            2021/1058<authorialNote xml:id="d2e232" marker="2" placement="bottom">
+                            <p xml:id="d2e234">Regulation (EU) 2021/1058 of the European Parliament
+                                and of the Council of 24 June 2021 on the European Regional
+                                Development Fund and on the Cohesion Fund (OJ L 231, 30.6.2021, p.
+                                60).</p>
+                        </authorialNote> and (EU) 2021/1057<authorialNote xml:id="d2e238" marker="3"
+                            placement="bottom">
+                            <p xml:id="d2e240">Regulation (EU) 2021/1057 of the European Parliament
+                                and of the Council of 24 June 2021 establishing the European Social
+                                Fund Plus (ESF+) and repealing Regulation (EU) No 1296/2013 (OJ L
+                                231, 30.6.2021, p. 21).</p>
+                        </authorialNote> of the European Parliament and of the Council, is
+                        consistent with the Partnership Agreement of Poland and takes into account
+                        relevant country-specific recommendations, relevant challenges identified in
+                        the integrated national energy and climate plan, and the principles of the
+                        European Pillar of Social Rights.</p>
+                </recital>
+
+                <recital xml:id="d2e246">
+                    <num xml:id="d2e248">(7)</num>
+                    <p xml:id="d2e251">Pursuant to the first subparagraph of Article 86(1) of
+                        Regulation (EU) 2021/1060, this Decision constitutes a financing decision
+                        within the meaning of Article 110(1) of Regulation (EU, Euratom) 2018/1046
+                        of the European Parliament and of the Council<authorialNote xml:id="d2e253"
+                            marker="4" placement="bottom">
+                            <p xml:id="d2e255">Regulation (EU, Euratom) 2018/1046 of the European
+                                Parliament and of the Council of 18 July 2018 on the financial rules
+                                applicable to the general budget of the Union, amending Regulations
+                                (EU) No 1296/2013, (EU) No 1301/2013, (EU) No 1303/2013, (EU) No
+                                1304/2013, (EU) No 1309/2013, (EU) No 1316/2013, (EU) No 223/2014,
+                                (EU) No 283/2014, and Decision No 541/2014/EU and repealing
+                                Regulation (EU, Euratom) No 966/2012 (OJ L 193, 30.7.2018, p. 1)</p>
+                        </authorialNote>. It is nevertheless necessary to specify the elements
+                        needed to make the budgetary commitments with respect to the programme in
+                        this Decision.</p>
+                </recital>
+
+                <recital xml:id="d2e261">
+                    <num xml:id="d2e263">(8)</num>
+                    <p xml:id="d2e266">Pursuant to Article 112(1) and (2) of Regulation (EU)
+                        2021/1060, it is necessary to fix for each priority the co-financing rate
+                        and the maximum amount of support from the Funds. It is also necessary to
+                        specify whether the co-financing rate for the priority applies to total
+                        contribution, including public and private contribution, or to public
+                        contribution.</p>
+                </recital>
+
+                <recital xml:id="d2e270">
+                    <num xml:id="d2e272">(9)</num>
+                    <p xml:id="d2e275">This Decision is without prejudice to the Commission's
+                        position regarding compliance of any operation supported under the programme
+                        with the State aid rules applicable at the time when the support is
+                        granted.</p>
+                </recital>
+
+                <recital xml:id="d2e279">
+                    <num xml:id="d2e281">(10)</num>
+                    <p xml:id="d2e284">The programme should therefore be approved,</p>
+                </recital>
+
+            </recitals>
+            <formula xml:id="d2e289" name="enactingFormula">
+                <p xml:id="d2e291">HAS ADOPTED THIS DECISION:</p>
+            </formula>
+        </preamble>
+        <body xml:id="d2e296">
+            <article xml:id="d2e298">
+                <num xml:id="d2e300">Article 1</num>
+                <paragraph xml:id="d2e303">
+                    <content xml:id="d2e305">
+                        <p xml:id="d2e307">The programme "European Funds for Opolskie 2021-2027" for
+                            joint support from the ERDF and the ESF+ under the Investment for jobs
+                            and growth goal for the region Opolskie in Poland for the period from 1
+                            January 2021 to 31 December 2027, submitted in its final version on 27
+                            October 2022, is hereby approved.</p>
+                    </content>
+                </paragraph>
+            </article>
+
+            <article xml:id="d2e313">
+                <num xml:id="d2e315">Article 2</num>
+                <paragraph xml:id="d2e318">
+                    <num xml:id="d2e320">1.</num>
+                    <content xml:id="d2e323">
+                        <p xml:id="d2e325">The maximum amount of support from the ERDF and the ESF+
+                            for the whole programming period and by year, is set out in Annex I.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e330">
+                    <num xml:id="d2e332">2.</num>
+                    <subparagraph xml:id="d2e335">
+                        <content xml:id="d2e337">
+                            <p xml:id="d2e339">The maximum amount of support for the programme is
+                                set at EUR 966 481 697, to be financed from the following specific
+                                budget lines in accordance with the nomenclature of the General
+                                Budget of the European Union for 2022:</p>
+                        </content>
+                    </subparagraph>
+                    <subparagraph xml:id="d2e344">
+                        <content xml:id="d2e346">
+                            <p xml:id="d2e348">05 02 01.01: EUR 690 114 270 (ERDF - Less developed
+                                regions);</p>
+                        </content>
+                    </subparagraph>
+                    <subparagraph xml:id="d2e353">
+                        <content xml:id="d2e355">
+                            <p xml:id="d2e357">07 02 01.01: EUR 276 367 427 (ESF+ - Less developed
+                                regions).</p>
+                        </content>
+                    </subparagraph>
+                </paragraph>
+                <paragraph xml:id="d2e363">
+                    <num xml:id="d2e365">3.</num>
+                    <content xml:id="d2e368">
+                        <p xml:id="d2e370">The co-financing rate for each priority by Fund is set
+                            out in Annex II. The co-financing rate of priorities 1 to 10 shall apply
+                            to total contribution, including public and private contribution. The
+                            co-financing rate of priorities 11 and 12 shall apply to public
+                            contribution.</p>
+                    </content>
+                </paragraph>
+            </article>
+
+            <article xml:id="d2e376">
+                <num xml:id="d2e378">Article 3</num>
+                <paragraph xml:id="d2e381">
+                    <list xml:id="d2e383">
+                        <subparagraph xml:id="d2e385" refersTo="~INP">
+                            <content xml:id="d2e3851">
+                                <p xml:id="d2e387">The enabling conditions are fulfilled with the
+                                    exception of:</p>
+                            </content>
+                        </subparagraph>
+                        <indent xml:id="d2e391">
+                            <num xml:id="d2e393">–</num>
+                            <content xml:id="d2e396">
+                                <p xml:id="d2e398">Horizontal enabling condition '3. Effective
+                                    application and implementation of the Charter of Fundamental
+                                    Rights';</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e403">
+                            <num xml:id="d2e405">–</num>
+                            <content xml:id="d2e408">
+                                <p xml:id="d2e410">Thematic enabling condition '3.1. Comprehensive
+                                    transport planning at the appropriate level';</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e415">
+                            <num xml:id="d2e417">–</num>
+                            <content xml:id="d2e420">
+                                <p xml:id="d2e422">Thematic enabling condition '4.1. Strategic
+                                    policy framework for active labour market policies';</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e427">
+                            <num xml:id="d2e429">–</num>
+                            <content xml:id="d2e432">
+                                <p xml:id="d2e434">Thematic enabling condition '4.2. National
+                                    strategic framework for gender equality';</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e440">
+                            <num xml:id="d2e442">–</num>
+                            <content xml:id="d2e445">
+                                <p xml:id="d2e447">Thematic enabling condition '4.3. Strategic
+                                    policy framework for the education and training system at all
+                                    levels';</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e452">
+                            <num xml:id="d2e454">–</num>
+                            <content xml:id="d2e457">
+                                <p xml:id="d2e459">Thematic enabling condition '4.4. National
+                                    strategic policy framework for social inclusion and poverty
+                                    reduction';</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e464">
+                            <num xml:id="d2e466">–</num>
+                            <content xml:id="d2e469">
+                                <p xml:id="d2e471">Thematic enabling condition '4.5. National Roma
+                                    inclusion strategic policy framework';</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e476">
+                            <num xml:id="d2e478">–</num>
+                            <content xml:id="d2e481">
+                                <p xml:id="d2e483">Thematic enabling condition '4.6. Strategic
+                                    policy framework for health and long-term care'.</p>
+                            </content>
+                        </indent>
+                    </list>
+                </paragraph>
+            </article>
+
+            <article xml:id="d2e491">
+                <num xml:id="d2e493">Article 4</num>
+                <paragraph xml:id="d2e496">
+                    <content xml:id="d2e498">
+                        <p xml:id="d2e500">This Decision is addressed to the Republic of Poland.</p>
+                    </content>
+                </paragraph>
+            </article>
+        </body>
+        <conclusions xml:id="d2e507">
+            <p xml:id="d2e509">Done at <location xml:id="d2e511" refersTo="~BEL_BRU"
+                    >Brussels</location>, <date xml:id="d2e514" date="2022-11-29"
+                >29.11.2022</date></p>
+            <block xml:id="d2e517" name="signatory">
+                <signature xml:id="d2e519">
+                    <organization xml:id="d2e521" refersTo="~COM">For the Commission</organization>
+                    <person xml:id="d2e524" refersTo="">Elisa FERREIRA</person>
+                    <role xml:id="d2e527" refersTo="~MEMBER_COM">Member of the Commission</role>
+                </signature>
+            </block>
+        </conclusions>
+    </bill>
+</akomaNtoso>

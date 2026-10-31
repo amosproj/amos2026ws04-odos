@@ -1,0 +1,857 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+	<doc name="OWNINI_OPIN_EESC">
+		<meta>
+			<identification source="~PUBL">
+				<FRBRWork>
+					<FRBRthis value="http://data.europa.eu/eli/C/2025/2006/oj"/>
+					<FRBRuri value="http://data.europa.eu/eli/C/2025/2006/oj"/>
+					<FRBRdate date="2025-05-06" name="publication"/>
+					<FRBRauthor href="~EESC"/>
+					<FRBRcountry value="EU"/>
+					<FRBRnumber value="eli/C/2025/2006"/>
+				</FRBRWork>
+				<FRBRExpression>
+					<FRBRthis value="http://data.europa.eu/eli/C/2025/2006/oj/eng"/>
+					<FRBRuri value="http://data.europa.eu/eli/C/2025/2006/oj/eng"/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRlanguage xml:id="FRBRlanguage" language="en" refersTo="~ENG"/>
+				</FRBRExpression>
+				<FRBRManifestation>
+					<FRBRthis
+						value="http://data.europa.eu/eli/C/2025/2006/oj/eng/akn4eu"/>
+					<FRBRuri
+						value="http://data.europa.eu/eli/C/2025/2006/oj/eng/akn4eu"/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:akn4euVersion value="5.0.0.1"/>
+						<akn4eu:akn4euDocumentation
+							href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+						/>
+					</preservation>
+				</FRBRManifestation>
+			</identification>
+			<publication date="2025-05-06" showAs="OJ C, 2025 C 2006, 2025-05-06"
+				name="Official Journal of the European Union" number="2025/C 2006"/>
+			<references source="~PUBL">
+				<TLCReference xml:id="C_2025_2006" name="identifier"
+					href="http://publications.europa.eu/resource/authority/document-identifier-format/COM_NUMBER" showAs="C(2025) 2006" shortForm="C/2025/2006"/>
+				<TLCReference name="language" xml:id="ENG" eId="ENG"
+					href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+				<TLCReference xml:id="OWNINI_OPIN_EESC" name="docType"
+					href="http://publications.europa.eu/resource/authority/resource-type/OWNINI_OPIN_EESC"
+					showAs=""/>
+				<TLCOrganization eId="PUBL" xml:id="PUBL"
+					href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+					showAs="Publications Office"/>
+				<TLCOrganization eId="EESC" xml:id="EESC"
+					href="http://publications.europa.eu/resource/authority/corporate-body/EESC"
+					showAs=""/>
+				<TLCOrganization xml:id="EESC_SOC"
+					href="http://publications.europa.eu/resource/authority/corporate-body/EESC_SOC"
+					showAs=""/>
+				<TLCConcept xml:id="BACKGROUND_INFO"
+					href="http://publications.europa.eu/resource/authority/subdivision-content/BACKGROUND_INFO"
+					showAs=""/>
+				<TLCConcept xml:id="INP"
+					href="http://publications.europa.eu/resource/authority/subdivision/INP"
+					showAs=""/>
+				<TLCRole xml:id="RAPP"
+					href="http://publications.europa.eu/resource/authority/role/RAPP" showAs=""/>
+				<TLCRole xml:id="PRESID"
+					href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+				<TLCLocation xml:id="BEL_BRU"
+					href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""
+				/>
+			</references>
+		</meta>
+		<preface xml:id="d1e85">
+
+			<longTitle xml:id="d2e118">
+				<p xml:id="d2e120">
+					<docTitle xml:id="d2e122">
+						<docCommittee xml:id="d2e127">Opinion of the <organization xml:id="d2e129"
+								refersTo="~EESC">European Economic and Social Committee
+								Consultative</organization>
+						</docCommittee>
+						<docPurpose xml:id="d2e133">Addressing loneliness: cementing measures for
+							demographic cohesion</docPurpose>
+					</docTitle>
+					<docType xml:id="d9e138" refersTo="~OWNINI_OPIN_EESC">(own-initiative
+						opinion)</docType>
+					<docNumber xml:id="d2e138" refersTo="~C_2025_2006">C(2025) 2006</docNumber>
+				</p>
+			</longTitle>
+			<container xml:id="d2e146" name="rapporteur">
+				<p xml:id="d2e148">
+					<docIntroducer xml:id="d2e150">
+						<inline xml:id="d2e152" name="label">
+							<role xml:id="d2e154" refersTo="~RAPP">Rapporteur:</role>
+						</inline>
+						<person xml:id="d2e158" refersTo="">Miguel Ángel CABRA DE LUNA</person>
+					</docIntroducer>
+				</p>
+			</container>
+			<container xml:id="d2e191" name="backgroundInfo" refersTo="~BACKGROUND_INFO">
+				<table xml:id="d2e193">
+					<tbody xml:id="d9e195">
+						<tr xml:id="d2e195">
+							<td xml:id="d2e197">
+								<p xml:id="d2e199">
+									<inline xml:id="d2e201" name="label">Advisor</inline>
+								</p>
+							</td>
+							<td xml:id="d2e206">
+								<p xml:id="d2e208"><person xml:id="d2e226" refersTo="">Adrián TUÑÓN
+										JIMÉNEZ (to the Group III rapporteur)</person></p>
+							</td>
+						</tr>
+						<tr xml:id="d2e212">
+							<td xml:id="d2e214">
+								<p xml:id="d2e216">
+									<inline xml:id="d2e218" name="label">Plenary Assembly
+										decision</inline>
+								</p>
+							</td>
+							<td xml:id="d2e223">
+								<p xml:id="d2e225"><date xml:id="d2e249" date="2024-11-07"
+										>11.7.2024</date></p>
+							</td>
+						</tr>
+						<tr xml:id="d2e284">
+							<td xml:id="d2e286">
+								<p xml:id="d2e288">
+									<inline xml:id="d2e290" name="label">Legal basis</inline>
+								</p>
+							</td>
+							<td xml:id="d2e295">
+								<p xml:id="d2e297">Rule 52(2) of the Rules of Procedure</p>
+							</td>
+						</tr>
+						<tr xml:id="d2e302">
+							<td xml:id="d2e304">
+								<p xml:id="d2e306">
+									<inline xml:id="d2e308" name="label">Section
+										responsible</inline>
+								</p>
+							</td>
+							<td xml:id="d2e313">
+								<p xml:id="d2e315">
+									<organization xml:id="d2e317" refersTo="~EESC_SOC">Employment,
+										Social Affairs and Citizenship</organization>
+								</p>
+							</td>
+						</tr>
+						<tr xml:id="d2e323">
+							<td xml:id="d2e325">
+								<p xml:id="d2e327">
+									<inline xml:id="d2e329" name="label">Adopted in section</inline>
+								</p>
+							</td>
+							<td xml:id="d2e334">
+								<p xml:id="d2e336">
+									<date xml:id="d2e338" date="2025-02-04">4.2.2025</date>
+								</p>
+							</td>
+						</tr>
+						<tr xml:id="d9e323">
+							<td xml:id="d2a325">
+								<p xml:id="d2a327">
+									<inline xml:id="d2a329" name="label">Adopted at plenary
+										session</inline>
+								</p>
+							</td>
+							<td xml:id="d8e334">
+								<p xml:id="d2f336">
+									<date xml:id="d2f338" date="2025-02-26">26.2.2025</date>
+								</p>
+							</td>
+						</tr>
+						<tr xml:id="d2e383">
+							<td xml:id="d2e385">
+								<p xml:id="d2e387">
+									<inline xml:id="d2e389" name="label">Plenary session No</inline>
+								</p>
+							</td>
+							<td xml:id="d2e394">
+								<p xml:id="d2e396"> 594 </p>
+							</td>
+						</tr>
+						<tr xml:id="d2e344">
+							<td xml:id="d2e346">
+								<p xml:id="d2e348">
+									<inline xml:id="d2e350" name="label">Outcome of vote<br
+											xml:id="d2e352"/>(for/against/abstentions)</inline>
+								</p>
+							</td>
+							<td xml:id="d2e357">
+								<p xml:id="d2e359">203/00/03</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</container>
+			<container name="mainDoc"  xml:id="d2e357987">
+				<block name="reference"   xml:id="d2e357986">
+					<docNumber>2025/2006</docNumber>
+				</block>
+			</container>
+			
+			
+		</preface>
+		<mainBody xml:id="d3e101">
+			<level xml:id="d3e103">
+				<num xml:id="d3e105">1.</num>
+				<heading xml:id="d3e107"> Conclusions and recommendations <authorialNote
+						xml:id="d3e109" marker="1" placement="bottom">
+						<p xml:id="d3e111">The list of references can be found on the dedicated
+							opinion webpage.</p>
+					</authorialNote>
+				</heading>
+			</level>
+			<level xml:id="d3e115">
+				<num xml:id="d3e117">1.1</num>
+				<content xml:id="d3e119">
+					<p xml:id="d3e121">This opinion aims to promote public policies to combat
+						loneliness, moving forward at both EU and Member State levels and including
+						all stakeholders concerned.</p>
+				</content>
+			</level>
+			<level xml:id="d3e125">
+				<num xml:id="d3e127">1.2</num>
+				<content xml:id="d3e129">
+					<p xml:id="d3e131">Loneliness is widespread throughout the European Union and
+						the world, impacting European economies and people's quality of life. It
+						affects physical and mental health, health systems, productivity and social
+						health. This creates significant challenges for European democracies and
+						economies, which need to face this widespread phenomenon that has
+						far-reaching consequences, but first they need to tackle the root causes of
+						loneliness.</p>
+				</content>
+			</level>
+			<level xml:id="d3e135">
+				<num xml:id="d3e137">1.3</num>
+				<content xml:id="d3e139">
+					<p xml:id="d3e141">Loneliness is influenced by a number of social factors.</p>
+				</content>
+			</level>
+			<level xml:id="d3e145">
+				<num xml:id="d3e147">1.3.1</num>
+				<content xml:id="d3e149">
+					<p xml:id="d3e151">It affects the most vulnerable groups (in particular those
+						suffering from poverty or exclusion) to a greater extent. Measures to
+						promote inclusion and social cohesion are therefore needed.</p>
+				</content>
+			</level>
+			<level xml:id="d3e155">
+				<num xml:id="d3e157">1.3.2</num>
+				<content xml:id="d3e159">
+					<p xml:id="d3e161">The ageing of the population and the demographic changes –
+						including in family and work structures – that the EU is currently facing
+						contribute to the increasing rates of loneliness. It is therefore necessary
+						to promote an intergenerational approach, review welfare policies, focus on
+						a more inclusive society model for older people and adopt voluntary,
+						flexible retirement ages.</p>
+				</content>
+			</level>
+			<level xml:id="d3e165">
+				<num xml:id="d3e167">1.3.3</num>
+				<content xml:id="d3e169">
+					<p xml:id="d3e171">Loneliness causes mental health problems such as depression
+						and anxiety, and is even linked to suicide. To prevent loneliness,
+						especially during childhood and adolescence, it is essential that measures
+						be adopted at European and national levels to address mental health and
+						emotional well-being.</p>
+				</content>
+			</level>
+			<level xml:id="d3e175">
+				<num xml:id="d3e177">1.3.4</num>
+				<content xml:id="d3e179">
+					<p xml:id="d3e181">The increasing reliance on digital technologies can deepen
+						feelings of isolation in those who lack skills in or access to digital
+						technologies. In addition, excessive internet and social media use can lead
+						to an increase in loneliness, especially in young people.</p>
+				</content>
+			</level>
+			<level xml:id="d3e185">
+				<num xml:id="d3e187">1.4</num>
+				<list xml:id="d3e193">
+					<subparagraph xml:id="d2e505" refersTo="~INP">
+						<content xml:id="d2e507">
+							<p xml:id="d2e509">A European strategy addressing loneliness could
+								incorporate the following strategic guidelines.</p>
+						</content>
+					</subparagraph>
+					<indent xml:id="d3e195">
+						<num xml:id="d3e197">—</num>
+						<content xml:id="d3e199">
+							<p xml:id="d3e201">Guideline 1 – Consolidate knowledge on
+								loneliness.</p>
+						</content>
+					</indent>
+					<indent xml:id="d3e205">
+						<num xml:id="d3e207">—</num>
+						<content xml:id="d3e209">
+							<p xml:id="d3e211">Guideline 2 – Analyse and assess measures.</p>
+						</content>
+					</indent>
+					<indent xml:id="d3e215">
+						<num xml:id="d3e217">—</num>
+						<content xml:id="d3e219">
+							<p xml:id="d3e221">Guideline 3 – Incorporate an intersectional approach
+								to measures.</p>
+						</content>
+					</indent>
+					<indent xml:id="d3e225">
+						<num xml:id="d3e227">—</num>
+						<content xml:id="d3e229">
+							<p xml:id="d3e231">Guideline 4 – Address root causes through a
+								preventive approach.</p>
+						</content>
+					</indent>
+					<indent xml:id="d3e235">
+						<num xml:id="d3e237">—</num>
+						<content xml:id="d3e239">
+							<p xml:id="d3e241">Guideline 5 – Raise awareness and eliminate
+								stigma.</p>
+						</content>
+					</indent>
+					<indent xml:id="d3e245">
+						<num xml:id="d3e247">—</num>
+						<content xml:id="d3e249">
+							<p xml:id="d3e251">Guideline 6 – Alleviate the pressure on health
+								systems.</p>
+						</content>
+					</indent>
+					<indent xml:id="d3e255">
+						<num xml:id="d3e257">—</num>
+						<content xml:id="d3e259">
+							<p xml:id="d3e261">Guideline 7 – Mobilise financial support.</p>
+						</content>
+					</indent>
+				</list>
+			</level>
+			<level xml:id="d3e265">
+				<num xml:id="d3e267">1.5</num>
+				<content xml:id="d3e269">
+					<p xml:id="d3e271">It also calls for financial resources to be mobilised to
+						combat loneliness and promote social connections. To this end, the EESC
+						calls for a European Guarantee for Older People, bringing together support
+						from different European funding frameworks from the next multiannual
+						financial framework, in particular from the new European Social Fund+, to
+						implement these actions.</p>
+				</content>
+			</level>
+			<level xml:id="d3e275">
+				<num xml:id="d3e277">1.6</num>
+				<content xml:id="d3e279">
+					<p xml:id="d3e281">The EESC highlights the fundamental role that civil society
+						organisations play in the fight against loneliness, and recognises that the
+						social partners (businesses and trade unions) can also contribute in this
+						regard. Most of the current initiatives against loneliness at European level
+						come from NGOs and civil society organisations, and very few of them target
+						children, youth and those suffering the most discrimination or at risk of
+						exclusion. This highlights the need for greater commitment by Member States
+						to developing programmes and diversifying actions through an intersectional
+						approach, given that the cost of inaction surpasses that of implementing
+						concrete policies.</p>
+				</content>
+			</level>
+			<level xml:id="d3e285">
+				<num xml:id="d3e287">1.7</num>
+				<content xml:id="d3e289">
+					<p xml:id="d3e291">Strategies should address loneliness at all stages of life,
+						from childhood to old age, focusing on key life transition periods. In order
+						for a strategy to be effective, it needs high-level leadership and to
+						involve all stakeholders concerned, such as public administrations (in
+						particular local authorities), organised civil society, social partners, the
+						social economy and the media.</p>
+				</content>
+			</level>
+			<level xml:id="d3e295">
+				<num xml:id="d3e297">1.8</num>
+				<content xml:id="d3e299">
+					<p xml:id="d3e301">The EESC calls for specific measures against loneliness to be
+						developed at EU level as part of the European strategy for older persons
+						(EESC opinion on a European Strategy for Older Persons) and the future
+						European strategy for intergenerational equity (EESC Opinion on Promoting
+						European intergenerational solidarity), including national plans developed
+						by the Member States that align with the European strategy. In this vein,
+						the EESC calls for commitment from the new European Commission to developing
+						this strategy during its 2025-2029 term of office.</p>
+				</content>
+			</level>
+			<level xml:id="d3e305">
+				<num xml:id="d3e307">1.9</num>
+				<content xml:id="d3e309">
+					<p xml:id="d3e311">The EESC highlights the importance of consolidating knowledge
+						on loneliness by further exploring its effects and associated costs, the
+						impact that the built environment and its social facilities has on
+						loneliness, and the impact that loneliness has on societies in order to
+						understand how it affects social cohesion, social polarisation and social
+						health.</p>
+				</content>
+			</level>
+			<level xml:id="d3e315">
+				<num xml:id="d3e317">1.10</num>
+				<content xml:id="d3e319">
+					<p xml:id="d3e321">The EESC believes that impact assessments on existing
+						policies, plans and programmes should be further promoted. The EESC also
+						calls on the European Commission to include the impact on loneliness in the
+						impact assessments of related public policies and regulations.</p>
+				</content>
+			</level>
+			<level xml:id="d3e325">
+				<num xml:id="d3e327">1.11</num>
+				<content xml:id="d3e329">
+					<p xml:id="d3e331">The EESC emphasises the need to prioritise a preventive
+						approach at all stages of life, in all related areas (health, education,
+						leisure, employment, etc.), paying particular attention to the built
+						environment and its social facilities.</p>
+				</content>
+			</level>
+			<level xml:id="d3e335">
+				<num xml:id="d3e337">1.12</num>
+				<content xml:id="d3e339">
+					<p xml:id="d3e341">The EESC points to the importance of raising public awareness
+						of loneliness and eliminating the associated social stigma.</p>
+				</content>
+			</level>
+			<level xml:id="d3e345">
+				<num xml:id="d3e347">1.13</num>
+				<content xml:id="d3e349">
+					<p xml:id="d3e351">The EESC calls on the European Commission to coordinate
+						policies and initiatives on loneliness drafted by national, regional and
+						local authorities and by civil society organisations, promoting
+						public-private partnerships.</p>
+				</content>
+			</level>
+			<level xml:id="d3e355">
+				<num xml:id="d3e357">1.14</num>
+				<content xml:id="d3e359">
+					<p xml:id="d3e361">The EESC calls on the European Commission to continue the
+						pilot project on loneliness, launched at the request of the European
+						Parliament in 2022. This should include updating data, carrying out
+						awareness-raising campaigns and establishing a European network for
+						monitoring loneliness. The EESC also calls for the loneliness dimension to
+						be included in the future Youth Check initiative, which will serve to ensure
+						that young people's perspectives are integrated into policymaking.</p>
+				</content>
+			</level>
+			<level xml:id="d3e365">
+				<num xml:id="d3e367">1.15</num>
+				<content xml:id="d3e369">
+					<p xml:id="d3e371">The EESC encourages the European Committee of the Regions to
+						become involved in the proposed strategy, given the role that local
+						administrations play in developing programmes that bring people together and
+						promote a sense of community.</p>
+				</content>
+			</level>
+			<level xml:id="d3e375">
+				<num xml:id="d3e377">2.</num>
+				<heading xml:id="d3e379">Background</heading>
+			</level>
+			<level xml:id="d3e383">
+				<num xml:id="d3e385">2.1</num>
+				<content xml:id="d3e387">
+					<p xml:id="d3e389">Recent academic studies and civil society organisations have
+						highlighted the severity of loneliness in Europe and across the globe.
+						According to the Joint Research Centre's (JRC) 2022 EU Loneliness Survey, 13
+						% of the European population suffer from loneliness.</p>
+				</content>
+			</level>
+			<level xml:id="d3e393">
+				<num xml:id="d3e395">2.2</num>
+				<content xml:id="d3e397">
+					<p xml:id="d3e399">Demographic changes – including in family and work structures
+						– that the EU is currently facing contribute to the increasing rates of
+						loneliness in the Member States. People are living longer, making it is
+						essential to ensure quality of life over these years.</p>
+				</content>
+			</level>
+			<level xml:id="d3e403">
+				<num xml:id="d3e405">2.3</num>
+				<content xml:id="d3e407">
+					<p xml:id="d3e409">Loneliness has far-reaching implications for people's
+						physical and mental health and vice versa, and hinders the full economic and
+						social participation of many Europeans. This creates significant challenges
+						for European democracies and economies, as it affects social and economic
+						participation and places a substantial economic burden on local and national
+						budgets – in particular on health systems. Loneliness is not just an
+						individual problem but a collective problem as well.</p>
+				</content>
+			</level>
+			<level xml:id="d3e413">
+				<num xml:id="d3e415">2.4</num>
+				<content xml:id="d3e417">
+					<p xml:id="d3e419">It particularly affects specific segments of the population
+						that are most vulnerable, such as young people, older people, women, the
+						LGTBI community and those with disabilities, and especially those with fewer
+						economic and educational resources. Furthermore, loneliness reduces
+						participation in community life, eroding local solidarity and inciting
+						social isolation.</p>
+				</content>
+			</level>
+			<level xml:id="d3e423">
+				<num xml:id="d3e425">3.</num>
+				<heading xml:id="d3e427">What challenges and opportunities does loneliness present?
+					Analysing the root causes as well as the consequences</heading>
+			</level>
+			<level xml:id="d3e431">
+				<num xml:id="d3e433">3.1</num>
+				<content xml:id="d3e435">
+					<p xml:id="d3e437">Demographic change and an ageing population: the EU has a
+						significant ageing population that is more susceptible to loneliness due to
+						the loss of family, friends, mobility and independence, or due to problems
+						related to urbanisation and progressively diminishing resources, populations
+						and services in rural areas. In this context, the intergenerational approach
+						of EU policies, the revision of welfare policies, the commitment to a model
+						of society that is more inclusive for older people, and voluntary, flexible
+						retirement ages are things that need to be further developed, without
+						prejudice to the competences of the Member States.</p>
+				</content>
+			</level>
+			<level xml:id="d3e441">
+				<num xml:id="d3e443">3.2</num>
+				<content xml:id="d3e445">
+					<p xml:id="d3e447">Changes in household structures: living alone is a loneliness
+						risk factor. The number of single-person households in Europe is gradually
+						increasing due to demographic changes, geographic mobility and changes in
+						family structures.</p>
+				</content>
+			</level>
+			<level xml:id="d3e451">
+				<num xml:id="d3e453">3.3</num>
+				<content xml:id="d3e455">
+					<p xml:id="d3e457">Mental health and emotional well-being: loneliness can lead
+						to a number of mental health problems, such as depression, anxiety and even
+						suicide. The younger generations are those that most suffer from loneliness.
+						Furthermore, various studies show that adverse experiences during childhood
+						have an impact on loneliness during adulthood. Care must be taken to prevent
+						this by addressing the mental health and emotional well-being of
+						children.</p>
+				</content>
+			</level>
+			<level xml:id="d3e461">
+				<num xml:id="d3e463">3.4</num>
+				<content xml:id="d3e465">
+					<p xml:id="d3e467">Physical health: studies have shown that loneliness can also
+						affect physical health, leading to conditions such as heart disease, strokes
+						and even premature death. The impact of loneliness on mortality is similar
+						to that of smoking up to 15 cigarettes per day. Older people experiencing
+						high levels of loneliness have a higher risk of cognitive impairment.</p>
+				</content>
+			</level>
+			<level xml:id="d3e471">
+				<num xml:id="d3e473">3.5</num>
+				<content xml:id="d3e475">
+					<p xml:id="d3e477">Economic impact: loneliness can lead to increased medical
+						costs and can overburden social security systems. It also generates costs to
+						the productive fabric due to productivity losses and premature deaths. One
+						study carried out in Spain estimated that the annual cost of addressing
+						loneliness was the equivalent of 1,17 % of GDP, between health costs (0,51 %
+						of GDP) and costs related to productivity losses (0,67 % of GDP).</p>
+				</content>
+			</level>
+			<level xml:id="d3e481">
+				<num xml:id="d3e483">3.6</num>
+				<content xml:id="d3e485">
+					<p xml:id="d3e487">Social cohesion: high levels of loneliness can lead to social
+						isolation and reduced involvement in community life, which can undermine
+						social cohesion and solidarity, and have negative effects on social health.
+						It also erodes social trust and reduces participation in politics. Creating
+						social connections and combating loneliness promotes the development of more
+						cohesive societies.</p>
+				</content>
+			</level>
+			<level xml:id="d3e491">
+				<num xml:id="d3e493">3.7</num>
+				<content xml:id="d3e495">
+					<p xml:id="d3e497">Social vulnerability and discrimination: loneliness is more
+						prevalent among populations with lower incomes and lower levels of
+						education. Those living in poverty are exposed to increased feelings of
+						loneliness, in part because poverty limits social participation and could
+						lead to social exclusion. In addition, loneliness is also more prevalent
+						among those who suffer the most discrimination, such as people with
+						disabilities, migrants and older people. The impact of poverty on loneliness
+						is particularly pronounced in areas that lack 'third places' – free or
+						affordable spaces that foment informal social interaction outside the work
+						or school environment.</p>
+				</content>
+			</level>
+			<level xml:id="d3e501">
+				<num xml:id="d3e503">3.8</num>
+				<content xml:id="d3e505">
+					<p xml:id="d3e507">The COVID-19 pandemic: the pandemic exacerbated loneliness,
+						especially among young people, due to social distancing measures and
+						lockdowns. It is therefore crucial to address this issue as part of the
+						post-pandemic recovery.</p>
+				</content>
+			</level>
+			<level xml:id="d3e511">
+				<num xml:id="d3e513">3.9</num>
+				<content xml:id="d3e515">
+					<p xml:id="d3e517">Current working arrangements: continuous and irregular
+						working hours, solo work, temporary employment, night shifts and
+						fatigue-inducing work can leave workers with fewer personal resources (time
+						and energy) to participate in social activities and family life. This could
+						directly contribute to the loneliness experienced not only by the workers
+						themselves, but also by the children, older people and other dependants in
+						their lives. Despite the opportunities that remote and hybrid work bring,
+						the physical isolation from work colleagues and the mutual interference of
+						work and domestic responsibilities can pose challenges for social
+						interaction.</p>
+				</content>
+			</level>
+			<level xml:id="d3e521">
+				<num xml:id="d3e523">3.10</num>
+				<content xml:id="d3e525">
+					<p xml:id="d3e527">Reduced transport services: the limited access to public
+						transport, for example in rural and remote areas (where connections are
+						scarce or not financed because they are not profitable), particularly
+						affects those who do not drive, such as older people or those in economic
+						difficulty. This increases the risk of social isolation and loneliness.</p>
+				</content>
+			</level>
+			<level xml:id="d3e531">
+				<num xml:id="d3e533">3.11</num>
+				<content xml:id="d3e535">
+					<p xml:id="d3e537">The digital divide: increasing reliance on digital
+						technologies can deepen feelings of isolation in those who lack skills in or
+						access to digital technologies. In addition, intensive and passive internet
+						and social media use can lead to increased loneliness, especially in young
+						people. Numerous studies suggest that the intensive and passive use of
+						social media is also linked with increased loneliness among young people,
+						while the same has not been found with the use of instant messaging tools or
+						active use of social media. Loneliness also increases where there is a lack
+						of face-to-face contacts. This shows the need to increase education on
+						digital media and networks.</p>
+				</content>
+			</level>
+			<level xml:id="d3e541">
+				<num xml:id="d3e543">4.</num>
+				<heading xml:id="d3e545">General overview</heading>
+			</level>
+			<level xml:id="d3e549">
+				<num xml:id="d3e551">4.1</num>
+				<content xml:id="d3e553">
+					<p xml:id="d3e555">Given the scale of the problem and the fact that it has so
+						far only been addressed from a public health perspective (in particular
+						through the European Commission communication on a comprehensive approach to
+						mental health), loneliness needs to be addressed proactively as part of the
+						Committee's commitment to the future European strategy for older
+						persons.</p>
+				</content>
+			</level>
+			<level xml:id="d3e559">
+				<num xml:id="d3e561">4.2</num>
+				<content xml:id="d3e563">
+					<p xml:id="d3e565">Member States are developing various types of measures
+						against loneliness. More than 53 % of these are targeted towards the older
+						populations, with only 8,4 % targeted towards young people and 4,3 % towards
+						people with disabilities and those at risk of exclusion. Actions aimed at
+						these groups should therefore be expanded and diversified. For example,
+						older people with pets feel less alone than older people without pets.</p>
+				</content>
+			</level>
+			<level xml:id="d3e569">
+				<num xml:id="d3e571">4.3</num>
+				<content xml:id="d3e573">
+					<p xml:id="d3e575">Most initiatives come from NGOs, with only 3,7 % coming from
+						national governments. This highlights the need to increase the Member
+						States' commitment to developing programmes against loneliness.</p>
+				</content>
+			</level>
+			<level xml:id="d3e579">
+				<num xml:id="d3e581">4.4</num>
+				<content xml:id="d3e583">
+					<p xml:id="d3e585">Specific measures against loneliness that are aligned with
+						the European Pillar of Social Rights need to be developed at EU level,
+						including a European strategy against loneliness. At national level, Member
+						States should draw up national plans that are in line with this strategy and
+						supported by specific resources. Municipalities, as the administrations
+						closest to citizens, have a key role to play in implementing these measures.
+						These strategies and plans need to address loneliness across all stages of
+						life, have high-level leadership and involve all the stakeholders concerned,
+						such as organised civil society, social partners, the social economy and the
+						media. The creation of anti-loneliness laws, where appropriate, could also
+						be explored (much like in Japan, where public-private partnerships have
+						proved instrumental), although these regulations should include concrete
+						programmes with resources.</p>
+				</content>
+			</level>
+			<level xml:id="d3e589">
+				<num xml:id="d3e591">4.5</num>
+				<content xml:id="d3e593">
+					<p xml:id="d3e595">This strategy needs to incorporate calls from the EESC
+						opinion on a European strategy for older persons for a new EU strategy that
+						addresses the risks and opportunities that demographic change presents. The
+						opinion calls for specific actions to address discrimination and loneliness
+						in older people, especially those most vulnerable, and at the same time
+						supports 'the European Commission's recommendations to combat loneliness,
+						ensuring that, in the context of the current demographic changes, mental
+						health, social and long-term care services are accessible, affordable,
+						integrated, community-based and easy to use'.</p>
+				</content>
+			</level>
+			<level xml:id="d3e599">
+				<num xml:id="d3e601">4.6</num>
+				<content xml:id="d3e603">
+					<p xml:id="d3e605">The new European strategy could incorporate the following
+						strategic guidelines.</p>
+				</content>
+			</level>
+			<level xml:id="d3e609">
+				<num xml:id="d3e611">4.6.1</num>
+				<content xml:id="d3e613">
+					<p xml:id="d3e615">Guideline 1 – Consolidate knowledge on loneliness: advancing
+						studies on the prevalence, risk factors, effects and costs of loneliness in
+						all Member States, including carrying out longitudinal studies. It is also
+						necessary to establish a loneliness scale and to use standard tools that
+						allow regular monitoring. There is also a need to further enhance the impact
+						of the built environment and its social facilities (such as benches to sit
+						on, areas to play games, cafeterias, libraries, etc.) on loneliness and
+						social connections, and to further study the impact of loneliness on
+						societies to understand how it affects social cohesion, social polarisation
+						and social health.</p>
+				</content>
+			</level>
+			<level xml:id="d3e619">
+				<num xml:id="d3e621">4.6.2</num>
+				<content xml:id="d3e623">
+					<p xml:id="d3e625">Guideline 2 – Analyse and assess measures: assessing the
+						current policies, plans and programmes against loneliness in the EU Member
+						States to determine their impact and scalability in the EU. Assessment is
+						also essential for carrying out innovative actions that have an impact. In
+						addition, the impact on loneliness should be taken into account in the
+						impact assessments of related public policies and regulations, such as urban
+						planning, transport and education policies.</p>
+				</content>
+			</level>
+			<level xml:id="d3e629">
+				<num xml:id="d3e631">4.6.3</num>
+				<content xml:id="d3e633">
+					<p xml:id="d3e635">Guideline 3 – Incorporate an intersectional approach to
+						measures: the various target groups require specific and long-term
+						approaches. Particular attention should be paid to older women, people with
+						disabilities, migrants and young people, and to the complex overlaps between
+						these groups, for example older migrants. Loneliness is not simply a problem
+						for individuals, but a social problem influenced by social exclusion and
+						other structural factors.</p>
+				</content>
+			</level>
+			<level xml:id="d3e639">
+				<num xml:id="d3e641">4.6.4</num>
+				<content xml:id="d3e643">
+					<p xml:id="d3e645">Guideline 4 – Address root causes through a preventive
+						approach: prevention is fundamental for taking action before loneliness
+						presents or becomes chronic. Prevention and intervention strategies are key
+						to combating loneliness among children and young people. Special attention
+						should be paid to the built environment and its social facilities. Smart,
+						green and inclusive urban planning models under the Cities for All
+						initiative should also be incorporated (promoting mobility and interpersonal
+						relationships), as should the WHO recommendations on urban design.</p>
+				</content>
+			</level>
+			<level xml:id="d3e649">
+				<num xml:id="d3e651">4.6.5</num>
+				<content xml:id="d3e653">
+					<p xml:id="d3e655">Guideline 5 – Raise awareness and eliminate stigma: promoting
+						mutual support and solidarity, including intergenerational solidarity. It is
+						therefore important to empower people, change narratives and speak
+						positively.</p>
+				</content>
+			</level>
+			<level xml:id="d3e659">
+				<num xml:id="d3e661">4.6.6</num>
+				<content xml:id="d3e663">
+					<p xml:id="d3e665">Guideline 6 – Alleviate the pressure on health systems:
+						specific resources need to be allocated, and the health systems and their
+						workforce adequately prepared to find and address the root causes and
+						effects of loneliness.</p>
+				</content>
+			</level>
+			<level xml:id="d3e669">
+				<num xml:id="d3e671">4.6.7</num>
+				<content xml:id="d3e673">
+					<p xml:id="d3e675">Guideline 7 – Mobilise financial support: a future European
+						guarantee for older people should bring together support from various
+						European funding frameworks under the next multiannual financial framework
+						to carry out these actions.</p>
+				</content>
+			</level>
+			<level xml:id="d3e679">
+				<num xml:id="d3e681">5.</num>
+				<heading xml:id="d3e683">Implementation of recommendations: cooperation with EU
+					institutions, Member States and civil society organisations</heading>
+			</level>
+			<level xml:id="d3e687">
+				<num xml:id="d3e689">5.1</num>
+				<list xml:id="d3e695">
+					<subparagraph xml:id="d2o505" refersTo="~INP">
+						<content xml:id="d2o507">
+							<p xml:id="d2o509">The EESC calls on the Commission to:</p>
+						</content>
+					</subparagraph>
+					<indent xml:id="d3e697">
+						<num xml:id="d3e699">—</num>
+						<content xml:id="d3e701">
+							<p xml:id="d3e703">coordinate policies and initiatives on loneliness
+								drafted by national, regional and local authorities and by civil
+								society organisations as part of the new strategy for older persons
+								and the future European strategy for intergenerational equity;</p>
+						</content>
+					</indent>
+					<indent xml:id="d3e707">
+						<num xml:id="d3e709">—</num>
+						<content xml:id="d3e711">
+							<p xml:id="d3e713">adopt measures at EU level to address mental health
+								and emotional well-being in children and adolescents;</p>
+						</content>
+					</indent>
+					<indent xml:id="d3e717">
+						<num xml:id="d3e719">—</num>
+						<content xml:id="d3e721">
+							<p xml:id="d3e723">continue the pilot project on loneliness, updating
+								data, carrying out awareness-raising campaigns and establishing a
+								European observation network.</p>
+						</content>
+					</indent>
+				</list>
+			</level>
+			<level xml:id="d3e727">
+				<num xml:id="d3e729">5.2</num>
+				<content xml:id="d3e731">
+					<p xml:id="d3e733">Social partners (businesses and trade unions), together with
+						civil society organisations, play a fundamental role in the fight against
+						loneliness. The EESC would like to work closely with the organisations
+						concerned when implementing the recommendations made in this opinion.</p>
+				</content>
+			</level>
+			<level xml:id="d3e737">
+				<num xml:id="d3e739">5.3</num>
+				<content xml:id="d3e741">
+					<p xml:id="d3e743">The EESC encourages the European Committee of the Regions to
+						become involved in the proposed strategy, given the role that local
+						administrations play in developing programmes that bring people together and
+						promote a sense of community.</p>
+				</content>
+			</level>
+		</mainBody>
+		<conclusions xml:id="d2e1038">
+			<p xml:id="d2e1040">
+				<location xml:id="d2e1041" refersTo="~BEL_BRU">Brussels</location>, <date
+					xml:id="d2e1044" date="2025-02-26">26 February 2025.</date></p>
+			<block xml:id="d2e1047" name="signatory">
+				<signature xml:id="d2e1049">
+					<role xml:id="d2e1054" refersTo="~PRESID">The President</role> of the
+						<organization xml:id="d2e1056" refersTo="~EESC"> European Economic and
+						Social Committee </organization>
+					<person xml:id="d2e1051" refersTo="">Oliver RÖPKE</person>
+				</signature>
+			</block>
+		</conclusions>
+	</doc>
+</akomaNtoso>

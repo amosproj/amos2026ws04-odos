@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+	<doc name="OPIN_COR">
+		<meta>
+			<identification source="~PUBL">
+				<FRBRWork>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:fileCUID value="ckk5z02n5000ql284jcg20zo2"/>
+					</preservation>
+					<FRBRcountry value="EU"/>
+					<FRBRnumber value="COR-2019-00644-00-00-AC-TRA"/>
+					<FRBRprescriptive value="false"/>
+				</FRBRWork>
+				<FRBRExpression>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRlanguage language="en"/>
+				</FRBRExpression>
+				<FRBRManifestation>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:akn4euVersion value="5.0.0.1"/>
+						<akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+					</preservation>
+				</FRBRManifestation>
+			</identification>
+			<references source="~PUBL">
+				<TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+				<TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+				<TLCOrganization xml:id="COR" href="http://publications.europa.eu/resource/authority/corporate-body/COR" showAs=""/>
+				<TLCRole xml:id="RAPP" href="http://publications.europa.eu/resource/authority/role/RAPP" showAs=""/>
+				<TLCOrganization xml:id="COR_GROUP_EPP" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_EPP" showAs=""/>
+				<TLCReference xml:id="OPIN_COR" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/OPIN_COR" showAs=""/>
+				<TLCRole xml:id="PRESID" href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+				<TLCRole xml:id="SEC_GEN" href="http://publications.europa.eu/resource/authority/role/SEC_GEN" showAs=""/>
+				<TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+			</references>
+		</meta>
+		<preface xml:id="d2e83">
+			<longTitle xml:id="d2e85">
+				<p xml:id="d2e87"><docType xml:id="d2e88" refersTo="~OPIN_COR">Opinion of the European Committee of the
+						Regions</docType> <docPurpose xml:id="d2e91">— Recommendations for the successful design of
+						regional development strategies beyond 2020</docPurpose></p>
+			</longTitle>
+			<container xml:id="d2z228" name="rapporteur">
+				<p xml:id="d2z230"><inline xml:id="d2z231" name="label"><role xml:id="d2z232" refersTo="~RAPP">Rapporteur</role></inline>
+					<docIntroducer xml:id="d2z235"><person xml:id="d2z236" refersTo="" as="~RAPP">Adam Struzik</person> (PL/<organization xml:id="d2z239" refersTo="~COR_GROUP_EPP">EPP</organization>), President
+						of Mazovia Region</docIntroducer></p>
+			</container>
+			<container xml:id="d2z252" name="mainDoc">
+				<block xml:id="d2z254" name="reference"><docNumber xml:id="d2z255">COR-2019-00644-00-00-AC-TRA</docNumber> (EN)</block>
+			</container>
+		</preface>
+		<mainBody xml:id="d2e95">
+			<division xml:id="d2e97" class="type_1"><num xml:id="d2e98">I.</num><heading xml:id="d2e99">POLICY RECOMMENDATIONS</heading></division>
+			<paragraph xml:id="d2e101">
+				<content xml:id="d2e103">
+					<p xml:id="d2e105"><organization xml:id="d2e106" refersTo="~COR">THE EUROPEAN COMMITTEE OF THE
+							REGIONS</organization></p>
+				</content>
+			</paragraph>
+			<crossHeading xml:id="d2e111">General comments</crossHeading>
+			<level xml:id="d2e114">
+				<num xml:id="d2e116">1.</num>
+				<content xml:id="d2e118">
+					<p xml:id="d2e120">makes recommendations for effective planning of a post-2020 regional
+						development strategy, drawing on the analysis of the specific strategic
+						circumstances of regions, taking into account the challenges regions face
+						and building on the existing experience of cohesion policy;</p>
+				</content>
+			</level>
+			<level xml:id="d2e124">
+				<num xml:id="d2e126">2.</num>
+				<content xml:id="d2e128">
+					<p xml:id="d2e130">stresses that the recommendations include only priority investment areas and
+						framework conditions for effective regional development strategies;</p>
+				</content>
+			</level>
+			<level xml:id="d2e135">
+				<num xml:id="d2e137">3.</num>
+				<content xml:id="d2e139">
+					<p xml:id="d2e141">points out that in the light of actual needs, local and regional authorities
+						must have clearly defined medium- and long-term development strategies based
+						both on predicted trends and challenges and on the specific features of
+						their territories;</p>
+				</content>
+			</level>
+			<level xml:id="d2e145">
+				<num xml:id="d2e147">4.</num>
+				<content xml:id="d2e149">
+					<p xml:id="d2e151">notes that the essence of strategic planning of an area (region, province,
+						district and municipality) is optimising its operation and development
+						processes on the basis of sustainable transformation of regional factors and
+						resources towards goods and services;</p>
+				</content>
+			</level>
+			<level xml:id="d2e155">
+				<num xml:id="d2e157">5.</num>
+				<content xml:id="d2e159">
+					<p xml:id="d2e161">points out that development strategies are one of the core instruments for
+						local and regional governance. They are documents outlining the direction of
+						decisions and actions to define the goals and priorities in close connection
+						with Europe’s vision for development;</p>
+				</content>
+			</level>
+			<level xml:id="d2e165">
+				<num xml:id="d2e167">6.</num>
+				<content xml:id="d2e169">
+					<p xml:id="d2e171">notes that in this respect regional development and smart specialisation
+						strategies are an important tool ensuring that individual sectoral tools
+						have synergies and complement each other and that stakeholders are
+						adequately involved, in line with the place-based approach to economic,
+						social and territorial development;</p>
+				</content>
+			</level>
+			<level xml:id="d2e175">
+				<num xml:id="d2e177">7.</num>
+				<content xml:id="d2e179">
+					<p xml:id="d2e181">draws attention to the European Semester’s mismatch with cohesion policy
+						objectives. Cohesion policy is a standalone policy and the Treaty objective
+						(economic, social and territorial cohesion) must be maintained at all times.
+						This means paying attention to the degree of relevance between the
+						country-specific recommendations and the cohesion programmes and the
+						importance of cooperation between national, regional and local authorities
+						in terms of both the national reform programmes (NRPs) and the cohesion
+						programmes;</p>
+				</content>
+			</level>
+			<crossHeading xml:id="d2e185">Recommendation 1: Strategic regional planning as a starting point for
+				successful development</crossHeading>
+			<level xml:id="d2e189">
+				<num xml:id="d2e191">8.</num>
+				<content xml:id="d2e193">
+					<p xml:id="d2e195">points out that strengthening economic, social and territorial cohesion of
+						the European Union is one of the EU’s main goals, based on the Treaty on the
+						Functioning of the European Union (TFEU);</p>
+				</content>
+			</level>
+			<level xml:id="d2e199">
+				<num xml:id="d2e201">9.</num>
+				<content xml:id="d2e203">
+					<p xml:id="d2e205">stresses that cohesion policy should combine the strategic objectives to
+						address challenges at the European and global levels with long-term regional
+						and local development strategies in Member States and implementation thereof
+						on the ground;</p>
+				</content>
+			</level>
+			<level xml:id="d2e209">
+				<num xml:id="d2e211">10.</num>
+				<content xml:id="d2e213">
+					<p xml:id="d2e215">stresses that many challenges facing cities and regions have a strong
+						territorial dimension, as their impact extends beyond administrative areas
+						and borders. The Committee therefore points out that the administration
+						responsible for an individual area cannot meet development challenges alone,
+						but that each administration has full autonomous responsibility for setting
+						out the direction and vision of the development policy for their own
+						community, in line with the principle of subsidiarity enshrined in Article
+						5(3) of the Treaty on European Union (TEU);</p>
+				</content>
+			</level>
+			<level xml:id="d2e219">
+				<num xml:id="d2e221">11.</num>
+				<content xml:id="d2e223">
+					<p xml:id="d2e225">stresses the importance of territorial strategies in focusing investment in
+						an integrated and coordinated manner — ‘integrated’ meaning that all levels
+						of governance, from local to European, work together to achieve the
+						objectives of a territory, and ‘coordinated’ meaning that different sources
+						of funding contribute to the same agreed territorial objectives in a
+						complementary way;</p>
+				</content>
+			</level>
+			<level xml:id="d2e229">
+				<num xml:id="d2e231">12.</num>
+				<content xml:id="d2e233">
+					<p xml:id="d2e235">underlines that it is very important to base financial and strategic
+						decisions on current socioeconomic development indicators. The proposals for
+						the 2021-2027 financial perspective are based on data for the 2014-2016
+						period, which significantly distorts the view of the current socioeconomic
+						situation in the regions. The indicators to be analysed should be taken from
+						a period no earlier than the last three years preceding the financing
+						period, i.e. from 2017-2019;</p>
+				</content>
+			</level>
+			<level xml:id="d2e239">
+				<num xml:id="d2e241">13.</num>
+				<content xml:id="d2e243">
+					<p xml:id="d2e245">stresses the need to take into account the current statistical divisions when
+						shaping future development policy, particularly with regard to the European
+						Union’s multiannual financial framework (MFF) for the 2021-2027 financial
+						perspective and beyond. It therefore calls on the European Commission to
+						thoroughly rethink its approach in this area when creating the MFF;</p>
+				</content>
+			</level>
+			<level xml:id="d2e250">
+				<num xml:id="d2e252">14.</num>
+				<content xml:id="d2e254">
+					<p xml:id="d2e256">points out that the work on changing the approach and implementing
+						recommendations should involve Eurostat, which should step up work on
+						improving the system of collecting and processing data that help to adjust
+						to new needs and improve cooperation, while also increasing the
+						effectiveness of data collection;</p>
+				</content>
+			</level>
+			<level xml:id="d2e260">
+				<num xml:id="d2e262">15.</num>
+				<content xml:id="d2e264">
+					<p xml:id="d2e266">points out that GDP is a way of measuring production and does not measure
+						environmental sustainability, resource efficiency, social inclusion and
+						social progress in general. In this context, the Committee points out the
+						need for additional indicators to be included which will measure quality of
+						life in a fairer and clearer way and act as a complement to GDP;</p>
+				</content>
+			</level>
+			<level xml:id="d2e270">
+				<num xml:id="d2e272">16.</num>
+				<content xml:id="d2e274">
+					<p xml:id="d2e276">calls for the development of clear and measurable indicators that would take
+						account of climate change, biodiversity, resource efficiency and social
+						inclusion. It also calls for the development of indicators that would focus
+						more closely on the situation of households and would reflect their income,
+						level of consumption and wealth;</p>
+				</content>
+			</level>
+			<crossHeading xml:id="d2e280">Recommendation 2: Sustainable development goals as a basis for long-term
+				strategies of cities and regions</crossHeading>
+			<level xml:id="d2e283">
+				<num xml:id="d2e285">17.</num>
+				<content xml:id="d2e287">
+					<p xml:id="d2e289">points out that both the Europe 2020 strategy and the Common Strategic
+						Framework provided a framework and guiding principles for preparing
+						partnership agreements and programmes in the 2014-2020 cohesion policy
+						period, in particular, coordination between the European Structural and
+						Investment Funds (ESIF) and other instruments;</p>
+				</content>
+			</level>
+			<level xml:id="d2e293">
+				<num xml:id="d2e295">18.</num>
+				<content xml:id="d2e297">
+					<p xml:id="d2e299">points out the need to develop long-term policy frameworks at EU level that
+						would replace the Europe 2020 strategy and allow for national and regional
+						or local strategies to be developed that would contribute to achieving
+						sustainable development goals, taking into account the benefits of also
+						creating a cross-border partnership to address common challenges;</p>
+				</content>
+			</level>
+			<level xml:id="d2e304">
+				<num xml:id="d2e306">19.</num>
+				<content xml:id="d2e308">
+					<p xml:id="d2e310">welcomes the EU reflection paper Towards a Sustainable Europe by 2030 and
+						calls on the Commission and the European Council to acknowledge the
+						implementation of the 2030 Agenda for Sustainable Development and its 17
+						sustainable development goals as a priority of the political agenda and an
+						overarching objective of the next EU strategic plan for 2019-2024 and
+						beyond;</p>
+				</content>
+			</level>
+			<level xml:id="d2e314">
+				<num xml:id="d2e316">20.</num>
+				<content xml:id="d2e318">
+					<p xml:id="d2e320">points out that the implementation of the SDGs and related political
+						strategies should be determined in line with the principle of multi-level
+						governance involving all levels of government and relevant stakeholders and
+						generating a set of diverse goals at the national, regional and local
+						levels;</p>
+				</content>
+			</level>
+			<level xml:id="d2e324">
+				<num xml:id="d2e326">21.</num>
+				<content xml:id="d2e328">
+					<p xml:id="d2e330">points out that the 17 sustainable development goals do not contain a
+						specific regional goal that would be connected with the TFEU goals on
+						ensuring sustainable regional development in the European Union and
+						decreasing the differences in the levels of regions’ development so that no
+						territory would be left behind;</p>
+				</content>
+			</level>
+			<level xml:id="d2e334">
+				<num xml:id="d2e336">22.</num>
+				<content xml:id="d2e338">
+					<p xml:id="d2e340">recommends that cities and regions take SDGs into account as a guiding
+						principle when developing regional or local development strategies,
+						particularly in view of the fact that a strategy for a sustainable Europe by
+						2030 still needs to be developed. It also requires cities and regions, as
+						the decision-makers closest to their citizens, businesses and local
+						communities, to adapt SDGs to the specific characteristics of the area;</p>
+				</content>
+			</level>
+			<crossHeading xml:id="d2e344">Recommendation 3: Cities and regions should base their regional
+				development strategies on a thorough prospective evaluation</crossHeading>
+			<level xml:id="d2e347">
+				<num xml:id="d2e349">23.</num>
+				<content xml:id="d2e351">
+					<p xml:id="d2e353">stresses that future trends should be taken into account in order to develop
+						effective strategies for regional development. Long-term planning, forecasts
+						and other strategic forecasting methods are therefore important tools for
+						shaping regional policy in the future;</p>
+				</content>
+			</level>
+			<level xml:id="d2e358">
+				<num xml:id="d2e360">24.</num>
+				<content xml:id="d2e362">
+					<p xml:id="d2e364">emphasises that in order to succeed across the EU, it is necessary to link
+						post-2020 regional development strategies with the new territorial
+						agenda;</p>
+				</content>
+			</level>
+			<level xml:id="d2e368">
+				<num xml:id="d2e370">25.</num>
+				<content xml:id="d2e372">
+					<p xml:id="d2e374">notes that the key future development challenges to be addressed within the
+						framework of regional strategies relate to mega-trends and environmental
+						changes that will have significant consequences for economies and societies
+						in all regions of the European Union;</p>
+				</content>
+			</level>
+			<level xml:id="d2e378">
+				<num xml:id="d2e380">26.</num>
+				<content xml:id="d2e382">
+					<p xml:id="d2e384">stresses that technological changes will have a major impact on socioeconomic
+						development, given that automation and machine learning technologies may
+						have a significant effect on labour markets. Furthermore, many emerging
+						technologies can be beneficial for rural areas, reducing the problems they
+						have surrounding low population density and long distances;</p>
+				</content>
+			</level>
+			<level xml:id="d2e388">
+				<num xml:id="d2e390">27.</num>
+				<content xml:id="d2e392">
+					<p xml:id="d2e394">points out that, in order to use new technologies, the basic technical
+						infrastructure must be created. However, many of the benefits of emerging
+						technologies do not appear automatically, but require complementary policies
+						to, for example, give people the relevant skills to use this technology;</p>
+				</content>
+			</level>
+			<level xml:id="d2e398">
+				<num xml:id="d2e400">28.</num>
+				<content xml:id="d2e402">
+					<p xml:id="d2e404">stresses the need to fully implement the European Pillar of Social Rights.
+						While social progress can be seen in the EU, the principles of the Social
+						Pillar must be implemented more effectively at all levels of governance. The
+						Social Fund has an important role as a link between the ambitions of the
+						Social Pillar and regional needs for actions and investment for the region’s
+						development, for example to ensure the availability of necessary skills;</p>
+				</content>
+			</level>
+			<level xml:id="d2e408">
+				<num xml:id="d2e410">29.</num>
+				<content xml:id="d2e412">
+					<p xml:id="d2e414">notes new developments in the labour market in connection with
+						digitalisation, and therefore calls for new business models that do not
+						violate labour rights and for new forms of employment that guarantee decent
+						wages, social security and protection against discrimination;</p>
+				</content>
+			</level>
+			<level xml:id="d2e419">
+				<num xml:id="d2e421">30.</num>
+				<content xml:id="d2e423">
+					<p xml:id="d2e425">points out the need to make spatial planning more coherent, taking into
+						account factors of adapting to climate change. It also notes that spatial
+						planning is key to limiting the risks resulting from an increase in extreme
+						weather events and natural disasters;</p>
+				</content>
+			</level>
+			<level xml:id="d2e429">
+				<num xml:id="d2e431">31.</num>
+				<content xml:id="d2e433">
+					<p xml:id="d2e435">underlines the important role of green and blue infrastructure in mitigating
+						and adapting to climate change and halting loss of biodiversity. The CoR
+						also calls on Member States and regional and local authorities to take
+						biodiversity into account in the decision-making process and strategic
+						documents;</p>
+				</content>
+			</level>
+			<level xml:id="d2e439">
+				<num xml:id="d2e441">32.</num>
+				<content xml:id="d2e443">
+					<p xml:id="d2e445">regrets that the European Agricultural Fund for Rural Development (EAFRD) has
+						been removed from the Common Provisions Regulation. Together with diverging
+						provisions in the sector regulations, this will hamper the coordination of
+						measures related to adapting to climate change and biodiversity, as well as
+						overall cross-fund strategies and cooperation structures at regional
+						level;</p>
+				</content>
+			</level>
+			<level xml:id="d2e449">
+				<num xml:id="d2e451">33.</num>
+				<content xml:id="d2e453">
+					<p xml:id="d2e455">highlights the need to consider the environmental impact from the initial
+						stages of strategic planning of infrastructure and to apply appropriate
+						environmental assessment strategies and environmental impact assessments
+						properly, which will also lead to fewer problems later on in approving and
+						implementing the project;</p>
+				</content>
+			</level>
+			<level xml:id="d2e459">
+				<num xml:id="d2e461">34.</num>
+				<content xml:id="d2e463">
+					<p xml:id="d2e465">points out that regional and local identities must be taken into account in
+						the territorial approach and that individual communities have a direct
+						responsibility and remit when it comes to policy-making, with due regard for
+						their own specific local, social and cultural features. It is worth noting
+						that each region has its own unique characteristics, which are an important
+						factor in developing and coping with crises;</p>
+				</content>
+			</level>
+			<level xml:id="d2e469">
+				<num xml:id="d2e471">35.</num>
+				<content xml:id="d2e473">
+					<p xml:id="d2e475">criticises the fact that the Europe 2020 strategy concerning further
+						development of the European Union did not take culture into account. The CoR
+						therefore calls for culture — along with its institutions and locations — to
+						be considered a strategic area in the next strategy and policy planning. In
+						this context, it calls on regions that see their cultural heritage as a
+						particularly strong asset to take it into account in smart specialisation
+						strategies;</p>
+				</content>
+			</level>
+			<crossHeading xml:id="d2e480">Recommendation 4: Investing in institutional and administrative capacity
+				building as a condition for effective public spending</crossHeading>
+			<level xml:id="d2e483">
+				<num xml:id="d2e485">36.</num>
+				<content xml:id="d2e487">
+					<p xml:id="d2e489">stresses that successful integrated policy-making depends, to a significant
+						extent, on the quality of national and regional administrations and that
+						institutional and administrative capacity is a key factor in proper
+						management of ESIF programmes, and an important factor contributing to
+						economic prosperity as a whole;</p>
+				</content>
+			</level>
+			<level xml:id="d2e493">
+				<num xml:id="d2e495">37.</num>
+				<content xml:id="d2e497">
+					<p xml:id="d2e499">stresses that many studies show that effectiveness of public spending is more
+						closely linked to good governance and the performance of institutions than
+						to macroeconomic factors. Therefore, return on investments directly
+						correlates with level of investment, but also with the quality of
+						management;</p>
+				</content>
+			</level>
+			<level xml:id="d2e503">
+				<num xml:id="d2e505">38.</num>
+				<content xml:id="d2e507">
+					<p xml:id="d2e509">acknowledges that leadership (and management in general) is a key element for
+						the successful implementation of regional and local development strategies.
+						The CoR therefore notes that the European Union as well as cities and
+						regions need leaders who are not afraid to set out visions for the
+						development of their areas and to present them in development strategies.
+						The activity of the regional authorities is a conditio sine qua non for the
+						development of the region;</p>
+				</content>
+			</level>
+			<level xml:id="d2e513">
+				<num xml:id="d2e515">39.</num>
+				<content xml:id="d2e517">
+					<p xml:id="d2e519">calls for adequate support for the development of digital skills and
+						competences of citizens at all levels of education. It recognises that
+						developing the digital skills of EU workers is essential in order to face
+						the transformation of the labour market and avoid gaps or discrepancies in
+						skills.</p>
+				</content>
+			</level>
+			<crossHeading xml:id="d2e523">Recommendation 5: Promoting synergies between funds and other
+				actors</crossHeading>
+			<level xml:id="d2e527">
+				<num xml:id="d2e529">40.</num>
+				<content xml:id="d2e531">
+					<p xml:id="d2e533">points out that cohesion policy, like all EU policies, must contribute to
+						achieving the key objectives outlined in the Treaties. Conversely, other EU
+						policies must also contribute to the achievement of the Treaty goals on
+						cohesion policy;</p>
+				</content>
+			</level>
+			<level xml:id="d2e537">
+				<num xml:id="d2e539">41.</num>
+				<content xml:id="d2e541">
+					<p xml:id="d2e543">notes that despite the specific missions of individual ESIF that were
+						inscribed in the Treaty and are still ongoing, they can jointly achieve the
+						objectives of cohesion policy and each of these funds contributes to the
+						mission of other funds;</p>
+				</content>
+			</level>
+			<level xml:id="d2e547">
+				<num xml:id="d2e549">42.</num>
+				<content xml:id="d2e551">
+					<p xml:id="d2e553">emphasises that in order to create synergies and increase the impact and
+						effectiveness of various instruments, it is essential to adapt strategies
+						and types of measures, as well as cooperation between the different actors
+						from the earliest stages of the programming process;</p>
+				</content>
+			</level>
+			<level xml:id="d2e557">
+				<num xml:id="d2e559">43.</num>
+				<content xml:id="d2e561">
+					<p xml:id="d2e563">points to the importance of transparency and strategic use of public
+						procurement at all levels of government, particularly with regard to clear
+						and unambiguous rules. In this case, disparities between Member States,
+						different levels of government, or Member States and the European Commission
+						should be avoided and administrative burdens should be minimised;</p>
+				</content>
+			</level>
+			<level xml:id="d2e567">
+				<num xml:id="d2e569">44.</num>
+				<content xml:id="d2e571">
+					<p xml:id="d2e573">believes that initiatives, strategies, action plans and private-public
+						partnerships implemented in science, technology, engineering, art and
+						mathematics (STEAM) at local and regional level can play an important role
+						in reducing differences in development throughout Europe. Treating STEAM
+						education as a local and regional priority and giving priority to
+						cooperative initiatives and investments in developing them can have a
+						significant impact in limiting the harmful effects of brain drain.</p>
+				</content>
+			</level>
+			<crossHeading xml:id="d2e577">Recommendation 6: Territorial cooperation in functional
+				areas</crossHeading>
+			<level xml:id="d2e581">
+				<num xml:id="d2e583">45.</num>
+				<content xml:id="d2e585">
+					<p xml:id="d2e587">notes that administrative boundaries often do not correspond to economic
+						links throughout a territory. For example, there can be important links
+						between cities and their surrounding commuter areas, between rural and urban
+						areas or between neighbouring regions in different countries;</p>
+				</content>
+			</level>
+			<level xml:id="d2e591">
+				<num xml:id="d2e593">46.</num>
+				<content xml:id="d2e595">
+					<p xml:id="d2e597">stresses that the territorial impact goes beyond local areas and
+						administrative boundaries in almost every issue of development and decisions
+						must be made jointly at various levels. These decisions must be preceded by
+						a joint dialogue from the very beginning when seeking answers to these
+						questions;</p>
+				</content>
+			</level>
+			<level xml:id="d2e601">
+				<num xml:id="d2e603">47.</num>
+				<content xml:id="d2e605">
+					<p xml:id="d2e607">points out that special attention should also be paid to the situation of
+						remote, peripheral, sparsely populated and isolated regions, as well as
+						border regions, and those facing particular challenges — particularly
+						mountain and island regions — and whose development is in some cases lagging
+						behind, particularly when it comes to improving the connectivity of these
+						places and developing links between them;</p>
+				</content>
+			</level>
+			<level xml:id="d2e611">
+				<num xml:id="d2e613">48.</num>
+				<content xml:id="d2e615">
+					<p xml:id="d2e617">recommends developing joint strategies for functional areas and adapting
+						relevant strategies and programmes where possible.</p>
+				</content>
+			</level>
+			<crossHeading xml:id="d2e621">Recommendation 7: Cooperation projects with neighbouring national or
+				regional ESIF programmes</crossHeading>
+			<level xml:id="d2e624">
+				<num xml:id="d2e626">49.</num>
+				<content xml:id="d2e628">
+					<p xml:id="d2e630">recommends that the managing authorities make full use of the opportunities
+						provided by the regulation laying down common provisions for cohesion policy
+						(Article 57(4) of the European Commission proposal) with a view to
+						programming interregional or cross-border cooperation projects with regional
+						ESIF programmes to address cross-border functional areas. Close coordination
+						with the relevant Interreg programmes is necessary when developing such
+						projects to ensure complementarity and avoid duplication;</p>
+				</content>
+			</level>
+			<level xml:id="d2e635">
+				<num xml:id="d2e637">50.</num>
+				<content xml:id="d2e639">
+					<p xml:id="d2e641">reiterates its support for the proposed European cross-border mechanism,
+						which would be hugely significant for removing obstacles and bottlenecks in
+						cross-border cooperation;</p>
+				</content>
+			</level>
+			<level xml:id="d2e645">
+				<num xml:id="d2e647">51.</num>
+				<content xml:id="d2e649">
+					<p xml:id="d2e651">emphasises that it is important that the European Union launch a genuine
+						strategy for cultural diplomacy. To this end, it is necessary to promote
+						communication and artistic and cultural exchange between the EU’s regions —
+						particularly with the outermost regions — and third countries, including
+						through measures to make it easier for artists to travel to third countries
+						and present their work there, and vice-versa.</p>
+				</content>
+			</level>
+			<crossHeading xml:id="d2e655">Recommendation 8: Promoting a territorial approach by making full use of
+				the potential of integrated tools such as community-led local development (CLLD) and
+				integrated territorial investment (ITI)</crossHeading>
+			<level xml:id="d2e658">
+				<num xml:id="d2e660">52.</num>
+				<content xml:id="d2e662">
+					<p xml:id="d2e664">emphasises that strengthening cohesion, including across borders, at regional
+						and local levels requires a bottom-up, place-based approach to develop
+						appropriate solutions locally;</p>
+				</content>
+			</level>
+			<level xml:id="d2e668">
+				<num xml:id="d2e670">53.</num>
+				<content xml:id="d2e672">
+					<p xml:id="d2e674">recommends developing territorial strategies within all programmes. In this
+						context, the CoR underlines the added value of multi-fund programmes and
+						encourages making greater use of territorial instruments in functional
+						areas;</p>
+				</content>
+			</level>
+			<level xml:id="d2e678">
+				<num xml:id="d2e680">54.</num>
+				<content xml:id="d2e682">
+					<p xml:id="d2e684">underlines the role of community-led local development (CLLD) as a specific
+						tool for use at the sub-regional level and to complement other types of
+						support at local level;</p>
+				</content>
+			</level>
+			<level xml:id="d2e689">
+				<num xml:id="d2e691">55.</num>
+				<content xml:id="d2e693">
+					<p xml:id="d2e695">points out that participation, consultation and cooperation of local
+						communities and all local public and private actors is a specific added
+						value that CLLD brings, ensuring that local and specialised knowledge is
+						used and the specific needs of areas are taken into account;</p>
+				</content>
+			</level>
+			<level xml:id="d2e699">
+				<num xml:id="d2e701">56.</num>
+				<content xml:id="d2e703">
+					<p xml:id="d2e705">notes the important role of smart specialisation in enhancing regional
+						innovation systems, exchanging knowledge between regions and increasing
+						synergies, particularly with European research funding;</p>
+				</content>
+			</level>
+		</mainBody>
+		<conclusions xml:id="d2e710">
+			<p xml:id="d2e712">Done at <location xml:id="d2e714" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e717" date="2019-10-08">8
+					October 2019</date></p>
+			<block xml:id="d2e720" name="signatory">
+				<signature xml:id="d2e722">
+					<role xml:id="d2e724" refersTo="~PRESID">The President</role>
+					<organization xml:id="d2e727" refersTo="~COR">of the European Committee of the
+						Regions</organization>
+					<person xml:id="d2e730" refersTo="">Karl-Heinz LAMBERTZ</person>
+				</signature>
+				<signature xml:id="d2e734">
+					<role xml:id="d2e736" refersTo="~SEC_GEN">The Secretary-General ad interim</role>
+					<organization xml:id="d2e739" refersTo="~COR">of the European Committee of the
+						Regions</organization>
+					<person xml:id="d2e742" refersTo="">Pedro Cervilla</person>
+				</signature>
+			</block>
+		</conclusions>
+	</doc>
+</akomaNtoso>

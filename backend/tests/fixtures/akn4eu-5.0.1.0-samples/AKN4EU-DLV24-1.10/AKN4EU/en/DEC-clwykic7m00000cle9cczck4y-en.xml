@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <bill name="DEC">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clwykic7m00000cle9cczck4y"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRsubtype value="DEC" refersTo="~COM_AUTO_PROC"/>
+                    <FRBRnumber value="C(2023) 6024"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <analysis source="~PUBL">
+                <activeModifications>
+                    <textualMod xml:id="d2e43A" type="repeal">
+                        <source/>
+                        <destination href="http://data.europa.eu/eli/dec/2014/763"/>
+                    </textualMod>
+                </activeModifications>
+            </analysis>
+            <references source="~PUBL">
+                <TLCReference xml:id="DEC" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/DEC" showAs=""/>
+                <TLCProcess xml:id="COM_AUTO_PROC" href="http://publications.europa.eu/resource/authority/internal-procedure/COM_AUTO_PROC" showAs=""/>
+                <TLCReference xml:id="ENG" name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference xml:id="legalBasis" name="contentSubject" href="http://eurovoc.europa.eu/5456" showAs=""/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCOrganization xml:id="COM" href="http://publications.europa.eu/resource/authority/corporate-body/COM" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCRole xml:id="MEMBER_COM" href="http://publications.europa.eu/resource/authority/role/MEMBER_COM" showAs=""/>
+                <TLCConcept xml:id="ART_AMEND" href="http://publications.europa.eu/resource/authority/subdivision-content/ART_AMEND" showAs=""/>
+                <TLCReference xml:id="SVG" name="fileType" href="http://publications.europa.eu/resource/authority/file-type/SVG" showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e98">
+            <longTitle xml:id="d2e100">
+                <p xml:id="d2e102">
+                    <docType xml:id="d2e104" refersTo="~DEC">Commission Decision</docType> of <date xml:id="d2e107" date="2023-09-14">14.9.2023</date>
+                    <docPurpose xml:id="d2e110">establishing the EU Ecolabel criteria for absorbent
+                        hygiene products and for reusable menstrual cups</docPurpose>
+                </p>
+            </longTitle>
+            <container xml:id="d2e115" name="eeaRelevance">
+                <p xml:id="d2e117">(Text with EEA relevance)</p>
+            </container>
+        </preface>
+        <preamble xml:id="d2e122">
+            <formula xml:id="d2e124" name="actingEntity">
+                <p xml:id="d2e126">THE EUROPEAN COMMISSION,</p>
+            </formula>
+            <citations xml:id="d2e130">
+                <citation xml:id="d2e132" refersTo="~legalBasis">
+                    <p xml:id="d2e134">Having regard to the Treaty on the Functioning of the
+                        European Union,</p>
+                </citation>
+                <citation xml:id="d2e138">
+                    <p xml:id="d2e140">Having regard to Regulation (EC) No 66/2010 of the European
+                        Parliament and of the Council of 25 November 2009 on the EU
+                            Ecolabel<authorialNote xml:id="d2e142" marker="1" placement="bottom">
+                            <p xml:id="d2e144"> OJ L 27, 30.1.2010, p. 1. </p>
+                        </authorialNote>, and in particular Article 8(2) thereof,</p>
+                </citation>
+                <citation xml:id="d2e150">
+                    <p xml:id="d2e152">After consulting the European Union Ecolabelling Board,</p>
+                </citation>
+            </citations>
+            <recitals xml:id="d2e157">
+                <intro xml:id="d2e159">
+                    <p xml:id="d2e161">Whereas:</p>
+                </intro>
+                <recital xml:id="d2e165">
+                    <num xml:id="d2e167">(1)</num>
+                    <p xml:id="d2e170">Under Regulation (EC) No 66/2010, the EU Ecolabel may be
+                        awarded to those products with a reduced environmental impact during their
+                        entire life cycle.</p>
+                </recital>
+                <recital xml:id="d2e174">
+                    <num xml:id="d2e176">(2)</num>
+                    <p xml:id="d2e179">Regulation (EC) No 66/2010 provides that specific EU Ecolabel
+                        criteria are to be established according to product groups.</p>
+                </recital>
+                <recital xml:id="d2e183">
+                    <num xml:id="d2e185">(3)</num>
+                    <p xml:id="d2e188"> Commission Decision 2014/763/EU"absorbent hygiene products"
+                            <authorialNote xml:id="d2e190" marker="2" placement="bottom">
+                            <p xml:id="d2e192"> Commission Decision 2014/763/EU of 24 October 2014
+                                establishing the ecological criteria for the award of the EU
+                                Ecolabel for absorbent hygiene products (OJ L 320, 6.11.2014, p. 46
+                                ). </p>
+                        </authorialNote> established EU Ecolabel criteria and related assessment and
+                        verification requirements for the product group 31 December 2023 by
+                        Commission Decision (EU) 2018/1590 <authorialNote xml:id="d2e196" marker="3" placement="bottom">
+                            <p xml:id="d2e198"> Commission Decision (EU) 2018/1590 of 19 October
+                                2018 amending Decisions 2012/481/EU, 2014/391/EU, 2014/763/EU and
+                                2014/893/EU as regards the period of validity of the ecological
+                                criteria for the award of the EU Ecolabel for certain products, and
+                                of the related assessment and verification requirements (OJ L 264,
+                                23.10.2018, p. 24 ). </p>
+                        </authorialNote> . </p>
+                </recital>
+                <recital xml:id="d2e204">
+                    <num xml:id="d2e206">(4)</num>
+                    <p xml:id="d2e209">In order to better reflect best practice in the market for
+                        the product group and to take account of policy developments, potential
+                        future windows of opportunity for increased uptake and the market’s demand
+                        for sustainable products, it is appropriate to establish a new set of
+                        criteria for absorbent hygiene products. As a sustainable alternative with a
+                        potential growing market, it is also appropriate to establish a set of
+                        criteria for reusable menstrual cups.</p>
+                </recital>
+                <recital xml:id="d2e214">
+                    <num xml:id="d2e216">(5)</num>
+                    <p xml:id="d2e219"> The EU Ecolabel Fitness Check Report <authorialNote xml:id="d2e221" marker="4" placement="bottom">
+                            <p xml:id="d2e223"> Report from the Commission to the European
+                                Parliament and the Council on the review of implementation of
+                                Regulation (EC) No 1221/2009 of the European Parliament and of the
+                                Council of 25 November 2009 on the voluntary participation by
+                                organisations in a Community eco-management and audit scheme (EMAS)
+                                and the Regulation (EC) No 66/2010 of the Parliament and of the
+                                Council of 25 November 2009 on the EU Ecolabel (COM(2017) 355
+                                final). </p>
+                        </authorialNote> of 30 June 2017 , reviewing the implementation of
+                        Regulation (EC) No 66/2010, concluded on the need to develop a more
+                        strategic approach for the EU Ecolabel, including the bundling of closely
+                        related product groups where appropriate </p>
+                </recital>
+                <recital xml:id="d2e229">
+                    <num xml:id="d2e231">(6)</num>
+                    <p xml:id="d2e234">In line with those conclusions and after consulting the EU
+                        Ecolabelling Board, it is appropriate to bundle the product group "absorbent
+                        hygiene products""reusable menstrual cups"</p>
+                </recital>
+                <recital xml:id="d2e238">
+                    <num xml:id="d2e240">(7)</num>
+                    <p xml:id="d2e243"> In line with Regulation (EC) No 66/2010, the EU Ecolabel
+                        shall not be awarded to any type of medical device, including those defined
+                        in Regulation (EU) 2017/745 of the European Parliament and of the Council
+                            <authorialNote xml:id="d2e245" marker="5" placement="bottom">
+                            <p xml:id="d2e247"> Regulation (EU) 2017/745 of the European Parliament
+                                and of the Council of 5 April 2017 on medical devices, amending
+                                Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation
+                                (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and
+                                93/42/EEC ( OJ L 117, 5.5.2017, p. 1 ). </p>
+                        </authorialNote> . </p>
+                </recital>
+                <recital xml:id="d2e253">
+                    <num xml:id="d2e255">(8)</num>
+                    <p xml:id="d2e258"> The new Circular Economy Action Plan for a cleaner and more
+                        competitive Europe <authorialNote xml:id="d2e260" marker="6" placement="bottom">
+                            <p xml:id="d2e262"> Communication from the Commission to the European
+                                Parliament, the Council, the European Economic and Social Committee
+                                and the Committee of the Regions, A new Circular Economy Action Plan
+                                for a cleaner and more competitive Europe (COM(2020) 98 final) ( OJ
+                                C 364, 28.10.2020, p. 94 ). </p>
+                        </authorialNote> adopted on 11 March 2020 stipulates that the durability,
+                        recyclability and recycled content requirements are to be more
+                        systematically included in the EU Ecolabel criteria. </p>
+                </recital>
+                <recital xml:id="d2e268">
+                    <num xml:id="d2e270">(9)</num>
+                    <p xml:id="d2e273">The revised EU Ecolabel criteria for absorbent hygiene
+                        products and reusable menstrual cups should aim to promote products that
+                        have limited environmental impact along their life cycle, and that are
+                        produced using material-efficient and energy-efficient processes. In
+                        particular, the revised EU Ecolabel criteria promote products that have
+                        limited impacts in terms of emissions to water and to air during production,
+                        that use raw materials sourced from sustainably managed forests, and that
+                        fulfil strict requirements on harmful substances. Moreover, in order to
+                        contribute towards the transition to a more circular economy, the criteria
+                        promote the use of paper and/or cardboard packaging, when possible, as an
+                        alternative to plastic packaging, and promote packaging with recycled
+                        content and which can be easily recycled.</p>
+                </recital>
+                <recital xml:id="d2e277">
+                    <num xml:id="d2e279">(10)</num>
+                    <p xml:id="d2e282"> Reusable products made of textiles are appearing on the
+                        market as an alternative to single-use products. The revised EU Ecolabel
+                        criteria for absorbent hygiene products and for reusable menstrual cups do
+                        not apply to these reusable textile alternatives, whose environmental
+                        hotspots and ecological criteria are planned to be specifically investigated
+                        for the purposes of the revision of EU Ecolabel criteria for textile
+                        products established by Commission Decision 2014/350/EU <authorialNote xml:id="d2e284" marker="7" placement="bottom">
+                            <p xml:id="d2e286"> Commission Decision 2014/350/EU of 5 June 2014
+                                establishing the ecological criteria for the award of the EU
+                                Ecolabel for textile products ( OJ L 174, 13.6.2014, p. 45 ). </p>
+                        </authorialNote> . </p>
+                </recital>
+                <recital xml:id="d2e293">
+                    <num xml:id="d2e295">(11)</num>
+                    <p xml:id="d2e298"> The new criteria and related assessment and verification
+                        requirements should remain valid until 31 December 2029 , taking into
+                        account the innovation cycle for the product groups. </p>
+                </recital>
+                <recital xml:id="d2e302">
+                    <num xml:id="d2e304">(12)</num>
+                    <p xml:id="d2e307">For reasons of legal certainty, Decision 2014/763/EU should
+                        be repealed.</p>
+                </recital>
+                <recital xml:id="d2e311">
+                    <num xml:id="d2e313">(13)</num>
+                    <p xml:id="d2e316">A transitional period should be available to producers whose
+                        products have been awarded the EU Ecolabel for absorbent hygiene products on
+                        the basis of the criteria set out in Decision 2014/763/EU, so that they have
+                        sufficient time to adapt their products to comply with the new criteria and
+                        requirements. For a limited period after adoption of this Decision,
+                        producers of absorbent hygiene products should be allowed to submit
+                        applications based either on the criteria established by Decision
+                        2014/763/EU or on the new criteria established by this Decision. It should
+                        also be allowed to use EU Ecolabels awarded in accordance with the criteria
+                        established by Decision 2014/763/EU for a transitional period.</p>
+                </recital>
+                <recital xml:id="d2e320">
+                    <num xml:id="d2e322">(14)</num>
+                    <p xml:id="d2e325">The measures provided for in this Decision are in accordance
+                        with the opinion of the Committee established by Article 16 of Regulation
+                        (EC) No 66/2010,</p>
+                </recital>
+            </recitals>
+            <formula xml:id="d2e330" name="enactingFormula">
+                <p xml:id="d2e332">HAS ADOPTED THIS DECISION:</p>
+            </formula>
+        </preamble>
+        <body xml:id="d2e337">
+            <article xml:id="d2e339">
+                <num xml:id="d2e341">Article 1</num>
+                <paragraph xml:id="d2e344">
+                    <num xml:id="d2e346">1.</num>
+                    <content xml:id="d2e349">
+                        <p xml:id="d2e351">The product group ‘absorbent hygiene products’ shall
+                            comprise any article whose function is to absorb and retain human fluids
+                            such as urine, faeces, sweat, menstrual fluid or milk, excluding textile
+                            products. The product group ‘absorbent hygiene products’ shall include
+                            products for both private and professional use.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e356">
+                    <num xml:id="d2e358">2.</num>
+                    <content xml:id="d2e361">
+                        <p xml:id="d2e363">The product group ‘absorbent hygiene products’ shall not
+                            include products falling under the scope of Regulation (EU)
+                            2017/745.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e369">
+                <num xml:id="d2e371">Article 2</num>
+                <paragraph xml:id="d2e374">
+                    <num xml:id="d2e376">1.</num>
+                    <content xml:id="d2e379">
+                        <p xml:id="d2e381">The product group ‘reusable menstrual cups’ shall
+                            comprise reusable flexible cups or barriers worn inside the body whose
+                            function is to retain and collect menstrual fluid, and which are made of
+                            silicone or other elastomers.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e386">
+                    <num xml:id="d2e388">2.</num>
+                    <content xml:id="d2e391">
+                        <p xml:id="d2e393">The product group ‘reusable menstrual cups’ shall not
+                            include products falling under the scope of Regulation (EU)
+                            2017/745.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e399">
+                <num xml:id="d2e401">Article 3</num>
+                <paragraph xml:id="d2e404">
+                    <num xml:id="d2e406">1.</num>
+                    <content xml:id="d2e409">
+                        <p xml:id="d2e411">In order for a product to be awarded the EU Ecolabel
+                            under Regulation (EC) No 66/2010 for the product group ‘absorbent
+                            hygiene products’, it shall fall within the definition of that product
+                            group as specified in Article 1 of this Decision, and shall comply with
+                            the respective criteria and related assessment and verification
+                            requirements set out in Annex I to this Decision.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e416">
+                    <num xml:id="d2e418">2.</num>
+                    <content xml:id="d2e421">
+                        <p xml:id="d2e423">In order for a product to be awarded the EU Ecolabel
+                            under Regulation (EC) No 66/2010 for the product group ‘reusable
+                            menstrual cups’, it shall fall within the definition of that product
+                            group as specified in Article 2 of this Decision and shall comply with
+                            the respective criteria and related assessment and verification
+                            requirements set out in Annex II to this Decision.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e429">
+                <num xml:id="d2e431">Article 4</num>
+                <paragraph xml:id="d2e434">
+                    <content xml:id="d2e436">
+                        <p xml:id="d2e438">The EU Ecolabel criteria for the product group ‘absorbent
+                            hygiene products’ and for the product group ‘reusable menstrual cups’
+                            and the related assessment and verification requirements shall be valid
+                            until 31 December 2029. </p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e444">
+                <num xml:id="d2e446">Article 5</num>
+                <paragraph xml:id="d2e449">
+                    <num xml:id="d2e451">1.</num>
+                    <content xml:id="d2e454">
+                        <p xml:id="d2e456">For administrative purposes, the code number assigned to
+                            the product group ‘absorbent hygiene products’ shall be ‘047’.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e461">
+                    <num xml:id="d2e463">2.</num>
+                    <content xml:id="d2e466">
+                        <p xml:id="d2e468">For administrative purposes, the code number assigned to
+                            the product group ‘reusable menstrual cups’ shall be ‘055’.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e475" refersTo="~ART_AMEND">
+                <num xml:id="d2e477">Article 6</num>
+                <paragraph xml:id="d2e480">
+                    <content xml:id="d2e482">
+                        <p xml:id="d2e484"><ref xml:id="d2e435" href="http://data.europa.eu/eli/dec/2014/763">Decision 2014/763/EU</ref> is
+                                    repealed.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e493">
+                <num xml:id="d2e495">Article 7</num>
+                <paragraph xml:id="d2e498">
+                    <num xml:id="d2e500">1.</num>
+                    <content xml:id="d2e503">
+                        <p xml:id="d2e505">Applications for the EU Ecolabel for the product group
+                            ‘absorbent hygiene products’, as defined in Decision 2014/763/EU,
+                            submitted before the date of application of this Decision shall be
+                            evaluated in accordance with the criteria set out in Decision
+                            2014/763/EU.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e510">
+                    <num xml:id="d2e512">2.</num>
+                    <content xml:id="d2e515">
+                        <p xml:id="d2e517">Applications for the EU Ecolabel for products falling
+                            within the product group ‘absorbent hygiene products’ submitted on or
+                            within two months from the date of application of this Decision may be
+                            based, by the applicant, on, and evaluated in accordance with, either
+                            the criteria set out in this Decision, or on the criteria set out in
+                            Decision 2014/763/EU.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e522">
+                    <num xml:id="d2e524">3.</num>
+                    <content xml:id="d2e527">
+                        <p xml:id="d2e529">EU Ecolabel licences awarded on the basis of an
+                            application evaluated in accordance with the criteria set out in
+                            Decision 2014/763/EU may be used for 12 months from the date of
+                            application of this Decision.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e535">
+                <num xml:id="d2e537">Article 8</num>
+                <paragraph xml:id="d2e540">
+                    <content xml:id="d2e542">
+                        <p xml:id="d2e544">This Decision is addressed to the Member States.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e640">
+                    <content xml:id="d2e642">
+                        <p xml:id="d2e547"> It shall apply from 21 September 2023.</p>
+                    </content>
+                  </paragraph>
+            </article>
+
+        </body>
+        <conclusions xml:id="d2e554">
+            <p xml:id="d2e556">Done at <location xml:id="d2e558" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e561" date="2023-09-14">14.9.2023</date></p>
+            <block xml:id="d2e564" name="signatory">
+                <signature xml:id="d2e566">
+                    <organization xml:id="d2e568" refersTo="~COM">For the Commission</organization>
+                    <role xml:id="d2e571" refersTo="~MEMBER_COM">Member of The Commission</role>
+                    <person xml:id="d2e574" refersTo="">Virginijus SINKEVIČIUS</person>
+                </signature>
+            </block>
+            <block xml:id="d2e579" name="stamp"><img xml:id="d2e580" src="RSC_SVG-cjk7q0l8r0000i3m3f5q1z8h0-en.svg" refersTo="~SVG"/></block>
+        </conclusions>
+    </bill>
+</akomaNtoso>

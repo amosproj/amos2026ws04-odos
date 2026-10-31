@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <!-- OJ Publication before ABA.  not covered by AKN4EU 5.0 -->
+    <doc name="OPIN_EESC">
+        <meta xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <!-- OJ Publication before ABA.  not covered by AKN4EU 5.0 -->
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <!-- OJ Publication before ABA.  Proposed ELI-DL -->
+                    <FRBRthis value="http://data.europa.eu/eli/dl/doc/EESC/C_349_155_2023/oj"/>
+                    <FRBRuri value="http://data.europa.eu/eli/dl/doc/EESC/C_349_155_2023/oj"/>
+                    <FRBRdate date="2023-09-29" name="publication"/>
+                    <FRBRauthor href="~EESC"/>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="eli/dl/doc/EESC/C_349_155_2023"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value="http://data.europa.eu/eli/dl/doc/EESC/C_349_155_2023/oj/eng"/>
+                    <FRBRuri value="http://data.europa.eu/eli/dl/doc/EESC/C_349_155_2023/oj/eng"/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage xml:id="FRBRlanguage" language="en" refersTo="~ENG"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis
+                        value="http://data.europa.eu/eli/dl/doc/EESC/C_349_155_2023/oj/eng/akn4eu"/>
+                    <FRBRuri
+                        value="http://data.europa.eu/eli/dl/doc/EESC/C_349_155_2023/oj/eng/akn4eu"/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <!-- publication to be defined for OJ document published before the ABA publication. -->
+            <publication date="2023-09-29" showAs="OJ C, 2023 C 349/23, 2023-09-29"
+                name="Official Journal of the European Union" number="2023/C 349/23"/>
+            <references source="~PUBL">
+                <TLCReference xml:id="ENG" eId="ENG" name="language"
+                    href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference xml:id="OPIN_EESC" name="docType"
+                    href="http://publications.europa.eu/resource/authority/resource-type/OPIN_EESC"
+                    showAs=""/>
+                <TLCOrganization xml:id="PUBL"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+                    showAs=""/>
+                <TLCConcept xml:id="INP"
+                    href="http://publications.europa.eu/resource/authority/subdivision/INP"
+                    showAs=""/>
+                <TLCReference xml:id="join-12345" name="identifier"
+                    href="http://publications.europa.eu/resource/authority/document-identifier-format/COM_NUMBER"
+                    showAs="JOIN(2023) 9" shortForm="JOIN/2023/9"/>
+                <TLCOrganization xml:id="EESC_CCMI"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/EESC_CCMI"
+                    showAs=""/>
+                <TLCRole xml:id="PRESID"
+                    href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+                <TLCRole xml:id="RAPP"
+                    href="http://publications.europa.eu/resource/authority/role/RAPP" showAs=""/>
+                <TLCRole xml:id="RAPP_CO"
+                    href="http://publications.europa.eu/resource/authority/role/RAPP_CO" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU"
+                    href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCOrganization xml:id="EESC"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/EESC"
+                    showAs=""/>
+                <TLCConcept xml:id="BACKGROUND_INFO"
+                    href="http://publications.europa.eu/resource/authority/subdivision-content/BACKGROUND_INFO"
+                    showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e89">
+            <longTitle xml:id="d2e91">
+                <p xml:id="d2e93"><docTitle xml:id="d2e931"><docType xml:id="d2e94" refersTo="~OPIN_EESC">Opinion of the
+                        European Economic and Social Committee</docType>
+                    <docPurpose xml:id="d2e97">on the Joint Communication to the European Parliament
+                        and the Council — European Union Space Strategy for Security and
+                        Defence</docPurpose></docTitle>
+                    <inline xml:id="d1e115" name="relatedDoc"><docNumber xml:id="d2e100" refersTo="~join-12345">JOIN(2023) 9 <inline
+                            xml:id="d2e102" name="version">final</inline></docNumber></inline>
+                </p>
+            </longTitle>
+            <container xml:id="d2e107" name="mainDoc">
+                <block xml:id="d2e109" name="reference">(<docNumber xml:id="d2e111">2023/C
+                        349/23</docNumber>)</block>
+            </container>
+            <container xml:id="d2e116" name="rapporteur">
+                <p xml:id="d2e118" refersTo="~RAPP"><inline xml:id="d2e119" name="label"
+                        >Rapporteur:</inline>
+                    <docIntroducer xml:id="d2e122"><person xml:id="d2e123" refersTo="" as="~RAPP"
+                            >Maurizio MENSI</person></docIntroducer></p>
+                <p xml:id="d2e126" refersTo="~RAPP_CO"><inline xml:id="d2e127" name="label"
+                        >Co-rapporteur:</inline>
+                    <docIntroducer xml:id="d2e130"><person xml:id="d2e131" refersTo="" as="~RAPP_CO"
+                            >Jan PIE</person></docIntroducer></p>
+            </container>
+            <container xml:id="d2e135" name="backgroundInfo" refersTo="~BACKGROUND_INFO">
+                <table xml:id="d2e139">
+                    <tbody xml:id="d2e137">
+                        <tr xml:id="d2e141">
+                            <td xml:id="d2e143">
+                                <p xml:id="d2e145"><inline xml:id="d2e146" name="label">
+                                        Referral</inline></p>
+                            </td>
+                            <td xml:id="d2e150">
+                                <p xml:id="d2e152">European Commission, <date xml:id="d2e154"
+                                        date="2023-05-02">2.5.2023</date></p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e159">
+                            <td xml:id="d2e161">
+                                <p xml:id="d2e163"><inline xml:id="d2e164" name="label">Legal
+                                        basis</inline></p>
+                            </td>
+                            <td xml:id="d2e168">
+                                <p xml:id="d2e170">Article 304 of the Treaty on the Functioning of
+                                    the European Union</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e175">
+                            <td xml:id="d2e177">
+                                <p xml:id="d2e179"><inline xml:id="d2e180" name="label">Section
+                                        responsible</inline></p>
+                            </td>
+                            <td xml:id="d2e184">
+                                <p xml:id="d2e186"><organization xml:id="d2e187"
+                                        refersTo="~EESC_CCMI">Consultative Commission on Industrial
+                                        Change</organization></p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e192">
+                            <td xml:id="d2e194">
+                                <p xml:id="d2e196"><inline xml:id="d2e197" name="label">Adopted in
+                                        section</inline></p>
+                            </td>
+                            <td xml:id="d2e201">
+                                <p xml:id="d2e203"><date xml:id="d2e204" date="2023-06-22"
+                                        >22.6.2023</date></p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e209">
+                            <td xml:id="d2e211">
+                                <p xml:id="d2e213"><inline xml:id="d2e214" name="label">Adopted at
+                                        plenary</inline></p>
+                            </td>
+                            <td xml:id="d2e218">
+                                <p xml:id="d2e220"><date xml:id="d2e221" date="2023-07-12"
+                                        >12.7.2023</date></p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e227">
+                            <td xml:id="d2e229">
+                                <p xml:id="d2e231"><inline xml:id="d2e232" name="label">Plenary
+                                        session No</inline></p>
+                            </td>
+                            <td xml:id="d2e236">
+                                <p xml:id="d2e238">580</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e243">
+                            <td xml:id="d2e245">
+                                <p xml:id="d2e247"><inline xml:id="d2e248" name="label">Outcome of
+                                        vote (for/against/abstentions)</inline></p>
+                            </td>
+                            <td xml:id="d2e252">
+                                <p xml:id="d2e254">170/1/1</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </container>
+        </preface>
+        <mainBody xml:id="d2e263">
+            <level xml:id="d2e265">
+                <num xml:id="d2e267">1.</num>
+                <heading xml:id="d2e270">Conclusions and recommendations</heading>
+            </level>
+            <level xml:id="d2e274">
+                <num xml:id="d2e276">1.1.</num>
+                <content xml:id="d2e279">
+                    <p xml:id="d2e281">The EESC supports the EU’s acknowledgement of the security
+                        and defence dimension of space, symbolised by the publication on 10 March
+                        2023 of the Joint Communication to the <i xml:id="d2e283">European
+                            Parliament and the Council on the European Union Space Strategy for
+                            Security and Defence</i> (the Strategy).</p>
+                </content>
+            </level>
+            <level xml:id="d2e289">
+                <num xml:id="d2e291">1.2.</num>
+                <content xml:id="d2e294">
+                    <p xml:id="d2e296">The EESC shares the stated common understanding of the new
+                        geopolitical context with the serious problems caused by the Russian
+                        invasion of Ukraine, the criticality of space assets and services, and the
+                        necessity to develop measures aiming at protecting and defending these,
+                        which is an indispensable step in devising a serious Europe-wide space
+                        policy.</p>
+                </content>
+            </level>
+            <level xml:id="d2e301">
+                <num xml:id="d2e303">1.3.</num>
+                <content xml:id="d2e306">
+                    <p xml:id="d2e308">The EESC agrees that before even enhancing the resilience and
+                        protection of space systems and services, the identification of threats is a
+                        priority, for which the involvement of all relevant actors, including
+                        industry, social actors and civil society, in the mapping and
+                        recommendations exercise needs to be ensured by the EU institutions. It will
+                        be important to encourage organised civil society to fully understand the
+                        relevant public interest and the benefits of the strategy for citizens in
+                        order to improve its legitimacy and strengthen public support, due to the
+                        relevant civilian applications of the space technologies.</p>
+                </content>
+            </level>
+            <level xml:id="d2e313">
+                <num xml:id="d2e315">1.4.</num>
+                <content xml:id="d2e318">
+                    <p xml:id="d2e320">The EESC recommends enhancing the resilience and protection
+                        of space systems and services in the Union in the current worrying
+                        geopolitical context. The EESC notes that an underlying challenge in
+                        relation to this objective is the capability to increase the current low
+                        level of public investment, reduce its fragmentation, and promote a European
+                        value-added approach in a context where Europe is far behind the United
+                        States, China and Russia in terms of public investments in space.</p>
+                </content>
+            </level>
+            <level xml:id="d2e326">
+                <num xml:id="d2e328">1.5.</num>
+                <content xml:id="d2e331">
+                    <p xml:id="d2e333">The EESC believes that enhancing the resilience and
+                        protection of space systems and services in the Union also means
+                        implementing measures to support technological sovereignty and resilience of
+                        critical industrial value chains to ensure non-dependence. In this regard,
+                        the EESC strongly recommends that the key role of industry in the
+                        identification of dependence issues and mitigation measures is fully
+                        recognised and highlighted.</p>
+                </content>
+            </level>
+            <level xml:id="d2e338">
+                <num xml:id="d2e340">1.6.</num>
+                <content xml:id="d2e343">
+                    <p xml:id="d2e345">The EESC wishes to recall that the way space permeates and
+                        brings added value to humanity is increasingly recognised and confirmed by
+                        world leaders. Today, the European space sector is tackling some of the most
+                        pressing challenges of our times, such as monitoring climate change, helping
+                        to stimulate technological innovation, and providing concrete socioeconomic
+                        benefits to citizens’ daily lives. Institutions, business and citizens
+                        increasingly rely on space technology, data and services for communication,
+                        navigation and positioning systems, and earth observation (e.g. immediate
+                        information and on-the-spot communications when disasters strike). The role
+                        of space is essential for citizens and for Europe’s strategic autonomy, as
+                        well as in global diplomacy, in embracing the European identity, and in
+                        inspiring and motivating the next generations.</p>
+                </content>
+            </level>
+            <level xml:id="d2e350">
+                <num xml:id="d2e352">1.7.</num>
+                <content xml:id="d2e355">
+                    <p xml:id="d2e357">The EESC very much welcomes a future ‘EU Space Law’ to cover
+                        safety, security and sustainability and standardisation that goes in the
+                        direction of a needed EU approach to Space Traffic Management (STM)
+                            <authorialNote xml:id="d2e359" marker="1" placement="bottom">
+                            <p xml:id="d2e361">In line with Opinion of the European Economic and
+                                Social Committee on the Proposal for a Regulation of the European
+                                Parliament and of the Council establishing the Union Secure
+                                Connectivity Programme for the period 2023–2027 (COM(2022) 57 final
+                                — 2022/0039 (COD)) and Joint Communication to the European
+                                Parliament and the Council: An EU Approach for Space Traffic
+                                Management — An EU contribution addressing a global challenge
+                                (JOIN(2022) 4 final) (OJ C 486, 21.12.2022, p. 172); and New
+                                Space.</p>
+                        </authorialNote>.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e368">
+                <num xml:id="d2e370">1.8.</num>
+                <content xml:id="d2e373">
+                    <p xml:id="d2e375">The EESC is convinced of the necessity for all the actions
+                        related to industry (e.g. competitiveness, critical technologies, security
+                        of the supply chain) to be integrated as part of a coherent and
+                        European-wide industrial policy, in a context of a very strong dependence of
+                        the European space industry on very limited open markets.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e380">
+                <num xml:id="d2e382">1.9.</num>
+                <content xml:id="d2e385">
+                    <p xml:id="d2e387">The EESC insists that even if specific measures are needed
+                        and can be useful for dealing with particular situations, those measures can
+                        only make sense and be fully efficient if they combine a tailor-made
+                        procurement policy, an ambitious and efficient research and development
+                        policy, and support for the market uptake of European-developed space
+                        technologies and services, also addressing export markets, in particular
+                        through economic diplomacy.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e392">
+                <num xml:id="d2e394">1.10.</num>
+                <content xml:id="d2e397">
+                    <p xml:id="d2e399">The EESC is convinced that an ambitious, but also coherent,
+                        support to research and innovation is a cornerstone of the sustainability of
+                        the space sector and of its capacity to serve public policy needs. Europe
+                        needs a stronger and more consistent support for R&amp;I to maintain its
+                        position in space and to ensure the availability of a domestic industry able
+                        to design, deliver and exploit state-of-the-art space systems.</p>
+                </content>
+            </level>
+            <level xml:id="d2e405">
+                <num xml:id="d2e407">1.11.</num>
+                <content xml:id="d2e410">
+                    <p xml:id="d2e412">In areas where cooperation with third countries is key, the
+                        EESC underlines the importance of preserving European sovereignty and
+                        avoiding non-European dependencies in strategic areas while promoting
+                        collaboration and interoperability, with reciprocity and mutual benefit with
+                        the US and other like-minded third parties as common rules.</p>
+                </content>
+            </level>
+            <level xml:id="d2e417">
+                <num xml:id="d2e419">1.12.</num>
+                <content xml:id="d2e422">
+                    <p xml:id="d2e424">The EESC believes that the Strategy must be followed by
+                        concrete and rapid actions in terms of targeted budget, schedules for
+                        implementation of the actions, and job creation <authorialNote
+                            xml:id="d2e426" marker="2" placement="bottom">
+                            <p xml:id="d2e428">In particular women’s employment.</p>
+                        </authorialNote>. Such an accurate roadmap must be devised by the EU
+                        following a European-wide coordination of the actors involved in space
+                        activities.</p>
+                </content>
+            </level>
+            <level xml:id="d2e435">
+                <num xml:id="d2e437">2.</num>
+                <content xml:id="d2e440">
+                    <p xml:id="d2e442">Background</p>
+                </content>
+            </level>
+            <level xml:id="d2e447">
+                <num xml:id="d2e449">2.1.</num>
+                <content xml:id="d2e452">
+                    <p xml:id="d2e454">As the COVID crisis revealed Europe’s lack of autonomy and
+                        control relating to critical network infrastructure, Russia’s invasion of
+                        Ukraine has further accelerated the path towards strengthening and
+                        reinforcing the security and defence dimension of space.</p>
+                </content>
+            </level>
+            <level xml:id="d2e459">
+                <num xml:id="d2e461">2.2.</num>
+                <content xml:id="d2e464">
+                    <p xml:id="d2e466">At institutional level, this was symbolised by two key
+                        milestones:</p>
+                </content>
+            </level>
+            <level xml:id="d2e471">
+                <num xml:id="d2e473">2.2.1.</num>
+                <content xml:id="d2e476">
+                    <p xml:id="d2e478">The Versailles Declaration, issued on 11 March 2022 by
+                        leaders of the European Union in response to the Russian invasion of
+                        Ukraine, puts a special emphasis on space for defence activities as EU
+                        leaders notably agreed to enhance the security and defence dimension of
+                        space industries and activities.</p>
+                </content>
+            </level>
+            <level xml:id="d2e484">
+                <num xml:id="d2e486">2.2.2.</num>
+                <content xml:id="d2e489">
+                    <p xml:id="d2e491">A Strategic Compass for Security and Defence, issued on 21
+                        March 2022 by the European Commission, under the leadership of the EU’s High
+                        Representative for Foreign Affairs and Security Policy. Identifying space as
+                        an increasingly contested domain with strong defence implications, the
+                        Strategic Compass has many repercussions for the European space sector.</p>
+                </content>
+            </level>
+            <level xml:id="d2e496">
+                <num xml:id="d2e498">2.3.</num>
+                <content xml:id="d2e501">
+                    <p xml:id="d2e503">These EU initiatives have been complemented by other
+                        cooperative programmes; for example in the context of the ESA Council at
+                        Ministerial Level 2022, which proposed several security-in-space and
+                        -from-space initiatives for Member State contributions.</p>
+                </content>
+            </level>
+            <level xml:id="d2e508">
+                <num xml:id="d2e510">2.4.</num>
+                <content xml:id="d2e513">
+                    <p xml:id="d2e515">Russia’s invasion of Ukraine has shown, beyond the benefit of
+                        doubt, the absolute criticality of space as a key asset. The war has also
+                        shown the relevant and defining impact of commercial assets in complement to
+                        governmental assets and strategies — hence the importance of regular
+                        public-private interaction and cooperation, in particular concerning
+                        technical and operational capabilities.</p>
+                </content>
+            </level>
+            <level xml:id="d2e520">
+                <num xml:id="d2e522">3.</num>
+                <content xml:id="d2e525">
+                    <p xml:id="d2e527">General comments</p>
+                </content>
+            </level>
+            <level xml:id="d2e532">
+                <num xml:id="d2e534">3.1.</num>
+                <content xml:id="d2e537">
+                    <p xml:id="d2e539">The EESC recognises the absolute criticality of space as a
+                        key asset for independent and informed decision-making and action-taking by
+                        European policymakers in relation to crisis management and security, which
+                        is an indispensable step in devising a serious Europe-wide space policy. It
+                        will be important to encourage organised civil society to fully understand
+                        the relevant public interest and the benefits of the strategy for citizens
+                        in order to improve its legitimacy and strengthen public support, due to the
+                        relevant civilian applications of the space technologies.</p>
+                </content>
+            </level>
+            <level xml:id="d2e544">
+                <num xml:id="d2e546">3.2.</num>
+                <content xml:id="d2e549">
+                    <p xml:id="d2e551">Europe’s efforts towards gaining credible and assured
+                        autonomy in space for the implementation of its strategic autonomy are now a
+                        reality, and represent an increasingly shared challenge across the
+                        continent. The EESC believes that all efforts, whether civil or military,
+                        national or European, public or private must converge towards efficiency and
+                        reliability for security users, as highlighted in the Action Plan on
+                        synergies between civil, defence and space industries <authorialNote
+                            xml:id="d2e553" marker="3" placement="bottom">
+                            <p xml:id="d2e555">COM(2021) 70 final.</p>
+                        </authorialNote>, hence the need for strengthened public-private
+                        partnerships and potential partnerships with like-minded countries.</p>
+                </content>
+            </level>
+            <level xml:id="d2e563">
+                <num xml:id="d2e565">3.3.</num>
+                <content xml:id="d2e568">
+                    <p xml:id="d2e570">There is an ever-increasing risk of new threatening actors
+                        targeting space systems to impact critical services enabled by satellites.
+                        The EESC finds it increasingly vital that Europe’s growing interest in and
+                        reliance on space-based services is accompanied by measures aiming to
+                        protect and defend space-based capabilities and services, in order not to
+                        expose Europe’s society and economy to even more critical
+                        vulnerabilities.</p>
+                </content>
+            </level>
+            <level xml:id="d2e575">
+                <num xml:id="d2e577">3.4.</num>
+                <content xml:id="d2e580">
+                    <p xml:id="d2e582">The EESC is convinced that Member States must fully assert
+                        their responsibility and commitment to world peace and security by
+                        strengthening their freedom of action towards and in space relying on their
+                        sovereign capability and assets, and considers it one of the most direct and
+                        critical tools at their disposal to exert action and influence. To do so,
+                        they must guarantee the resilience of their space industry and the security
+                        of their supply and services infrastructure for the benefit of their
+                        citizens. In this context, ensuring Europe’s sovereign and sustainable
+                        access to space is a non-debatable priority.</p>
+                </content>
+            </level>
+            <level xml:id="d2e587">
+                <num xml:id="d2e589">4.</num>
+                <heading xml:id="d2e592">Specific comments</heading>
+            </level>
+
+            <level xml:id="d2e596">
+                <num xml:id="d2e598">4.1.</num>
+                <heading xml:id="d2e601">The space threat landscape</heading>
+            </level>
+
+            <level xml:id="d2e605">
+                <num xml:id="d2e607">4.1.1.</num>
+                <content xml:id="d2e610">
+                    <p xml:id="d2e612">The EESC welcomes the identification of threats that could be
+                        responsible for the disruption, degradation, or destruction of space systems
+                        via the preparation of an annual space threat landscape analysis, deemed key
+                        to understanding the hostile environment in which space and ground
+                        infrastructure and services are evolving today and tomorrow.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e617">
+                <num xml:id="d2e619">4.1.2.</num>
+                <content xml:id="d2e622">
+                    <p xml:id="d2e624">The EESC recognises that such an assessment would help to
+                        prevent sensitive capabilities (including skills, technologies, assets, and
+                        building blocks) being acquired by potentially hostile countries or
+                        organisations with the aim of guaranteeing European governance and control
+                        of ‘sensitive capabilities’.</p>
+                </content>
+            </level>
+            <level xml:id="d2e630">
+                <num xml:id="d2e632">4.1.3.</num>
+                <content xml:id="d2e635">
+                    <p xml:id="d2e637">The EESC believes that the European space industry (large and
+                        small entities), research and technology organisations, and academia views
+                        and inputs need to be encompassed by the European Commission and the EEAS in
+                        the elaboration of the annual space threat landscape analysis, and in the
+                        identification of the recommendations and measures that will result
+                        therefrom.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e642">
+                <num xml:id="d2e644">4.1.4.</num>
+                <list xml:id="d2e647">
+                    <subparagraph xml:id="d2e649" refersTo="~INP">
+                        <content xml:id="d2e651">
+                            <p xml:id="d2e653">The EESC is convinced that such a process would allow
+                                the private sector to:</p>
+                        </content>
+                    </subparagraph>
+                    <point xml:id="d2e658">
+                        <num xml:id="d2e660">(a)</num>
+                        <content xml:id="d2e663">
+                            <p xml:id="d2e665">Work on new R &amp; D priorities specific to
+                                already-known threats or a new type of threat that would be
+                                arising;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e670">
+                        <num xml:id="d2e672">(b)</num>
+                        <content xml:id="d2e675">
+                            <p xml:id="d2e677">Raise awareness among customers and institutional
+                                players of the need for preventive approaches;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e682">
+                        <num xml:id="d2e684">(c)</num>
+                        <content xml:id="d2e687">
+                            <p xml:id="d2e689">Define new standards at European level and therefore
+                                contribute to the standardisation process at the global level;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e694">
+                        <num xml:id="d2e696">(d)</num>
+                        <content xml:id="d2e699">
+                            <p xml:id="d2e701">Exchange best practices between public and private
+                                entities;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e707">
+                        <num xml:id="d2e709">(e)</num>
+                        <content xml:id="d2e712">
+                            <p xml:id="d2e714">Adapt ‘ground’ approaches to space.</p>
+                        </content>
+                    </point>
+                </list>
+            </level>
+            <level xml:id="d2e721">
+                <num xml:id="d2e723">4.2.</num>
+
+                <heading xml:id="d2e726">Enhancing the resilience and protection of space systems
+                    and services in the EU</heading>
+
+            </level>
+
+            <level xml:id="d2e730">
+                <num xml:id="d2e732">4.2.1.</num>
+                <heading xml:id="d2e735">An EU-wide security framework for the protection of space
+                    systems, information sharing, and cooperation on space security
+                    incidents</heading>
+            </level>
+
+            <level xml:id="d2e739">
+                <num xml:id="d2e741">4.2.1.1.</num>
+                <content xml:id="d2e744">
+                    <p xml:id="d2e746">The EESC believes that global regulatory initiatives and
+                        unilateral decisions regarding STM are likely to create a challenging
+                        environment for European actors. Reforms undertaken outside of Europe could
+                        indeed potentially hamper the European space sector’s ability to compete on
+                        a level playing field and affect its sustainability, and further jeopardise
+                        European sovereignty as an overarching objective of the EU in relation to
+                        space.</p>
+                </content>
+            </level>
+            <level xml:id="d2e751">
+                <num xml:id="d2e753">4.2.1.2.</num>
+                <content xml:id="d2e756">
+                    <p xml:id="d2e758">The EESC is convinced that the European Union has an
+                        opportunity to seize to be at the forefront of discussions and provide the
+                        grounds to protect key European space infrastructure and associated
+                        services. By being proactive and by promoting EU Member State cooperation
+                        instead of fragmentation, the European Union will allow the European space
+                        sector to use agreed rules and procedures to its advantage, and further
+                        promote them at the global level. A more harmonised and cooperative approach
+                        between Member States would encourage common investments in EU defence and
+                        industry more broadly. In this regard, the possibility of joint procurement
+                        could enhance the efficiency of the demand side and contribute to the
+                        competitiveness and efficiency of the European space and defence industry
+                            <authorialNote xml:id="d2e760" placement="bottom" marker="4">
+                            <p xml:id="d2e762">As underlined in Opinion of the European Economic and
+                                Social Committee on Proposal for a Regulation of the European
+                                Parliament and of the Council on establishing the European defence
+                                industry Reinforcement through common Procurement Act (COM(2022) 349
+                                final) (OJ C 486, 21.12.2022, p. 168).</p>
+                        </authorialNote>.</p>
+                </content>
+            </level>
+            <level xml:id="d2e770">
+                <num xml:id="d2e772">4.2.1.3.</num>
+                <content xml:id="d2e775">
+                    <p xml:id="d2e777">The EESC believes that reinforcement of the potential of
+                        spill-over technologies and industries, such as aerospace and technologies
+                        that have both military and civil applications ('dual use'), would have
+                        major impacts on both the industrial and military development of the EU.</p>
+                </content>
+            </level>
+            <level xml:id="d2e782">
+                <num xml:id="d2e784">4.2.1.4.</num>
+                <list xml:id="d2e787">
+                    <subparagraph xml:id="d2e789" refersTo="~INP">
+                        <content xml:id="d2e791">
+                            <p xml:id="d2e793">Regarding security and cybersecurity, the EESC fully
+                                agrees that the ‘security by design’ requirement is essential for
+                                resilience. Common European security standards are also essential as
+                                long as they are used in a practical way, as the definition and
+                                adoption cycles are often too long in the competitive market faced
+                                by the European space sector. This means that:</p>
+                        </content>
+                    </subparagraph>
+                    <point xml:id="d2e798">
+                        <num xml:id="d2e800">(a)</num>
+                        <content xml:id="d2e803">
+                            <p xml:id="d2e805">They need to be developed in parallel to the
+                                development of the technology;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e810">
+                        <num xml:id="d2e812">(b)</num>
+                        <content xml:id="d2e815">
+                            <p xml:id="d2e817">An agile certification process needs to be laid
+                                down;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e822">
+                        <num xml:id="d2e824">(c)</num>
+                        <content xml:id="d2e827">
+                            <p xml:id="d2e829">The inclusion of start-ups and SMEs through their
+                                ability to meet security requirements requires better institutional
+                                support and collaboration within the supply chain;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e834">
+                        <num xml:id="d2e836">(d)</num>
+                        <content xml:id="d2e839">
+                            <p xml:id="d2e841">New standards need to be developed.</p>
+                        </content>
+                    </point>
+                </list>
+            </level>
+
+            <level xml:id="d2e848">
+                <num xml:id="d2e850">4.2.1.5.</num>
+                <content xml:id="d2e853">
+                    <p xml:id="d2e855">The EESC notes that the CER Directive <authorialNote
+                            xml:id="d2e857" placement="bottom" marker="5">
+                            <p xml:id="d2e859">Directive (EU) 2022/2557 of the European Parliament
+                                and of the Council of 14 December 2022 on the resilience of critical
+                                entities and repealing Council Directive 2008/114/EC (OJ L 333,
+                                27.12.2022, p. 164).</p>
+                        </authorialNote> ('on the resilience of critical entities') and the NIS2
+                        Directive <authorialNote xml:id="d2e863" placement="bottom" marker="6">
+                            <p xml:id="d2e865">Directive (EU) 2022/2555 of the European Parliament
+                                and of the Council of 14 December 2022 on measures for a high common
+                                level of cybersecurity across the Union, amending Regulation (EU) No
+                                910/2014 and Directive (EU) 2018/1972, and repealing Directive (EU)
+                                2016/1148 (NIS 2 Directive) (OJ L 333, 27.12.2022, p. 80).</p>
+                        </authorialNote> ('on measures for a high common level of cybersecurity
+                        across the Union') are applicable only at Member State level and not at EU
+                        institution level. The EESC believes that these directives should be applied
+                        to EU-owned assets as well.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e872">
+                <num xml:id="d2e874">4.2.2.</num>
+                <heading xml:id="d2e877">Strengthening the technological sovereignty of the EU space
+                    sector</heading>
+            </level>
+
+            <level xml:id="d2e881">
+                <num xml:id="d2e883">4.2.2.1.</num>
+                <content xml:id="d2e886">
+                    <p xml:id="d2e888">The EESC fully welcomes the will to aim at increasing the
+                        budget of the European Defence Fund and Horizon Europe as, in relation to
+                        the latest stages of development, the EU has seemed so far unable to align
+                        its budget — and related financial instruments — with its stated ambitions
+                        to bring advanced technologies to the required readiness level.</p>
+                </content>
+            </level>
+            <level xml:id="d2e893">
+                <num xml:id="d2e895">4.2.2.2.</num>
+                <content xml:id="d2e898">
+                    <p xml:id="d2e900">In the context of the ‘re-energisation’ of the Joint Task
+                        Force, the EESC believes that a single process should be laid down leading
+                        to a single agreed and shared repository of critical situations. The
+                        presence of the European space industry as a key stakeholder in the process
+                        is important, because dependence reduction could improve European
+                        sovereignty as much as it contributes to industrial competitiveness.</p>
+                </content>
+            </level>
+            <level xml:id="d2e906">
+                <num xml:id="d2e908">4.2.2.3.</num>
+                <content xml:id="d2e911">
+                    <p xml:id="d2e913">The EESC wonders about the future respective roles and
+                        interactions of the Joint Task Force and the Observatory of Critical
+                        Technologies and highlights the need for better synergies between them.</p>
+                </content>
+            </level>
+            <level xml:id="d2e918">
+                <num xml:id="d2e920">4.2.2.4.</num>
+                <content xml:id="d2e923">
+                    <p xml:id="d2e925">The EESC favours the establishment of new alliances and
+                        Important Projects of Common European Interest (IPCEI) related to
+                        technologies relevant for space and defence, as these could contribute to
+                        increasing the level of funding and the development and sustainability of
+                        double sources in Europe.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e930">
+                <num xml:id="d2e932">4.2.3.</num>
+                <heading xml:id="d2e935">Addressing risks to security in the space sector in the EU
+                    via the protection of its supply chains and procurement rules that fully
+                    guarantee security of supply is very much welcome.</heading>
+            </level>
+            <level xml:id="d2e939">
+                <num xml:id="d2e941">4.2.3.1.</num>
+                <content xml:id="d2e944">
+                    <p xml:id="d2e946">Addressing risks to security in the space sector in the EU
+                        via the protection of its supply chains and procurement rules that fully
+                        guarantee security of supply is very much welcome.</p>
+                </content>
+            </level>
+            <level xml:id="d2e951">
+                <num xml:id="d2e953">4.2.3.2.</num>
+                <content xml:id="d2e956">
+                    <p xml:id="d2e958">The EESC believes however that it is key that these actions
+                        be widely integrated as part of a coherent and European-wide industrial
+                        policy for space.</p>
+                </content>
+            </level>
+            <level xml:id="d2e963">
+                <num xml:id="d2e965">4.2.4.</num>
+
+                <heading xml:id="d2e968">Developing capabilities, including EU autonomous access to
+                    space, to increase resilience</heading>
+
+            </level>
+            <level xml:id="d2e973">
+                <num xml:id="d2e975">4.2.4.1.</num>
+                <content xml:id="d2e978">
+                    <p xml:id="d2e980">The EESC agrees that self-protective payloads, responsive
+                        launchers, space situational awareness capabilities, in-orbit servicing, and
+                        a secured sovereign cloud dedicated to space applications are key
+                        technologies/capabilities for resilience.</p>
+                </content>
+            </level>
+            <level xml:id="d2e985">
+                <num xml:id="d2e987">4.2.4.2.</num>
+                <content xml:id="d2e990">
+                    <p xml:id="d2e992">The EESC believes that long-term EU independent access to
+                        space should be ensured, as Europe cannot depend on third countries for the
+                        launch of its space capabilities and for the maintenance of its own space
+                        infrastructure. In this regard, applying the principle of European
+                        preference in launchers for institutional launches is a must.</p>
+                </content>
+            </level>
+            <level xml:id="d2e997">
+                <num xml:id="d2e999">4.2.5.</num>
+                <heading xml:id="d2e1002">The EESC believes that detecting threats requires the
+                    development of a fully-fledged and autonomous Space Traffic Management
+                    architecture, relying, inter alia, on the establishment and supporting of funded
+                    programme lines to further develop European STM capabilities (Space Surveillance
+                    and Tracking — SST, Space Domain Awareness — SDA) and speeding up the deployment
+                    of commercially viable, competitive and scalable European SST and STM
+                    capabilities <authorialNote xml:id="d2e1004" marker="7" placement="bottom">
+                        <p xml:id="d2e1006">In line with Opinion of the European Economic and Social
+                            Committee on the Proposal for a Regulation of the European Parliament
+                            and of the Council establishing the Union Secure Connectivity Programme
+                            for the period 2023–2027 (COM(2022) 57 final — 2022/0039 (COD)) and
+                            Joint Communication to the European Parliament and the Council: An EU
+                            Approach for Space Traffic Management — An EU contribution addressing a
+                            global challenge (JOIN(2022) 4 final) (OJ C 486, 21.12.2022, p. 172);
+                            and New Space.</p>
+                    </authorialNote>.</heading>
+            </level>
+            <level xml:id="d2e1012">
+                <num xml:id="d2e1014">4.2.5.1.</num>
+                <content xml:id="d2e1017">
+                    <p xml:id="d2e1019">In this sense, the EESC fully agrees with the strong focus
+                        of the Joint Communication on Space SDA capabilities provided that it relies
+                        on industry’s support, expertise and capabilities — in addition to European
+                        and EU Member States’ capabilities — every step of the way.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1024">
+                <num xml:id="d2e1026">4.2.5.2.</num>
+                <content xml:id="d2e1029">
+                    <p xml:id="d2e1031">In this sense, the EESC fully agrees with the strong focus
+                        of the Joint Communication on Space SDA capabilities provided that it relies
+                        on industry’s support, expertise and capabilities — in addition to European
+                        and EU Member States’ capabilities — every step of the way.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1036">
+                <num xml:id="d2e1038">4.2.5.3.</num>
+                <content xml:id="d2e1041">
+                    <p xml:id="d2e1043">The EESC encourages the efforts of the EU Member States to
+                        be strongly coordinated at EU level in support of the objective of increased
+                        European open strategic autonomy, in line with the transatlantic partnership
+                        alliance, collaboration with key strategic partners such as the United
+                        States and United Kingdom, engagement at multilateral level and possibly
+                        prepare the way for capability at EU level.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1049">
+                <num xml:id="d2e1051">4.2.5.4.</num>
+                <content xml:id="d2e1054">
+                    <p xml:id="d2e1056">The EESC recognises the importance of space exercises, as
+                        coordination between Europeans should be stronger, more efficient and have
+                        more weight with respect to our allies, in particular the United States.
+                        This supposes to build a common culture of space operations.</p>
+                </content>
+            </level>
+            <level xml:id="d2e1061">
+                <num xml:id="d2e1063">4.2.6.</num>
+
+                <heading xml:id="d2e1066">Enhancing the use of space for security and
+                    defence.</heading>
+
+            </level>
+
+            <level xml:id="d2e1070">
+                <num xml:id="d2e1072">4.2.6.1.</num>
+                <content xml:id="d2e1075">
+                    <p xml:id="d2e1077">The EESC agrees that improving the contribution of space to
+                        European defence capabilities also means relying on already-existing
+                        European Flagship Programmes, and improving them with a security and defence
+                        dimension.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1082">
+                <num xml:id="d2e1084">4.2.6.2.</num>
+                <content xml:id="d2e1087">
+                    <p xml:id="d2e1089">The EESC stresses that an extension of Copernicus towards
+                        security capabilities would mean a significant increase in the programme
+                        objectives, which should be carefully assessed particularly in relation to
+                        the associated risks for the Copernicus Programme’s funding capacities and
+                        its current open data policy.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1094">
+                <num xml:id="d2e1096">4.2.6.3.</num>
+                <content xml:id="d2e1099">
+                    <p xml:id="d2e1101">The EESC underlines the importance on the contribution of
+                        the Strategy to the EU Green Deal and associated industrial ecosystems. In
+                        particular, Copernicus, considered to be a world-class reference for climate
+                        change and environmental monitoring, directly contributes to addressing and
+                        finding solutions to climate change and to supporting Europe’s role on the
+                        world stage. As Copernicus has become the globally-accepted standard for
+                        science-grade imagery and data quality, it needs to be further supported
+                        with unfailing ambitions.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1106">
+                <num xml:id="d2e1108">4.2.6.4.</num>
+                <content xml:id="d2e1111">
+                    <p xml:id="d2e1113">Concerning IRIS2, the EESC strongly supports a programme
+                        that will help the Union remain a leading international player with freedom
+                        of action in the space domain.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1119">
+                <num xml:id="d2e1121">4.2.6.5.</num>
+                <content xml:id="d2e1124">
+                    <p xml:id="d2e1126">The EESC is convinced of the necessity for all the actions
+                        related to industry (competitiveness, critical technologies, security of the
+                        supply chain, etc.) to be integrated as part of a coherent and European-wide
+                        industrial policy, in a context of a very strong dependence of the European
+                        space industry on very limited open markets.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1131">
+                <num xml:id="d2e1133">4.2.6.6.</num>
+                <content xml:id="d2e1136">
+                    <p xml:id="d2e1138">The EESC wishes to underline that space is an innovative and
+                        constantly evolving sector. To ensure the competitiveness of European space
+                        activities, the development of professional skills requires constant
+                        adaptation and improvement. As industry recruitment trends have been strong
+                        in recent years, and are expected to remain strong in the near future, this
+                        needs to be further accompanied with concrete actions such as the
+                        institution of an EU Space Academy.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1143">
+                <num xml:id="d2e1145">4.2.7.</num>
+                <heading xml:id="d2e1148">Partnering for responsible behaviors in outer
+                    space.</heading>
+            </level>
+
+            <level xml:id="d2e1152">
+                <num xml:id="d2e1154">4.2.7.1.</num>
+                <content xml:id="d2e1157">
+                    <p xml:id="d2e1159">The EESC agrees that to ensure secure, sustainable and
+                        reliable use of space-based capabilities, partnerships and joint ventures
+                        with other regions, entities and like-minded third parties are
+                        essential.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e1164">
+                <num xml:id="d2e1166">4.2.7.2.</num>
+                <content xml:id="d2e1169">
+                    <p xml:id="d2e1171">If cooperation is key, the EESC alerts that preserving
+                        European sovereignty and autonomy should be included as a must while
+                        promoting collaboration and interoperability, with reciprocity and mutual
+                        benefit with the United States and other like-minded third parties as common
+                        rules.</p>
+                </content>
+            </level>
+
+        </mainBody>
+        <conclusions xml:id="d2e1177">
+            <p xml:id="d2e1179"><location xml:id="d2e1180" refersTo="~BEL_BRU">Brussels</location>,
+                    <date xml:id="d2e1183" date="2023-07-12">12 July 2023</date>.</p>
+            <block xml:id="d2e1187" name="signatory">
+                <signature xml:id="d2e1189">
+                    <role xml:id="d2e1191" refersTo="~PRESID">The President</role>
+                    <organization xml:id="d2e1194" refersTo="~EESC">of the European Economic and
+                        Social Committee</organization>
+                    <person xml:id="d2e1197" refersTo="">Oliver RÖPKE</person>
+                </signature>
+            </block>
+        </conclusions>
+    </doc>
+</akomaNtoso>

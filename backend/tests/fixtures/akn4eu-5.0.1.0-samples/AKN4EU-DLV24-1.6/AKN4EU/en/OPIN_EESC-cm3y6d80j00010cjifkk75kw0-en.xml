@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="OPIN_EESC">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="cm3y6d80j00010cjifkk75kw0"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="EESC-2023-03043-00-00-AC-TRA" />
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCOrganization xml:id="EESC" href="http://publications.europa.eu/resource/authority/corporate-body/EESC" showAs=""/>
+                <TLCReference xml:id="OPIN_EESC" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/OPIN_EESC" showAs=""/>
+                <TLCConcept xml:id="INP" href="http://publications.europa.eu/resource/authority/subdivision/INP" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCRole xml:id="PRESID" href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+                <TLCRole xml:id="RAPP"
+                    href="http://publications.europa.eu/resource/authority/role/RAPP" showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d9e108" status="ignored">
+            <longTitle xml:id="d2e108">
+                <p xml:id="d2e110">
+                    <docType xml:id="d2e112" refersTo="~OPIN_EESC">OPINION</docType>
+                    <docPurpose xml:id="d2e121">CO₂ emission class of heavy-duty vehicles with trailers </docPurpose>
+                </p></longTitle> 
+            <container xml:id="d2z160" name="rapporteur">
+                <p xml:id="d2z162">
+                    <docIntroducer xml:id="d2z164">
+                        <inline xml:id="d2z166" name="label">
+                            <role xml:id="d2z168" refersTo="~RAPP">Rapporteur:</role>
+                        </inline>
+                        <person xml:id="d2z172" refersTo="">Bruno CHOIX</person>
+                    </docIntroducer>
+                </p>
+            </container>
+            <container  xml:id="d2e9112" name="mainDocReference">
+                <block  xml:id="d2e9113" name="reference"><docketNumber>TEN/815</docketNumber> – <docNumber>EESC-2023-03043-00-00-AC-TRA</docNumber>
+                </block>
+            </container>
+        </preface>
+        <mainBody xml:id="d2e83">
+            <level xml:id="d2e85">
+                <num xml:id="d2e87">1.</num>
+                <heading xml:id="d2e89">Conclusions and recommendations</heading>
+            </level>
+            <level xml:id="d2e92">
+                <num xml:id="d2e94">1.1</num>
+                <content xml:id="d2e96">
+                    <p xml:id="d2e98">The EESC recommends adding an indicator to Regulation (EU) 2019/1242 that
+                        would be mandatory Europe-wide on the deployment of H2 refuelling
+                        infrastructure with regard to the number of alternatively powered commercial
+                        vehicles registered on the European market and the fleet limits for each
+                        five-year period.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e102">
+                <num xml:id="d2e104">1.2</num>
+                <content xml:id="d2e106">
+                    <p xml:id="d2e308">The EESC calls for an earlier date of entry into force to be set for both the
+                        changes in the calculation of tolls based on the energy efficiency of
+                        trailers and semi-trailers and the mandatory taking into account of the
+                        energy efficiency of trailers and semi-trailers in determining which
+                        charging class should apply to vehicle-trailer combinations once the
+                        CO2-based differentiation of charges becomes applicable to motor vehicles.
+                        The date proposed by the European Commission (1 July 2030) should therefore
+                        be brought forward.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e312">
+                <num xml:id="d2e114">1.3</num>
+                <content xml:id="d2e116">
+                    <p xml:id="d2e118">The EESC calls for an assessment and consideration of the possible
+                        consequences of imposing tolls or user charges on all heavy goods vehicles,
+                        in particular when it comes to small and medium sized enterprises (SMEs).
+                        The EESC would therefore recommend that the Member States provide for
+                        targeted exemptions from the charges.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e122">
+                <num xml:id="d2e124">1.4</num>
+                <content xml:id="d2e126">
+                    <p xml:id="d2e128">The EESC calls for an assessment and consideration of the possible
+                        consequences of imposing multiple layers of taxation targeting CO2 in tolls
+                        and user charges resulting from the application of the new
+                        CO2-performance-based charging in parallel with the possibility of applying
+                        an external carbon tax.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e133">
+                <num xml:id="d2e135">1.5</num>
+                <content xml:id="d2e137">
+                    <p xml:id="d2e139">Digital technologies can increase the safety, efficiency and inclusiveness of
+                        transport. The EESC considers that there is a need to further clarify the
+                        scope of trailers and semi-trailers that will or could be classified under
+                        the new framework, taking into account not only the dates of application of
+                        VECTO – the new simulation tool developed by the European Commission to
+                        determine the updated CO2 emissions of heavy-duty vehicles for new
+                        registrations – but also the possibility of classifying existing trailers
+                        and semi-trailers, including those equipped with devices that improve their
+                        energy efficiency.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e143">
+                <num xml:id="d2e145">1.6</num>
+                <content xml:id="d2e147">
+                    <p xml:id="d2e149">The EESC emphasises the need to use all possible means to reduce CO2
+                        emissions. For example, one way of cutting carbon emissions from heavy-duty
+                        vehicles with trailers is to shift the freight they carry to Europe's rail
+                        networks, which is a less carbon-intensive mode of transport, and another is
+                        to introduce alternative power sources, differentiated according to the type
+                        of transport involved (from local distribution to long-distance transport).
+                        Electric power can be suitable for vehicles used for short journeys, and
+                        hydrogen, renewable natural gas (RNG) and liquefied natural gas (LNG) can
+                        power heavy-duty vehicles for longer journeys.</p>
+                </content>
+            </level>
+
+
+
+            <level xml:id="d2e153">
+                <num xml:id="d2e155">2.</num>
+                <heading xml:id="d2e157">Background and Commission proposal</heading>
+            </level>
+            <level xml:id="d2e160">
+                <num xml:id="d2e162">2.1</num>
+                <content xml:id="d2e164">
+                    <p xml:id="d2e166">On 4 May 2023, the Commission presented a new proposal that incorporated
+                        trailers and semi-trailers into the new charging systems under Directive
+                        2022/362/EC. However, it also states that it is only from 1 July 2030 that
+                        Member States will be required to take into account the impact of trailers
+                        and semi-trailers.</p>
+                </content>
+            </level>
+            <level xml:id="d2e170">
+                <num xml:id="d2e172">2.2</num>
+                <content xml:id="d2e174">
+                    <p xml:id="d2e176">In 1999, Directive 1999/62/EC on the charging of heavy goods vehicles for the
+                        use of certain infrastructures was adopted, providing the EU with a
+                        framework to encourage Member States to use taxes and infrastructure
+                        charging systems in the most efficient and fair way possible in order to
+                        promote the "user pays" and "polluter pays" principles, as enshrined in the
+                        Treaties. That directive was amended in 2022 by Directive 2022/362/EC<authorialNote xml:id="d2e178" marker="1" placement="bottom">
+                            <p xml:id="d2e180">Amending Directives 1999/62/EC, 1999/37/EC and (EU) 2019/520 as regards the charging of vehicles for the use of certain infrastructures.</p></authorialNote>, which
+                        introduced for the first time a road charging system for heavy-duty vehicles
+                        based on the emissions-performance of the different vehicles. This new
+                        directive will be implemented in the majority of Member States between the
+                        end of 2023 and the end of March 2024. One expected effect is a substantial
+                        increase in road use charges for heavy goods vehicles as most of the current
+                        fleet will be classified in the least favourable charging class.</p>
+                </content>
+            </level>
+            <level xml:id="d2e186">
+                <num xml:id="d2e188">2.3</num>
+                <content xml:id="d2e190">
+                    <p xml:id="d2e192">The mobility that transport systems provide across Europe plays an
+                        indispensable role and contributes to the free movement of Europeans,
+                        including for work. However, there is no escaping the fact that if we wish
+                        to maintain and improve the quality of transport infrastructure in order to
+                        make it cleaner, large-scale investment will be required.</p>
+                </content>
+            </level>
+            <level xml:id="d2e197">
+                <num xml:id="d2e199">2.4</num>
+                <content xml:id="d2e201">
+                    <p xml:id="d2e203">Road transport figures for the European Union<authorialNote xml:id="d2e205" marker="2" placement="bottom">
+                        <p xml:id="d2e207">https://ec.europa.eu/eurostat/web/transport/data/database</p></authorialNote>: 5 million direct jobs (1.426
+                        million temporary workers or 12.1% of the commercial services sector),
+                        almost 2% of EU GDP, 344,000 road passenger transport companies, and more
+                        than 560,000 road haulage companies. In 2021, road freight transport
+                        rebounded. It increased by 6.5% in tkm to 1,921 billion tkm (+5% in tonnage
+                        to 13,688 million tonnes). Domestic journeys within the 27 Member States
+                        accounted for almost two thirds of this volume (61.3%), increasing by
+                        6.3%.</p>
+                </content>
+            </level>
+            <level xml:id="d2e213">
+                <num xml:id="d2e215">2.5</num>
+                <content xml:id="d2e217">
+                    <p xml:id="d2e219">Lorries, coaches and buses account for 6% of the EU's greenhouse gas
+                        emissions. It is important to step up efforts to reduce the environmental
+                        footprint of this economically important sector. In its 2019 European Green
+                        Deal, the Commission set the objective of making Europe climate neutral by
+                        2050. In 2020, the Commission presented a strategy comprising 82 initiatives
+                        to implement the Green Deal in transport.</p>
+                </content>
+            </level>
+            <level xml:id="d2e223">
+                <num xml:id="d2e225">2.6</num>
+                <content xml:id="d2e227">
+                    <p xml:id="d2e229">The release of pollutants into the atmosphere – particularly PM2.5, NO2 and
+                        O3 – from road transport has a serious impact on people's health and
+                        exacerbates the deterioration of ambient air quality in the EU. In 2018,
+                        prolonged exposure to those three pollutants caused 379 000, 54 000 and 19
+                        400 premature deaths respectively in the EU, according to European
+                        Environment Agency estimates published in 2020.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e233">
+                <num xml:id="d2e235">2.7</num>
+                <list xml:id="d2e237">
+                    <subparagraph xml:id="d2e239" refersTo="~INP">
+                        <content xml:id="d2e241">
+                            <p xml:id="d2e243">In order to raise real awareness when it comes to road transport and
+                                to reduce its environmental footprint, several strands of action
+                                need to be taken:</p>
+                        </content>
+                    </subparagraph>
+                    <point xml:id="d2e247">
+                        <num xml:id="d2e249">1.</num>
+                        <content xml:id="d2e251">
+                            <p xml:id="d2e253">Rejuvenate the vehicle fleet with diesel vehicles as close as
+                                possible to current standards;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e257">
+                        <num xml:id="d2e259">2.</num>
+                        <content xml:id="d2e261">
+                            <p xml:id="d2e263">Use compatible alternative fuels such as B100 and the synthetic fuels
+                                HVO and XTL;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e267">
+                        <num xml:id="d2e269">3.</num>
+                        <content xml:id="d2e271">
+                            <p xml:id="d2e273">Renew the fleet with clean vehicles: use alternative power
+                                technologies for heavy-duty vehicles that can replace fossil
+                                fuel-based internal combustion engines, such as battery electric
+                                vehicles (BEVs), hydrogen fuel cell vehicles (FCVs), hybrid electric
+                                vehicles (HEVs), plug-in hybrid electric vehicles (PHEVs),
+                                compressed natural gas (CNG) vehicles, vehicles running on biofuels,
+                                renewable natural gas (RNG) vehicles, vehicles running on liquefied
+                                natural gas (LNG, e-LNG);</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e277">
+                        <num xml:id="d2e279">4.</num>
+                        <content xml:id="d2e281">
+                            <p xml:id="d2e283">Provide training to drivers in fuel-efficient driving techniques,
+                                such as smooth and regular acceleration, stopping engine idling, and
+                                optimizing speed according to road conditions and the state of the
+                                roads;</p>
+                        </content>
+                    </point>
+                    <point xml:id="d2e288">
+                        <num xml:id="d2e290">5.</num>
+                        <content xml:id="d2e292">
+                            <p xml:id="d2e294">Reduce road traffic by shifting freight transport to Europe's rail
+                                networks.</p>
+                        </content>
+                    </point>
+                </list>
+            </level>
+            <level xml:id="d2e300">
+                <num xml:id="d2e302">3.</num>
+                <heading xml:id="d2e304">General and specific comments</heading>
+            </level>
+            <level xml:id="d2e307">
+                <num xml:id="d2e309">3.1</num>
+                <content xml:id="d2e311">
+                    <p xml:id="d2e313">The EESC recommends adding an indicator to Regulation (EU) 2019/1242 that
+                        would be mandatory Europe-wide on the deployment of H2 refuelling
+                        infrastructure with regard to the number of alternatively powered commercial
+                        vehicles registered on the European market and the fleet limits for each
+                        five-year period. The objective of such an indicator would be to detect in
+                        good time possible discrepancies between the number of registrations of
+                        commercial vehicles and the availability of the infrastructure.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e318">
+                <num xml:id="d2e320">3.2</num>
+                <content xml:id="d2e322">
+                    <p xml:id="d2e324">The focus here is heavy-duty vehicles in road transport, which are
+                        responsible for 25% of overall transport greenhouse gas emissions, although
+                        the other transport sectors must also contribute.</p>
+                </content>
+            </level>
+
+
+            <level xml:id="d2e328">
+                <num xml:id="d2e330">3.3</num>
+                <content xml:id="d2e332">
+                    <p xml:id="d2e334">While it is clearly necessary for the road transport sector to contribute to
+                        the achievement of the EU's 2030 climate and energy targets, the fact that
+                        it takes a minimum amount of time to renew fleets must also be factored in.
+                        Regulation (EU) 2019/1242 of the European Parliament and of the Council sets
+                        targets for reducing CO2 emissions from new heavy-duty vehicles for 2025 and
+                        2030, of 15% and 30% respectively. Of course, the internal market must be
+                        fair, and thus rules are needed to iron out any competition gaps in the EU.
+                        In this respect, the Commission is seeking to introduce road tolls based on
+                        actual kilometres travelled in order better to reflect the "polluter pays"
+                        and "user pays" principles.</p>
+                </content>
+            </level>
+            <level xml:id="d2e338">
+                <num xml:id="d2e340">3.4</num>
+                <list xml:id="d2e342">
+                    <subparagraph xml:id="d2e344" refersTo="~INP">
+                        <content xml:id="d2e346">
+                            <p xml:id="d2e348">Four problems are tackled by applying these principles more broadly:
+                                the solution is to be found in fair and efficient road pricing,
+                                whereby the revenues generated are reinvested in the transport
+                                sector and its infrastructure, including the passenger and freight
+                                road transport sectors:</p>
+                        </content>
+                    </subparagraph>
+                    <indent xml:id="d2e352">
+                        <num xml:id="d2e354">-</num>
+                        <content xml:id="d2e356">
+                            <p xml:id="d2e358">road transport is responsible for 17% of the EU's CO2 emissions and
+                                the level of use of low- and zero-emission vehicles is insufficient
+                                to meet the 2030 climate and energy goals;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e362">
+                        <num xml:id="d2e364">-</num>
+                        <content xml:id="d2e366">
+                            <p xml:id="d2e368">the quality of EU roads is deteriorating because of falling
+                                infrastructure investment and delays in maintenance, with no account
+                                taken of the long-term economic impact;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e372">
+                        <num xml:id="d2e374">-</num>
+                        <content xml:id="d2e376">
+                            <p xml:id="d2e378">some Member States have introduced temporary pricing (vignettes) that
+                                discriminates against occasional non-national operators;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e382">
+                        <num xml:id="d2e384">-</num>
+                        <content xml:id="d2e386">
+                            <p xml:id="d2e388">the pollution and congestion generated by road vehicles entail
+                                significant costs for society.</p>
+                        </content>
+                    </indent>
+                </list>
+
+            </level>
+
+            <level xml:id="d2e394">
+                <num xml:id="d2e396">3.5</num>
+                <content xml:id="d2e398">
+                    <p xml:id="d2e400">The EESC advocates for a comprehensive approach to decarbonization that goes
+                        beyond the focus on tailpipe emissions. Incentives and support mechanisms
+                        should be designed to encourage the use of sustainable and low-emission
+                        fuels, including biofuels and e-fuels, in the existing fleet and in new
+                        heavy-duty vehicles.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e404">
+                <num xml:id="d2e406">3.6</num>
+                <content xml:id="d2e408">
+                    <p xml:id="d2e410">The EESC calls for a careful assessment of the impact of the proposed
+                        measures on employment in the road transport sector. The transition to
+                        cleaner and more sustainable transport should be accompanied by measures to
+                        mitigate potential job losses and support the reskilling and upskilling of
+                        workers in the sector.</p>
+                </content>
+            </level>
+            <level xml:id="d2e414">
+                <num xml:id="d2e416">3.7</num>
+                <content xml:id="d2e418">
+                    <p xml:id="d2e420">The EESC calls for an assessment and consideration of the possible
+                        consequences of imposing multiple layers of taxation targeting CO2 in tolls
+                        and user charges resulting from the application of the new
+                        CO2-performance-based charging in parallel with the possibility of applying
+                        an external carbon tax.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e425">
+                <num xml:id="d2e427">3.8</num>
+                <content xml:id="d2e429">
+                    <p xml:id="d2e431">Digital technologies can increase the safety, efficiency and inclusiveness of
+                        transport, but there is a need to further clarify the scope of trailers and
+                        semi-trailers that will or could be classified under the new framework,
+                        taking into account not only the dates of application of VECTO<authorialNote xml:id="d2e433" marker="3" placement="bottom">
+                            <p xml:id="d2e435">Analysis of VECTO data for Heavy-Duty Vehicles (HDV) CO2 emission targets (2018).</p></authorialNote> – the new
+                        simulation tool developed by the European Commission to determine the
+                        updated CO2 emissions of heavy-duty vehicles for new registrations – but
+                        also the possibility of classifying existing trailers and semi-trailers,
+                        including those equipped with devices that improve their energy efficiency.
+                        The different sub-groups of trailers should be distributed fairly according
+                        to their calculation capacity as determined in the VECTO calculation method.
+                        Moreover, trailers, like lorries and coaches, must gradually move towards a
+                        final CO2 limit value for the fleet in five-year phases from 2030 onwards.
+                        This will give trailer manufacturers the opportunity to gradually introduce
+                        new technologies and to continue developing them after 2020.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e441">
+                <num xml:id="d2e443">3.9</num>
+                <content xml:id="d2e445">
+                    <p xml:id="d2e447">However, it is also necessary to create a digital one-stop shop containing
+                        information on the emission classes of motor vehicles, trailers and
+                        semi-trailers, in order to reduce the burden of registering several
+                        combinations of vehicles with toll service providers. Information on the
+                        energy efficiency and emission class of a vehicle or combination of vehicles
+                        should be easily accessible to drivers, commercial road transport operators,
+                        vehicle owners and toll service providers. Registration with toll service
+                        providers should be carried out using the vehicle's registration number. The
+                        emission class of all vehicles should then be automatically determined and
+                        communicated to the driver and the transport operator.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e451">
+                <num xml:id="d2e453">3.10</num>
+                <content xml:id="d2e455">
+                    <p xml:id="d2e457">The EESC draws attention to the fact that a reduction in CO2 emissions from
+                        heavy-duty vehicles with trailers can also be achieved through efforts to
+                        shift the freight they carry to less carbon intensive modes of transport.
+                        Reducing road traffic and thus carbon emissions can go hand in hand with
+                        shifting freight to Europe's rail networks. This can have significant
+                        environmental benefits: rail transport is generally more energy efficient
+                        and emits less greenhouse gases than road transport.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e461">
+                <num xml:id="d2e463">3.11</num>
+                <content xml:id="d2e465">
+                    <p xml:id="d2e467">The EESC highlights the need for a focus on introducing alternative power
+                        sources, taking into account heavy-duty vehicle trailers. The EESC also
+                        recommends a differentiated approach to introducing alternative power
+                        sources for heavy-duty vehicles with trailers, as electric power can be
+                        suitable for vehicles used for short journeys, and hydrogen, renewable
+                        natural gas (RNG) and liquefied natural gas (LNG) can power heavy-duty
+                        vehicles for longer journeys.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e471">
+                <num xml:id="d2e473">3.12</num>
+                <content xml:id="d2e475">
+                    <p xml:id="d2e477">When switching to clean power sources, consideration should be given to
+                        whether the alternative power source in question is the best option for each
+                        of the individual types of heavy-duty vehicle in terms of the power
+                        source/technology/performance ratio. Each of these alternative power
+                        technologies presents advantages and challenges. Their large-scale uptake
+                        requires continuous investment in research, development and infrastructure
+                        to support the phasing out of fossil fuel based internal combustion engines
+                        in heavy-duty vehicles.</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e481">
+                <num xml:id="d2e483">3.13</num>
+                <content xml:id="d2e485">
+                    <p xml:id="d2e487">The EESC recommends that transport companies with a large fleet plan the
+                        allocation of transport capacity using load-distribution and logistics
+                        software in order to optimise vehicle performance and minimise emissions.
+                        Planning optimised transport routes and load-distribution can minimise fuel
+                        consumption and environmental impact. Maximising the load capacity of
+                        vehicles involves assessing whether each vehicle can operate at its maximum
+                        load capacity, thus reducing the need for additional vehicles and,
+                        consequently, cutting emissions.</p>
+                </content>
+            </level>
+        </mainBody>
+        <conclusions xml:id="d2e492">
+            <p xml:id="d2e494"><location xml:id="d2e495" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e498" date="2023-09-20">20 September 2023</date></p>
+            <block xml:id="d2e501" name="signatory">
+                <signature xml:id="d2e503">
+                    <person xml:id="d2e505" refersTo="">Oliver Röpke</person>
+                    <role xml:id="d2e510" refersTo="~PRESID">The president</role> of <organization xml:id="d2e513" refersTo="~EESC">the European Economic and Social Committee</organization>
+                </signature>
+            </block>
+        </conclusions>
+    </doc>
+</akomaNtoso>

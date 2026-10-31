@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <documentCollection name="OWNINI_OPIN_DRAFT_COR">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="COR-2023-00137-00-00-PAC-TRA" />
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~COR">
+                <TLCReference xml:id="ENG" name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="COR" href="http://publications.europa.eu/resource/authority/corporate-body/COR" showAs=""/>
+                <TLCReference xml:id="OWNINI_OPIN_DRAFT_COR" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/OWNINI_OPIN_DRAFT_COR" showAs=""/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCOrganization xml:id="COR_GROUP_RENEW" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_RENEW" showAs=""/>
+                <TLCReference xml:id="PNG" name="fileType" href="http://publications.europa.eu/resource/authority/file-type/PNG" showAs=""/>
+                <TLCReference xml:id="SVG" name="fileType" href="http://publications.europa.eu/resource/authority/file-type/SVG" showAs=""/>
+            </references>
+        </meta>
+        <coverPage xml:id="d2e78">
+            <container xml:id="d2e80" name="logo">
+                <p xml:id="d2e82"><img xml:id="d2e83" src="RSC_PNG-cjk7q0l8r0000i3m3f5q1z8h0-en.png" refersTo="~PNG" /></p>
+            </container>
+            <container xml:id="d2e86" name="actingEntity">
+                <p xml:id="d2e88"><organization xml:id="d2e89" refersTo="~COR">European Committee of the
+                    Regions</organization></p>
+            </container>
+            <container xml:id="d2e93" name="procedureIdentifier">
+                <p xml:id="d2e931"><docketNumber xml:id="d2e96">COTER–VII/026</docketNumber></p>
+            </container>
+            <container xml:id="d2e100" name="sessionInfo">
+                <p xml:id="d2e102"><session xml:id="d2e103">155th plenary session, 24-25 May 2023</session></p>
+            </container>
+            <longTitle xml:id="d2e106">
+                <p xml:id="d2e108"><docType xml:id="d2e109" refersTo="~OWNINI_OPIN_DRAFT_COR">DRAFT OPINION</docType>
+                    <docPurpose xml:id="d2e112">Do no harm to cohesion – A cross-cutting principle contributing towards cohesion
+                        as an overall objective and value of the EU</docPurpose></p>
+            </longTitle>
+            <container xml:id="d2e116" name="rapporteur">
+                <p xml:id="d2e118"><inline xml:id="d2e119" name="label">Rapporteur:</inline>
+                    <docIntroducer xml:id="d2e122"><person xml:id="d2e123" refersTo="">Michiel Rijsberman</person>
+                        (NL/<organization xml:id="d2e126" refersTo="~COR_GROUP_RENEW">Renew</organization>)
+                        Regional Minister of the Province of Flevoland</docIntroducer></p>
+            </container>
+            <container xml:id="d2e131" name="procedureInstruction">
+                <p xml:id="d2e133"><inline xml:id="d2e134" name="label">Deadline for tabling amendments:</inline></p>
+                <p xml:id="d2e137"><time xml:id="d2e138" time="15:00:00">3 p.m. (Brussels time)</time> on <date xml:id="d2e141" date="2023-05-10">Wednesday 10 May</date>. Amendments must be submitted using the online tool
+                    for tabling amendments (available through the Members' Portal at
+                    https://memportal.cor.europa.eu/).</p>
+                <p xml:id="d2e145"><inline xml:id="d2e146" name="label">Number of signatures required:</inline> 32</p>
+            </container>
+            <container xml:id="d2e151" name="mainDoc">
+                <block xml:id="d2e153" name="reference"><docNumber xml:id="d2e154">COR-2023-00137-00-00-PAC-TRA
+                </docNumber></block>
+            </container>
+            <container xml:id="d2e157" name="contactsAndSocialMediaHandlings">
+                <p xml:id="d2e159"><img xml:id="d2e160" src="RSC_SVG-cjk7q0l8r0000i3m3f5q1z8h0-en.svg" refersTo="~SVG"/></p>
+            </container>
+            <container xml:id="d2e163" name="mainDocLanguage">
+                <p xml:id="d2e165">(<inline xml:id="d2e167" name="language" refersTo="~FRBRlanguage">EN</inline>)</p>
+            </container>
+            <container xml:id="d2e172" name="otherReferences">
+                <block name="docs">
+                    <inline xml:id="d2e175" name="label">Reference document</inline>
+                    <ref xml:id="d2e178" href="http://data.europa.eu/eli/COM/2022/34">COM(2022) 34 final</ref><eol xml:id="d2e180"/>
+                        <ref xml:id="d2e182" href="http://data.europa.eu/eli/SWD/2022/24">SWD(2022) 24 final</ref>
+                </block>
+            </container>
+        </coverPage>
+        <collectionBody xml:id="d2e187">
+            <component xml:id="d2e189">
+                <documentRef xml:id="d2e191" href="OPIN_COR-clpgy2xly001s2a6bjrhg7mh7-en.xml" showAs=""/>
+            </component>
+            <component xml:id="d2e194">
+                <documentRef xml:id="d2e196" href="BACKGROUND_DOC-cm6hjcmj400000cky3shy6juw-en.xml" showAs=""/>
+                
+            </component>
+        </collectionBody>
+    </documentCollection>
+</akomaNtoso>

@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <bill name="REG">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clwq12hso00000cjx29x4edpq"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRsubtype value="REG" refersTo="~COM_AUTO_PROC"/>
+                    <FRBRnumber value="C(2022) 8348"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <analysis source="~PUBL">
+                <activeModifications>
+                    <legalSystemMod type="implementation">
+                        <source/>
+                        <destination href="http://data.europa.eu/eli/reg/2008/1338"/>
+                    </legalSystemMod>
+                </activeModifications>
+            </analysis>
+            <references source="~PUBL">
+                <TLCReference xml:id="REG" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/REG" showAs=""/>
+                <TLCProcess xml:id="COM_AUTO_PROC" href="http://publications.europa.eu/resource/authority/internal-procedure/COM_AUTO_PROC" showAs=""/>
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference xml:id="legalBasis" name="contentSubject" href="http://eurovoc.europa.eu/5456" showAs=""/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCOrganization xml:id="COM" href="http://publications.europa.eu/resource/authority/corporate-body/COM" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCRole xml:id="PRESID" href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+                <TLCConcept xml:id="ART_DEF" href="http://publications.europa.eu/resource/authority/subdivision-content/ART_DEF" showAs=""/>
+                <TLCConcept xml:id="INP" href="http://publications.europa.eu/resource/authority/subdivision/INP" showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e103">
+            <longTitle xml:id="d2e105">
+                <p xml:id="d2e107">
+                    <docType xml:id="d2e109" refersTo="~REG">COMMISSION REGULATION </docType> <docNumber xml:id="d2e112"><placeholder xml:id="d2e113"> (EU) .../...</placeholder></docNumber> of <date xml:id="d2e115" date="2022-11-23">23.11.2022</date>
+                    <docPurpose xml:id="d2e118">implementing
+                        <ref xml:id="d2e120" href="http://data.europa.eu/eli/reg/2008/1338">Regulation (EC) No 1338/2008 of the European Parliament and of the
+                            Council</ref> as regards statistics on healthcare facilities, healthcare human
+                            resources and healthcare utilisation</docPurpose></p>
+            </longTitle>
+            <container xml:id="d2e124" name="eeaRelevance"><p xml:id="d2e125">(Text with EEA relevance)</p></container> 
+        </preface>
+        <preamble xml:id="d2e129">
+            <formula xml:id="d2e131" name="actingEntity">
+                <p xml:id="d2e133">THE EUROPEAN COMMISSION,</p>
+            </formula>
+            <citations xml:id="d2e137">
+                <citation xml:id="d2e139" refersTo="~legalBasis">
+                    <p xml:id="d2e141">Having regard to the Treaty on the Functioning of the European Union,</p>
+                </citation>
+                <citation xml:id="d2e145">
+                    <p xml:id="d2e147">Having regard to Regulation (EC) No 1338/2008 of the European Parliament and
+                        of the Council of 16 December 2008 on Community statistics on public health
+                        and health and safety at work<authorialNote xml:id="d2e149" marker="1" placement="bottom">
+                            <p xml:id="d2e151">OJ L 354, 31.12.2008, p. 70.</p>
+                        </authorialNote>, and in particular Article 9(1) and Annex II, point (d),
+                        thereof,</p>
+                </citation>
+            </citations>
+            <recitals xml:id="d2e158">
+                <intro xml:id="d2e160">
+                    <p xml:id="d2e162">Whereas:</p>
+                </intro>
+                <recital xml:id="d2e166">
+                    <num xml:id="d2e168">(1)</num>
+                    <p xml:id="d2e171">Regulation (EC) No 1338/2008 sets out the subjects covered in the healthcare
+                        domain for which data and metadata are to be provided for the production of
+                        European statistics. In particular, data and metadata on healthcare
+                        facilities, healthcare human resources, healthcare utilisation, individual
+                        and collective services, and the reference periods, intervals and time
+                        limits for the data provision should be set out by implementing
+                        measures.</p>
+                </recital>
+                <recital xml:id="d2e175">
+                    <num xml:id="d2e177">(2)</num>
+                    <p xml:id="d2e180">Pursuant to Article 6(1) of Regulation (EC) No 1338/2008, in 2015 and 2018,
+                        the Commission launched pilot studies that were completed voluntarily by
+                        Member States. The Commission also discussed the needs of users of the
+                        statistics with Member States. The outcome of those pilot studies and those
+                        discussions was that Union-wide data are needed to strengthen the
+                        evidence-base on healthcare information, hence benefitting decisions on
+                        public health and social policy.</p>
+                </recital>
+                <recital xml:id="d2e184">
+                    <num xml:id="d2e186">(3)</num>
+                    <p xml:id="d2e189">In accordance with Article 6(2) of Regulation (EC) No 1338/2008, the
+                        Commission carried out a cost-benefit analysis, taking into account the
+                        benefits of the availability of variables on healthcare facilities,
+                        healthcare human resources and healthcare utilisation in relation to the
+                        cost of data collection. It follows from that analysis that those variables
+                        should be collected to ensure the comparability and availability of
+                        Union-wide data.</p>
+                </recital>
+                <recital xml:id="d2e193">
+                    <num xml:id="d2e195">(4)</num>
+                    <p xml:id="d2e198">The measures provided for in this Regulation are in accordance with the
+                        opinion of the European Statistical System Committee, established by Article
+                        7 of Regulation (EC) No 223/2009 of the European Parliament and of the
+                            Council<authorialNote xml:id="d2e200" marker="2" placement="bottom">
+                            <p xml:id="d2e202">Regulation (EC) No 223/2009 of the European Parliament and of the
+                                Council of 11 March 2009 on European statistics and repealing
+                                Regulation (EC, Euratom) No 1101/2008 of the European Parliament and
+                                of the Council on the transmission of data subject to statistical
+                                confidentiality to the Statistical Office of the European
+                                Communities, Council Regulation (EC) No 322/97 on Community
+                                Statistics, and Council Decision 89/382/EEC, Euratom establishing a
+                                Committee on the Statistical Programmes of the European Communities
+                                (OJ L 87, 31.3.2009, p. 164).</p>
+                        </authorialNote>.</p>
+                </recital>
+            </recitals>
+            <formula xml:id="d2e209" name="enactingFormula">
+                <p xml:id="d2e211">HAS ADOPTED THIS REGULATION:</p>
+            </formula>
+        </preamble>
+        <body xml:id="d2e216">
+            <article xml:id="d2e218">
+                <num xml:id="d2e220">Article 1</num>
+                <heading xml:id="d2e223">Scope</heading>
+                <paragraph xml:id="d2e226">
+                    <content xml:id="d2e228">
+                        <p xml:id="d2e230">This Regulation lays down rules for the development and production of
+                            European statistics in the area of healthcare facilities, healthcare
+                            human resources and healthcare utilisation and individual and collective
+                            services, as referred to in Annex II, point (d), first, second and third
+                            indent, to Regulation (EC) No 1338/2008.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e236" refersTo="~ART_DEF">
+                <num xml:id="d2e238">Article 2</num>
+                <heading xml:id="d2e241">Definitions</heading>
+                <paragraph xml:id="d2e244">
+                    <content xml:id="d2e246">
+                        <p xml:id="d2e248">For the purpose of this Regulation, the definitions set out in Annex I
+                            shall apply.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e254">
+                <num xml:id="d2e256">Article 3</num>
+                <heading xml:id="d2e259">Data required</heading>
+                <paragraph xml:id="d2e262">
+                    <content xml:id="d2e264">
+                        <p xml:id="d2e266">Member States shall transmit to the Commission (Eurostat) data for the
+                            list of variables, the characteristics and breakdowns as set out in
+                            Annex II.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e272">
+                <num xml:id="d2e274">Article 4</num>
+                <heading xml:id="d2e277">Metadata</heading>
+                <paragraph xml:id="d2e280">
+                    <list xml:id="d2e282">
+                        <subparagraph xml:id="d2e284" refersTo="~INP">
+                            <content xml:id="d2e286">
+                                <p xml:id="d2e288">Member States shall provide the Commission (Eurostat) with the
+                                    necessary reference metadata and quality reports, in particular
+                                    concerning:</p>
+                            </content>
+                        </subparagraph>
+                        <point xml:id="d2e293">
+                            <num xml:id="d2e295">(a)</num>
+                            <content xml:id="d2e298">
+                                <p xml:id="d2e300">the data sources and their coverage;</p>
+                            </content>
+                        </point>
+                        <point xml:id="d2e305">
+                            <num xml:id="d2e307">(b)</num>
+                            <content xml:id="d2e310">
+                                <p xml:id="d2e312">the compilation methods used;</p>
+                            </content>
+                        </point>
+                        <point xml:id="d2e317">
+                            <num xml:id="d2e319">(c)</num>
+                            <content xml:id="d2e322">
+                                <p xml:id="d2e324">information on features of national healthcare facilities,
+                                    healthcare human resources and healthcare utilisation specific
+                                    to the Member States that deviate from the definitions set out
+                                    in Annex I and the variables set out in Annex II;</p>
+                            </content>
+                        </point>
+                        <point xml:id="d2e329">
+                            <num xml:id="d2e331">(d)</num>
+                            <content xml:id="d2e334">
+                                <p xml:id="d2e336">information on any changes to the statistical concepts mentioned
+                                    in Annex I and Annex II.</p>
+                            </content>
+                        </point>
+                    </list>
+                </paragraph>
+            </article>
+            <article xml:id="d2e344">
+                <num xml:id="d2e346">Article 5</num>
+                <heading xml:id="d2e349">Reference period</heading>
+                <paragraph xml:id="d2e352">
+                    <content xml:id="d2e354">
+                        <p xml:id="d2e356">The reference period shall be the calendar year.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e361">
+                    <content xml:id="d2e363">
+                        <p xml:id="d2e365">The first reference year shall be 2021.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e370">
+                    <content xml:id="d2e372">
+                        <p xml:id="d2e374">By derogation from paragraph 2, the first reference year for data on
+                            health employment, hospital care and surgical procedures referred to in
+                            points 1, 6 and 7 of Annex II shall be 2023.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e381">
+                <num xml:id="d2e383">Article 6</num>
+                <heading xml:id="d2e386">Provision of data and metadata to the Commission (Eurostat)</heading>
+                <paragraph xml:id="d2e389">
+                    <content xml:id="d2e391">
+                        <p xml:id="d2e393">Member States shall provide the data and reference metadata referred to
+                            in Articles 3 and 4 respectively to the Commission (Eurostat) on an
+                            annual basis within 14 months after the end of the reference year.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e398">
+                    <content xml:id="d2e400">
+                        <p xml:id="d2e402">By way of derogation from paragraph 1, Member States shall provide the
+                            data and reference metadata on hospital care and surgical procedures
+                            referred to in points 6 and 7 of Annex II within 20 months after the end
+                            of the reference year.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e407">
+                    <content xml:id="d2e409">
+                        <p xml:id="d2e411">Data and reference metadata shall be transmitted to the Commission
+                            (Eurostat) using the single entry point or be made available for
+                            retrieval by the Commission (Eurostat) by electronic means.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e417">
+                <num xml:id="d2e419">Article 7</num>
+                <heading xml:id="d2e422">Data sources</heading>
+                <paragraph xml:id="d2e425">
+                    <content xml:id="d2e427">
+                        <p xml:id="d2e429">The data shall be compiled mainly from administrative records, as
+                            referred to in Article 17a of Regulation (EC) No 223/2009 and shall
+                            cover the whole Member State.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e434">
+                    <content xml:id="d2e436">
+                        <p xml:id="d2e438">Where administrative records are not available or of insufficient quality
+                            or coverage, use of other sources, methods or innovative approaches
+                            shall be accepted insofar as they enable the production of data that are
+                            comparable and compliant with the requirements laid down by this
+                            Regulation.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e444">
+                <num xml:id="d2e446">Article 8</num>
+                <heading xml:id="d2e449">Entry into force</heading>
+                <paragraph xml:id="d2e452">
+                    <content xml:id="d2e454">
+                        <p xml:id="d2e456">This Regulation shall enter into force on the twentieth day following
+                            that of its publication in the Official Journal of the European
+                            Union.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <clause xml:id="d2e462">
+                <content xml:id="d2e464">
+                    <p xml:id="d2e466"> This Regulation shall be binding in its entirety and directly applicable
+                        in all Member States. </p>
+                </content>
+            </clause>
+        </body>
+        <conclusions xml:id="d2e472">
+            <p xml:id="d2e474">Done at <location xml:id="d2e476" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e479" date="2022-11-23">23.11.2022</date></p>
+            <block xml:id="d2e482" name="signatory">
+                <signature xml:id="d2e484">
+                    <organization xml:id="d2e486" refersTo="~COM">For the Commission</organization>
+                    <role xml:id="d2e489" refersTo="~PRESID">The President</role>
+                    <person xml:id="d2e492" refersTo="">Ursula VON DER LEYEN</person>
+                </signature>
+            </block>
+        </conclusions>
+    </bill>
+</akomaNtoso>

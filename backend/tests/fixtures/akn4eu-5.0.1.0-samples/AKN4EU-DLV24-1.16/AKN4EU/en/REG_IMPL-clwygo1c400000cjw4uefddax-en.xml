@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <bill name="REG_IMPL">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clwygo1c400000cjw4uefddax"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRsubtype value="REG_IMPL" refersTo="~COM_AUTO_PROC"/>
+                    <FRBRnumber value="C(2023) 1485"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <analysis source="~PUBL">
+                <activeModifications>
+                    <legalSystemMod type="implementation">
+                        <source/>
+                        <destination href="http://data.europa.eu/eli/reg/2009/1107"/>
+                    </legalSystemMod>
+                    <textualMod type="substitution" incomplete="true">
+                        <source href="~d2e347" incomplete="true"/>
+                        <source href="ANNEX-clxx16f3t00010cmogpa8ed0x-en.xml"/>
+                        <destination href="http://data.europa.eu/eli/dir/2011/540/anx"/>
+                    </textualMod>
+                </activeModifications>
+            </analysis>
+            <references source="~PUBL">
+                <TLCReference xml:id="REG_IMPL" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/REG_IMPL" showAs=""/>
+                <TLCProcess xml:id="COM_AUTO_PROC" href="http://publications.europa.eu/resource/authority/internal-procedure/COM_AUTO_PROC" showAs=""/>
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference xml:id="legalBasis" name="contentSubject" href="http://eurovoc.europa.eu/5456" showAs=""/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCOrganization xml:id="COM" href="http://publications.europa.eu/resource/authority/corporate-body/COM" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCRole xml:id="PRESID" href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+                <TLCConcept xml:id="ART_AMEND" href="http://publications.europa.eu/resource/authority/subdivision-content/ART_AMEND" showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e110">
+            <longTitle xml:id="d2e112">
+                <p xml:id="d2e114"><docType xml:id="d2e115" refersTo="~REG_IMPL">COMMISSION IMPLEMENTING REGULATION </docType>
+                    <docNumber xml:id="d2e118"><placeholder xml:id="d2e119">(EU) .../...</placeholder></docNumber> of <date xml:id="d2e121" date="2023-03-08">8.3.2023</date>
+                    <docPurpose xml:id="d2e124">renewing the approval of the active substance abamectin in
+                        accordance with <ref xml:id="d2e126" href="http://data.europa.eu/eli/reg/2009/1107">Regulation (EC) No 1107/2009 of the European Parliament and of the
+                            Council</ref>, and amending <ref xml:id="d2e129" href="http://data.europa.eu/eli/reg_impl/2011/540">Commission
+                            Implementing Regulation (EU) No 540/2011</ref></docPurpose></p>
+            </longTitle>
+            <container xml:id="d2e133" name="eeaRelevance">
+                <p xml:id="d2e135">(Text with EEA relevance)</p>
+            </container>
+        </preface>
+        <preamble xml:id="d2e140">
+            <formula xml:id="d2e142" name="actingEntity">
+                <p xml:id="d2e144">THE EUROPEAN COMMISSION,</p>
+            </formula>
+            <citations xml:id="d2e148">
+                <citation xml:id="d2e150" refersTo="~legalBasis">
+                    <p xml:id="d2e152">Having regard to the Treaty on the Functioning of the European Union,</p>
+                </citation>
+                <citation xml:id="d2e156">
+                    <p xml:id="d2e158">Having regard to Regulation (EC) No 1107/2009 of the European Parliament and
+                        of the Council of 21 October 2009 concerning the placing of plant protection
+                        products on the market and repealing Council Directives 79/117/EEC and
+                            91/414/EEC<authorialNote xml:id="d2e160" marker="1" placement="bottom">
+                            <p xml:id="d2e162">OJ L 309, 24.11.2009, p. 1.</p>
+                        </authorialNote>, and in particular Article 20(1) thereof,</p>
+                </citation>
+            </citations>
+            <recitals xml:id="d2e169">
+                <intro xml:id="d2e171">
+                    <p xml:id="d2e173">Whereas:</p>
+                </intro>
+                <recital xml:id="d2e177">
+                    <num xml:id="d2e179">(1)</num>
+                    <p xml:id="d2e182">Commission Directive 2008/107/EC<authorialNote xml:id="d2e184" marker="2" placement="bottom">
+                            <p xml:id="d2e186">Commission Directive 2008/107/EC of 25 November 2008 amending Council
+                                Directive 91/414/EEC to include abamectin, epoxiconazole,
+                                fenpropimorph, fenpyroximate and tralkoxydim as active substances
+                                (OJ L 316, 26.11.2008, p. 4).</p>
+                        </authorialNote> included abamectin as an active substance in Annex I to
+                        Council Directive 91/414/EEC<authorialNote xml:id="d2e190" marker="3" placement="bottom">
+                            <p xml:id="d2e192">Council Directive 91/414/EEC of 15 July 1991 concerning the placing
+                                of plant protection products on the market (OJ L 230, 19.8.1991, p.
+                                1).</p>
+                        </authorialNote>.</p>
+                </recital>
+                <recital xml:id="d2e198">
+                    <num xml:id="d2e200">(2)</num>
+                    <p xml:id="d2e203">Active substances included in Annex I to Directive 91/414/EEC are deemed to
+                        have been approved under Regulation (EC) No 1107/2009 and are listed in Part
+                        A of the Annex to Commission Implementing Regulation (EU) No
+                            540/2011<authorialNote xml:id="d2e205" marker="4" placement="bottom">
+                            <p xml:id="d2e207">Commission Implementing Regulation (EU) No 540/2011 of 25 May 2011
+                                implementing Regulation (EC) No 1107/2009 of the European Parliament
+                                and of the Council as regards the list of approved active substances
+                                (OJ L 153, 11.6.2011, p. 1).</p>
+                        </authorialNote>.</p>
+                </recital>
+                <recital xml:id="d2e213">
+                    <num xml:id="d2e215">(3)</num>
+                    <p xml:id="d2e218">The approval of the active substance abamectin, as set out in Part A of the
+                        Annex to Implementing Regulation (EU) No 540/2011, expires on 30 April
+                        2023.</p>
+                </recital>
+                <recital xml:id="d2e222">
+                    <num xml:id="d2e224">(4)</num>
+                    <p xml:id="d2e227">An application for the renewal of the approval of the active substance
+                        abamectin was submitted to Austria, the rapporteur Member State, and Malta,
+                        the co-rapporteur Member State, in accordance with Article 1 of Commission
+                        Implementing Regulation (EU) No 844/2012<authorialNote xml:id="d2e229" marker="5" placement="bottom">
+                            <p xml:id="d2e231">Commission Implementing Regulation (EU) No 844/2012 of 18 September
+                                2012 setting out the provisions necessary for the implementation of
+                                the renewal procedure for active substances, as provided for in
+                                Regulation (EC) No 1107/2009 of the European Parliament and of the
+                                Council concerning the placing of plant protection products on the
+                                market (OJ L 252, 19.9.2012, p. 26).</p>
+                        </authorialNote> within the time period provided for in that Article.</p>
+                </recital>
+                <recital xml:id="d2e238">
+                    <num xml:id="d2e240">(5)</num>
+                    <p xml:id="d2e243">The applicant submitted the supplementary dossiers to the rapporteur Member
+                        State, the co-rapporteur Member State, the Commission and the European Food
+                        Safety Authority (‘the Authority’) in accordance with Article 6 of
+                        Implementing Regulation (EU) No 844/2012. The application was found to be
+                        complete by the rapporteur Member State.</p>
+                </recital>
+                <recital xml:id="d2e247">
+                    <num xml:id="d2e249">(6)</num>
+                    <p xml:id="d2e252">The rapporteur Member State prepared a draft renewal assessment report in
+                        consultation with the co-rapporteur Member State and submitted it to the
+                        Authority and the Commission on 17 April 2019. In its draft renewal
+                        assessment report, the rapporteur Member State proposed to renew the
+                        approval of abamectin.</p>
+                </recital>
+                <recital xml:id="d2e256">
+                    <num xml:id="d2e258">(7)</num>
+                    <p xml:id="d2e261">The Authority communicated the draft renewal assessment report to the
+                        applicant and to the Member States for comments and forwarded the comments
+                        received to the Commission. The Authority also made the supplementary
+                        summary dossier available to the public.</p>
+                </recital>
+                <recital xml:id="d2e265">
+                    <num xml:id="d2e267">(8)</num>
+                    <p xml:id="d2e270">On 15 July 2020, the Authority communicated to the Commission its
+                            conclusion<authorialNote xml:id="d2e272" marker="6" placement="bottom">
+                            <p xml:id="d2e274">EFSA Journal 2020;18(8):6227. Available online:
+                                www.efsa.europa.eu.</p>
+                        </authorialNote> on whether abamectin can be expected to meet the approval
+                        criteria provided for in Article 4 of Regulation (EC) No 1107/2009. The
+                        Authority identified a number of issues that could not be finalised. In
+                        particular it identified risks as regards birds and mammals, aquatic
+                        organisms and soil macroorganisms.</p>
+                </recital>
+                <recital xml:id="d2e280">
+                    <num xml:id="d2e282">(9)</num>
+                    <p xml:id="d2e285">On 1 February 2022, the Commission sent a mandate to the Authority with a
+                        request to review the exposure and risk assessments as regards birds and
+                        mammals, aquatic organisms and soil macroorganisms. The Authority sent to
+                        the Commission an updated conclusion on 27 July 2022<authorialNote xml:id="d2e287" marker="7" placement="bottom">
+                            <p xml:id="d2e289">EFSA Journal 2022;20(8):7544. Available online:
+                                www.efsa.europa.eu.</p>
+                        </authorialNote>. In its updated Conclusion, the Authority confirmed the
+                        risks identified in the previous assessment.</p>
+                </recital>
+                <recital xml:id="d2e295">
+                    <num xml:id="d2e297">(10)</num>
+                    <p xml:id="d2e300">The Commission presented a renewal report and the draft Regulation for
+                        abamectin to the Standing Committee on Plants, Animals, Food and Feed, on 25
+                        March 2021 and revised versions of the two documents on 8 December 2022 to
+                        take into account the outcomes in the updated Conclusion of the
+                        Authority.</p>
+                </recital>
+                <recital xml:id="d2e305">
+                    <num xml:id="d2e307">(11)</num>
+                    <p xml:id="d2e310">The Commission invited the applicant to submit its comments on the conclusion
+                        of the Authority and, in accordance with Article 14(1), third subparagraph,
+                        of Implementing Regulation (EU) No 844/2012, on the renewal report. The
+                        applicant submitted its comments on both versions of the renewal report,
+                        which have been carefully examined.</p>
+                </recital>
+                <recital xml:id="d2e314">
+                    <num xml:id="d2e316">(12)</num>
+                    <p xml:id="d2e319">It has been established with respect to one or more representative uses of at
+                        least one plant protection product containing abamectin that the approval
+                        criteria provided for in Article 4 of Regulation (EC) No 1107/2009 are
+                        satisfied.</p>
+                </recital>
+                <recital xml:id="d2e323">
+                    <num xml:id="d2e325">(13)</num>
+                    <p xml:id="d2e328">The risk assessment for the renewal of the approval of the active substance
+                        abamectin is based on representative uses as insecticide and acaricide in
+                        protected crops. While it is not necessary, in the light of this risk
+                        assessment, to maintain the restriction to use only as insecticide and
+                        acaricide, it is necessary to provide, in accordance with Article 14(1) of
+                        Regulation (EC) No 1107/2009 in conjunction with Article 6 thereof and in
+                        the light of current scientific and technical knowledge, for certain
+                        conditions and restrictions. It is, in particular, appropriate to restrict
+                        the use of plant protection products containing abamectin to uses which
+                        allow controlled exchange of material and energy with the surroundings, so
+                        as to prevent the release of plant protection products into the environment
+                        and mitigate the high risk identified to aquatic organisms and wild
+                        terrestrial non-target organisms. Accordingly, uses in permanent greenhouses
+                        may be authorised.</p>
+                </recital>
+                <recital xml:id="d2e332">
+                    <num xml:id="d2e334">(14)</num>
+                    <p xml:id="d2e337">Implementing Regulation (EU) No 540/2011 should therefore be amended
+                        accordingly.</p>
+                </recital>
+                <recital xml:id="d2e341">
+                    <num xml:id="d2e343">(15)</num>
+                    <p xml:id="d2e346">Commission Implementing Regulation (EU) 2022/378<authorialNote xml:id="d2e348" marker="8" placement="bottom">
+                            <p xml:id="d2e350">Commission Implementing Regulation (EU) 2022/378 of 4 March 2022
+                                amending Implementing Regulation (EU) No 540/2011 as regards the
+                                extension of the approval periods of the active substances
+                                abamectin, Bacillus subtilis (Cohn 1872) strain QST 713, Bacillus
+                                thuringiensis subsp. Aizawai strains ABTS-1857 and GC-91, Bacillus
+                                thuringiensis subsp. Israeliensis (serotype H-14) strain AM65-52,
+                                Bacillus thuringiensis subsp. Kurstaki strains ABTS 351, PB 54, SA
+                                11, SA12 and EG 2348, Beauveria bassiana strains ATCC 74040 and GHA,
+                                clodinafop, Cydia pomonella Granulovirus (CpGV), cyprodinil,
+                                dichlorprop-P, fenpyroximate, fosetyl, malathion, mepanipyrim,
+                                metconazole, metrafenone, pirimicarb, Pseudomonas chlororaphis
+                                strain MA342, pyrimethanil, Pythium oligandrum M1, rimsulfuron,
+                                spinosad, Trichoderma asperellum (formerly T. harzianum) strains
+                                ICC012, T25 and TV1, Trichoderma atroviride (formerly T. harzianum)
+                                strain T11, Trichoderma gamsii (formerly T. viride) strain ICC080,
+                                Trichoderma harzianum strains T-22 and ITEM 908, triclopyr,
+                                trinexapac, triticonazole and ziram (OJ L 72, 7.3.2022, p. 2).</p>
+                        </authorialNote> extended the approval period of abamectin to 30 April 2023
+                        in order to allow the renewal process to be completed before the expiry of
+                        the approval period of that active substance. Given that a decision on
+                        renewal has been taken ahead of that extended expiry date, and taking into
+                        account that the current approval of abamectin expires on 30 April 2023,
+                        this Regulation should enter into force as soon as possible and apply
+                        earlier than that date.</p>
+                </recital>
+                <recital xml:id="d2e356">
+                    <num xml:id="d2e358">(16)</num>
+                    <p xml:id="d2e361">The measures provided for in this Regulation are in accordance with the
+                        opinion of the Standing Committee on Plants, Animals, Food and Feed.</p>
+                </recital>
+            </recitals>
+            <formula xml:id="d2e366" name="enactingFormula">
+                <p xml:id="d2e368">HAS ADOPTED THIS REGULATION:</p>
+            </formula>
+        </preamble>
+        <body xml:id="d2e373">
+            <article xml:id="d2e375" refersTo="~ART_AMEND">
+                <num xml:id="d2e377">Article 1</num>
+                <heading xml:id="d2e380">Renewal of the approval of the active substance</heading>
+                <paragraph xml:id="d2e383">
+                    <content xml:id="d2e385">
+                        <p xml:id="d2e387">The approval of the active substance abamectin, as specified in
+                                Annex I, is renewed subject to the conditions laid down in that
+                                    Annex.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e396" refersTo="~ART_AMEND">
+                <num xml:id="d2e398">Article 2</num>
+                <heading xml:id="d2e401">Amendments to Implementing Regulation (EU) No 540/2011</heading>
+                <paragraph xml:id="d2e404">
+                    <content xml:id="d2e406">
+                        <p xml:id="d2e408"><mod xml:id="d2e347">The Annex to Implementing Regulation (EU) No 540/2011 is amended in
+                            accordance with Annex II to this Regulation<inline xml:id="d2e390" name="punctuationMod">.</inline></mod></p>
+                    </content>
+                </paragraph>
+            </article>
+            <article xml:id="d2e414">
+                <num xml:id="d2e416">Article 3</num>
+                <heading xml:id="d2e419">Entry into force and date of application</heading>
+                <paragraph xml:id="d2e422">
+                    <content xml:id="d2e424">
+                        <p xml:id="d2e426">This Regulation shall enter into force on the third day following that of
+                            its publication in the Official Journal of the European Union.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e431">
+                    <content xml:id="d2e433">
+                        <p xml:id="d2e435">It shall apply from 1 April 2023.</p>
+                    </content>
+                </paragraph>
+            </article>
+            <clause xml:id="d2e441">
+                <content xml:id="d2e443">
+                    <p xml:id="d2e445">This Regulation shall be binding in its entirety and directly applicable in
+                        all Member States. </p>
+                </content>
+            </clause>
+        </body>
+        <conclusions xml:id="d2e451">
+            <p xml:id="d2e453">Done at <location xml:id="d2e455" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e458" date="2023-03-08">8.3.2023</date></p>
+            <block xml:id="d2e461" name="signatory">
+                <signature xml:id="d2e463">
+                    <organization xml:id="d2e465" refersTo="~COM">For the Commission</organization>
+                    <role xml:id="d2e468" refersTo="~PRESID">The President</role>
+                    <person xml:id="d2e471" refersTo="">Ursula VON DER LEYEN</person>
+                </signature>
+            </block>
+        </conclusions>
+    </bill>
+</akomaNtoso>

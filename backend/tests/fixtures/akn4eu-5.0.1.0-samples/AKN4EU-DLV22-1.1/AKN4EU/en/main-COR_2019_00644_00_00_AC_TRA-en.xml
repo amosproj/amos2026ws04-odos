@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+	<documentCollection name="OPIN_COR">
+		<meta>
+			<identification source="~PUBL">
+				<FRBRWork>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRcountry value="EU"/>
+					<FRBRnumber value="COR-2019-00644-00-00-AC-TRA"/>
+					<FRBRprescriptive value="false"/>
+				</FRBRWork>
+				<FRBRExpression>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+				</FRBRExpression>
+				<FRBRManifestation>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:akn4euVersion value="5.0.0.1"/>
+						<akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+					</preservation>
+				</FRBRManifestation>
+			</identification>
+			<references source="~COR">
+				<TLCReference xml:id="ENG" name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+				<TLCOrganization xml:id="COR" href="http://publications.europa.eu/resource/authority/corporate-body/COR" showAs=""/>
+				<TLCReference xml:id="OPIN_COR" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/OPIN_COR" showAs=""/>
+				<TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+				<TLCRole xml:id="RAPP" href="http://publications.europa.eu/resource/authority/role/RAPP" showAs=""/>
+				<TLCOrganization xml:id="COR_GROUP_EPP" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_EPP" showAs=""/>
+				<TLCConcept xml:id="INP" href="http://publications.europa.eu/resource/authority/subdivision/INP" showAs=""/>
+				<TLCReference xml:id="PNG" name="fileType" href="http://publications.europa.eu/resource/authority/file-type/PNG" showAs=""/>
+			</references>
+		</meta>
+		<coverPage xml:id="d2e86">
+			<container xml:id="d2e88" name="logo">
+				<p xml:id="d2e90"><img xml:id="d2e91" src="RSC_PNG-cjk7q0l8r0000i3m3f5q1z8h0-en.png" refersTo="~PNG"/></p>
+			</container>
+			<container xml:id="d2e94" name="actingEntity">
+				<p xml:id="d2e96"><organization xml:id="d2e97" refersTo="~COR">European Committee of the Regions</organization></p>
+			</container>
+			<container xml:id="d2e101" name="procedureIdentifier">
+				<block xml:id="d2e103" name="reference"><docketNumber xml:id="d2e104">COTER-VI/052</docketNumber></block>
+			</container>
+			<container xml:id="d2e108" name="sessionInfo">
+				<p xml:id="d2e110"><session xml:id="d2e111">136th plenary session, 7-9 October 2019</session></p>
+			</container>
+			<longTitle xml:id="d2e114">
+				<p xml:id="d2e116"><docType xml:id="d2e117" refersTo="~OPIN_COR">OPINION</docType> — <docPurpose xml:id="d2e120">Recommendations for the
+					successful design of regional development strategies beyond 2020</docPurpose></p>
+			</longTitle>
+			<container xml:id="d2e124" name="summary">
+				<block xml:id="d2e126" name="complexContent">
+					<subFlow xml:id="d2e128" name="structuredContent">
+						<list xml:id="d2e130">
+							<subparagraph xml:id="d2e132" refersTo="~INP">
+								<content xml:id="d2e134">
+									<p xml:id="d2e136"><organization xml:id="d2e137" refersTo="~COR">THE EUROPEAN COMMITTEE OF THE
+										REGIONS</organization>:</p>
+								</content>
+							</subparagraph>
+							<indent xml:id="d2e143">
+								<num xml:id="d2e145">-</num>
+								<content xml:id="d2e147">
+									<p xml:id="d2e149">points out that strengthening economic, social and territorial cohesion of the
+										European Union is one of the EU's main goals, based on the Treaty on the
+										Functioning of the European Union (TFEU); </p>
+								</content>
+							</indent>
+							<indent xml:id="d2e153">
+								<num xml:id="d2e155">-</num>
+								<content xml:id="d2e157">
+									<p xml:id="d2e159">emphasises that strengthening cohesion, including across borders, at regional
+										and local levels requires a bottom-up, place-based approach to develop
+										appropriate solutions locally; </p>
+								</content>
+							</indent>
+							<indent xml:id="d2e163">
+								<num xml:id="d2e165">-</num>
+								<content xml:id="d2e167">
+									<p xml:id="d2e169">stresses the importance of territorial strategies in focusing investment in an
+										integrated and coordinated manner;</p>
+								</content>
+							</indent>
+							<indent xml:id="d2e173">
+								<num xml:id="d2e175">-</num>
+								<content xml:id="d2e177">
+									<p xml:id="d2e179">recommends that cities and regions take SDGs into account as a guiding
+										principle when developing regional or local development strategies;</p>
+								</content>
+							</indent>
+							<indent xml:id="d2e184">
+								<num xml:id="d2e186">-</num>
+								<content xml:id="d2e188">
+									<p xml:id="d2e190">stresses that future trends should be taken into account in order to develop
+										effective strategies for regional development. Long-term planning, forecasts and
+										other strategic forecasting methods are therefore important tools for shaping
+										regional policy in the future; </p>
+								</content>
+							</indent>
+							<indent xml:id="d2e194">
+								<num xml:id="d2e196">-</num>
+								<content xml:id="d2e198">
+									<p xml:id="d2e200">recommends developing joint strategies for functional areas and adapting
+										relevant strategies and programmes where possible; </p>
+								</content>
+							</indent>
+							<indent xml:id="d2e204">
+								<num xml:id="d2e206">-</num>
+								<content xml:id="d2e208">
+									<p xml:id="d2e210">recommends to make full use of the opportunities provided by the Common
+										Provisions Regulation with a view to programming interregional or cross-border
+										cooperation projects to address cross-border functional areas, in close
+										coordination with the relevant INTERREG programmes; </p>
+								</content>
+							</indent>
+							<indent xml:id="d2e214">
+								<num xml:id="d2e216">-</num>
+								<content xml:id="d2e218">
+									<p xml:id="d2e220">underlines the added value of multi-fund programmes and encourages making full
+										use of the potential of integrated tools such as Community-led Local Development
+										(CLLD) and integrated territorial investment (ITI). </p>
+								</content>
+							</indent>
+						</list>
+					</subFlow>
+				</block>
+			</container>
+			<container xml:id="d2e228" name="rapporteur">
+				<p xml:id="d2e230"><inline xml:id="d2e231" name="label"><role xml:id="d2e232" refersTo="~RAPP">Rapporteur</role></inline>
+					<docIntroducer xml:id="d2e235"><person xml:id="d2e236" refersTo="" as="~RAPP">Adam Struzik</person> (PL/<organization xml:id="d2e239" refersTo="~COR_GROUP_EPP">EPP</organization>), President
+						of Mazovia Region</docIntroducer></p>
+			</container>
+			<container xml:id="d2e244" name="otherReferences">
+				<block xml:id="d2e246" name="docs"><inline xml:id="d2e247" name="label">Reference document</inline>NA</block>
+			</container>
+			<container xml:id="d2e252" name="mainDoc">
+				<block xml:id="d2e254" name="reference"><docNumber xml:id="d2e255">COR-2019-00644-00-00-AC-TRA</docNumber> (EN)</block>
+			</container>
+			<container xml:id="d2e259" name="mainDocLanguage">
+				<p xml:id="d2e261"><inline xml:id="d2e262" name="language" refersTo="~FRBRlanguage">EN</inline></p>
+			</container>
+		</coverPage>
+		<collectionBody xml:id="d2e267">
+			<component xml:id="d2e269">
+				<documentRef xml:id="d2e271" href="OPIN_COR-ckk5z02n5000ql284jcg20zo2-en.xml" showAs=""/>
+			</component>
+			<component xml:id="d2e274">
+				<documentRef xml:id="d2e276" href="BACKGROUND_DOC-cm8h2nfin00000claeig94l1o-en.xml" showAs=""/>
+			</component>
+		</collectionBody>
+	</documentCollection>
+</akomaNtoso>

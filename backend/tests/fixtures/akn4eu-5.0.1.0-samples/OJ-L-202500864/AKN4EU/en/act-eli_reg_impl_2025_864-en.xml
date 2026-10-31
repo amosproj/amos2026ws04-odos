@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+	<act name="REG_IMPL">
+		<!-- AT resource-type -->
+		<meta>
+			<identification source="~PUBL">
+				<FRBRWork>
+					<FRBRthis value="http://data.europa.eu/eli/reg_impl/2025/864/oj"/>
+					<FRBRuri value="http://data.europa.eu/eli/reg_impl/2025/864/oj"/>
+					<FRBRdate xml:id="adoption" eId="adoption" date="2025-04-30" name="adoption"/>
+					<FRBRdate xml:id="publication" eId="publication" date="2025-05-06"
+						name="publication"/>
+					<FRBRauthor href="#COM"/>
+					<FRBRcountry value="EU"/>
+					<FRBRsubtype value="REG_IMPL" refersTo="~COM_AUTO_PROC"/>
+					<FRBRnumber value="oj/L_202500864"  />
+					<FRBRnumber value="eli/reg_impl/2025/864" refersTo="#ELI"/>
+					<FRBRprescriptive value="true"/>
+				</FRBRWork>
+				<FRBRExpression>
+					<FRBRthis value="http://data.europa.eu/eli/reg_impl/2025/864/oj/eng"/>
+					<FRBRuri value="http://data.europa.eu/eli/reg_impl/2025/864/oj/eng"/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRlanguage xml:id="FRBRlanguage" refersTo="~ENG" eId="FRBRlanguage" language="en"/>
+				</FRBRExpression>
+				<FRBRManifestation>
+					<FRBRthis value="http://data.europa.eu/eli/reg_impl/2025/864/oj/eng/akn4eu"/>
+					<FRBRuri value="http://data.europa.eu/eli/reg_impl/2025/864/oj/eng/akn4eu"/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:akn4euVersion value="5.0.0.1"/>
+						<akn4eu:akn4euDocumentation
+							href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+						/>
+					</preservation>
+				</FRBRManifestation>
+			</identification>
+			<publication date="2025-05-06" number="2025/864" showAs="OJ L, 2025/864, 6.5.2025"
+				name="Official Journal of the European Union"/>
+			<analysis source="~PUBL">
+				<activeModifications>
+					<legalSystemMod type="implementation">
+						<source/>
+						<destination href="http://data.europa.eu/eli/reg/2009/1224"/>
+					</legalSystemMod>
+				</activeModifications>
+			</analysis>
+			<references source="~PUBL">
+				<TLCReference xml:id="EU" eId="EU" name="legalActDomain"  
+					href="http://publications.europa.eu/resource/authority/dataset/legal-act-domain/EU" showAs="EU"/>
+				<TLCReference xml:id="ENG" eId="ENG" name="language"
+					href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+				<TLCReference xml:id="legalBasis" eId="legalBasis" name="contentSubject"
+					href="http://eurovoc.europa.eu/5456" showAs="Legal basis"/>
+				<TLCOrganization xml:id="PUBL" eId="PUBL"
+					href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+					showAs="Publications Office of the European Union"/>
+				<TLCOrganization xml:id="COM" eId="COM"
+					href="http://publications.europa.eu/resource/authority/corporate-body/COM"
+					showAs="European Commission"/>
+				<TLCRole xml:id="PRESID" eId="PRESID"
+					href="http://publications.europa.eu/resource/authority/role/PRESID"
+					showAs="President"/>
+				<TLCLocation xml:id="BEL_BRU" eId="BEL_BRU"
+					href="http://publications.europa.eu/resource/authority/place/BEL_BRU"
+					showAs="Bruxelles"/>
+				<TLCReference xml:id="REG_IMPL" eId="DEC" name="docType"
+					href="http://publications.europa.eu/resource/authority/resource-type/REG_IMPL"
+					showAs="Implementing Regulation"/>
+				<TLCReference xml:id="ELI" name="identifier" 
+					href="http://publications.europa.eu/resource/authority/document-identifier-format/ELI" showAs="(EU) 2025/864"/>
+				<TLCProcess xml:id="COM_AUTO_PROC" href="http://publications.europa.eu/resource/authority/internal-procedure/COM_AUTO_PROC" showAs=""/>
+			</references>
+		</meta>
+		<preface xml:id="d1e91">
+			<container xml:id="d1e115" name="mainDoc">
+				<block xml:id="d1e127" name="reference">
+					<docNumber refersTo="~ELI" xml:id="d1e1421">(<inline name="legalActDomain" xml:id="d1e1422" refersTo="~EU">EU</inline>) 2025/864</docNumber></block>
+			</container>
+			<longTitle xml:id="d1e136" eId="tit_1">
+				<p xml:id="d1e138">
+					<docType xml:id="d1e142" refersTo="#REG_IMPL">COMMISSION IMPLEMENTING REGULATION
+						<docNumber xml:id="d1e143">(<inline name="legalActDomain" xml:id="d1e144" refersTo="~EU">EU</inline>) 2025/864</docNumber></docType>
+					of <date date="2025-04-30" xml:id="d1e145">30 April 2025</date>
+					<docPurpose xml:id="d1e146">operating deduction from the Atlantic salmon fishing
+						quota allocated to Finland in 2025 on account of overfishing in
+						2024</docPurpose>
+				</p>
+			</longTitle>
+		</preface>
+		<preamble xml:id="d1e105" eId="pbl_1">
+			<block name="heading" />
+			<formula xml:id="d1e107" name="actingEntity">
+				<p xml:id="d1e109">THE EUROPEAN COMMISSION,</p>
+			</formula>
+			<citations xml:id="d1e113">
+				<citation xml:id="d1e1151" refersTo="~legalBasis" eId="cit_1">
+					<p xml:id="d1e117">Having regard to the Treaty on the Functioning of the
+						European Union,</p>
+				</citation>
+				<citation xml:id="d1e121" eId="cit_2">
+					<p xml:id="d1e123">Having regard to Council Regulation (EC) No 1224/2009 of 20
+						November 2009 establishing a Union control system for ensuring compliance
+						with the rules of the common fisheries policy, amending Regulations (EC) No
+						847/96, (EC) No 2371/2002, (EC) No 811/2004, (EC) No 768/2005, (EC) No
+						2115/2005, (EC) No 2166/2005, (EC) No 388/2006, (EC) No 509/2007, (EC) No
+						676/2007, (EC) No 1098/2007, (EC) No 1300/2008, (EC) No 1342/2008 and
+						repealing Regulations (EEC) No 2847/93, (EC) No 1627/94 and (EC) No
+							1966/2006<authorialNote xml:id="d1e12311" marker="1" placement="bottom">
+							<p xml:id="d1e123111">OJ L 343, 22.12.2009, p. 1, ELI:
+								http://data.europa.eu/eli/reg/2009/1224/oj.</p>
+						</authorialNote>, and in particular Article 105(1) and (2) thereof,</p>
+				</citation>
+			</citations>
+			<recitals xml:id="d1e128">
+				<intro xml:id="d1e130">
+					<p xml:id="d1e132">Whereas:</p>
+				</intro>
+				<recitals xml:id="d1e14211">
+					<num xml:id="d1e1445">1.</num>
+					<heading xml:id="d1e1446">Council Regulations allocating to Finland fishing
+						quotas, respectively, for the years 2023, 2024 and 2025</heading>
+					<recital xml:id="d1e148" eId="rct_1">
+						<num xml:id="d1e150">(1)</num>
+						<p xml:id="d1e152">For the fishing year 2024, Council Regulation (EU)
+							2023/2638<authorialNote xml:id="d1e1521" marker="2" placement="bottom">
+								<p xml:id="d1e15211">Council Regulation (EU) 2023/2638 of 20 November 2023 fixing the
+									fishing opportunities for certain fish stocks and groups of fish
+									stocks applicable in the Baltic Sea for 2024 and amending
+									Regulation (EU) 2023/194 as regards certain fishing
+									opportunities in other waters (OJ L 2023/2638, 22.11.2023, ELI:
+									http://data.europa.eu/eli/reg/2023/2638/oj).</p>
+							</authorialNote> allocated to Finland a fishing quota of 13 945
+							individuals of Atlantic salmon (salmo salar) in Union waters of ICES
+							subdivisions 22 to 31 (SAL/3BCD-F) (‘main basin salmon’).</p>
+					</recital>
+					<recital xml:id="d1e155" eId="rct_2">
+						<num xml:id="d1e157">(2)</num>
+						<p xml:id="d1e159">In accordance with Table 8, footnote 2, first paragraph,
+							of the Annex to Regulation (EU) 2023/2638, the fishing quotas of main
+							basin salmon were exclusively for by-catches and no directed fisheries
+							were permitted. There were two derogations to that rule. </p>
+					</recital>
+					<recital xml:id="d1e162" eId="rct_3">
+						<num xml:id="d1e164">(3)</num>
+						<p xml:id="d1e166">The first derogation was provided for in that Table 8, by
+							the second paragraph of the same footnote 2, according to which fishing
+							operations conducted for the exclusive purpose of scientific
+							investigations could be directed to main basin salmon, provided that
+							those investigations were carried out in compliance with the conditions
+							set out in Article 25 of Regulation (EU) 2019/1241 of the European
+							Parliament and of the Council<authorialNote xml:id="d1e1661" marker="3"
+								placement="bottom">
+								<p xml:id="d1e1662">Regulation (EU) 2019/1241 of the European Parliament and of the Council of 20 June 2019 on the conservation of fisheries resources and the protection of marine ecosystems through technical measures, amending Council Regulations (EC) No 1967/2006, (EC) No 1224/2009 and Regulations (EU) No 1380/2013, (EU) 2016/1139, (EU) 2018/973, (EU) 2019/472 and (EU) 2019/1022 of the European Parliament and of the Council, and repealing Council Regulations (EC) No 894/97, (EC) No 850/98, (EC) No 2549/2000, (EC) No 254/2002, (EC) No 812/2004 and (EC) No 2187/2005 (OJ L 198, 25.7.2019, p. 105, ELI: http://data.europa.eu/eli/reg/2019/ 1241/oj).</p>
+							</authorialNote>. </p>
+					</recital>
+					<recital xml:id="d1e170" eId="rct_4">
+						<num xml:id="d1e172">(4)</num>
+						<p xml:id="d1e174">The second derogation was provided for in that Table 8,
+							by the third paragraph of the same footnote 2, according to which
+							directed fishing was permitted for Union fishing vessels in ICES
+							subdivision 31 in areas within four nautical miles measured from the
+							baselines during the period from 1 May to 31 August 2024. </p>
+					</recital>
+					<recital xml:id="d1e177" eId="rct_5">
+						<num xml:id="d1e179">(5)</num>
+						<p xml:id="d1e181">Article 10(1) of Regulation (EU) 2023/2638 prohibited
+							recreational fishing of main basin salmon in ICES subdivisions 22 to 31.
+							There were also two derogations to that rule. </p>
+					</recital>
+					<recital xml:id="d1e184" eId="rct_6">
+						<num xml:id="d1e186">(6)</num>
+						<p xml:id="d1e188">The first derogation was provided for by Article 10(2)
+							which allowed recreational fisheries for one adipose fin-clipped salmon
+							per recreational fisher per day under certain conditions. </p>
+					</recital>
+					<recital xml:id="d1e191" eId="rct_7">
+						<num xml:id="d1e193">(7)</num>
+						<p xml:id="d1e195">The second derogation was provided for by Article 10(3)
+							which allowed recreational fisheries in ICES subdivision 31 in areas
+							within four nautical miles measured from the baselines during the period
+							from 1 May to 31 August 2024. </p>
+					</recital>
+					<recital xml:id="d1e198" eId="rct_8">
+						<num xml:id="d1e200">(8)</num>
+						<p xml:id="d1e202">For the fishing year 2023, it is Council Regulation (EU)
+							2022/2090<authorialNote xml:id="d1e1523" marker="4" placement="bottom">
+								<p xml:id="d1e1524">Council Regulation (EU) 2022/2090 of 27 October 2022 fixing the
+									fishing opportunities for certain fish stocks and groups of fish
+									stocks applicable in the Baltic Sea for 2023 and amending
+									Regulation (EU) 2022/109 as regards certain fishing
+									opportunities in other waters (OJ L 281, 31.10.2022, p. 1, ELI:
+									http://data.europa.eu/eli/reg/2022/2090/oj).</p>
+							</authorialNote> which provided, among others, for fishing opportunities
+							for main basin salmon. Unlike the fishing year 2024, in the fishing year
+							2023, Table 8, footnote 2, third paragraph, of the Annex to that
+							Regulation provided that directed fishing of the quotas of main basin
+							salmon was permitted for Union fishing vessels north to latitude 59° 30′
+							N (meaning in ICES subdivisions 29 North, 30 and 31) in areas within
+							four nautical miles measured from the baselines during the period from 1
+							May to 31 August 2023. </p>
+					</recital>
+					<recital xml:id="d1e205" eId="rct_9">
+						<num xml:id="d1e207">(9)</num>
+						<p xml:id="d1e209">For 2023, Finland reported to the Commission 4 394
+							individuals of salmon caught in ICES subdivisions 29 North and 30. </p>
+					</recital>
+					<recital xml:id="d1e213" eId="rct_10">
+						<num xml:id="d1e215">(10)</num>
+						<p xml:id="d1e217">For the fishing year 2025, Council Regulation (EU)
+							2024/2903<authorialNote xml:id="d1e2171" marker="5" placement="bottom">
+								<p xml:id="d1e2172">Council Regulation (EU) 2024/2903 of 18 November 2024 fixing the
+									fishing opportunities for certain fish stocks and groups of fish
+									stocks applicable in the Baltic Sea for 2025 and amending
+									Regulation (EU) 2024/257 as regards certain fishing
+									opportunities in other waters (OJ L, 2024/2903, 19.11.2024, ELI:
+									http://data.europa.eu/eli/reg/2024/2903/oj).</p>
+							</authorialNote> allocates to Finland a fishing quota of 8 989
+							individuals of main basin salmon. </p>
+					</recital>
+				</recitals>
+				<recitals xml:id="d1e221">
+					<num xml:id="d1e223">2.</num>
+					<heading xml:id="d1e225">EXCHANGES WITH FINLAND AND ASSESSMENT BY THE
+						SCIENTIFIC, TECHNICAL AND ECONOMIC COMMITTEE FOR FISHERIES</heading>
+
+					<recitals xml:id="d1e234">
+						<num xml:id="d1e236">2.1.</num>
+						<heading xml:id="d1e238">Information from Finland</heading>
+						<recital xml:id="d1e240" eId="rct_11">
+							<num xml:id="d1e242">(11)</num>
+							<p xml:id="d1e244">On 26 February 2024, Finland informed the Commission
+								of a planned research for fishing operations for salmon to be
+								conducted for the purpose of scientific investigation in ICES
+								subdivisions 29 North and 30. The research provided for the
+								involvement of 45 commercial vessels flying the flag of Finland and
+								an undefined number of recreational fishers who would have measured
+								and taken scale samples from every wild salmon caught. The research
+								would have been implemented in Finnish waters within four nautical
+								miles measured from the baselines from 27 May to 31 August 2024.
+								Finland expected catches of about 4 300 individuals of salmon. </p>
+						</recital>
+						<recital xml:id="d1e247" eId="rct_12">
+							<num xml:id="d1e249">(12)</num>
+							<p xml:id="d1e251">Since the research would have involved more than six
+								commercial vessels in accordance with Article 25(1)(e) of Regulation
+								(EU) 2019/1241 the Commission sought the advice from the Scientific,
+								Technical and Economic Committee for Fisheries (STECF) to confirm
+								that such a level of participation was justified on scientific
+								grounds. </p>
+						</recital>
+					</recitals>
+					<recitals xml:id="d1e255">
+						<num xml:id="d1e257">2.2.</num>
+						<heading xml:id="d1e259">75<sup xml:id="d1e261">th</sup> STECF plenary
+							meeting of March 2024</heading>
+						<recital xml:id="d1e264" eId="rct_13">
+							<num xml:id="d1e266">(13)</num>
+							<p xml:id="d1e268">In its 75<sup xml:id="d1e2611">th</sup> plenary
+								meeting that took place from 11 to 15 March 2024<authorialNote xml:id="d1e2681"
+									marker="6" placement="bottom">
+									<p xml:id="d1e2682">Scientific, Technical and Economic Committee for Fisheries
+										(STECF) – 75<sup xml:id="d1e2612">th</sup> Plenary report
+										(STECF-PLEN-2024-01), Publications Office of the European
+										Union, Luxembourg, 2024, p. 101.</p>
+								</authorialNote>, the STECF considered that the level of
+								participation in the research as initially planned was not justified
+								on the following scientific grounds. </p>
+						</recital>
+						<recital xml:id="d1e271" eId="rct_14">
+							<num xml:id="d1e273">(14)</num>
+							<p xml:id="d1e275">First, the STECF noted that “the number of vessels
+								and the projected level of fis[h]ing effort is almost equivalent to
+								the levels in the commercial fisheries in previous years. Following
+								previous evaluations of scientific fishery requests, STECF recalls
+								that a scientific fishery should not aim to simulate the full
+								fishery but to collect a representative sample of the population
+								fitting the purpose of the scientific trials”. </p>
+						</recital>
+						<recital xml:id="d1e278" eId="rct_15">
+							<num xml:id="d1e280">(15)</num>
+							<p xml:id="d1e282">Second, the STECF noted that ‘covering the whole area
+								and the whole fishing season is not necessarily required and
+								suggests that pre-existing knowledge on the spatial and temporal
+								distribution at sea of salmons from Ljungan River could be used to
+								define the sampling effort’. </p>
+						</recital>
+						<recital xml:id="d1e286" eId="rct_16">
+							<num xml:id="d1e288">(16)</num>
+							<p xml:id="d1e290">Third, the STECF noted that ‘the added value of the
+								data arising from the scientific survey is likely to be limited’.
+							</p>
+						</recital>
+						<recital xml:id="d1e293" eId="rct_17">
+							<num xml:id="d1e295">(17)</num>
+							<p xml:id="d1e297">Fourth, the STECF noted that while ‘estimating the
+								proportion of salmon from Ljungan River requires a large scale
+								sampling (…) even the catch of a small number of salmon from this
+								population could have a significant impact on the stock.’ </p>
+						</recital>
+						<recital xml:id="d1e300" eId="rct_18">
+							<num xml:id="d1e302">(18)</num>
+							<p xml:id="d1e304">Fifth, the STECF noted that ‘interannual, intraannual
+								and spatial variations in the mixed stock composition (…) would not
+								allow deriving general conclusions from the sampling proposed.’ </p>
+						</recital>
+						<recital xml:id="d1e307" eId="rct_19">
+							<num xml:id="d1e309">(19)</num>
+							<p xml:id="d1e311">Sixth, the STECF noted that ‘in the context of a
+								scientific fishery, releasing wild salmon could be an option to
+								deliver the same scientific results while limiting the risk of
+								detrimental impacts on the depleted population”. This is justified
+								“given the survivability of salmon from trap nets has been shown to
+								be greater than 70%’. </p>
+						</recital>
+						<recital xml:id="d1e324" eId="rct_20">
+							<num xml:id="d1e326">(20)</num>
+							<p xml:id="d1e328">On 30 April 2024, Finland informed the Commission
+								that it had amended the conditions of the research. The amended
+								research excluded recreational fisheries and reduced the number of
+								participating commercial vessels flying the flag of Finland from 45
+								to 32 (consisting in all commercial vessels flying the flag of
+								Finland which, individually, caught at least 64 salmon in 2022 or
+								2023). According to Finland, this corresponded to about 50% of the
+								commercial vessels flying the flag of Finland that fished for main
+								basin salmon in 2022 or 2023, with an estimated total catch of 3 650
+								individuals. Finland claimed that 32 commercial vessels were
+								necessary to obtain a representative sample of the main basin salmon
+								populations. Finland further claimed that one of the reasons that
+								would prevent the release of catches of main basin salmon would be
+								that it “is not an alternative since taking the samples from the
+								scales of wild salmon individuals is crucial for collecting relevant
+								information on the river origin of wild salmon individuals. The
+								scale samples cannot be taken without harming the wild salmon
+								individuals and raising the risk of causing a high mortality of the
+								released individuals”. </p>
+						</recital>
+					</recitals>
+					<recitals xml:id="d1e315">
+						<num xml:id="d1e317">2.3.</num>
+						<heading xml:id="d1e319">Exchanges with Finland following the 75<sup
+								xml:id="d1e321">th</sup> STECF plenary meeting of March
+							2024</heading>
+						<recital xml:id="d1e331" eId="rct_21">
+							<num xml:id="d1e333">(21)</num>
+							<p xml:id="d1e335">On 30 April 2024, Finland informed the Commission
+								that it had amended the conditions of the research. The amended
+								research excluded recreational fisheries and reduced the number of
+								participating commercial vessels flying the flag of Finland from 45
+								to 32 (consisting in all commercial vessels flying the flag of
+								Finland which, individually, caught at least 64 salmon in 2022 or
+								2023). According to Finland, this corresponded to about 50 % of the
+								commercial vessels flying the flag of Finland that fished for main
+								basin salmon in 2022 or 2023, with an estimated total catch of 3 650
+								individuals. Finland claimed that 32 commercial vessels were
+								necessary to obtain a representative sample of the main basin salmon
+								populations. Finland further claimed that one of the reasons that
+								would prevent the release of catches of main basin salmon would be
+								that it ‘is not an alternative since taking the samples from the
+								scales of wild salmon individuals is crucial for collecting relevant
+								information on the river origin of wild salmon individuals. The
+								scale samples cannot be taken without harming the wild salmon
+								individuals and raising the risk of causing a high mortality of the
+								released individuals’.</p>
+						</recital>
+						<recital xml:id="d1e3311" eId="rct_22">
+							<num xml:id="d1e3332">(22)</num>
+							<p xml:id="d1e3353">On 30 April 2024, Finland informed the Commission
+								that it had amended the conditions of the research. The amended
+								research excluded recreational fisheries and reduced the number of
+								participating commercial vessels flying the flag of Finland from 45
+								to 32 (consisting in all commercial vessels flying the flag of
+								Finland which, individually, caught at least 64 salmon in 2022 or
+								2023). According to Finland, this corresponded to about 50 % of the
+								commercial vessels flying the flag of Finland that fished for main
+								basin salmon in 2022 or 2023, with an estimated total catch of 3 650
+								individuals. Finland claimed that 32 commercial vessels were
+								necessary to obtain a representative sample of the main basin salmon
+								populations. Finland further claimed that one of the reasons that
+								would prevent the release of catches of main basin salmon would be
+								that it ‘is not an alternative since taking the samples from the
+								scales of wild salmon individuals is crucial for collecting relevant
+								information on the river origin of wild salmon individuals. The
+								scale samples cannot be taken without harming the wild salmon
+								individuals and raising the risk of causing a high mortality of the
+								released individuals’.</p>
+						</recital>
+						<recital xml:id="d1e338" eId="rct_23">
+							<num xml:id="d1e340">(23)</num>
+							<p xml:id="d1e342">On 24 May 2024, Finland informed the Commission that
+								it would replace two of the 32 participating commercial vessels
+								flying the flag of Finland by two different vessels. Finland further
+								claimed that: (i) “[a] second and retroactive assessment by STECF is
+								neither in line with Article 25.1 (e) [of Regulation (EU) 2019/1241]
+								with the requirement of informing the Commission at least three
+								months in advance. Neither does the STECF report 24-01 require such
+								renewed assessment”; (ii) waiting for a second STECF advice in July
+								would be “untimely” because “the migrating salmon in mid-July have
+								already passed the coastal areas in subdivisions 29N and 30 and the
+								scientific salmon fisheries is more or less completed.”; (iii) “that
+								in 2019 - 2022 the salmon catch in subdivisions 29N and 30 have been
+								around 6 000 - 9 000 individuals, of which approx. 70 % were wild (4
+								200 - 6 300). Thereby a forecasted catch of 2 550 wild salmon in the
+								scientific fisheries is significantly less than a normal full
+								fishery”’ and (iv) “measuring length and weight and determining the
+								sex of live wild salmon and especially taking a sufficient amount of
+								scales from them and thereafter releasing them, would seem to be a
+								violation of Article 3(3) of the Commission Delegated Regulation
+								2024/1296<authorialNote xml:id="d1e3421" marker="7" placement="bottom">
+									<p xml:id="d1e3422">Commission Delegated Regulation (EU) 2024/1296 of 28 February 2024 supplementing Regulation (EU) 2016/1139 of the European Parliament and of the Council concerning an exemption from the application of the landing obligation as regards salmon in the Baltic Sea for the period 2024-2026 (OJ L, 2024/1296, 7.5.2024, ELI: http://data.europa.eu/eli/reg_del/2024/1296/oj).</p>
+								</authorialNote> requiring immediate release of salmon to be
+								discarded (released) and would not be in accordance with our
+								legislation on animal welfare. (…) Furthermore, the mentioned
+								Regulation does not allow for release of salmon from fixed nets”.
+							</p>
+						</recital>
+						<recital xml:id="d1e346" eId="rct_24">
+							<num xml:id="d1e348">(24)</num>
+							<p xml:id="d1e350">On 27 May 2024, Finland began to conduct the amended
+								research with 32 commercial vessels. </p>
+						</recital>
+						<recital xml:id="d1e353" eId="rct_25">
+							<num xml:id="d1e355">(25)</num>
+							<p xml:id="d1e357">On 14 June 2024, the Commission requested that
+								Finland suspend the conduct of the amended research until an advice
+								was obtained regarding that research from the STECF in its next
+								plenary meeting of July 2024. </p>
+						</recital>
+						<recital xml:id="d1e360" eId="rct_26">
+							<num xml:id="d1e362">(26)</num>
+							<p xml:id="d1e364">On 20 June 2024, Finland informed the Commission that
+								it would not suspend the conduct of the amended research because,
+								according to Finland: “the scientific fisheries has been prepared in
+								full compliance with the relevant provisions of the CFP”; and (ii)
+								“there is a clear lack of the data on the origin of wild salmon in
+								the catch of our coastal fisheries. Data on the origin of salmon are
+								needed both for future decisions on the management of salmon
+								fisheries as well as for the consideration of possible conservation
+								measures for weaker salmon populations”. </p>
+						</recital>
+					</recitals>
+					<recitals xml:id="d1e368">
+						<num xml:id="d1e370">2.4.</num>
+						<heading xml:id="d1e372">76<sup xml:id="d1e374">th</sup> STECF plenary
+							meeting of July 2024</heading>
+						<recital xml:id="d1e377" eId="rct_27">
+							<num xml:id="d1e379">(27)</num>
+							<p xml:id="d1e381">In its 76<sup xml:id="d1e3741">th</sup> plenary
+								meeting that took place from 8 to 12 July 2024<authorialNote
+									marker="8" placement="bottom" xml:id="d1e6063">
+									<p xml:id="d1e60631">STECF – 76th Plenary report (STECF-PLEN-2024-02),
+										Publications Office of the European Union, Luxembourg, 2024,
+										p. 133.</p>
+								</authorialNote>, the STECF confirmed that the level of
+								participation in the amended research was not justified on the
+								following scientific grounds. </p>
+						</recital>
+						<recital xml:id="d1e384" eId="rct_28">
+							<num xml:id="d1e386">(28)</num>
+							<p xml:id="d1e388">First, STECF noted that the level of participation
+								was “still approximately 50% of all vessels used in commercial
+								salmon fishery in the area in 2022-2023” and that “the total catch
+								would still be close to 70% of the catch of 5300 salmon reported
+								from the area during the fishing season of 2022.” </p>
+						</recital>
+						<recital xml:id="d1e391" eId="rct_29">
+							<num xml:id="d1e393">(29)</num>
+							<p xml:id="d1e395">Second, STECF noted that “a scientific sampling shall
+								be in orders of magnitude smaller than commercial fishing” whereas
+								“expected catches are as high as 70% of commercial catches in the
+								previous years”. </p>
+						</recital>
+						<recital xml:id="d1e399" eId="rct_30">
+							<num xml:id="d1e401">(30)</num>
+							<p xml:id="d1e403">Third, Finland “sampled just 394 individuals in AU 3
+								in 2023 (99 in Sd 29 and 295 in Sd 30- ICES 2024a)”. </p>
+						</recital>
+						<recital xml:id="d1e406" eId="rct_31">
+							<num xml:id="d1e408">(31)</num>
+							<p xml:id="d1e410">Fourth, “the objectives of the requested scientific
+								fishery are still unclear”. </p>
+						</recital>
+						<recital xml:id="d1e413" eId="rct_32">
+							<num xml:id="d1e415">(32)</num>
+							<p xml:id="d1e417">Fifth, “the possible post-release mortality due to
+								sampling procedures is essentially lower than the 100% mortality of
+								retained onboard and landed catch”. </p>
+						</recital>
+					</recitals>
+					<recitals xml:id="d1e421">
+						<num xml:id="d1e423">2.5.</num>
+						<heading xml:id="d1e425">Exchanges with Finland following the 76<sup
+								xml:id="d1e427">th</sup> STECF plenary meeting of July
+							2024</heading>
+						<recital xml:id="d1e430" eId="rct_33">
+							<num xml:id="d1e432">(33)</num>
+							<p xml:id="d1e434">In a press release of 4 September 2024<authorialNote xml:id="d1e4341"
+									marker="9" placement="bottom">
+								<p xml:id="d1e4342">Ensimmäiset tulokset lohen tieteellisestä kalastuksesta
+										tukevat Suomen rannikkokalastuksen sallimista - ePressi.</p>
+								</authorialNote> and by a letter to the Commission of 2 October
+								2024, Finland indicated that the participating vessels in the
+								amended research had caught a total of 3 162 individuals of salmon.
+								This figure is consistent with the official catch data that Finland
+								reported in the Commission’s Effort and Catch Reporting system
+								(ECR). </p>
+						</recital>
+						<recital xml:id="d1e437" eId="rct_34">
+							<num xml:id="d1e439">(34)</num>
+							<p xml:id="d1e441">On 18 February 2025, the Commission informed Finland
+								by letter of its intention to adopt a deduction of 3 162 individuals
+								of main basin salmon from the Finnish quota available in 2025 for
+								that stock, pursuant to Article 105(1) and (2) of Regulation (EC) No
+								1224/2009. </p>
+						</recital>
+						<recital xml:id="d1e444" eId="rct_35">
+							<num xml:id="d1e446">(35)</num>
+							<p xml:id="d1e448">On 3 and 6 March 2025, meetings were held between the
+								Commissioner for Fisheries and Oceans, the Finnish Minister for
+								Agriculture and Forestry and the Finnish authorities to discuss the
+								matter. </p>
+						</recital>
+						<recital xml:id="d1e452" eId="rct_36">
+							<num xml:id="d1e454">(36)</num>
+							<p xml:id="d1e456">On 7 March 2025, Finland sent its comments on the
+								letter of 18 February 2025. First, Finland questioned the legal
+								basis for the proposed deduction, claiming that “the legal basis of
+								Article 105 (1) and (2) of the Regulation 1224/2009 is invalid since
+								the salmon catch of Finland was 11 519 salmon in 2024 and hence
+								Finland has not exceeded its salmon quota of 16 661 salmon.” Second,
+								Finland claimed that the amended research was “fully in accordance
+								with the advice of STECF from its March plenary 24-01 and the
+								article 25 of Regulation (EU) 2019/1241, which sets the detailed
+								rules for scientific fisheries, including the advice of STECF.”
+								Third, Finland questioned the legal basis for the STECF advice of
+								July 2024, claiming that “the wording of the Regulation (EU)
+								2019/1241 does not include a possibility to ask for a second and
+								overdue advice from STECF.” </p>
+						</recital>
+					</recitals>
+					<recitals xml:id="d1e460">
+						<num xml:id="d1e462">3.</num>
+						<heading xml:id="d1e464">DETAILED ANALYSIS</heading>
+						<recital xml:id="d1e466" eId="rct_37">
+							<num xml:id="d1e468">(37)</num>
+							<p xml:id="d1e470">For the reasons set out below, the Commission
+								concludes that: (i) the amended research was not carried out in
+								compliance with the conditions set out in Article 25 of Regulation
+								(EU) 2019/1241; and as a result, (ii) the conditions for the
+								application of the derogation set out in Table 8, footnote 2, second
+								paragraph, of the Annex to Regulation (EU) 2023/2638 were not met.
+							</p>
+						</recital>
+					</recitals>
+					<recitals xml:id="d1e475">
+						<num xml:id="d1e477">3.1.</num>
+						<heading xml:id="d1e479">Finland’s amended research in the light of the
+							conditions set out in Article 25 of Regulation (EU) 2019/1241</heading>
+						<recital xml:id="d1e481" eId="rct_38">
+							<num xml:id="d1e483">(38)</num>
+							<p xml:id="d1e485">Finland’s amended research was not carried out in
+								compliance with the conditions set out in Article 25 of Regulation
+								(EU) 2019/1241 for the following reasons. </p>
+						</recital>
+						<recital xml:id="d1e488" eId="rct_39">
+							<num xml:id="d1e490">(39)</num>
+							<p xml:id="d1e492">First, in its advice of March 2024 (see recital (13)
+								above), the STECF considered that the level of participation in the
+								research as initially planned was not justified on scientific
+								grounds. </p>
+						</recital>
+						<recital xml:id="d1e495" eId="rct_40">
+							<num xml:id="d1e497">(40)</num>
+							<p xml:id="d1e499">Second, while on 30 April and 24 May 2024, Finland
+								informed the Commission that it had amended the conditions of the
+								research and reduced the level of participation to 32 vessels, the
+								reduced level of participation was still not justified on scientific
+								grounds. As noted in the STECF advice of March 2024, a scientific
+								fishery should not aim to simulate the full fishery but to collect a
+								representative sample of the population fitting the purpose of the
+								scientific trials. However, as noted in the STECF advice of July
+								2024 and on the one hand, 32 commercial vessels would result in a
+								total catch “close to 70% of the catch of 5 300 salmon reported from
+								the area during the fishing season of 2022” whereas “a scientific
+								sampling shall be in orders of magnitude smaller than commercial
+								fishing”. On the other hand, the 3 650 individuals of salmon
+								expected by Finland to be caught in the amended research
+								corresponded to a share which lies in the average range of about one
+								third of total Finnish catches of main basin salmon made in ICES
+								subdivisions 29 North and 30 since at least 2019. </p>
+						</recital>
+						<recital xml:id="d1e503" eId="rct_41">
+							<num xml:id="d1e505">(41)</num>
+							<p xml:id="d1e507">In its letters of 30 April 2024, 24 May 2024, 20 June
+								2024 and 7 March 2025, Finland called into question the Commission’s
+								conclusion that the amended research was not carried out in
+								compliance with the conditions set out in Article 25 of Regulation
+								(EU) 2019/1241. However, the Commission maintains its conclusion for
+								the following reasons: </p>
+						</recital>
+						<recital xml:id="d1e510" eId="rct_42">
+							<num xml:id="d1e512">(42)</num>
+							<p xml:id="d1e514">In the first place, 32 commercial vessels were
+								unnecessary to obtain a representative sample of the main basin
+								salmon population (see recital (39) above). </p>
+						</recital>
+						<recital xml:id="d1e517" eId="rct_43">
+							<num xml:id="d1e519">(43)</num>
+							<p xml:id="d1e521">In the second place, releasing catches of main basin
+								salmon would have been an alternative. This is because (i) as noted
+								by the STECF in its advice of March 2024, “the survivability of
+								salmon from trap nets has been shown to be greater than 70%”; (ii)
+								as noted by STECF in its advice of July 2024, “the possible
+								post-release mortality due to sampling procedures is essentially
+								lower than the 100% mortality of retained onboard and landed catch”;
+								(iii) Commission Delegated Regulation (EU) 2024/1296 does not
+								require the “immediate release” of all catches of main basin salmon;
+								and (iv) Finland has not identified which provisions of Finnish
+								“legislation on animal welfare” would allegedly prevent the release
+								of the caught salmon. </p>
+						</recital>
+						<recital xml:id="d1e524" eId="rct_44">
+							<num xml:id="d1e526">(44)</num>
+							<p xml:id="d1e528">In the third place, the Commission was entitled to
+								seek a second advice of the STECF, given that: (i) Article 25(1)(e)
+								of Regulation (EU) 2019/1241 requires a Member State to amend the
+								conditions of any planned research according to the advice of the
+								STECF; and (ii) the Commission had doubts that the level of
+								participation in the amended research was justified in the light of
+								the advice of the STECF of March 2024, and thus that Finland had
+								amended the conditions of the initial research accordingly. </p>
+						</recital>
+						<recital xml:id="d1e531" eId="rct_45">
+							<num xml:id="d1e533">(45)</num>
+							<p xml:id="d1e535">In the fourth place, contrary to what Finland claims,
+								the Commission did not ask Finland to postpone all research until a
+								second advice from the STECF was obtained Rather, on 14 May 2024,
+								the Commission asked Finland to postpone the undertaking of any
+								research “that would go beyond what the STECF estimates to be
+								justified on scientific grounds” in the advice of March 2024. </p>
+						</recital>
+					</recitals>
+					<recitals xml:id="d1e539">
+						<num xml:id="d1e541">3.2.</num>
+						<heading xml:id="d1e543">Finland’s amended research in the light of the
+							conditions for the application of the derogation set out in Table 8,
+							footnote 2, second paragraph, of the Annex to Regulation (EU) 2023/2638 </heading>
+						<recital xml:id="d1e545"  eId="rct_46">
+							<num xml:id="d1e547">(46)</num>
+							<p xml:id="d1e549">For the reasons set out below, Finland has exceeded
+								the fishing quota that has been allocated to it by Table 8 of the
+								Annex to Regulation (EU) 2023/2638 for main basin salmon for the
+								year 2024. </p>
+						</recital>
+						<recital xml:id="d1e552" eId="rct_47">
+							<num xml:id="d1e554">(47)</num>
+							<p xml:id="d1e556">First, in accordance with Table 8, footnote 2, first
+								paragraph, of the Annex to Regulation (EU) 2023/2638, Finland’s
+								quota of main basin salmon was exclusively for by-catches and no
+								directed fishing was permitted, unless either of the two derogations
+								provided for in the second or third paragraphs of that footnote 2
+								were met. </p>
+						</recital>
+						<recital xml:id="d1e559" eId="rct_48">
+							<num xml:id="d1e561">(48)</num>
+							<p xml:id="d1e563">Second, the amended research could not benefit from
+								the derogation for directed fisheries provided in Table 8, footnote
+								2, second paragraph, of the Annex to Regulation (EU) 2023/2638.
+								Indeed, as explained under Section 3.1 above, the amended research
+								was not carried out in compliance with the conditions set out in
+								Article 25 of Regulation (EU) 2019/1241. </p>
+						</recital>
+						<recital xml:id="d1e567" eId="rct_49">
+							<num xml:id="d1e569">(49)</num>
+							<p xml:id="d1e571">Third, the amended research could not benefit from
+								the derogation for directed fisheries provided in Table 8, footnote
+								2, third paragraph, of the Annex to Regulation (EU) 2023/2638,
+								either. That derogation was applicable only in ICES subdivision 31,
+								while the amended research was conducted in ICES subdivisions 29
+								North and 30. </p>
+						</recital>
+						<recital xml:id="d1e574" eId="rct_50">
+							<num xml:id="d1e576">(50)</num>
+							<p xml:id="d1e578">Consequently, any directed fishing of main basin
+								salmon by Finland in ICES subdivisions 29 North and 30 in the year
+								2024 exceeded the quota allocated to it by Table 8 of the Annex to
+								Regulation (EU) 2023/2638. However, as explained under Section 2.5
+								above, the participating vessels in the amended research caught
+								directly a total of 3 162 individuals of salmon. </p>
+						</recital>
+					</recitals>
+					<recitals xml:id="d1e582">
+						<num xml:id="d1e584">3.3.</num>
+						<heading xml:id="d1e586">Deduction from the fishing quota allocated to
+							Finland in 2025 on account of overfishing in 2024</heading>
+						<recital xml:id="d1e588" eId="rct_51">
+							<num xml:id="d1e590">(51)</num>
+							<p xml:id="d1e592">Pursuant to Article 105(1) of Regulation (EC) No
+								1224/2009, when the Commission has established that a Member State
+								has exceeded the fishing quotas which have been allocated to it, the
+								Commission is to operate deductions from future fishing quotas of
+								that Member State. Article 105(2) of that Regulation provides that,
+								in the case of an overfishing of a quota, allocation or share of a
+								stock or a group of stocks available to a Member State in a given
+								year, the Commission is to operate deductions in the following year
+								or years from the annual quota, allocation or share of the Member
+								State which has overfished. </p>
+						</recital>
+						<recital xml:id="d1e595" eId="rct_52">
+							<num xml:id="d1e597">(52)</num>
+							<p xml:id="d1e599">Regulation (EU) 2024/2903 allocates to Finland a
+								fishing quota of 8 989 individuals of main basin salmon for the year
+								2025. This is the same stock for which Finland exceeded its quota
+								for the year 2024. </p>
+						</recital>
+						<recital xml:id="d1e602" eId="rct_53">
+							<num xml:id="d1e604">(53)</num>
+							<p xml:id="d1e606">In accordance with point 1, first subparagraph, of
+								the Commission Guidelines for the deduction of quotas under Article
+								105(1), (2) and (5) of Regulation (EC) No 1224/2009<authorialNote
+									xml:id="d1e6061" marker="10" placement="bottom">
+									<p xml:id="d1e6062">Communication from the Commission on
+										guidelines for the deduction of quotas under Article 105(1),
+										(2) and (5) of Regulation (EC) No 1224/2009, and replacing
+										Communication 2012/C 72/07 2022/C 369/03 (OJ C 369,
+										27.9.2022, p. 3).</p>
+								</authorialNote>, the totality of the deduction should be due in the
+								year following the overfishing. It is therefore appropriate to
+								operate deductions from the quota for this stock allocated to
+								Finland in the year 2025. </p>
+						</recital>
+						<recital xml:id="d1e610" eId="rct_54">
+							<num xml:id="d1e612">(54)</num>
+							<p xml:id="d1e614">In accordance with Article 105(2) of Regulation (EC)
+								No 1224/2009, such deductions are to be operated by applying the
+								multiplying factors as set out therein. In accordance with Article
+								105(2), second sentence, a multiplying factor equal to 1,00 should
+								apply as 3 162 individuals of main basin salmon weigh less than 100
+								tonnes. </p>
+						</recital>
+					</recitals>
+				</recitals>
+				<recitals xml:id="d1e618">
+					<num xml:id="d1e620">4.</num>
+					<heading xml:id="d1e622">CONCLUSION</heading>
+					<recital xml:id="d1e624" eId="rct_55">
+						<num xml:id="d1e626">(55)</num>
+						<p xml:id="d1e628">It is therefore appropriate to deduct 3 162 individuals
+							of salmon from the quota for main basin salmon allocated to Finland by
+							Regulation (EU) 2024/2903 for the year 2025, </p>
+					</recital>
+				</recitals>
+			</recitals>
+
+			<formula xml:id="d1e632" name="enactingFormula">
+				<p xml:id="d1e634">HAS ADOPTED THIS REGULATION:</p>
+			</formula>
+		</preamble>
+		<body xml:id="d1e639" eId="ent_1">
+			<article xml:id="d1e641" eId="art_1">
+				<num xml:id="d1e643">Article 1</num>
+				<paragraph xml:id="d1e646" eId="art_1/unp_1">
+					<content xml:id="d1e648">
+						<p xml:id="d1e650">The fishing quota for Atlantic salmon (salmo salar) in
+							Union waters of ICES subdivisions 22 to 31 allocated to Finland for the
+							year 2025 by Council Regulation (EU) 2024/2903 shall be reduced as set
+							out in the Annex to this Regulation.</p>
+					</content>
+				</paragraph>
+			</article>
+			<article xml:id="d1e656" eId="art_2">
+				<num xml:id="d1e658">Article 2</num>
+				<paragraph xml:id="d1e661" eId="art_2/unp_1">
+					<content xml:id="d1e663">
+						<p xml:id="d1e665">This Regulation shall enter into force on the seventh day
+							following that of its publication in the Official Journal of the
+							European Union.</p>
+					</content>
+				</paragraph>
+			</article>
+			<clause xml:id="d1e671">
+				<content xml:id="d1e673">
+					<p xml:id="d1e675">This Regulation shall be binding in its entirety and directly
+						applicable in all Member States.</p>
+				</content>
+			</clause>
+		</body>
+		<conclusions xml:id="d1e680" eId="fnp_1">
+			<p xml:id="d1e682">Done at <location xml:id="d1e684" refersTo="#BEL_BRU"
+				>Brussels</location>, <date xml:id="d1e6821" date="2025-04-30">30 April 2025</date>.</p>
+			<block xml:id="d1e688" name="signatory">
+				<signature xml:id="d1e690">
+					<organization xml:id="d1e692" refersTo="#COM">For the Commission</organization>
+					<role xml:id="d1e695" refersTo="#PRESID">The President</role>
+					<person xml:id="d1e698" refersTo="">Ursula VON DER LEYEN</person>
+				</signature>
+			</block>
+		</conclusions>
+		<attachments>
+			<attachment xml:id="d1e707">
+				<documentRef xml:id="d1e709" href="ANNEX-eli_reg_impl_2025_864_anx-en.xml"
+					showAs="ANNEX"/>
+			</attachment>
+		</attachments>
+	</act>
+</akomaNtoso>

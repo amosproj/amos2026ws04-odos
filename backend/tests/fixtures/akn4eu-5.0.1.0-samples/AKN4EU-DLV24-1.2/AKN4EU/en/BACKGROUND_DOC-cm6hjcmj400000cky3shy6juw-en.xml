@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="BACKGROUND_DOC">
+        <meta xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="cm6hjcmj400000cky3shy6juw"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+                        />
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~COR">
+                <TLCReference name="language"
+                    href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="COR"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/COR"
+                    showAs=""/>
+                <TLCReference xml:id="BACKGROUND_DOC" name="docType"
+                    href="http://publications.europa.eu/resource/authority/resource-type/BACKGROUND_DOC"
+                    showAs=""/>
+                <TLCOrganization xml:id="PUBL"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+                    showAs=""/>
+                <TLCOrganization xml:id="COR_COTER"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/COR_COTER"
+                    showAs=""/>
+                <TLCConcept xml:id="BACKGROUND_INFO"
+                    href="http://publications.europa.eu/resource/authority/subdivision-content/BACKGROUND_INFO"
+                    showAs=""/>
+                <TLCEvent xml:id="COU_EP_REF_COM_LET"
+                    href="http://publications.europa.eu/resource/authority/event/COU_EP_REF_COM_LET"
+                    showAs=""/>
+                <TLCEvent xml:id="DEC_byBUREAU_byPRESIDENT"
+                    href="http://publications.europa.eu/resource/authority/event/DEC_byBUREAU_byPRESIDENT"
+                    showAs=""/>
+                <TLCEvent xml:id="ANALYSIS"
+                    href="http://publications.europa.eu/resource/authority/event/ANALYSIS"
+                    showAs=""/>
+                <TLCEvent xml:id="DIS_byCOM"
+                    href="http://publications.europa.eu/resource/authority/event/DIS_byCOM"
+                    showAs=""/>
+                <TLCEvent xml:id="ADP_byCOM"
+                    href="http://publications.europa.eu/resource/authority/event/ADP_byCOM"
+                    showAs=""/>
+                <TLCEvent xml:id="ADP_byPLE"
+                    href="http://publications.europa.eu/resource/authority/event/ADP_byPLE"
+                    showAs=""/>
+                <TLCEvent xml:id="SUB_MON_CON"
+                    href="http://publications.europa.eu/resource/authority/event/SUB_MON_CON"
+                    showAs=""/>
+            </references>
+        </meta>
+        <mainBody xml:id="d2e105">
+            <annex xml:id="d2e106">
+                <num xml:id="d2e98">II.</num>
+                <heading xml:id="d2e101">PROCEDURE</heading>
+                <paragraph xml:id="d2e107" refersTo="~BACKGROUND_INFO">
+                    <content xml:id="d2e109">
+                        <table xml:id="d2e111">
+                            <tbody xml:id="d7e98">
+                                <tr xml:id="d2e113">
+                                    <td xml:id="d2e115">
+                                        <p xml:id="d2e117">
+                                            <inline xml:id="d2e118" name="label">Title</inline>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e122">
+                                        <p xml:id="d2e124">Do no harm to cohesion – A cross-cutting
+                                            principle contributing towards cohesion as an overall
+                                            objective and value of the EU</p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e128">
+                                    <td xml:id="d2e130">
+                                        <p xml:id="d2e132">
+                                            <inline xml:id="d2e133" name="label">Reference(s)</inline>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e137">
+                                        <p xml:id="d2e139">Not applicable</p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e143">
+                                    <td xml:id="d2e145">
+                                        <p xml:id="d2e147">
+                                            <inline xml:id="d2e148" name="label">Legal basis</inline>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e152">
+                                        <p xml:id="d2e154">Own-initiative</p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e158">
+                                    <td xml:id="d2e160">
+                                        <p xml:id="d2e162">
+                                            <inline xml:id="d2e163" name="label">Procedural
+                                                basis</inline>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e167">
+                                        <p xml:id="d2e169">Art. 41, b)(ii)</p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e173">
+                                    <td xml:id="d2e175">
+                                        <p xml:id="d2e177">
+                                            <event xml:id="d2e178" refersTo="~COU_EP_REF_COM_LET">Date
+                                                of Council/EP referral/Date of Commission letter</event>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e182">
+                                        <p xml:id="d2e184">Not applicable</p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e189">
+                                    <td xml:id="d2e191">
+                                        <p xml:id="d2e193">
+                                            <event xml:id="d2e194" refersTo="~DEC_byBUREAU_byPRESIDENT"
+                                                >Date of Bureau/President's decision</event>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e198">
+                                        <p xml:id="d2e200">
+                                            <date xml:id="d2e201" date="2022-11-29">29/11/2022</date>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e206">
+                                    <td xml:id="d2e208">
+                                        <p xml:id="d2e210">
+                                            <inline xml:id="d2e211" name="label">Commission
+                                                responsible</inline>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e215">
+                                        <p xml:id="d2e217">
+                                            <organization xml:id="d2e218" refersTo="~COR_COTER"
+                                                >Commission for Territorial Cohesion Policy and the EU
+                                                Budget</organization>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e223">
+                                    <td xml:id="d2e225">
+                                        <p xml:id="d2e227">
+                                            <inline xml:id="d2e228" name="label">Rapporteur</inline>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e232">
+                                        <p xml:id="d2e234"><person xml:id="d2e235" refersTo="">Michiel
+                                            Rijsberman</person> (NL/Renew), Regional Minister of the
+                                            Province of Flevoland</p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e241">
+                                    <td xml:id="d2e243">
+                                        <p xml:id="d2e245">
+                                            <event xml:id="d2e246" refersTo="~ANALYSIS">Analysis</event>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e250">
+                                        <p xml:id="d2e252">
+                                            <date xml:id="d2e253" date="2023-03-09">09/03/2023</date>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e258">
+                                    <td xml:id="d2e260">
+                                        <p xml:id="d2e262">
+                                            <event xml:id="d2e263" refersTo="~DIS_byCOM">Discussed in
+                                                commission</event>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e267">
+                                        <p xml:id="d2e269">
+                                            <date xml:id="d2e270" date="2023-04-24">24/04/2023</date>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e275">
+                                    <td xml:id="d2e277">
+                                        <p xml:id="d2e279">
+                                            <event xml:id="d2e280" refersTo="~ADP_byCOM">Date adopted by
+                                                commission</event>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e284">
+                                        <p xml:id="d2e286">
+                                            <date xml:id="d2e287" date="2023-04-24">24/04/2023</date>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e293">
+                                    <td xml:id="d2e295">
+                                        <p xml:id="d2e297">
+                                            <inline xml:id="d2e298" name="label">Result of the vote in
+                                                commission (majority, unanimity)</inline>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e302">
+                                        <p xml:id="d2e304">Unanimity</p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e308">
+                                    <td xml:id="d2e310">
+                                        <p xml:id="d2e312">
+                                            <event xml:id="d2e313" refersTo="~ADP_byPLE">Date adopted in
+                                                plenary</event>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e317">
+                                        <p xml:id="d2e319">
+                                            <date xml:id="d2e320" date="2023-05-24">24/05/2023</date>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e325">
+                                    <td xml:id="d2e327">
+                                        <p xml:id="d2e329">
+                                            <inline xml:id="d2e330" name="label">Previous Committee
+                                                opinions</inline>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e334">
+                                        <list xml:id="d2e342">
+                                            <indent xml:id="d2e344">
+                                                <num xml:id="d2e346">•</num>
+                                                <content xml:id="d2e348">
+                                                    <p xml:id="d2e350">Eighth report on economic,
+                                                        social and territorial cohesion, rapporteur
+                                                        Nathalie Sarrabezolles, 12 October 2022</p>
+                                                </content>
+                                            </indent>
+                                            <indent xml:id="d2e354">
+                                                <num xml:id="d2e356">•</num>
+                                                <content xml:id="d2e358">
+                                                    <p xml:id="d2e360">Better regulation: Joining
+                                                        forces to make better laws, rapporteur Piero Mauro
+                                                        Zanin, 1 December 2021</p>
+                                                </content>
+                                            </indent>
+                                        </list>
+                                    </td>
+                                </tr>
+                                <tr xml:id="d2e369">
+                                    <td xml:id="d2e371">
+                                        <p xml:id="d2e373">
+                                            <event xml:id="d2e374" refersTo="~SUB_MON_CON">Date of
+                                                subsidiarity monitoring consultation</event>
+                                        </p>
+                                    </td>
+                                    <td xml:id="d2e378">
+                                        <p xml:id="d2e380">Not applicable</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </content>
+                </paragraph>
+            </annex>
+        </mainBody>
+    </doc>
+</akomaNtoso>

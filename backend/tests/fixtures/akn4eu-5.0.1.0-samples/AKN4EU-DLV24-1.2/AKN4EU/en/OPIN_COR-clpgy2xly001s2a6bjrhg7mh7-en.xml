@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="OPIN_COR">
+        <meta xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clpgy2xly001s2a6bjrhg7mh7"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="COR-2023-00137-00-00-PAC-TRA"/>
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~COR">
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="COR" href="http://publications.europa.eu/resource/authority/corporate-body/COR" showAs=""/>
+                <TLCOrganization xml:id="COR_GROUP_RENEW" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_RENEW" showAs=""/>
+                <TLCReference xml:id="OPIN_COR" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/OPIN_COR" showAs=""/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCConcept xml:id="INP" href="http://publications.europa.eu/resource/authority/subdivision/INP" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                
+            </references>
+        </meta>
+        <preface xml:id="d2e81">
+            <longTitle xml:id="d2e83">
+                <p xml:id="d2e85"><docType xml:id="d2e86" refersTo="~OPIN_COR">Draft opinion of the European Committee of the
+                        Regions</docType> - <docPurpose xml:id="d2e89">Do no harm to cohesion – A cross-cutting
+                        principle contributing towards cohesion as an overall objective and value of
+                        the EU</docPurpose></p>
+            </longTitle>
+            <container name="mainDoc">
+                <block name="reference"><docNumber>COR-2023-00137-00-00-PAC-TRA</docNumber>
+                </block>
+            </container>
+            <container xml:id="d2z116" name="rapporteur">
+                <p xml:id="d2z118"><inline xml:id="d2z119" name="label">Rapporteur:</inline>
+                    <docIntroducer xml:id="d2z122"><person xml:id="d2z123" refersTo="">Michiel Rijsberman</person>
+                        (NL/<organization xml:id="d2z126" refersTo="~COR_GROUP_RENEW">Renew</organization>)
+                        Regional Minister of the Province of Flevoland</docIntroducer></p>
+            </container>
+        </preface>
+        <mainBody xml:id="d2e93">
+            <division xml:id="d2e95" class="type_1">
+                <num xml:id="d2e97">I.</num>
+                <heading xml:id="d2e99">POLICY RECOMMENDATIONS</heading>
+            </division>
+            <paragraph xml:id="d2e102">
+                <content xml:id="d2e104">
+                    <p xml:id="d2e106">THE EUROPEAN COMMITTEE OF THE REGIONS</p>
+                </content>
+            </paragraph>
+            <crossHeading xml:id="d2e110">General comments</crossHeading>
+            <level xml:id="d2e113">
+                <num xml:id="d2e115">1.</num>
+                <content xml:id="d2e117">
+                    <p xml:id="d2e119">welcomes the introduction of the "do no harm to cohesion" principle
+                        (hereafter "DNHC") in the 8th Cohesion Report, where it is defined as "no
+                        action should hamper the convergence process or contribute to regional
+                        disparities" , but regrets that the report provides no in-depth insight for
+                        getting a clear picture about the problems (harm to cohesion) and possible
+                        solutions;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e123">
+                <num xml:id="d2e125">2.</num>
+                <content xml:id="d2e127">
+                    <p xml:id="d2e129">underlines the importance of cohesion as a fundamental value of the European
+                        Union and a cross-cutting objective that the European Committee of the
+                        Regions fully supports. Points out that recent crises have stagnated
+                        convergence and particularly affected the most vulnerable citizens; insists
+                        on the need to avoid creating fertile soil for populism and extremism in the
+                        context of the upcoming European elections;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e134">
+                <num xml:id="d2e136">3.</num>
+                <content xml:id="d2e138">
+                    <p xml:id="d2e140">thanks the European Parliament for calling on the European Committee of the
+                        Regions to be involved in the implementation and design of the DNHC
+                        principle and calls on the European Commission to take the proposals from
+                        this opinion on board when further developing the principle;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e144">
+                <num xml:id="d2e146">4.</num>
+                <content xml:id="d2e148">
+                    <p xml:id="d2e150">underlines the Council conclusions on the 8th Cohesion report call for a
+                        general awareness of doing no harm to cohesion in all Union policies and
+                        initiatives, and in the implementation of the internal market, including
+                        State Aid rules;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e154">
+                <num xml:id="d2e156">5.</num>
+                <content xml:id="d2e158">
+                    <p xml:id="d2e160">reminds that, according to Article 175 of TFEU, European policies and actions
+                        as well as the economic policies of Member States should contribute to the
+                        Union's overall harmonious development and social, economic and territorial
+                        cohesion. Insists that, while EU Cohesion Policy has a key role in promoting
+                        cohesion, other EU policies are bound by this objective. Notices that there
+                        are currently no mechanisms in place for ensuring this;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e164">
+                <num xml:id="d2e166">6.</num>
+                <content xml:id="d2e168">
+                    <p xml:id="d2e170">demands from the European Commission, the European Parliament, the Council
+                        and the Member States that DNHC be turned from a concept into reality;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e174">
+                <num xml:id="d2e176">7.</num>
+                <content xml:id="d2e178">
+                    <p xml:id="d2e180">warns the Commission that the principle is far from ready to be used as a
+                        tool to deliver cohesion, and risks compromising the purpose of cohesion
+                        policy in its own right. Cohesion policy is and should remain the main tool
+                        for a harmonious development of the Union for all regions;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e184">
+                <num xml:id="d2e186">8.</num>
+                <content xml:id="d2e188">
+                    <p xml:id="d2e190">proposes a wide interpretation of the DNHC principle, covering all European
+                        policies with spatial impact as well as relevant national policies, and
+                        encompassing a requirement to respect the cohesion principles of partnership
+                        and multi-level governance;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e195">
+                <num xml:id="d2e197">9.</num>
+                <content xml:id="d2e199">
+                    <p xml:id="d2e201">proposes that the Commission applies a mandatory "comply or explain" rule
+                        linked to the DNHC principle in the explanatory memorandum for any proposed
+                        initiative;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e205">
+                <num xml:id="d2e207">10.</num>
+                <content xml:id="d2e209">
+                    <p xml:id="d2e211">calls on the Commission to develop the analysis of cohesion aspects as part
+                        of the European Semester, in particular through the annex on economic and
+                        social performance at regional level of country reports; it would be even
+                        more useful if it provided a state-of-play of cohesion at NUTS2 level in
+                        Member States and included an analysis of existing policies that could
+                        explain the situation and possible measures for solving regional
+                        disparities;</p>
+                </content>
+            </level>
+            <crossHeading xml:id="d2e215">How Cohesion may be harmed</crossHeading>
+
+            <level xml:id="d2e218">
+                <num xml:id="d2e220">11.</num>
+                <content xml:id="d2e222">
+                    <p xml:id="d2e224">recognises that the existence of many types of disparities combined with the
+                        lack of data on effects of policies in our regions and cities, either
+                        positive or negative, makes it challenging to obtain deeper insight into
+                        harm being done to cohesion and to propose manageable solutions;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e228">
+                <num xml:id="d2e230">12.</num>
+                <content xml:id="d2e232">
+                    <p xml:id="d2e234">points out that, apart from Cohesion Policy, the design and implementation of
+                        some EU policies contribute to the convergence process while others may go
+                        against it; outlines that not only funding policies but also regulatory
+                        initiatives or trade agreements may have a significant impact and create
+                        obstacles for the development of less developed regions, even if they seem
+                        "spatially blind";</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e238">
+                <num xml:id="d2e240">13.</num>
+                <content xml:id="d2e242">
+                    <p xml:id="d2e244">notes for instance that any relaxing of State aid rules often benefits more
+                        developed Member States to a greater extent;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e249">
+                <num xml:id="d2e251">14.</num>
+                <content xml:id="d2e253">
+                    <p xml:id="d2e255">considers that the potential synergies between EU funds that have a
+                        territorial dimension could be better exploited;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e259">
+                <num xml:id="d2e261">15.</num>
+                <content xml:id="d2e263">
+                    <p xml:id="d2e265">underlines that, despite many simplifications introduced by the Commission,
+                        the complexity of EU funds and rules for using them still make it difficult
+                        for local and regional authorities to benefit from EU programmes;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e269">
+                <num xml:id="d2e271">16.</num>
+                <content xml:id="d2e273">
+                    <p xml:id="d2e275">points out that the limited capacity of local and regional actors to access
+                        funding opportunities and to run projects also stems from an unavailability
+                        of technical skills or ability to provide the expected co-financing; calls
+                        therefore on the European Commission to support in particular Member States
+                        with low absorption rates via capacity building measures;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e279">
+                <num xml:id="d2e281">17.</num>
+                <content xml:id="d2e283">
+                    <p xml:id="d2e285">shares the view in the European Parliament's resolution on the 8th Cohesion
+                        Report that the deployment of the Recovery and Resilience Facility (RRF) has
+                        been highly centralised at Member State level and has lacked consultation
+                        with regions and municipalities;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e289">
+                <num xml:id="d2e291">18.</num>
+                <content xml:id="d2e293">
+                    <p xml:id="d2e295">regrets that under the RRF there is no obligation for Member States to report
+                        on the distribution of funds in the various regions; argues for better
+                        information and transparency on where the money lands and calls on future
+                        investment programmes to be implemented at local or regional level;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e299">
+                <num xml:id="d2e301">19.</num>
+                <content xml:id="d2e303">
+                    <p xml:id="d2e305">underlines that the different EU programmes and funds running in parallel,
+                        such as RRF, React-EU, JTF, ERDF and ESF+ oblige managing authorities to
+                        work with different rules and implementation duties, which creates
+                        uncertainties and leads to a slower start in some of the programmes;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e310">
+                <num xml:id="d2e312">20.</num>
+                <content xml:id="d2e314">
+                    <p xml:id="d2e316">regrets that there is no clear overview on the combined effect of a large
+                        number of EU regulations both on the whole and on each other. Underlines
+                        that this limits the possibility of integral spatial choices and makes it
+                        difficult to implement individual regulations, and that choices need to be
+                        made when facilitating the energy transition (through investments in e.g.
+                        heating networks/solar panels), applying greenery (e.g. in the form of
+                        trees) in the environment, providing sustainable mobility and building
+                        sufficient and sustainable housing;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e320">
+                <num xml:id="d2e322">21.</num>
+                <content xml:id="d2e324">
+                    <p xml:id="d2e326">draws attention to the fact that, even as part of Cohesion policy, unintended
+                        harm may be done diminishing its impact; national authorities may not
+                        allocate maximum levels of funding to less developed and transition regions,
+                        hampering the convergence process. Requests that the Commission and Member
+                        States optimise the use of cohesion policy funding in less developed and
+                        transition regions, including as part of the upcoming mid-term review of the
+                        2021-2027 programmes;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e330">
+                <num xml:id="d2e332">22.</num>
+                <content xml:id="d2e334">
+                    <p xml:id="d2e336">notices that Cohesion may also be endangered by the fact that Cohesion policy
+                        funding has been used to systematically respond to recent crises; highlights
+                        that although this may have contributed to preventing a further widening of
+                        disparities, the cohesion-principles of strategic, evidence-based
+                        programming, partnership and multi-level governance should still be
+                        respected in any crisis-response instrument;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e340">
+                <num xml:id="d2e342">23.</num>
+                <content xml:id="d2e344">
+                    <p xml:id="d2e346">underlines that the CoR refuses any attempts for centralisation of EU
+                        programmes and will not accept a further disregarding of the local and
+                        regional level in future EU programmes. Stresses that shared management has
+                        proven successful and should not be undermined by centrally-managed
+                        programmes;</p>
+                </content>
+            </level>
+            <crossHeading xml:id="d2e350">Implementing the principle through reinforced ex-ante
+                assessment, mid-term, ongoing and ex-post evaluation of territorial impacts of all
+                relevant EU policies</crossHeading>
+
+            <level xml:id="d2e353">
+                <num xml:id="d2e355">24.</num>
+                <content xml:id="d2e357">
+                    <p xml:id="d2e359">emphasises that the 8th Cohesion Report calls for strengthening territorial
+                        impact assessments and rural proofing "so that the needs and specificities
+                        of different EU territories are better taken into account"; welcomes that,
+                        in its conclusions on the 8th Cohesion Report, the Council encouraged the
+                        European Commission to consider including territorial impact assessments
+                        (regional proofing) in relevant EU policies at both their conception and
+                        evaluation stages;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e364">
+                <num xml:id="d2e366">25.</num>
+                <content xml:id="d2e368">
+                    <p xml:id="d2e370">stresses the need for a systematic ex-ante assessment of potential
+                        differentiated territorial impacts on all types of regions of all new EU
+                        policies with a territorial dimension in their design phase as the most
+                        effective tool to put the DNHC principle into practice;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e374">
+                <num xml:id="d2e376">26.</num>
+                <content xml:id="d2e378">
+                    <p xml:id="d2e380">points out that the interinstitutional agreement on better law-making of 2016
+                        commits the European Commission, the European Parliament and the Council to
+                        carry out impact assessments, whenever possible, with particular regards to
+                        territorial impacts; considers that the 2021 EC Better Regulation package
+                        provides a framework for assessing territorial impacts; however, regrets
+                        that the stipulation that impact assessments should be proportionate as
+                        regards their scope and focus leads in practice to often very limited
+                        assessment or under-estimation of territorial impacts. Recalls the European
+                        Commission's repeated commitments in recent years to strengthen territorial
+                        impact assessments (TIA);</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e384">
+                <num xml:id="d2e386">27.</num>
+                <list xml:id="d2e388">
+                    <subparagraph xml:id="d2e390" refersTo="~INP">
+                        <content xml:id="d2e392">
+                            <p xml:id="d2e394">therefore, recommends reinforcing the assessment of potential
+                                differentiated territorial impacts and negative effects on cohesion
+                                in the EC Better Regulation toolbox in several ways:</p>
+                        </content>
+                    </subparagraph>
+                    <indent xml:id="d2e398">
+                        <num xml:id="d2e400">o</num>
+                        <content xml:id="d2e402">
+                            <p xml:id="d2e404">by adding a question in the list of questions in BR Tool # 18 along
+                                the lines of: "Does the initiative hamper the convergence process or
+                                contribute to regional disparities?"</p>
+                        </content>
+                    </indent>
+
+                    <indent xml:id="d2e408">
+                        <num xml:id="d2e410">o</num>
+                        <content xml:id="d2e412">
+                            <p xml:id="d2e414">in BR Tool # 34, by making the use of the TIA Necessity Check
+                                mandatory to determine the need for a Territorial Impact Assessment
+                                and by giving a strong preference to the use of ESPON TIA Quick
+                                Check tool over public consultations for assessing potential
+                                territorial impacts, as it is based on a combination of experts'
+                                judgment and quantitative territorial data available for all EU
+                                regions.</p>
+                        </content>
+                    </indent>
+
+                    <indent xml:id="d2e418">
+                        <num xml:id="d2e420">o</num>
+                        <content xml:id="d2e422">
+                            <p xml:id="d2e424">by introducing a recommendation that stakeholder consultations should
+                                explicitly cover territorial cohesion aspects, either with a
+                                reference in the "call for evidence" and/or a set of questions in
+                                the public consultation or with targeted consultations reaching
+                                regional and local authorities, reminding that target groups in
+                                remote and rural areas with more difficult access to the internet
+                                may need to be addressed by specific channels.</p>
+                        </content>
+                    </indent>
+
+                    <indent xml:id="d2e428">
+                        <num xml:id="d2e430">o</num>
+                        <content xml:id="d2e432">
+                            <p xml:id="d2e434">by introducing an obligation to report in the Impact Assessment
+                                report on the assessment of potential differentiated territorial
+                                impacts and potential harm to cohesion, in a similar way as for the
+                                "do no significant harm" principle concerning environmental impacts;
+                                impact assessments should be clear as to whether there will be
+                                impacts on EU cohesion, and what the trade-offs may be between
+                                cohesion and other objectives.</p>
+                        </content>
+                    </indent>
+
+                    <indent xml:id="d2e439">
+                        <num xml:id="d2e441">o</num>
+                        <content xml:id="d2e443">
+                            <p xml:id="d2e445">by including a specific mandatory section in the explanatory
+                                memorandum explaining how the initiative upholds the "do no harm to
+                                cohesion" principle based on a "comply or explain" rule: the
+                                Commission should either demonstrate that the implementation of the
+                                initiative does not hinder the Union's cohesion (complies with the
+                                DNHC principle), or explain why the potential harm (remaining after
+                                mitigating measures) is justified, with regards to other
+                                objectives;</p>
+                        </content>
+                    </indent>
+                </list>
+            </level>
+
+            <level xml:id="d2e451">
+                <num xml:id="d2e453">28.</num>
+                <content xml:id="d2e455">
+                    <p xml:id="d2e457">calls upon the Commission to further develop TIA models and methods with
+                        support from JRC and ESPON;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e461">
+                <num xml:id="d2e463">29.</num>
+                <content xml:id="d2e465">
+                    <p xml:id="d2e467">calls upon the Commission to give capacity for a dedicated service to support
+                        directorates-general in the TIA process and deliver mandatory training on
+                        TIA to all Commission officials dealing with impact assessments;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e471">
+                <num xml:id="d2e473">30.</num>
+                <content xml:id="d2e475">
+                    <p xml:id="d2e477">reiterates its call for the Regulatory Scrutiny Board to include a permanent
+                        member designated by the CoR in order to ensure that EU policies are not
+                        territorially blind;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e482">
+                <num xml:id="d2e484">31.</num>
+                <content xml:id="d2e486">
+                    <p xml:id="d2e488">is eager to assist the Commission in conducting its Territorial Impact
+                        Assessments; offers in particular to help identify relevant questions for
+                        local and regional authorities in Commission consultations and help identify
+                        experts at local and regional levels to take part in Commission TIA
+                        workshops;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e492">
+                <num xml:id="d2e494">32.</num>
+                <content xml:id="d2e496">
+                    <p xml:id="d2e498">points out that the European Committee of the Regions can play a stronger
+                        role in the EU Better Regulation agenda e.g. by conducting TIA itself on EU
+                        policies which could potentially harm cohesion, if it is granted additional
+                        means;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e502">
+                <num xml:id="d2e504">33.</num>
+                <content xml:id="d2e506">
+                    <p xml:id="d2e508">insists on the need to implement the DNHC principle also in the evaluation
+                        phase (ex-post, mid-term and ongoing), so it is not a one-time box-ticking
+                        exercise during the ex-ante assessment, by monitoring and evaluating the
+                        impact of sectoral EU policies on cohesion;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e512">
+                <num xml:id="d2e514">34.</num>
+                <content xml:id="d2e516">
+                    <p xml:id="d2e518">suggests, in this respect, introducing in the EC Better Regulation package a
+                        recommendation that evaluated legislation or programmes should look at
+                        possible direct impacts on cohesion or (in)consistencies with Cohesion
+                        Policy; reports (equivalent to the Cohesion Report) produced in the context
+                        of sectoral policies should have a part dedicated to cohesion effects;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e522">
+                <num xml:id="d2e524">35.</num>
+                <content xml:id="d2e526">
+                    <p xml:id="d2e528">recalls the added value RegHub provides, by means of stakeholder
+                        consultations, to the evaluation of implemented EU legislation; reiterates
+                        the call to make full use of the Fit for Future platform, RegHub and the CoR
+                        itself, to ensure that the Commission has detailed evidence of impact on the
+                        ground;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e532">
+                <num xml:id="d2e534">36.</num>
+                <content xml:id="d2e536">
+                    <p xml:id="d2e538">stresses the general need for data and statistical tools at local and
+                        regional level to support the ex-ante assessment and ex-post evaluation of
+                        the impact of EU policies/instruments on cohesion; underlines the need for
+                        indicators and comprehensive indices (other than GDP per capita) such as the
+                        EU Social Progress Index or Regional Competitiveness Index to reflect all
+                        aspects of harmonious development as new sources of disparities may emerge.
+                        Calls for more resources to be dedicated to EUROSTAT and JRC for the urban
+                        and rural observatories development. Calls on Member States to implement
+                        systems for gathering data and information at local level to evaluate the
+                        impact of legislation and policies;</p>
+                </content>
+            </level>
+            <crossHeading xml:id="d2e543">Implementing the principle through a better coordination of
+                EU policies/funds and their implementation at national and subnational level</crossHeading>
+            <level xml:id="d2e546">
+                <num xml:id="d2e548">37.</num>
+                <content xml:id="d2e550">
+                    <p xml:id="d2e552">calls upon the European Commission to streamline investment policies and
+                        funds to ensure synergies and complementarities in order to achieve selected
+                        objectives. Calls for the Just Transition Fund as well as the European
+                        Agricultural Fund for Rural Development to be governed with other funds
+                        under the same Common Provisions Regulation;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e556">
+                <num xml:id="d2e558">38.</num>
+                <content xml:id="d2e560">
+                    <p xml:id="d2e562">stresses the need to increase synergies between cohesion policy and Horizon
+                        Europe in order to strengthen research and innovation capacities in all EU
+                        regions, which allows the EU to compete on a global scale by investing in
+                        regional excellence and can be a solution to the development trap of
+                        middle-income regions;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e566">
+                <num xml:id="d2e568">39.</num>
+                <content xml:id="d2e570">
+                    <p xml:id="d2e572">calls on the European Commission, when managing EU funding, to take into
+                        account the level of development of regions and potential for reducing
+                        regional disparities going beyond GDP;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e576">
+                <num xml:id="d2e578">40.</num>
+                <content xml:id="d2e580">
+                    <p xml:id="d2e582">encourages national governments to conduct systematic ex ante territorial
+                        impact assessment so that no national policy is 'spatially blind', making
+                        use of lessons learnt from the Territorial Agenda 2030 Pilot Action
+                        "Understanding how sector policies shape spatial (im)balances";</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e586">
+                <num xml:id="d2e588">41.</num>
+                <content xml:id="d2e590">
+                    <p xml:id="d2e592">underlines the need for Member States to ensure communication and
+                        coordination between the different ministries, agencies, and managing
+                        authorities to make the best of potential synergies and complementarities
+                        between different policies and funding streams and ensure there is no
+                        overlap or harm to cohesion;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e597">
+                <num xml:id="d2e599">42.</num>
+                <content xml:id="d2e601">
+                    <p xml:id="d2e603">reiterates its call on Member States and the Commission to ensure that the
+                        RRF and any successor directly incorporates the cohesion policy approach
+                        based on strategic evidence-based programming, multilevel governance and
+                        partnership;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e607">
+                <num xml:id="d2e609">43.</num>
+                <content xml:id="d2e611">
+                    <p xml:id="d2e613">emphasises that different levels of government need to work together in
+                        partnership to deliver cohesion on the ground, including by coordinating the
+                        implementation of different EU policies/instruments;</p>
+                </content>
+            </level>
+
+            <level xml:id="d2e617">
+                <num xml:id="d2e619">44.</num>
+                <content xml:id="d2e621">
+                    <p xml:id="d2e623">urges the Member States to support any of their regions whose development is
+                        lagging behind in building administrative capacity and in boosting skills
+                        development to fully benefit from EU programmes.</p>
+                </content>
+            </level>
+        </mainBody>
+        <conclusions xml:id="d2e628">
+            <p xml:id="d2e630"><location xml:id="d2e631" refersTo="~BEL_BRU">Brussels</location>,</p>
+            <block xml:id="d2e635" name="signatory"><signature xml:id="d2e6351"></signature></block>
+            
+        </conclusions>
+    </doc>
+</akomaNtoso>

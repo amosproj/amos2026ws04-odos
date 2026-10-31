@@ -1,0 +1,43 @@
+{
+  "version": "v2.0",
+  "stage": "os",
+  "source": {
+    "commit": "ed2d725e68c81a7a1555edd51a9a84aca40b5b2a"
+  },
+  "tools": {
+    "pandoc": "pandoc 3.8.2.1",
+    "tidy": "HTML Tidy for Mac OS X released on 31 October 2006 - Apple Inc. build 8433"
+  },
+  "items": [
+    {
+      "path": "akn-core-v2.0-os-part2-specs.pdf",
+      "role": "delivery",
+      "sha256": "a038541254b12574a8292614ff90d301c42a48e1084e7ac9cfce0f7cb8984f4e",
+      "bytes": 47752703
+    },
+    {
+      "path": "akn-core-v2.0-os-part2-specs.zip",
+      "role": "other",
+      "sha256": "00371ae95948b0fe3509c1ede41e56508aed794eccdf088a8cae9ada4db4948d",
+      "bytes": 32847536
+    },
+    {
+      "path": "schemas/akomantoso30.xml",
+      "role": "other",
+      "sha256": "2878d439f401a051398e31efda88d9f070e6c5c951feb80d5d330ac2bf67ad4e",
+      "bytes": 156824
+    },
+    {
+      "path": "schemas/akomantoso30.xsd",
+      "role": "other",
+      "sha256": "8f1fe3e187ee5e6f5bc9dfb013f7d9195de6516f077ce10726bedf6260f8b70a",
+      "bytes": 257230
+    },
+    {
+      "path": "schemas/xml.xsd",
+      "role": "other",
+      "sha256": "61960fb3131e38022caad5360e2f33a3382578ab3c80cd58bd74320ede61b20c",
+      "bytes": 8836
+    }
+  ]
+}

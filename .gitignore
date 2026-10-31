@@ -34,3 +34,32 @@ bin/
 
 # MacOS
 .DS_Store
+
+# Python / backend
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+.ruff_cache/
+.mypy_cache/
+backend/output/
+backend/storage/
+# documents that may not be redistributed (partner-provided PDFs, e.g. the full EU regulation used by the tests; see Documentation/development.md)
+backend/data/input/private/
+# partner-derived test data (Docling output of partner PDFs); keep local, never commit
+backend/tests/fixtures/private/
+# tests that need the partner PDFs (they contain assertions about the partner documents)
+backend/tests/private/
+# document-processing results and uploads, wherever ODOS_STORAGE_DIR / -o points inside the repository
+**/storage/documents/
+**/docling_raw.json
+**/pdf_text_lines.json
+# secrets and local tool configuration
+.env
+.env.*
+*.pem
+*.key
+.claude/
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo

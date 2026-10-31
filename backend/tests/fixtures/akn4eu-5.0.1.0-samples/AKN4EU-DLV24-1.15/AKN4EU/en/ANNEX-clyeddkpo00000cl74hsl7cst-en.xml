@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="ANNEX">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clyeddkpo00000cl74hsl7cst"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="eli/dir_impl/2022/905"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+                        />
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference xml:id="ANNEX" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/ANNEX" showAs=""/>
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+            </references>
+        </meta>
+
+        <mainBody xml:id="d2e89">
+          <annex xml:id="d2e86">
+            <num xml:id="d2e87">ANNEX I</num>
+            <heading xml:id="d2e88">List of species referred to in Article 1(2),
+                  point (a), which are to comply with CPVO technical protocols <authorialNote
+                      xml:id="d2e81" marker="*" placement="bottom" placementBase="~d2e89">
+                      <p xml:id="d2e83">The text of these protocols can be found on the CPVO web
+                          site (www.cpvo.europa.eu).</p></authorialNote>
+            </heading>
+               <paragraph xml:id="d2e91">
+                  <hcontainer xml:id="d2e92" name="TAB">
+                     <hcontainer xml:id="d2e93" name="TAB_CONTAINER">
+                        <content xml:id="d2e94">
+                         <table xml:id="d2e95">
+                            <thead xml:id="d2e96">
+                              <tr xml:id="d2e97">
+                                <th xml:id="d2e99">
+                                    <p xml:id="d2e101">Scientific name</p>
+                                </th>
+                                <th xml:id="d2e105">
+                                    <p xml:id="d2e107">Common name</p>
+                                </th>
+                                <th xml:id="d2e111">
+                                    <p xml:id="d2e113">CPVO protocol</p>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody xml:id="d2e114"><tr xml:id="d2e118">
+                            <td xml:id="d2e120">
+                                <p xml:id="d2e122">Dactylis glomerata L.</p>
+                            </td>
+                            <td xml:id="d2e126">
+                                <p xml:id="d2e128">Cocksfoot</p>
+                            </td>
+                            <td xml:id="d2e132">
+                                <p xml:id="d2e134">TP 31/1 of 25.3.2021</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e139">
+                            <td xml:id="d2e141">
+                                <p xml:id="d2e143">Festuca arundinacea Schreb.</p>
+                            </td>
+                            <td xml:id="d2e147">
+                                <p xml:id="d2e149">Tall fescue</p>
+                            </td>
+                            <td xml:id="d2e153">
+                                <p xml:id="d2e155">TP 39/1 of 1.10.2015</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e160">
+                            <td xml:id="d2e162">
+                                <p xml:id="d2e164">Festuca filiformis Pourr.</p>
+                            </td>
+                            <td xml:id="d2e168">
+                                <p xml:id="d2e170">Fine-leaved sheep's fescue</p>
+                            </td>
+                            <td xml:id="d2e174">
+                                <p xml:id="d2e176">TP 67/1 of 23.6.2011</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e181">
+                            <td xml:id="d2e183">
+                                <p xml:id="d2e185">Festuca ovina L.</p>
+                            </td>
+                            <td xml:id="d2e189">
+                                <p xml:id="d2e191">Sheep's fescue</p>
+                            </td>
+                            <td xml:id="d2e195">
+                                <p xml:id="d2e197">TP 67/1 of 23.6.2011</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e203">
+                            <td xml:id="d2e205">
+                                <p xml:id="d2e207">Festuca pratensis Huds.</p>
+                            </td>
+                            <td xml:id="d2e211">
+                                <p xml:id="d2e213">Meadow fescue</p>
+                            </td>
+                            <td xml:id="d2e217">
+                                <p xml:id="d2e219">TP 39/1 of 1.10.2015</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e224">
+                            <td xml:id="d2e226">
+                                <p xml:id="d2e228">Festuca rubra L.</p>
+                            </td>
+                            <td xml:id="d2e232">
+                                <p xml:id="d2e234">Red fescue</p>
+                            </td>
+                            <td xml:id="d2e238">
+                                <p xml:id="d2e240">TP 67/1 of 23.6.2011</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e245">
+                            <td xml:id="d2e247">
+                                <p xml:id="d2e249">Festuca trachyphylla (Hack.) Hack.</p>
+                            </td>
+                            <td xml:id="d2e253">
+                                <p xml:id="d2e255">Hard fescue</p>
+                            </td>
+                            <td xml:id="d2e259">
+                                <p xml:id="d2e261">TP 67/1 of 23.6.2011</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e266">
+                            <td xml:id="d2e268">
+                                <p xml:id="d2e270">Lolium multiflorum Lam.</p>
+                            </td>
+                            <td xml:id="d2e274">
+                                <p xml:id="d2e276">Italian ryegrass</p>
+                            </td>
+                            <td xml:id="d2e280">
+                                <p xml:id="d2e282">TP 4/2 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e287">
+                            <td xml:id="d2e289">
+                                <p xml:id="d2e291">Lolium perenne L.</p>
+                            </td>
+                            <td xml:id="d2e295">
+                                <p xml:id="d2e297">Perennial ryegrass</p>
+                            </td>
+                            <td xml:id="d2e301">
+                                <p xml:id="d2e303">TP 4/2 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e308">
+                            <td xml:id="d2e310">
+                                <p xml:id="d2e312">Lolium x hybridum Hausskn.</p>
+                            </td>
+                            <td xml:id="d2e316">
+                                <p xml:id="d2e318">Hybrid ryegrass</p>
+                            </td>
+                            <td xml:id="d2e322">
+                                <p xml:id="d2e324">TP 4/2 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e330">
+                            <td xml:id="d2e332">
+                                <p xml:id="d2e334">Medicago sativa L.</p>
+                            </td>
+                            <td xml:id="d2e338">
+                                <p xml:id="d2e340">Lucerne</p>
+                            </td>
+                            <td xml:id="d2e344">
+                                <p xml:id="d2e346">TP /6/1 of 22.12.2021</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e351">
+                            <td xml:id="d2e353">
+                                <p xml:id="d2e355">Medicago x varia T. Martyn</p>
+                            </td>
+                            <td xml:id="d2e359">
+                                <p xml:id="d2e361">Sand lucerne</p>
+                            </td>
+                            <td xml:id="d2e365">
+                                <p xml:id="d2e367">TP 6/1 of 22.12.2021</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e372">
+                            <td xml:id="d2e374">
+                                <p xml:id="d2e376">Phleum nodosum L.</p>
+                            </td>
+                            <td xml:id="d2e380">
+                                <p xml:id="d2e382">Small timothy</p>
+                            </td>
+                            <td xml:id="d2e386">
+                                <p xml:id="d2e388">TP 34/1 of 22.12.2021</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e393">
+                            <td xml:id="d2e395">
+                                <p xml:id="d2e397">Phleum pratense L.</p>
+                            </td>
+                            <td xml:id="d2e401">
+                                <p xml:id="d2e403">Timothy</p>
+                            </td>
+                            <td xml:id="d2e407">
+                                <p xml:id="d2e409">TP 34/1 of 22.12.2021</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e414">
+                            <td xml:id="d2e416">
+                                <p xml:id="d2e418">Pisum sativum L. (partim)</p>
+                            </td>
+                            <td xml:id="d2e422">
+                                <p xml:id="d2e424">Field pea</p>
+                            </td>
+                            <td xml:id="d2e428">
+                                <p xml:id="d2e430">TP 7/2 Rev. 3 Corr of 16.3.2020</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e435">
+                            <td xml:id="d2e437">
+                                <p xml:id="d2e439">Poa pratensis L.</p>
+                            </td>
+                            <td xml:id="d2e443">
+                                <p xml:id="d2e445">Smooth-stalked meadow grass</p>
+                            </td>
+                            <td xml:id="d2e449">
+                                <p xml:id="d2e451">TP 33/1 of 15.3.2017</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e457">
+                            <td xml:id="d2e459">
+                                <p xml:id="d2e461">Trifolium pratense L.</p>
+                            </td>
+                            <td xml:id="d2e465">
+                                <p xml:id="d2e467">Red clover</p>
+                            </td>
+                            <td xml:id="d2e471">
+                                <p xml:id="d2e473">TP 5/1 of 22.12.2021</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e478">
+                            <td xml:id="d2e480">
+                                <p xml:id="d2e482">Vicia faba L.</p>
+                            </td>
+                            <td xml:id="d2e486">
+                                <p xml:id="d2e488">Field bean</p>
+                            </td>
+                            <td xml:id="d2e492">
+                                <p xml:id="d2e494">TP 8/1 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e499">
+                            <td xml:id="d2e501">
+                                <p xml:id="d2e503">Vicia sativa L.</p>
+                            </td>
+                            <td xml:id="d2e507">
+                                <p xml:id="d2e509">Common vetch</p>
+                            </td>
+                            <td xml:id="d2e513">
+                                <p xml:id="d2e515">TP 32/1 of 19.4.2016</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e520">
+                            <td xml:id="d2e522">
+                                <p xml:id="d2e524">Brassica napus L. var. napobrassica (L.)
+                                    Rchb.</p>
+                            </td>
+                            <td xml:id="d2e528">
+                                <p xml:id="d2e530">Swede</p>
+                            </td>
+                            <td xml:id="d2e534">
+                                <p xml:id="d2e536">TP 89/1 of 11.3.2015</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e541">
+                            <td xml:id="d2e543">
+                                <p xml:id="d2e545">Raphanus sativus L. var. oleiformis Pers.</p>
+                            </td>
+                            <td xml:id="d2e549">
+                                <p xml:id="d2e551">Fodder radish</p>
+                            </td>
+                            <td xml:id="d2e555">
+                                <p xml:id="d2e557">TP 178/1 of 15.3.2017</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e562">
+                            <td xml:id="d2e564">
+                                <p xml:id="d2e566">Brassica napus L. (partim)</p>
+                            </td>
+                            <td xml:id="d2e570">
+                                <p xml:id="d2e572">Swede rape</p>
+                            </td>
+                            <td xml:id="d2e576">
+                                <p xml:id="d2e578">TP 36/3 of 21.4.2020</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e584">
+                            <td xml:id="d2e586">
+                                <p xml:id="d2e588">Cannabis sativa L.</p>
+                            </td>
+                            <td xml:id="d2e592">
+                                <p xml:id="d2e594">Hemp</p>
+                            </td>
+                            <td xml:id="d2e598">
+                                <p xml:id="d2e600">TP 276/2 of 1.2.2022</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e605">
+                            <td xml:id="d2e607">
+                                <p xml:id="d2e609">Glycine max (L.) Merr.</p>
+                            </td>
+                            <td xml:id="d2e613">
+                                <p xml:id="d2e615">Soya bean</p>
+                            </td>
+                            <td xml:id="d2e619">
+                                <p xml:id="d2e621">TP 80/1 of 15.3.2017</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e626">
+                            <td xml:id="d2e628">
+                                <p xml:id="d2e630">Gossypium spp.</p>
+                            </td>
+                            <td xml:id="d2e634">
+                                <p xml:id="d2e636">Cotton</p>
+                            </td>
+                            <td xml:id="d2e640">
+                                <p xml:id="d2e642">TP 88/2 of 11.12.2020</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e647">
+                            <td xml:id="d2e649">
+                                <p xml:id="d2e651">Helianthus annuus L.</p>
+                            </td>
+                            <td xml:id="d2e655">
+                                <p xml:id="d2e657">Sunflower</p>
+                            </td>
+                            <td xml:id="d2e661">
+                                <p xml:id="d2e663">TP 81/1 of 31.10.2002</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e668">
+                            <td xml:id="d2e670">
+                                <p xml:id="d2e672">Linum usitatissimum L.</p>
+                            </td>
+                            <td xml:id="d2e676">
+                                <p xml:id="d2e678">Flax/Linseed</p>
+                            </td>
+                            <td xml:id="d2e682">
+                                <p xml:id="d2e684">TP 57/2 of 19.3.2014</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e689">
+                            <td xml:id="d2e691">
+                                <p xml:id="d2e693">Sinapis alba L.</p>
+                            </td>
+                            <td xml:id="d2e697">
+                                <p xml:id="d2e699">White mustard</p>
+                            </td>
+                            <td xml:id="d2e703">
+                                <p xml:id="d2e705">TP 179/1 of 15.3.2017</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e711">
+                            <td xml:id="d2e713">
+                                <p xml:id="d2e715">Avena nuda L.</p>
+                            </td>
+                            <td xml:id="d2e719">
+                                <p xml:id="d2e721">Small naked oat, Hulless oat</p>
+                            </td>
+                            <td xml:id="d2e725">
+                                <p xml:id="d2e727">TP 20/3 of 6.3.2020</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e732">
+                            <td xml:id="d2e734">
+                                <p xml:id="d2e736">Avena sativa L. (includes A. byzantina K.
+                                    Koch)</p>
+                            </td>
+                            <td xml:id="d2e740">
+                                <p xml:id="d2e742">Oats and Red oat</p>
+                            </td>
+                            <td xml:id="d2e746">
+                                <p xml:id="d2e748">TP 20/3 of 6.3.2020</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e753">
+                            <td xml:id="d2e755">
+                                <p xml:id="d2e757">Hordeum vulgare L.</p>
+                            </td>
+                            <td xml:id="d2e761">
+                                <p xml:id="d2e763">Barley</p>
+                            </td>
+                            <td xml:id="d2e767">
+                                <p xml:id="d2e769">TP 19/5 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e774">
+                            <td xml:id="d2e776">
+                                <p xml:id="d2e778">Oryza sativa L.</p>
+                            </td>
+                            <td xml:id="d2e782">
+                                <p xml:id="d2e784">Rice</p>
+                            </td>
+                            <td xml:id="d2e788">
+                                <p xml:id="d2e790">TP 16/3 of 1.10.2015</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e795">
+                            <td xml:id="d2e797">
+                                <p xml:id="d2e799">Secale cereale L.</p>
+                            </td>
+                            <td xml:id="d2e803">
+                                <p xml:id="d2e805">Rye</p>
+                            </td>
+                            <td xml:id="d2e809">
+                                <p xml:id="d2e811">TP 58/1 Rev of 27.4.2022</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e816">
+                            <td xml:id="d2e818">
+                                <p xml:id="d2e820">Sorghum bicolor (L.) Moench subsp. bicolor</p>
+                            </td>
+                            <td xml:id="d2e824">
+                                <p xml:id="d2e826">Sorghum</p>
+                            </td>
+                            <td xml:id="d2e830">
+                                <p xml:id="d2e832">TP 122/1 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e838">
+                            <td xml:id="d2e840">
+                                <p xml:id="d2e842">Sorghum bicolor (L.) Moench subsp. drummondii
+                                    (Steud.) de Wet ex Davidse</p>
+                            </td>
+                            <td xml:id="d2e846">
+                                <p xml:id="d2e848">Sudan grass</p>
+                            </td>
+                            <td xml:id="d2e852">
+                                <p xml:id="d2e854">TP 122/1 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e859">
+                            <td xml:id="d2e861">
+                                <p xml:id="d2e863">Sorghum bicolor (L.) Moench subsp. bicolor x
+                                    Sorghum bicolor (L.) Moench subsp. drummondii (Steud.) de Wet ex
+                                    Davidse</p>
+                            </td>
+                            <td xml:id="d2e867">
+                                <p xml:id="d2e869">Hybrids resulting from the crossing of Sorghum
+                                    bicolor subsp. bicolor and Sorghum bicolor subsp. drummondii</p>
+                            </td>
+                            <td xml:id="d2e873">
+                                <p xml:id="d2e875">TP 122/1 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e880">
+                            <td xml:id="d2e882">
+                                <p xml:id="d2e884">xTriticosecale Wittm. ex A. Camus</p>
+                            </td>
+                            <td xml:id="d2e888">
+                                <p xml:id="d2e890">Hybrids resulting from the crossing of a species
+                                    of the genus Triticum and a species of the genus Secale</p>
+                            </td>
+                            <td xml:id="d2e894">
+                                <p xml:id="d2e896">TP 121/3 of 27.4.2022</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e901">
+                            <td xml:id="d2e903">
+                                <p xml:id="d2e905">Triticum aestivum L. subsp. aestivum</p>
+                            </td>
+                            <td xml:id="d2e909">
+                                <p xml:id="d2e911">Wheat</p>
+                            </td>
+                            <td xml:id="d2e915">
+                                <p xml:id="d2e917">TP 3/5 of 19.3.2019</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e922">
+                            <td xml:id="d2e924">
+                                <p xml:id="d2e926">Triticum turgidum L. subsp. durum (Desf.) van
+                                    Slageren</p>
+                            </td>
+                            <td xml:id="d2e930">
+                                <p xml:id="d2e932">Durum wheat</p>
+                            </td>
+                            <td xml:id="d2e936">
+                                <p xml:id="d2e938">TP 120/3 of 19.3.2014</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e943">
+                            <td xml:id="d2e945">
+                                <p xml:id="d2e947">Zea mays L. (partim)</p>
+                            </td>
+                            <td xml:id="d2e951">
+                                <p xml:id="d2e953">Maize</p>
+                            </td>
+                            <td xml:id="d2e957">
+                                <p xml:id="d2e959">TP 2/3 of 11.3.2010</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e965">
+                            <td xml:id="d2e967">
+                                <p xml:id="d2e969">Solanum tuberosum L.</p>
+                            </td>
+                            <td xml:id="d2e973">
+                                <p xml:id="d2e975">Potato</p>
+                            </td>
+                            <td xml:id="d2e979">
+                                <p xml:id="d2e981">TP 23/3 of 15.3.2017</p>
+                            </td>
+                        </tr>
+                     </tbody>
+                    </table>
+                    </content>
+                  </hcontainer>
+               </hcontainer>
+            </paragraph>
+          </annex>
+        </mainBody>
+    </doc>
+</akomaNtoso>

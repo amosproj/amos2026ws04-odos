@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="OPIN_EESC">
+        <meta xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clxir4is400020cibbddtb25r"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="EESC-2023-00325-00-00-AS-TRA"/>
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCRole xml:id="PRESID" href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+                <TLCRole xml:id="RAPP_CO"
+                    href="http://publications.europa.eu/resource/authority/role/RAPP_CO" showAs=""/>
+                <TLCRole xml:id="RAPP"
+                    href="http://publications.europa.eu/resource/authority/role/RAPP" showAs=""/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCOrganization xml:id="EESC_CCMI" href="http://publications.europa.eu/resource/authority/corporate-body/EESC_CCMI" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCConcept xml:id="INP" href="http://publications.europa.eu/resource/authority/subdivision/INP" showAs=""/>
+                <TLCReference xml:id="OPIN_EESC" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/OPIN_EESC" showAs="C"/>
+            </references>
+        </meta>
+        <preface xml:id="d2e89">
+            <longTitle xml:id="d2e91" status="ignored">
+                <p xml:id="d2e93">
+                    <docType xml:id="d2e95" refersTo="~OPIN_EESC">Opinion by the EESC</docType>
+                </p>
+            </longTitle>
+            <container  xml:id="d2e9112" name="mainDocReference">
+                <block  xml:id="d2e9113" name="reference"><docketNumber>CCMI/201</docketNumber> – <docNumber>EESC-2023-00325-00-00-AS-TRA</docNumber>
+                </block>
+            </container>
+            <container xml:id="d2e146" name="rapporteur">
+                <p xml:id="d2e148">
+                    <docIntroducer xml:id="d2e150">
+                        <inline xml:id="d2e152" name="label">
+                            <role xml:id="d2z154" refersTo="~RAPP">Rapporteur:</role>
+                        </inline>
+                        <person xml:id="d2e158" refersTo="">Dirk BERGRATH</person>
+                    </docIntroducer>
+                    <docIntroducer xml:id="d2e162">
+                        <inline xml:id="d2e164" name="label">
+                            <role xml:id="d2z166" refersTo="~RAPP_CO">Co-rapporteur:</role>
+                        </inline>
+                        <person xml:id="d2e170" refersTo="">Alessandro BARTELLONI</person>
+                    </docIntroducer>
+                </p>
+            </container>
+        </preface>
+        <mainBody xml:id="d2e102">
+            <level xml:id="d2e104">
+                <num xml:id="d2e106">1.</num>
+                <heading xml:id="d2e108">Conclusions and recommendations</heading>
+            </level>
+            <level xml:id="d2e111">
+                <num xml:id="d2e113">1.1</num>
+                <content xml:id="d2e115">
+                    <p xml:id="d2e117">The EESC welcomes the objective of this regulation to accelerate the pace of
+                        decarbonisation in the sector and to boost its structural transformation.
+                        The EU should seize the opportunity to become a leader in the
+                        clean-transport industry.</p>
+                </content>
+            </level>
+            <level xml:id="d2e121">
+                <num xml:id="d2e123">1.2</num>
+                <content xml:id="d2e125">
+                    <p xml:id="d2e127">The EESC notes that the proposal goes beyond the currently proposed targets
+                        in China, but falls short of the recently adopted Regulation in California
+                        for a 100% zero-emission sales target for trucks and buses by 2036. The EESC
+                        also notes that The U.S. National Blueprint for Transportation
+                        Decarbonization <authorialNote xml:id="d2e129" marker="1" placement="bottom">
+                            <p xml:id="d2e131"><ref xml:id="d2e132" href="https://www.energy.gov/sites/default/files/2023-01/Factsheet_TransportationDecarbBlueprint2023.pdf">DOE/EE-2675</ref> | January 2023.</p>
+                        </authorialNote> assigns a complementary role to "clean electricity,
+                        sustainable biofuels/e-fuels, and clean hydrogen" for transport in general,
+                        and for heavy duty road transport in particular.</p>
+                </content>
+            </level>
+            <level xml:id="d2e140">
+                <num xml:id="d2e142">1.3</num>
+                <content xml:id="d2e144">
+                    <p xml:id="d2z146">The EESC observes that a number of Member States, alongside other countries
+                        (including the United States), have already pledged to transition to 100%
+                        zero-emission heavy-duty vehicles (HDVs) sales by 2040 <authorialNote xml:id="d2z148" marker="2" placement="bottom">
+                            <p xml:id="d2z150">
+                                <ref xml:id="d2z152" href="https://globaldrivetozero.org/2022/11/16/cop27-usa-growing-number-nations-sign-global-mou/">COP27: USA, Ukraine, Ireland, Aruba, Belgium, Croatia, Curaçao,
+                                    Dominican Republic, Liechtenstein, Lithuania sign Global MOU,
+                                    support path to 100% new truck and bus sales by 2040</ref>
+                                (17.11.22). <ref xml:id="d2e155" href="https://www.energy.gov/articles/us-secretary-energy-advances-americas-commitment-reaching-net-zero-global-emissions-and">U.S. Secretary of Energy Advances America's Commitment to
+                                    Reaching Net Zero Global Emissions and Combatting Climate Change
+                                    at COP27</ref>.</p>
+                        </authorialNote> . In addition, various regulations at local and regional
+                        levels are to be expected (e.g. entry bans).</p>
+                </content>
+            </level>
+            <level xml:id="d2e163">
+                <num xml:id="d2e165">1.4</num>
+                <content xml:id="d2e167">
+                    <p xml:id="d2e169">The EESC acknowledges the importance of a regulatory stimulus to foster the
+                        deployment of zero-emission vehicles (ZEVs). However, the EESC believes that
+                        a focus must also be given to the demand side and to the key enabling
+                        conditions that make operating ZEVs a viable option for logistic
+                        operators.</p>
+                </content>
+            </level>
+            <level xml:id="d2e174">
+                <num xml:id="d2e176">1.5</num>
+                <content xml:id="d2e178">
+                    <p xml:id="d2e180">The EESC welcomes efforts by some Member States to support the transition to
+                        ZEVs, especially for SMEs, and notably through the European Union's Recovery
+                        and Resilience Facility (RRF) and other national funds.</p>
+                </content>
+            </level>
+            <level xml:id="d2e184">
+                <num xml:id="d2e186">1.6</num>
+                <content xml:id="d2e188">
+                    <p xml:id="d2e190">The EESC reaffirms its support for the Alternative Fuels Infrastructure
+                        Regulation (AFIR). Public authorities must ensure alternative fuels and
+                        charging stations are available where needed <authorialNote xml:id="d2e192" marker="3" placement="bottom">
+                            <p xml:id="d2e194"> EESC opinion on the <i xml:id="d2e196">Regulation on deployment of alternative fuels
+                                    infrastructure</i>, <ref xml:id="d2e198" href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:C:2022:152:SOM:EN:HTML">OJ C 152, 6.4.2022, p. 138</ref>.</p>
+                        </authorialNote>. To meet the 2030 intermediate target, over 50 000 publicly
+                        accessible chargers are required, of which 35 000 would need to be
+                        high-performance megawatt charging models. Some 700 hydrogen refilling
+                        stations would also be required.</p>
+                </content>
+            </level>
+            <level xml:id="d2e206">
+                <num xml:id="d2e208">1.7</num>
+                <content xml:id="d2e210">
+                    <p xml:id="d2e212">Given the limitations of the Commission's impact assessment, the EESC calls
+                        for a close and regular monitoring of developments in a progress report,
+                        including an in-depth assessment of the supply chain to avoid disruptions
+                        and to better reflect the impact of decarbonising transport at regional
+                        level.</p>
+                </content>
+            </level>
+            <level xml:id="d2e216">
+                <num xml:id="d2e218">1.8</num>
+                <content xml:id="d2e220">
+                    <p xml:id="d2e222">In line with its previous opinions <authorialNote xml:id="d2e224" marker="4" placement="bottom">
+                            <p xml:id="d2e226"> EESC opinions on the <i xml:id="d2e228">Revision of the Regulations on CO2 emissions
+                                    from passenger cars and light commercial vehicles</i>, <ref xml:id="d2e230" href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:C:2018:227:SOM:EN:HTML">OJ C 227, 28.6.2018, p. 52</ref>, and on <i xml:id="d2e233">CO2 emission
+                                    performance standards for new passenger cars and new light
+                                    commercial vehicles</i>, <ref xml:id="d2e235" href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:C:2022:194:SOM:EN:HTML">OJ C 194, 12.5.2022, p 81</ref>.</p>
+                        </authorialNote>, the EESC notes that despite all the benefits of electric
+                        and hydrogen powertrains, the proposed regulation based on the "tailpipe"
+                        approach needs to be complemented by other policy instruments to incentivise
+                        the use of renewable, non-fossil fuels for the part of the fleet running on
+                        internal combustion engine (ICE). The Fit for 55 package must ensure a
+                        life-cycle approach and avoid road transport decarbonisation leading to a
+                        shift of emissions upstream in the value chain.</p>
+                </content>
+            </level>
+            <level xml:id="d2e243">
+                <num xml:id="d2e245">1.9</num>
+                <content xml:id="d2e247">
+                    <p xml:id="d2e249">The EESC stresses the need for a policy framework that drives
+                        decarbonisation in a way that is fair for workers. This includes the
+                        provision of adequate funding to support regions facing difficulties as a
+                        result of the decarbonisation agenda, the need to anticipate change at all
+                        levels (sites, companies, regions and sectors) through plans developed with
+                        the social partners, and a massive effort by public authorities and
+                        companies to retrain and up-skill workers.</p>
+                </content>
+            </level>
+            <level xml:id="d2e253">
+                <num xml:id="d2e255">1.10</num>
+                <content xml:id="d2e257">
+                    <p xml:id="d2e259">The EESC calls for a CO2 emission reduction trajectory, in line with the
+                        industrial sector's capacity to transform and compatible with transport
+                        operators in terms of costs and operational efficiency. The proposed targets
+                        must be compatible with the time needed to convert existing production
+                        facilities and build new ones, to roll out charging infrastructure, to
+                        secure supply of key components and raw materials, to create lead markets
+                        and to train the workforce.</p>
+                </content>
+            </level>
+            <level xml:id="d2e264">
+                <num xml:id="d2e266">1.11</num>
+                <content xml:id="d2e268">
+                    <p xml:id="d2e270">The EESC stresses the need to decarbonise (the fleet) at a pace that is
+                        consistent with the implementation of the EU Green Deal Industrial Plan, and
+                        with the important projects of common European interest (IPCEI), that will
+                        contribute to developing key supply chains for the sector in Europe, such as
+                        clean hydrogen, batteries and microelectronics.</p>
+                </content>
+            </level>
+            <level xml:id="d2e274">
+                <num xml:id="d2e276">1.12</num>
+                <content xml:id="d2e278">
+                    <p xml:id="d2e280">The EESC also stresses the need to provide capacity-building and to support
+                        hauliers and operators – especially SMEs – to comply with the reporting
+                        obligations implemented by the regulation.</p>
+                </content>
+            </level>
+            <level xml:id="d2e284">
+                <num xml:id="d2e286">2.</num>
+                <heading xml:id="d2e288">General background</heading>
+            </level>
+            <level xml:id="d2e291">
+                <num xml:id="d2e293">2.1</num>
+                <content xml:id="d2e295">
+                    <p xml:id="d2e297">In October 2014, the EU heads of state / government<authorialNote xml:id="d2e299" marker="5" placement="bottom">
+                            <p xml:id="d2e301">European Council conclusions of 24 October 2014.</p>
+                        </authorialNote> set a binding goal to reduce greenhouse gas (GHG) emissions
+                        produced across the EU's entire economy by at least 40% compared to 1990
+                        levels by 2030. This target was based on global projections that comply with
+                        the medium-term timescale of the Paris Agreement on climate change (COP
+                            21)<authorialNote xml:id="d2e304" marker="6" placement="bottom">
+                            <p xml:id="d2e306"><ref xml:id="d2e307" href="https://unfccc.int/process-and-meetings/the-paris-agreement">https://unfccc.int/process-and-meetings/the-paris-agreement</ref>.</p>
+                        </authorialNote>.</p>
+                </content>
+            </level>
+            <level xml:id="d2e315">
+                <num xml:id="d2e317">2.2</num>
+                <content xml:id="d2e319">
+                    <p xml:id="d2e321">In December 2020 the European Commission published its sustainable and smart
+                        mobility strategy. This document sets a series of ambitious targets and
+                        milestones to make the EU transport system fit for the climate-neutral and
+                        digital world.</p>
+                </content>
+            </level>
+            <level xml:id="d2e325">
+                <num xml:id="d2e327">2.3</num>
+                <content xml:id="d2e329">
+                    <p xml:id="d2e331">In July 2021, the European Commission stepped up the game by adopting the
+                        Fit for 55 package<authorialNote xml:id="d2e333" marker="7" placement="bottom">
+                            <p xml:id="d2e335"><ref xml:id="d2e336" href="https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=COM:2021:550:FIN">COM(2021) 550 final</ref>.</p>
+                        </authorialNote> – a set of policy proposals for a 55% net reduction
+                        (compared to 1990 levels) in GHG emissions in the EU by 2030. This is
+                        consistent with the EU's commitment to achieving climate neutrality by 2050,
+                        established by the European Climate Law<authorialNote xml:id="d2e341" marker="8" placement="bottom">
+                            <p xml:id="d2e343"><ref xml:id="d2e344" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=celex%3A32021R1119">PE/27/2021/REV/1</ref>.</p>
+                        </authorialNote>.</p>
+                </content>
+            </level>
+            <level xml:id="d2e353">
+                <num xml:id="d2e355">2.4</num>
+                <content xml:id="d2e357">
+                    <p xml:id="d2e359">The European strategy for low-emission mobility<authorialNote xml:id="d2e361" marker="9" placement="bottom">
+                            <p xml:id="d2e363"><ref xml:id="d2e364" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A52016DC0501&amp;qid=1680073296120">COM(2016) 501 final</ref>.</p>
+                        </authorialNote> published in July 2016 sets the target of at least 60%
+                        fewer greenhouse gas emissions from vehicles by 2050 compared to 1990
+                        levels, putting the EU on a firm path towards zero emissions. However, the
+                        Fit for 55<authorialNote xml:id="d2e369" marker="10" placement="bottom">
+                            <p xml:id="d2e371"><ref xml:id="d2e372" href="https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=COM:2021:550:FIN">COM(2021) 550 final</ref>.</p>
+                        </authorialNote> package establishes that the 2050 climate neutrality goal
+                        requires a 90% reduction in overall transport emissions by 2050 compared to
+                        1990 levels. The use of low-emission / emission-free vehicles would have to
+                        progressively increase in order to achieve a significant market share by
+                        2030 and set the EU on a consistent long-term path towards zero-emission
+                        mobility.</p>
+                </content>
+            </level>
+            <level xml:id="d2e380">
+                <num xml:id="d2e382">2.5</num>
+                <content xml:id="d2e384">
+                    <p xml:id="d2e386">The road transport sector represents one fifth of the EU's GHG emissions.
+                        HDVs, such as trucks, city buses and long-distance buses, are responsible
+                        for more than 25% of GHG emissions from road transport in the EU, and
+                        account for over 6% of total EU GHG emissions. Despite efforts by
+                        manufactures to decrease emissions per km, total emissions continue to
+                        increase, especially in freight transport due to growing road transport
+                        demand, which is expected to continue increasing in the future. Road
+                        transport is also an important source of air pollution, and the EU is in the
+                        process of revising its air quality legislation, notably on the basis of the
+                        proposal on the new Euro 7 standards to reduce pollutants from vehicles.</p>
+                </content>
+            </level>
+            <level xml:id="d2e390">
+                <num xml:id="d2e392">2.6</num>
+                <content xml:id="d2e394">
+                    <p xml:id="d2e396">The current HDV fleet is run almost entirely on internal combustion engines,
+                        which are predominantly fuelled by fossil fuels, mostly refined in the EU
+                        from imported crude oils, in turn contributing to the EU's energy
+                        dependency. According to the European Commission's impact assessment, the
+                        proposal of new standards should decrease the demand for fossil fuels by
+                        around 2 billion barrels of oil between 2031 and 2050.</p>
+                </content>
+            </level>
+            <level xml:id="d2e400">
+                <num xml:id="d2e402">2.7</num>
+                <content xml:id="d2e404">
+                    <p xml:id="d2e406">Currently, a typical European 40-tonne 4x2 tractor unit in a "long-haul test
+                        cycle" consumes around 33.1 L of fuel per 100 km on roads and highways. A
+                        typical European 12-tonne 4x2 distribution truck in an "urban delivery test
+                        cycle" consumes around 21.4 L of fuel per 100 km<authorialNote xml:id="d2e408" marker="11" placement="bottom">
+                            <p xml:id="d2e410">Delgado, O., Rodríguez, F., Muncrief, R., Fuel efficiency technology
+                                in European heavy-duty vehicles: Baseline and potential for the
+                                2020–2030 timeframe, International Council on Clean Transportation,
+                                ICCT White Paper, Berlin, July 2017.</p>
+                        </authorialNote>.</p>
+                </content>
+            </level>
+            <level xml:id="d2e416">
+                <num xml:id="d2e418">2.8</num>
+                <content xml:id="d2e420">
+                    <p xml:id="d2e422">Purchasers of HDVs are mostly freight transport operators. They can
+                        experience fuel costs greater than a quarter of their operational costs, and
+                        rank fuel efficiency as their top purchasing criterion. Unlike the passenger
+                        car sector, total cost of ownership will be the dominating factor in
+                        choosing the drive type.</p>
+                </content>
+            </level>
+            <level xml:id="d2e426">
+                <num xml:id="d2e428">2.9</num>
+                <content xml:id="d2e430">
+                    <p xml:id="d2e432">In 2021, according to industry data, lorry exports generated a trade balance
+                        surplus of EUR 5 billion. The same year, more than 470 000 trucks were
+                        manufactured in the 52 plants located in the EU<authorialNote xml:id="d2e434" marker="12" placement="bottom">
+                            <p xml:id="d2e436"><ref xml:id="d2e437" href="https://www.acea.auto/files/trucks_fact_sheet_ACEA.pdf">Fact sheet "Trucks"</ref>.</p>
+                        </authorialNote>. This sector is part of an automotive industry which
+                        generates 12.1 million direct and indirect jobs in Europe, equivalent to
+                        5.6% of total EU employment.</p>
+                </content>
+            </level>
+            <level xml:id="d2e446">
+                <num xml:id="d2e448">2.10</num>
+                <content xml:id="d2e450">
+                    <p xml:id="d2e452">Commercial road transport is the nervous system of the EU economy value
+                        chain. Road transport accounts for a large share of the EU's GDP (gross
+                        domestic product) and employs over 3.4 million people EU-wide<authorialNote xml:id="d2e454" marker="13" placement="bottom">
+                            <p xml:id="d2e456">Eurostat, 2014 Labour Force Survey data.</p>
+                        </authorialNote>. Challenges to the sector include making transport safer
+                        and more secure while preserving the efficiency of the single market, and
+                        improving working conditions in the sector and the transport environment as
+                        a whole.</p>
+                </content>
+            </level>
+            <level xml:id="d2e462">
+                <num xml:id="d2e464">2.11</num>
+                <content xml:id="d2e466">
+                    <p xml:id="d2e468">Recent developments in the geopolitical landscape have focused attention on
+                        the need to ensure the resilience of the EU logistic supply chain, even in
+                        the most dramatic situations. Increased energy costs and dependencies on
+                        energy and raw materials – coupled with the aggressive protectionist
+                        strategies of some key international players – have been threatening the EU
+                        economic system and the welfare of its citizens. The EU commercial road
+                        transport system needs to remain competitive, affordable, and fully
+                        operational, even in the most critical circumstances. The regulatory
+                        framework should ensure this.</p>
+                </content>
+            </level>
+            <level xml:id="d2e472">
+                <num xml:id="d2e474">3.</num>
+                <heading xml:id="d2e476">The proposal for a regulation</heading>
+            </level>
+            <level xml:id="d2e479">
+                <num xml:id="d2e481">3.1</num>
+                <content xml:id="d2e483">
+                    <p xml:id="d2e485">The proposal is meant to replace the HDV CO2 Standards Regulation (EU)
+                        2019/1242 of 2019. Despite the fact that an evaluation of the results of the
+                        Regulation currently in place is not possible, the Commission believes it
+                        necessary to contribute to the objectives of the European Green Deal and the
+                        European Climate Law. It sets new binding CO2 targets applicable from
+                        2025.</p>
+                </content>
+            </level>
+            <level xml:id="d2e489">
+                <num xml:id="d2e491">3.2</num>
+                <content xml:id="d2e493">
+                    <p xml:id="d2e495">The proposal covers trucks (over 5 tonnes), city buses and long-distance
+                        buses (over 7.5 tonnes), as well as trailers (an unpowered vehicle towed by
+                        a motor vehicle). While this is an important expansion of the scope of the
+                        regulation, a regulatory gap regarding the CO2 regulation of cars and light
+                        commercial vehicles (trucks between 3.5 and 5 tonnes) remains.</p>
+                </content>
+            </level>
+            <level xml:id="d2e499">
+                <num xml:id="d2e501">3.3</num>
+                <list xml:id="d2e503">
+                    <subparagraph xml:id="d2e505" refersTo="~INP">
+                        <content xml:id="d2e507">
+                            <p xml:id="d2e509">The Commission is proposing new and more ambitious CO2 emission
+                                targets for new HDVs from 2030 to deliver on the above objectives.
+                                Under the proposal, on average and compared to 1990 levels, CO2
+                                emissions would reduce by: </p>
+                        </content>
+                    </subparagraph>
+                    <indent xml:id="d2e513">
+                        <num xml:id="d2e515">•</num>
+                        <content xml:id="d2e517">
+                            <p xml:id="d2e519">45% from 1 January 2030;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e523">
+                        <num xml:id="d2e525">•</num>
+                        <content xml:id="d2e527">
+                            <p xml:id="d2e529">65% from 1 January 2035; and</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e533">
+                        <num xml:id="d2e535">•</num>
+                        <content xml:id="d2e537">
+                            <p xml:id="d2e539">90% from 1 January 2040.</p>
+                        </content>
+                    </indent>
+                </list>
+            </level>
+            <level xml:id="d2e546">
+                <num xml:id="d2e548">3.4</num>
+                <content xml:id="d2e550">
+                    <p xml:id="d2e552">New city buses in the EU will all have to be zero-emission (100% share of
+                        zero-emission vehicles) as of 2030.</p>
+                </content>
+            </level>
+            <level xml:id="d2e556">
+                <num xml:id="d2e558">3.5</num>
+                <list xml:id="d2e560">
+                    <subparagraph xml:id="d2e562" refersTo="~INP">
+                        <content xml:id="d2e564">
+                            <p xml:id="d2e566">An exemption to the CO2 reduction targets will apply to the
+                                following HDVs:</p>
+                        </content>
+                    </subparagraph>
+                    <indent xml:id="d2e570">
+                        <num xml:id="d2e572">•</num>
+                        <content xml:id="d2e574">
+                            <p xml:id="d2e576">small volume manufacturers (up to 100 vehicles);</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e580">
+                        <num xml:id="d2e582">•</num>
+                        <content xml:id="d2e584">
+                            <p xml:id="d2e586">vehicles used for mining, forestry and agricultural purposes;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e590">
+                        <num xml:id="d2e592">•</num>
+                        <content xml:id="d2e594">
+                            <p xml:id="d2e596">vehicles designed and constructed for use by armed forces and
+                                track-laying vehicles;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e600">
+                        <num xml:id="d2e602">•</num>
+                        <content xml:id="d2e604">
+                            <p xml:id="d2e606">vehicles designed and constructed or adapted for use by civil
+                                protection services, fire services, and forces responsible for
+                                maintaining public order or urgent medical care;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e611">
+                        <num xml:id="d2e613">•</num>
+                        <content xml:id="d2e615">
+                            <p xml:id="d2e617">vocational vehicles, such as garbage trucks.</p>
+                        </content>
+                    </indent>
+                </list>
+            </level>
+            <level xml:id="d2e623">
+                <num xml:id="d2e625">3.6</num>
+                <content xml:id="d2e627">
+                    <p xml:id="d2e629">Unlike the CO2 standards for passenger cars and light commercial vehicles,
+                        the Commission proposal for HDV views hydrogen internal combustion vehicles
+                        (alongside other currently available alternative technologies as battery
+                        electric vehicles or hydrogen fuel cells) as a zero-tailpipe-emission
+                        option.</p>
+                </content>
+            </level>
+            <level xml:id="d2e633">
+                <num xml:id="d2e635">3.7</num>
+                <content xml:id="d2e637">
+                    <p xml:id="d2e639">Building on the scope of the Fit for 55 package, which covers emissions from
+                        all sectors, the Commission proposal for HDV adopts the "tank-to-wheel"
+                        methodology, also used in the light-duty vehicles (LDV) Regulation, to set
+                        the GHG emission reduction targets. Such a methodology is also referred to
+                        as "tailpipe", as it takes into account only the CO2 emitted from the
+                        vehicle while in use, whereas GHG emitted during the vehicle manufacturing
+                        or during the production of the fuels or energy are covered by other
+                        legislations such as the EU Emissions Trading System. The contribution of
+                        renewable and low-carbon fuels for the purpose of target compliance in this
+                        specific legislation was discarded, as the Commission deemed it neither
+                        cost-efficient nor effective.</p>
+                </content>
+            </level>
+            <level xml:id="d2e643">
+                <num xml:id="d2e645">4.</num>
+                <heading xml:id="d2e647">General comments</heading>
+            </level>
+            <level xml:id="d2e650">
+                <num xml:id="d2e652">4.1</num>
+                <content xml:id="d2e654">
+                    <p xml:id="d2e656">The EESC welcomes the objective of this regulation to accelerate the pace of
+                        decarbonisation in the sector and to boost its structural transformation.
+                        The European transport industry needs to renew its road transport fleet,
+                        through the gradual adoption of new powertrain technologies
+                        (electric/hydrogen fuel cells and hydrogen ICE). The EU should seize the
+                        opportunity to become a leader in the clean-transport industry. Developments
+                        indicate that the mentioned technologies provide a viable and cost-efficient
+                        path for standard use in short-, medium- and (gradually) long-haul
+                        trucking.</p>
+                </content>
+            </level>
+            <level xml:id="d2e661">
+                <num xml:id="d2e663">4.2</num>
+                <content xml:id="d2e665">
+                    <p xml:id="d2e667">The EESC notes that the proposal goes beyond the currently proposed targets
+                        in China, but falls short of the recently adopted Regulation in California.
+                        In June 2022, China announced a proposal ("Stage 4") estimated to tighten
+                        fuel consumption standards in the heavy-duty sector by 15% by 2026 as a
+                        general target across all vehicle segments, to replace its previous "Stage
+                        3", implemented in 2019. U.S. "Phase 2" standards adopted in 2016 and
+                        applicable for 2018-2027 are estimated to reduce CO2 and fuel consumption
+                        that vary by vehicle type and range from 16% to 30% compared to its 2010
+                        baseline. California, whose emission standards are commonly followed by
+                        other U.S. states, has recently adopted legislation for a 100% zero-emission
+                        sales target for trucks and buses by 2036, allowing only battery electric
+                        and hydrogen fuel cell electric vehicles. The U.S. National Blueprint for
+                        Transportation Decarbonization<authorialNote xml:id="d2e669" marker="14" placement="bottom">
+                            <p xml:id="d2e671"><ref xml:id="d2e672" href="https://www.energy.gov/sites/default/files/2023-01/Factsheet_TransportationDecarbBlueprint2023.pdf">DOE/EE-2675</ref> | January 2023.</p>
+                        </authorialNote> additionally assigns a complementary role to "clean
+                        electricity, sustainable biofuels/e-fuels, and clean hydrogen" for transport
+                        in general and for heavy-duty road transport in particular.</p>
+                </content>
+            </level>
+            <level xml:id="d2e680">
+                <num xml:id="d2e682">4.3</num>
+                <content xml:id="d2e684">
+                    <p xml:id="d2e686">The EESC observes that the proposed regulation will not be the only
+                        regulatory framework that the sector will encounter. While a number of
+                        Member States, alongside other countries (including the United States), have
+                        already pledged to transition to 100% zero-emission HDV sales by
+                            2040<authorialNote xml:id="d2e688" marker="15" placement="bottom">
+                            <p xml:id="d2e690"><ref xml:id="d2e691" href="https://globaldrivetozero.org/2022/11/16/cop27-usa-growing-number-nations-sign-global-mou/">COP27: USA, Ukraine, Ireland, Aruba, Belgium, Croatia, Curaçao,
+                                    Dominican Republic, Liechtenstein, Lithuania sign Global MOU,
+                                    support path to 100% new truck and bus sales by 2040</ref>
+                                    (17.11.22).<ref xml:id="d2e694" href="https://www.energy.gov/articles/us-secretary-energy-advances-americas-commitment-reaching-net-zero-global-emissions-and">U.S. Secretary of Energy Advances America's Commitment to
+                                    Reaching Net Zero Global Emissions and Combatting Climate Change
+                                    at COP27</ref>.</p>
+                        </authorialNote>, various regulations at local and regional levels are to be
+                        expected (e.g. entry bans). While the latter will mostly not aim to achieve
+                        climate action, they will have an impact on the operation and profitability
+                        of non-ZEVs, and on the functioning of the single market.</p>
+                </content>
+            </level>
+            <level xml:id="d2e702">
+                <num xml:id="d2e704">4.4</num>
+                <content xml:id="d2e706">
+                    <p xml:id="d2e708">The EESC acknowledges the importance of a regulatory stimulus as a
+                        supply-side policy measure to foster investments in ZEV technologies and the
+                        deployment of ZEVs, eventually contributing, together with carbon-neural
+                        fuels, to fully decarbonising the HDV fleet. However, the EESC believes that
+                        a focus must also be given to the demand side and to the key enabling
+                        conditions that make operating ZEVs a viable option for logistic
+                        operators.</p>
+                </content>
+            </level>
+            <level xml:id="d2e712">
+                <num xml:id="d2e714">4.4.1</num>
+                <content xml:id="d2e716">
+                    <p xml:id="d2e718">According the European Automobile Manufacturers' Association (ACEA), the
+                        proposal would require a significantly increased number of zero-emission
+                        vehicles on the road at least two years earlier than currently anticipated.
+                        Specifically, the newly proposed target would require more than 400 000
+                        zero-emission vehicles to be in operation within less than seven years, and
+                        close to 100 000 to be registered annually from 2030, meaning that more than
+                        one third of all new registrations would need to be zero-emission vehicles
+                        from 2030. This fleet would require over 50 000 publicly accessible
+                        chargers, of which 35 000 would need to be high-performance megawatt
+                        charging models. Some 700 hydrogen refilling stations would also be
+                        required. This indicates the high ambition for both public and private
+                        actors.</p>
+                </content>
+            </level>
+            <level xml:id="d2e722">
+                <num xml:id="d2e724">4.4.2</num>
+                <content xml:id="d2e726">
+                    <p xml:id="d2e728">The EESC also calls for adequate enabling conditions to encourage hauliers
+                        and operators to invest in new vehicles, including a massively accelerated
+                        roll-out of suitable charging and refuelling infrastructure, effective
+                        carbon pricing, and other demand-side measures that support transport
+                        operators and ensure that they invest in zero-emission vehicles. It must be
+                        borne in mind that hauliers and operators will make investment decisions
+                        based on profitability considerations.</p>
+                </content>
+            </level>
+            <level xml:id="d2e732">
+                <num xml:id="d2e734">4.4.3</num>
+                <content xml:id="d2e736">
+                    <p xml:id="d2e738">4.4.3 The EESC welcomes efforts by some Member States to support the
+                        transition to ZEVs, especially for SMEs. In Austria, the "Emission-free
+                        commercial vehicles and infrastructure" funding programme supports companies
+                        to switch their fleets to non-fossil-powered commercial vehicles, and to set
+                        up the charging and refuelling infrastructure required for these commercial
+                        vehicles. Through the European Union's Recovery and Resilience Facility
+                        (RRF) and other national funds, Austria has a total of EUR 365 million
+                        available to promote zero-emission commercial vehicles and their
+                            infrastructure<authorialNote xml:id="d2e740" marker="16" placement="bottom">
+                            <p xml:id="d2e742"><ref xml:id="d2e743" href="https://www.bmk.gv.at/en/topics/mobility/alternative_transport/electromobility.html">https://www.bmk.gv.at/en/topics/mobility/alternative_transport/electromobility.html</ref>.</p>
+                        </authorialNote>.</p>
+                </content>
+            </level>
+            <level xml:id="d2e752">
+                <num xml:id="d2e754">4.5</num>
+                <content xml:id="d2e756">
+                    <p xml:id="d2e758">Given the limitations of the Commission's impact assessment, notably the
+                        lack of an evaluation of the current Regulation, the EESC calls for a close
+                        and regular monitoring of certain key elements, including the development of
+                        the new powertrain vehicles, the deployment of the recharging/refuelling
+                        infrastructure, and of the cost of vehicles, energy and fuels.</p>
+                </content>
+            </level>
+            <level xml:id="d2e762">
+                <num xml:id="d2e764">4.6</num>
+                <content xml:id="d2e766">
+                    <p xml:id="d2e768">Sustainable, non-fossil fuels can play a role complementary to
+                        electrification and hydrogen for decarbonising transport, even though lower
+                        efficiency and costs (which are currently high) are limiting that
+                            role<authorialNote xml:id="d2e770" marker="17" placement="bottom">
+                            <p xml:id="d2e772">See <ref xml:id="d2e774" href="https://www.ipcc.ch/report/ar6/wg3/downloads/report/IPCC_AR6_WGIII_FullReport.pdf">IPCC AR6 WG III full report</ref>, p. 1068.</p>
+                        </authorialNote>. While they are recognised in regulations for aviation and
+                        maritime transport, they are not mentioned in road decarbonisation
+                        regulations. However, a methodology distinguishing between linear CO2
+                        emissions (from fossil fuels) and circular or net-zero emissions (from
+                        e-fuels and sustainable biofuels), in a life-cycle context, shows that
+                        efficient ICE and hybrid vehicles, fuelled by sustainable biofuels and
+                        e-fuels, have a carbon footprint comparable to that of BEVs using
+                        fossil-based electricity. This makes it even more important to replace
+                        fossil fuels in the existing fleet, as well as in those new HDVs that will
+                        continue to use ICE powertrains.</p>
+                </content>
+            </level>
+            <level xml:id="d2e782">
+                <num xml:id="d2e784">4.7</num>
+                <content xml:id="d2e786">
+                    <p xml:id="d2e788">The EESC calls on policy-makers to guarantee that the transition to
+                        non-fossil fuels gives clear assurances for investments and a just
+                        transition in the fuels sector, and supports the growth of the relevant EU
+                        industrial value chain and gain global leadership.</p>
+                </content>
+            </level>
+            <level xml:id="d2e792">
+                <num xml:id="d2e794">4.8</num>
+                <content xml:id="d2e796">
+                    <p xml:id="d2e798">The technology-neutral option presents numerous advantages. It would notably
+                        mitigate the risks both in technology development and in security of supply.
+                        The resilience of the EU economy would benefit from a diversified technology
+                        strategy, with sustainable fuels complementing BEV and hydrogen vehicles,
+                        while these two technologies develop and widen their domestic EU basis.</p>
+                </content>
+            </level>
+            <level xml:id="d2e802">
+                <num xml:id="d2e804">4.9</num>
+                <list xml:id="d2e806">
+                    <subparagraph xml:id="d2e808" refersTo="~INP">
+                        <content xml:id="d2e810">
+                            <p xml:id="d2e812">The EESC considers it crucial to ensure that the proposal
+                                contributes to:</p>
+                        </content>
+                    </subparagraph>
+                    <indent xml:id="d2e816">
+                        <num xml:id="d2e818">•</num>
+                        <content xml:id="d2e820">
+                            <p xml:id="d2e822">preserving the effective and cost-efficient operations of the EU
+                                logistic chain, allowing the functioning of the EU internal market
+                                even in the most critical circumstances;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e826">
+                        <num xml:id="d2e828">•</num>
+                        <content xml:id="d2e830">
+                            <p xml:id="d2e832">promoting the competitiveness and boosting the employment of all the
+                                industries (with special attention for the SMEs) belonging to the
+                                value chain of commercial road transport;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e836">
+                        <num xml:id="d2e838">•</num>
+                        <content xml:id="d2e840">
+                            <p xml:id="d2e842">accelerating the shift to a more sustainable transport system, based
+                                on multimodality and where a substantial part of the 75% of inland
+                                freight carried today by road will shift to rail and inland
+                                waterways;</p>
+                        </content>
+                    </indent>
+                    <indent xml:id="d2e846">
+                        <num xml:id="d2e848">•</num>
+                        <content xml:id="d2e850">
+                            <p xml:id="d2e852">improving the resilience of the EU economy to shocks, large- scale
+                                disruptions in supply chains, and constraints in the access to
+                                resources. For example, where fossil energy is used as a weapon by
+                                certain countries, and the fact that raw materials for BEVs are
+                                sourced and processed from just a few non-EU countries.</p>
+                        </content>
+                    </indent>
+                </list>
+            </level>
+            <level xml:id="d2e858">
+                <num xml:id="d2e860">4.10</num>
+                <content xml:id="d2e862">
+                    <p xml:id="d2e864">This requires the following:</p>
+                </content>
+            </level>
+            <level xml:id="d2e869">
+                <num xml:id="d2e871">4.10.1</num>
+                <content xml:id="d2e873">
+                    <p xml:id="d2e875">A CO2 emission reduction trajectory in line with the capacity of the
+                        industrial sector to transform, and compatible with transport operators in
+                        terms of costs and operational efficiency. The proposed targets must be
+                        compatible with the time needed to convert existing production facilities
+                        and build new ones, to roll out charging infrastructure, to secure supply of
+                        key components and raw materials, to create lead markets and to train the
+                        workforce.</p>
+                </content>
+            </level>
+            <level xml:id="d2e879">
+                <num xml:id="d2e881">4.10.2</num>
+                <content xml:id="d2e883">
+                    <p xml:id="d2e885">A pace of decarbonisation (for the fleet) that is consistent with the
+                        implementation of the EU Green Deal Industrial Plan and the important
+                        projects of common European interest (IPCEI), and that will contribute in
+                        developing key supply chains for the sector in Europe, such as clean
+                        hydrogen, batteries and microelectronics. The emission trajectory must also
+                        be in line with the European Green Deal objectives, as well as the EU
+                        sustainable and smart mobility strategy.</p>
+                </content>
+            </level>
+            <level xml:id="d2e889">
+                <num xml:id="d2e891">4.11</num>
+                <content xml:id="d2e893">
+                    <p xml:id="d2e895">As expressed in previous opinions, the EESC deems an enhanced coordination
+                        among environmental legislations targeting road transport crucial for
+                        successfully transforming the industry (such as Euro 7, AFIR and
+                            Eurovignette)<authorialNote xml:id="d2e897" marker="18" placement="bottom">
+                            <p xml:id="d2e899"> EESC opinions on the <ref xml:id="d2e901" href="https://www.eesc.europa.eu/en/our-work/opinions-information-reports/opinions/development-post-euro-6vi-emission-standards-cars-vans-lorries-and-buses">Development of post-Euro 6/VI emission standards for cars,
+                                    vans, lorries and buses</ref>, not yet published; on <i xml:id="d2e904">The EU
+                                    mobility strategy and EU industrial value chains: automotive
+                                    eco-systems approach</i>, <ref xml:id="d2e906" href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:C:2022:105:SOM:FR:HTML">OJ C 105, 4.3.2022, p. 26</ref>; and on the
+                                <i xml:id="d2e909">Eurovignette</i>, <ref xml:id="d2e911" href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:C:2018:081:SOM:FR:HTML">OJ C 81, 2.3.2018, p. 188</ref></p>
+                        </authorialNote>, while calling for a coherent legislative approach.</p>
+                </content>
+            </level>
+            <level xml:id="d2e918">
+                <num xml:id="d2e920">4.12</num>
+                <content xml:id="d2e922">
+                    <p xml:id="d2e924">In line with its previous opinions<authorialNote xml:id="d2e926" marker="19" placement="bottom">
+                            <p xml:id="d2e928"> EESC opinions on the <i xml:id="d2e930">Revision of the Regulations on CO2 emissions
+                                    from passenger cars and light commercial vehicles</i>, <ref xml:id="d2e932" href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:C:2018:227:SOM:EN:HTML">OJ C 227, 28.6.2018, p. 52</ref>, and on <i xml:id="d2e935">CO2 emission
+                                    performance standards for new passenger cars and new light
+                                    commercial vehicles</i>, <ref xml:id="d2e937" href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:C:2022:194:SOM:EN:HTML">OJ C 194, 12.5.2022, p. 81</ref>.</p>
+                        </authorialNote>, the EESC notes that despite all the benefits of electric
+                        and hydrogen powertrains, the proposed regulation based on the "tailpipe"
+                        approach needs to be complemented by other policy instruments to incentivise
+                        the use of renewable, non-fossil fuels for the part of the fleet running on
+                        ICE. The Fit for 55 package must ensure a life-cycle approach and avoid road
+                        transport decarbonisation leading to a shift of emissions upstream in the
+                        value chain. The EU Emissions Trading System revision, as well as the
+                        Renewable Energy Directive, must ensure that the decarbonisation of road
+                        transport and of energy production happen at a compatible pace.</p>
+                </content>
+            </level>
+            <level xml:id="d2e945">
+                <num xml:id="d2e947">4.13</num>
+                <content xml:id="d2e949">
+                    <p xml:id="d2e951">In the transformation, the European Union must ensure a fair competition for
+                        European Original Equipment Manufacturers (OEMs) and transport operators in
+                        domestic and international markets.</p>
+                </content>
+            </level>
+            <level xml:id="d2e955">
+                <num xml:id="d2e957">4.14</num>
+                <content xml:id="d2e959">
+                    <p xml:id="d2e961">The EESC also stresses the need to provide capacity-building and support
+                        hauliers and operators – especially SMEs – to comply with the reporting
+                        obligations implemented by the regulation, including the proposed central
+                        register for data on HDVs.</p>
+                </content>
+            </level>
+            <level xml:id="d2e966">
+                <num xml:id="d2e968">4.15</num>
+                <content xml:id="d2e970">
+                    <p xml:id="d2e972">Regarding urban buses, the EESC underscores the need to exempt buses also
+                        used for interurban transport from the specific zero-emission requirement
+                        for urban buses.</p>
+                </content>
+            </level>
+            <level xml:id="d2e976">
+                <num xml:id="d2e978">4.16</num>
+                <content xml:id="d2e980">
+                    <p xml:id="d2e982">The EESC acknowledges with concern that the technological changes are not
+                        "neutral" for workers. Even though many jobs are set to be created in the
+                        mobility ecosystem in the coming years, massive job losses in certain parts
+                        of the value chain are to be expected, as many SMEs in various EU regions
+                        will be negatively impacted. New technologies also have an impact on the
+                        skill profiles required in the sector, and their rapid introduction could
+                        create challenges for some categories of workers (low-skilled, older
+                        workers, temporary workers). The current shortage of skilled workers in many
+                        sectors might also put the pace of the transition at risk.</p>
+                </content>
+            </level>
+            <level xml:id="d2e986">
+                <num xml:id="d2e988">4.17</num>
+                <content xml:id="d2e990">
+                    <p xml:id="d2e992">The EESC stresses the need for a policy framework that drives
+                        decarbonisation in a way that is fair for workers. When it comes to HDVs, a
+                        just transition must mean the following:</p>
+                </content>
+            </level>
+            <level xml:id="d2e996">
+                <num xml:id="d2e998">4.17.1</num>
+                <content xml:id="d2e1000">
+                    <p xml:id="d2e1002">In-depth supply chain impact assessments to avoid disruptive changes for
+                        workers. These impact assessments must also better reflect the impact of
+                        decarbonising transport at a regional level.</p>
+                </content>
+            </level>
+            <level xml:id="d2e1006">
+                <num xml:id="d2e1008">4.17.2</num>
+                <content xml:id="d2e1010">
+                    <p xml:id="d2e1012">The provision of adequate funding to support regions facing difficulties as
+                        a result of the decarbonisation agenda, bearing in mind the importance of
+                        social conditionality in State aid.</p>
+                </content>
+            </level>
+            <level xml:id="d2e1016">
+                <num xml:id="d2e1018">4.17.3</num>
+                <content xml:id="d2e1020">
+                    <p xml:id="d2e1022">The need to anticipate change at all levels (sites, companies, regions and
+                        sectors) through plans developed with the social partners.</p>
+                </content>
+            </level>
+            <level xml:id="d2e1027">
+                <num xml:id="d2e1029">4.17.4</num>
+                <content xml:id="d2e1031">
+                    <p xml:id="d2e1033">A massive effort by public authorities and companies to retrain and up-skill
+                        workers.</p>
+                </content>
+            </level>
+        </mainBody>
+        <conclusions xml:id="d2e1038">
+            <p xml:id="d2e1040"><location xml:id="d2e1041" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e1044" date="2023-06-22">22 June
+                    2023</date></p>
+            <block xml:id="d2e1047" name="signatory">
+                <signature xml:id="d2e1049">
+                    <person xml:id="d2e1051" refersTo="">Pietro Francesco De Lotto</person>
+                    <role xml:id="d2e1054" refersTo="~PRESID">The President<organization xml:id="d2e1056" refersTo="~EESC_CCMI">of the
+                            Consultative Commission on Industrial Change</organization></role>
+                </signature>
+            </block>
+        </conclusions>
+    </doc>
+</akomaNtoso>

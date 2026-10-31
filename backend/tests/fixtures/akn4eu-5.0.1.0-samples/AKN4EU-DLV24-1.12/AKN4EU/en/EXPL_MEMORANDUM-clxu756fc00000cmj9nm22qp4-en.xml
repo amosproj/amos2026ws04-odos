@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="EXPL_MEMORANDUM">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clxu756fc00000cmj9nm22qp4"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="C(2023) 6149" />
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference xml:id="ENG" name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCReference xml:id="EXPL_MEMORANDUM" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/EXPL_MEMORANDUM" showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e72">
+            <longTitle xml:id="d2e74">
+                <p xml:id="d2e76">
+                    <docType xml:id="d2e78" refersTo="~EXPL_MEMORANDUM">EXPLANATORY
+                        MEMORANDUM</docType>
+                </p>
+            </longTitle>
+        </preface>
+        <mainBody xml:id="d2e84">
+            <tblock xml:id="d2e86">
+                <num xml:id="d2e88">1.</num>
+                <heading xml:id="d2e91">CONTEXT OF THE DELEGATED ACT</heading>
+                <blockContainer xml:id="d2e94">
+                    <p xml:id="d2e96">Directive 2009/43/EC of the European Parliament and of the Council of 6 May 2009
+                        simplifying the terms and conditions of transfers of defence-related products within the
+                        Community<authorialNote xml:id="d2e98" marker="1" placement="bottom">
+                            <p xml:id="d2e100">OJ L 146, 10.6.2009, p. 1.</p>
+                        </authorialNote> empowers the Commission to adopt delegated acts amending the list of defence-
+                        related products set out in the Annex. Pursuant to Article 13 of Directive2009/43/EC, the
+                        Annex must strictly correspond to the Common Military List of the European Union.</p>
+                    <p xml:id="d2e105">The Common Military List of the European Union was last updated by the Council on
+                        20 February 2023<authorialNote xml:id="d2e107" marker="2" placement="bottom">
+                            <p xml:id="d2e109">OJ C 72, 28.2.2023, p. 2-37.</p></authorialNote>. To date, the Annex has not been aligned with the latest amendment of the
+                        Common Military List. It is necessary to do so through the adoption of a delegated act.</p>
+                </blockContainer>
+            </tblock>
+            <tblock xml:id="d2e115">
+                <num xml:id="d2e117">2.</num>
+                <heading xml:id="d2e120">CONSULTATIONS PRIOR TO THE ADOPTION OF THE ACT</heading>
+                <blockContainer xml:id="d2e123">
+                    <p xml:id="d2e125">Pursuant to Article 13a(4) of Directive 2009/43/EC, before adopting a delegated act amending
+                        the Annex to Directive 2009/43/EC, the Commission shall consult experts designated by each
+                        Member State in accordance with the principles laid down in the Interinstitutional Agreement
+                        of 13 April 2016 on Better Law-Making.</p>
+                    <p xml:id="d2e128">Consultations were carried out with the Members of the expert group on EU Transfers of
+                        Defence-related Products. Comments received from the experts from the Member States have
+                        been duly taken into account in the drafting of the Commission Delegated Directive.</p>
+                    <p xml:id="d2e131">The Directive does not foresee a feedback mechanism on the basis of the Better Regulation
+                        rules due to the purely technical nature of the Annex’ alignment with the Common Military
+                        List, in which the Commission cannot exercise any discretion.</p>
+                </blockContainer>
+            </tblock>
+            <tblock xml:id="d2e136">
+                <num xml:id="d2e138">3.</num>
+                <heading xml:id="d2e141">LEGAL ELEMENTS OF THE DELEGATED ACT</heading>
+                <blockContainer xml:id="d2e144">
+                    <p xml:id="d2e146">Directive 2009/43/EC has been amended by Regulation (EU) 2019/1243 of the European
+                        Parliament and of the Council of 20 June 2019 adapting a number of legal acts providing for
+                        the use of the regulatory procedure with scrutiny to Articles 290 and 291 of the Treaty on the
+                        Functioning of the European Union<authorialNote xml:id="d2e148" marker="3" placement="bottom">
+                            <p xml:id="d2e150">OJ L 198, 25.7.2019, p. 241.</p></authorialNote>. The exercise of the delegation has been laid down in the
+                        new Article 13a of Directive 2009/43/EC.</p>
+                    <p xml:id="d2e154">Article 1 of the Delegated Directive provides that the Annex to Directive 2009/43/EC is
+                        replaced by the Annex to the Delegated Directive, whose content is identical to the Common
+                        Military List as last updated by the Council.</p>
+                    <p xml:id="d2e157">Article 2 lays down the deadlines by which Member States are required to adopt, publish and
+                        apply the necessary transposition measures and requires them to communicate to the
+                        Commission the text of those provisions as well as the text of the main provisions of national
+                        law which they adopt in the field covered by the Delegated Directive.</p>
+                </blockContainer>
+            </tblock>
+        </mainBody>
+    </doc>
+</akomaNtoso>

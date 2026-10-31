@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="ANNEX">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clyffgufr00020cl22zuyfs5a"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="eli/dir_impl/2022/905"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference xml:id="ANNEX" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/ANNEX" showAs=""/>
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+            </references>
+        </meta>
+
+        <mainBody xml:id="d2e89">
+            <annex xml:id="d2e90">
+                <num xml:id="d2e76">ANNEX II</num>
+                <heading xml:id="d2e79">List of species referred to in Article 1(2),
+                    point (b), which are to comply with UPOV test guidelines <authorialNote
+                        xml:id="d2e81" marker="*" placement="bottom" placementBase="~d2e89">
+                        <p xml:id="d2e83">The text of these guidelines can be found on the UPOV web
+                            site (www.upov.int).</p></authorialNote></heading>
+            <paragraph xml:id="d2e91">
+                <hcontainer xml:id="d2e92" name="TAB">
+                    <hcontainer xml:id="d2e93" name="TAB_CONTAINER">
+                        <content xml:id="d2e94">
+                            <table xml:id="d2e95">
+                              <thead xml:id="d2e96">
+                                <tr xml:id="d2e97">
+                                    <th xml:id="d2e99">
+                                        <p xml:id="d2e101">Scientific name</p>
+                                    </th>
+                                    <th xml:id="d2e105">
+                                        <p xml:id="d2e107">Common name</p>
+                                    </th>
+                                    <th xml:id="d2e111">
+                                        <p xml:id="d2e113">UPOV guideline</p>
+                                    </th>
+                                </tr>
+                              </thead>
+                              <tbody xml:id="d2e114">
+                                <tr xml:id="d2e118">
+                                    <td xml:id="d2e120">
+                                        <p xml:id="d2e122">Brassica rapa L.</p>
+                                    </td>
+                                    <td xml:id="d2e126">
+                                        <p xml:id="d2e128">Turnip</p>
+                                    </td>
+                                    <td xml:id="d2e132">
+                                        <p xml:id="d2e134">TG/37/10 of 4.4.2001</p>
+                                    </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                        </content>
+                </hcontainer>
+              </hcontainer>
+            </paragraph>
+            </annex>
+        </mainBody>
+    </doc>
+</akomaNtoso>

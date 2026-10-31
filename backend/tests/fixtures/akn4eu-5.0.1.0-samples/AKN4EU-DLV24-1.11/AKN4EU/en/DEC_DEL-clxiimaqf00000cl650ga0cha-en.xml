@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <bill name="DEC_DEL">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clxiimaqf00000cl650ga0cha"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRsubtype value="DEC_DEL" refersTo="~COM_AUTO_PROC"/>
+                    <FRBRnumber value="C(2023) 950"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <analysis source="~PUBL">
+                <activeModifications>
+                    <legalSystemMod type="legislativeDelegation">
+                        <source/>
+                        <destination href="http://data.europa.eu/eli/reg/2018/1240"/>
+                    </legalSystemMod>
+                </activeModifications>
+            </analysis>
+            <references source="~PUBL">
+                <TLCReference xml:id="DEC_DEL" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/DEC_DEL" showAs=""/>
+                <TLCProcess xml:id="COM_AUTO_PROC" href="http://publications.europa.eu/resource/authority/internal-procedure/COM_AUTO_PROC" showAs=""/>
+                <TLCReference name="language" xml:id="ENG" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference name="language" xml:id="BUL" href="http://publications.europa.eu/resource/authority/language/BUL" showAs="bg"/>
+                <TLCReference name="language" xml:id="HRV" href="http://publications.europa.eu/resource/authority/language/HRV" showAs="hr"/>
+                <TLCReference name="language" xml:id="CES" href="http://publications.europa.eu/resource/authority/language/CES" showAs="cs"/>
+                <TLCReference name="language" xml:id="DAN" href="http://publications.europa.eu/resource/authority/language/DAN" showAs="da"/>
+                <TLCReference name="language" xml:id="DEU" href="http://publications.europa.eu/resource/authority/language/DEU" showAs="de"/>
+                <TLCReference name="language" xml:id="EST" href="http://publications.europa.eu/resource/authority/language/EST" showAs="et"/>
+                <TLCReference name="language" xml:id="FIN" href="http://publications.europa.eu/resource/authority/language/FIN" showAs="fi"/>
+                <TLCReference name="language" xml:id="FRA" href="http://publications.europa.eu/resource/authority/language/FRA" showAs="fr"/>
+                <TLCReference name="language" xml:id="NLD" href="http://publications.europa.eu/resource/authority/language/NLD" showAs="nl"/>
+                <TLCReference name="language" xml:id="ELL" href="http://publications.europa.eu/resource/authority/language/ELL" showAs="el"/>
+                <TLCReference name="language" xml:id="HUN" href="http://publications.europa.eu/resource/authority/language/HUN" showAs="hu"/>
+                <TLCReference name="language" xml:id="ITA" href="http://publications.europa.eu/resource/authority/language/ITA" showAs="it"/>
+                <TLCReference name="language" xml:id="LAV" href="http://publications.europa.eu/resource/authority/language/LAV" showAs="lv"/>
+                <TLCReference name="language" xml:id="LIT" href="http://publications.europa.eu/resource/authority/language/LIT" showAs="lt"/>
+                <TLCReference name="language" xml:id="MLT" href="http://publications.europa.eu/resource/authority/language/MLT" showAs="mt"/>
+                <TLCReference name="language" xml:id="POL" href="http://publications.europa.eu/resource/authority/language/POL" showAs="pl"/>
+                <TLCReference name="language" xml:id="POR" href="http://publications.europa.eu/resource/authority/language/POR" showAs="pt"/>
+                <TLCReference name="language" xml:id="RON" href="http://publications.europa.eu/resource/authority/language/RON" showAs="ro"/>
+                <TLCReference name="language" xml:id="SLK" href="http://publications.europa.eu/resource/authority/language/SLK" showAs="sk"/>
+                <TLCReference name="language" xml:id="SLV" href="http://publications.europa.eu/resource/authority/language/SLV" showAs="sl"/>
+                <TLCReference name="language" xml:id="SPA" href="http://publications.europa.eu/resource/authority/language/SPA" showAs="es"/>
+                <TLCReference name="language" xml:id="SWE" href="http://publications.europa.eu/resource/authority/language/SWE" showAs="sv"/>
+                <TLCReference xml:id="legalBasis" name="contentSubject" href="http://eurovoc.europa.eu/5456" showAs=""/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCOrganization xml:id="COM" href="http://publications.europa.eu/resource/authority/corporate-body/COM" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCRole xml:id="MEMBER_COM" href="http://publications.europa.eu/resource/authority/role/MEMBER_COM" showAs=""/>
+                <TLCReference xml:id="SVG" name="fileType" href="http://publications.europa.eu/resource/authority/file-type/SVG" showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e149">
+            <longTitle xml:id="d2e151">
+                <p xml:id="d2e153">
+                    <docType xml:id="d2e155" refersTo="~DEC_DEL">COMMISSION DELEGATED
+                        DECISION</docType> of <date xml:id="d2e158" date="2023-03-27"> 
+                        27.3.2023</date>
+                    <docPurpose xml:id="d2e161"> supplementing <ref xml:id="d2e163" href="http://data.europa.eu/eli/reg/2018/1240">Regulation (EU) 2018/1240
+                            of the European Parliament and of the Council</ref>, as regards specifying the
+                            conditions for the correspondence between the data present in a record,
+                            alert or file of the other EU information systems consulted and an ETIAS
+                            application file
+                    </docPurpose>
+                </p>
+            </longTitle>
+            <!-- this name of this container should be added among the allowed ones -->
+            <container xml:id="d2e169" name="authenticLanguages">
+                <p xml:id="d2e171">(Only the <inline xml:id="d2e173" name="language" refersTo="~BUL">Bulgarian</inline>, <inline xml:id="d2e176" name="language" refersTo="~HRV">Croatian</inline>, <inline xml:id="d2e179" name="language" refersTo="~CES">Czech</inline>,
+                        <inline xml:id="d2e182" name="language" refersTo="~DAN">Danish</inline>, <inline xml:id="d2e185" name="language" refersTo="~NLD">Dutch</inline>, <inline xml:id="d2e189" name="language" refersTo="~ENG">English</inline>, <inline xml:id="d2e192" name="language" refersTo="~EST">Estonian</inline>, <inline xml:id="d2e195" name="language" refersTo="~FIN">Finnish</inline>, <inline xml:id="d2e198" name="language" refersTo="~FRA">French</inline>,
+                        <inline xml:id="d2e201" name="language" refersTo="~DEU">German</inline>, <inline xml:id="d2e204" name="language" refersTo="~ELL">Greek</inline>, <inline xml:id="d2e208" name="language" refersTo="~HUN">Hungarian</inline>, <inline xml:id="d2e211" name="language" refersTo="~ITA">Italian</inline>, <inline xml:id="d2e214" name="language" refersTo="~LAV">Latvian</inline>,
+                        <inline xml:id="d2e217" name="language" refersTo="~LIT">Lithuanian</inline>, <inline xml:id="d2e220" name="language" refersTo="~MLT">Maltese</inline>, <inline xml:id="d2e223" name="language" refersTo="~POL">Polish</inline>, <inline xml:id="d2e227" name="language" refersTo="~POR">Portuguese</inline>, <inline xml:id="d2e230" name="language" refersTo="~RON">Romanian</inline>, <inline xml:id="d2e233" name="language" refersTo="~SLK">Slovak</inline>,
+                        <inline xml:id="d2e236" name="language" refersTo="~SLV">Slovenian</inline>, <inline xml:id="d2e239" name="language" refersTo="~SPA">Spanish</inline> and <inline xml:id="d2e242" name="language" refersTo="~SWE">Swedish</inline> texts are authentic)</p>
+            </container>
+        </preface>
+        <preamble xml:id="d2e248">
+            <formula xml:id="d2e250" name="actingEntity">
+                <p xml:id="d2e252">THE EUROPEAN COMMISSION,</p>
+            </formula>
+            <citations xml:id="d2e256">
+                <citation xml:id="d2e258" refersTo="~legalBasis">
+                    <p xml:id="d2e260">Having regard to the Treaty on the Functioning of the
+                        European Union,</p>
+                </citation>
+                <citation xml:id="d2e264">
+                    <p xml:id="d2e266">Having regard to Regulation (EU) 2018/1240 of the European
+                        Parliament and of the Council of 12 September 2018 establishing a European
+                        Travel Information and Authorisation System (ETIAS) and amending Regulations
+                        (EU) No 1077/2011, (EU) No 515/2014, (EU) 2016/399, (EU) 2016/1624 and (EU)
+                            2017/2226<authorialNote xml:id="d2e268" marker="2" placement="bottom">
+                            <p xml:id="d2e270">OJ L 236, 19.9.2018, p. 1.</p>
+                        </authorialNote>, and in particular Article 11(9) thereof,</p>
+                </citation>
+            </citations>
+            <recitals xml:id="d2e277">
+                <intro xml:id="d2e279">
+                    <p xml:id="d2e281">Whereas:</p>
+                </intro>
+                <recital xml:id="d2e285">
+                    <num xml:id="d2e287">(1)</num>
+                    <p xml:id="d2e290">Regulation (EU) 2018/1240 established the European Travel
+                        Information and Authorisation System (‘ETIAS’) applicable to visa-exempt
+                        third-country nationals seeking to enter the territory of the Member
+                        States.</p>
+                </recital>
+                <recital xml:id="d2e294">
+                    <num xml:id="d2e296">(2)</num>
+                    <p xml:id="d2e299">Pursuant to that Regulation, where a third country national
+                        submits an application for a travel authorisation and the application is
+                        deemed valid, the ETIAS Central System is to create an application file. The
+                        Central System is then to query the other EU information systems, as defined
+                        in Article 3(1), point (28), of Regulation (EU) 2018/1240, to verify whether
+                        there is a correspondence between the data contained in the application file
+                        with the data present in a record, alert or file of the other EU information
+                        systems.</p>
+                </recital>
+                <recital xml:id="d2e303">
+                    <num xml:id="d2e305">(3)</num>
+                    <p xml:id="d2e308">The use of application file data to query data in the other
+                        EU information systems consulted would trigger a great number of hits that
+                        require manual verification. To limit the burden that such situation
+                        represents for persons whose data is registered in the other EU information
+                        systems, the national authorities and Union agencies, it is necessary to
+                        specify rules that will help facilitate the querying of data through
+                        automatic processing in the other EU information systems consulted.</p>
+                </recital>
+                <recital xml:id="d2e312">
+                    <num xml:id="d2e314">(4)</num>
+                    <p xml:id="d2e317">Given that Regulation (EU) 2018/1240 builds upon the Schengen
+                        acquis, in accordance with Article 4 of Protocol No 22 on the position of
+                        Denmark, annexed to the Treaty on European Union and to the Treaty on the
+                        Functioning of the European Union, Denmark notified the implementation of
+                        Regulation (EU) 2018/1240 in its national law. Denmark is therefore bound by
+                        this Decision.</p>
+                </recital>
+                <recital xml:id="d2e322">
+                    <num xml:id="d2e324">(5)</num>
+                    <p xml:id="d2e327">This Decision constitutes a development of the provisions of
+                        the Schengen acquis in which Ireland does not take part; this Decision falls
+                        outside the scope of the measures provided for in Council Decision
+                            2002/192/EC<authorialNote xml:id="d2e329" placement="bottom" marker="3">
+                            <p xml:id="d2e331">Council Decision 2002/192/EC of 28 February 2002
+                                concerning Ireland’s request to apply some of the provisions of the
+                                Schengen acquis (OJ L 64, 7.3.2002, p. 20).</p>
+                        </authorialNote>. Ireland is therefore not taking part in the adoption of
+                        this Decision and is not bound by it or subject to its application.</p>
+                </recital>
+                <recital xml:id="d2e337">
+                    <num xml:id="d2e339">(6)</num>
+                    <p xml:id="d2e342">As regards Iceland and Norway, this Decision constitutes a
+                        development of the provisions of the Schengen acquis within the meaning of
+                        the Agreement concluded by the Council of the European Union and the
+                        Republic of Iceland and the Kingdom of Norway concerning the association of
+                        those two States with the implementation, application and development of the
+                        Schengen acquis<authorialNote xml:id="d2e344" placement="bottom" marker="4">
+                            <p xml:id="d2e346">OJ L 176, 10.7.1999, p. 36.</p>
+                        </authorialNote>, which fall within the area referred to in Article 1, point
+                        A of Council Decision 1999/437/EC<authorialNote xml:id="d2e350" placement="bottom" marker="5">
+                            <p xml:id="d2e352">Council Decision 1999/437/EC of 17 May 1999 on
+                                certain arrangements for the application of the Agreement concluded
+                                by the Council of the European Union and the Republic of Iceland and
+                                the Kingdom of Norway concerning the association of those two States
+                                with the implementation, application and development of the Schengen
+                                acquis (OJ L 176, 10.7.1999, p. 31).</p>
+                        </authorialNote>.</p>
+                </recital>
+                <recital xml:id="d2e358">
+                    <num xml:id="d2e360">(7)</num>
+                    <p xml:id="d2e363">As regards Switzerland, this Decision constitutes a
+                        development of the provisions of the Schengen acquis within the meaning of
+                        the Agreement between the European Union, the European Community and the
+                        Swiss Confederation on the Swiss Confederation’s association with the
+                        implementation, application and development of the Schengen
+                            acquis<authorialNote xml:id="d2e365" placement="bottom" marker="6">
+                            <p xml:id="d2e367">OJ L 53, 27.2.2008, p. 52.</p>
+                        </authorialNote>, which fall within the area referred to in Article 1, point
+                        A of Decision 1999/437/EC, read in conjunction with Article 3 of Council
+                        Decision 2008/146/EC<authorialNote xml:id="d2e371" placement="bottom" marker="7">
+                            <p xml:id="d2e373">Council Decision 2008/146/EC of 28 January 2008 on
+                                the conclusion, on behalf of the European Community, of the
+                                Agreement between the European Union, the European Community and the
+                                Swiss Confederation on the Swiss Confederation’s association with
+                                the implementation, application and development of the Schengen
+                                acquis (OJ L 53, 27.2.2008, p. 1).</p>
+                        </authorialNote>.</p>
+                </recital>
+                <recital xml:id="d2e379">
+                    <num xml:id="d2e381">(8)</num>
+                    <p xml:id="d2e384">As regards Liechtenstein, this Decision constitutes a
+                        development of the provisions of the Schengen acquis within the meaning of
+                        the Protocol between the European Union, the European Community, the Swiss
+                        Confederation and the Principality of Liechtenstein on the accession of the
+                        Principality of Liechtenstein to the Agreement between the European Union,
+                        the European Community and the Swiss Confederation on the Swiss
+                        Confederation’s association with the implementation, application and
+                        development of the Schengen acquis<authorialNote xml:id="d2e386" placement="bottom" marker="8">
+                            <p xml:id="d2e388">OJ L 160, 18.6.2011, p. 21.</p>
+                        </authorialNote>, which fall within the area referred to in Article 1, point
+                        A of Decision 1999/437/EC read in conjunction with Article 3 of Council
+                        Decision 2011/350/EU<authorialNote xml:id="d2e392" placement="bottom" marker="9">
+                            <p xml:id="d2e394">Council Decision 2011/350/EU of 7 March 2011 on the
+                                conclusion, on behalf of the European Union, of the Protocol between
+                                the European Union, the European Community, the Swiss Confederation
+                                and the Principality of Liechtenstein on the accession of the
+                                Principality of Liechtenstein to the Agreement between the European
+                                Union, the European Community and the Swiss Confederation on the
+                                Swiss Confederation’s association with the implementation,
+                                application and development of the Schengen acquis, relating to the
+                                abolition of checks at internal borders and movement of persons (OJ
+                                L 160, 18.6.2011, p. 19).</p>
+                        </authorialNote>.</p>
+                </recital>
+                <recital xml:id="d2e400">
+                    <num xml:id="d2e402">(9)</num>
+                    <p xml:id="d2e405">As regards Cyprus, Bulgaria and Romania, this Decision
+                        constitutes an act building on, or otherwise relating to, the Schengen
+                        acquis within, respectively, the meaning of Article 3(1) of the 2003 Act of
+                        Accession, and Article 4(1) of the 2005 Act of Accession.</p>
+                </recital>
+                <recital xml:id="d2e409">
+                    <num xml:id="d2e411">(10)</num>
+                    <p xml:id="d2e414">The European Data Protection Supervisor was consulted in
+                        accordance with Article 42(1) of Regulation (EU) 2018/1725 of the European
+                        Parliament and of the Council<authorialNote xml:id="d2e416" placement="bottom" marker="10">
+                            <p xml:id="d2e418">Regulation (EU) 2018/1725 of the European Parliament
+                                and of the Council of 23 October 2018 on the protection of natural
+                                persons with regard to the processing of personal data by the Union
+                                institutions, bodies, offices and agencies and on the free movement
+                                of such data, and repealing Regulation (EC) No 45/2001 and Decision
+                                No 1247/2002/EC (OJ L 295, 21.11.2018, p. 39).</p>
+                        </authorialNote> and delivered an opinion on 22 September.</p>
+                </recital>
+            </recitals>
+            <formula xml:id="d2e425" name="enactingFormula">
+                <p xml:id="d2e427">HAS ADOPTED THIS DECISION:</p>
+            </formula>
+        </preamble>
+        <body xml:id="d2e432">
+            <article xml:id="d2e434">
+                <num xml:id="d2e436">Article 1</num>
+                <heading xml:id="d2e439">Rules</heading>
+                <paragraph xml:id="d2e442">
+                    <content xml:id="d2e444">
+                        <p xml:id="d2e446">The rules specifying the conditions for correspondence
+                            between data from the application file of the ETIAS Central System and
+                            data queried in the other EU information systems are set out in the
+                            Annex.</p>
+                    </content>
+                </paragraph>
+            </article>
+
+            <article xml:id="d2e452">
+                <num xml:id="d2e454">Article 2</num>
+                <heading xml:id="d2e457">Addressees</heading>
+                <paragraph xml:id="d2e460">
+                    <content xml:id="d2e462">
+                        <p xml:id="d2e464">This Decision is addressed to the Kingdom of Belgium, the
+                            Republic of Bulgaria, the Czech Republic, the Kingdom of Denmark, the
+                            Federal Republic of Germany, the Republic of Estonia, the Hellenic
+                            Republic, the Kingdom of Spain, the French Republic, the Republic of
+                            Croatia, the Italian Republic, the Republic of Cyprus, the Republic of
+                            Latvia, the Republic of Lithuania, the Grand Duchy of Luxembourg,
+                            Hungary, the Republic of Malta, the Kingdom of the Netherlands, the
+                            Republic of Austria, the Republic of Poland, the Portuguese Republic,
+                            Romania, the Republic of Slovenia, the Slovak Republic, the Republic of
+                            Finland and the Kingdom of Sweden.</p>
+                    </content>
+                </paragraph>
+            </article>
+        </body>
+        <conclusions xml:id="d2e471">
+            <p xml:id="d2e473">Done at <location xml:id="d2e475" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e478" date="2023-03-27">27.3.2023</date></p>
+            <block xml:id="d2e481" name="signatory">
+                <signature xml:id="d2e483">
+                    <organization xml:id="d2e485" refersTo="~COM">For the Commission</organization>
+                    <person xml:id="d2e488" refersTo="">Ylva JOHANSSON</person>
+                    <role xml:id="d2e491" refersTo="~MEMBER_COM">Member of The Commission</role>
+                </signature>
+            </block>
+            <!-- this name of this container should be added among the allowed ones -->
+            <block xml:id="d2e496" name="stamp">
+                <img xml:id="d2e498" src="RSC_SVG-cjk7q0l8r0000i3m3f5q1z8h0-en.svg" refersTo="~SVG"/>
+            </block>
+        </conclusions>
+    </bill>
+</akomaNtoso>

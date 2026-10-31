@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://docs.oasis-open.org/legaldocml/ns/akn/3.0 file:////net1.cec.eu.int/offline/11/parisve/My%20Documents/My%20Documents/AkomaNtoso/release%202025-01-25/akomantoso30.xsd"
+ xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <documentCollection name="RES_DRAFT_EESC">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="EESC-2023-01445-00-02-PRES-TRA"/>
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+                        />
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference name="language"
+                    href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCRole xml:id="RAPP"
+                    href="http://publications.europa.eu/resource/authority/role/RAPP" showAs=""/>
+                <TLCOrganization xml:id="PUBL"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+                    showAs=""/>
+                <TLCOrganization xml:id="EESC"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/EESC"
+                    showAs=""/>
+                <TLCReference xml:id="RES_DRAFT_EESC" name="docType"
+                    href="http://publications.europa.eu/resource/authority/resource-type/RES_DRAFT_EESC"
+                    showAs=""/>
+                <TLCReference xml:id="PNG" name="fileType"
+                    href="http://publications.europa.eu/resource/authority/file-type/PNG" showAs=""/>
+                <TLCConcept xml:id="BACKGROUND_INFO"
+                    href="http://publications.europa.eu/resource/authority/subdivision-content/BACKGROUND_INFO"
+                    showAs=""/>
+            </references>
+        </meta>
+        <coverPage xml:id="d2e78">
+            <container xml:id="d2e80" name="logo">
+                <p xml:id="d2e82">
+                    <img xml:id="d2e83" src="RSC_PNG-cjk7q0l8r0000i3m3f5q1z8h0-en.png" refersTo="~PNG"/>
+                </p>
+            </container>
+            <container xml:id="d2e86" name="actingEntity">
+                <p xml:id="d2e88">
+                    <organization xml:id="d2e89" refersTo="~EESC">European Economic and Social
+                        Committee</organization>
+                </p>
+            </container>
+            <longTitle xml:id="d2e93">
+                <p xml:id="d2e95">
+                    <docType xml:id="d2e96" refersTo="~RES_DRAFT_EESC">DRAFT RESOLUTION</docType>
+                    <docCommittee><organization xml:id="d2e98" refersTo="~EESC">European Economic and Social
+                        Committee</organization></docCommittee>
+                    <docPurpose xml:id="d2e101">United for Democracy</docPurpose>
+                </p>
+            </longTitle>
+            <container xml:id="d2e104" name="rapporteur">
+                <p xml:id="d2e106">
+                    <inline xml:id="d2e107" name="label">
+                        <role xml:id="d2e108" refersTo="~RAPP">Rapporteurs:</role>
+                    </inline>
+                    <docIntroducer xml:id="d2e111">
+                        <person xml:id="d2e112" refersTo="">Stefano Mallia (MT-I)</person>
+                        <person xml:id="d2e115" refersTo="">Oliver Röpke (AT-II)</person>
+                        <person xml:id="d2e118" refersTo="">Séamus Boland (IE-III)</person>
+                    </docIntroducer>
+                </p>
+            </container>
+            <container xml:id="d2e123" name="mainDoc">
+                <block xml:id="d2e125" name="reference"><docNumber xml:id="d2e126"
+                        >EESC-2023-01445-00-02-PRES-TRA</docNumber> (EN)</block>
+            </container>
+            <container xml:id="d2e131" name="backgroundInfo" refersTo="~BACKGROUND_INFO">
+
+                <table xml:id="d2e135">
+                    <tbody xml:id="d9e137">
+                        <tr xml:id="d2e137">
+                            <td xml:id="d2e139">
+                                <p xml:id="d2e141">
+                                    <inline xml:id="d2e142" name="label">
+                                        <role xml:id="d2e143" refersTo="~RAPP">Rapporteurs:</role>
+                                    </inline>
+                                </p>
+                            </td>
+                            <td xml:id="d2e147">
+                                <p xml:id="d2e149">
+                                    <docIntroducer xml:id="d2e150">
+                                        <person xml:id="d2e151" refersTo="">Stefano Mallia
+                                            (MT-I)</person>
+                                        <person xml:id="d2e154" refersTo="">Oliver Röpke
+                                            (AT-II)</person>
+                                        <person xml:id="d2e157" refersTo="">Séamus Boland
+                                            (IE-III)</person>
+                                    </docIntroducer>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e163">
+                            <td xml:id="d2e165">
+                                <p xml:id="d2e167">
+                                    <inline xml:id="d2e168" name="label">Legal basis</inline>
+                                </p>
+                            </td>
+                            <td xml:id="d2e172">
+                                <p xml:id="d2e174">Rule 50 of the Rules of Procedure</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e178">
+                            <td xml:id="d2e180">
+                                <p xml:id="d2e182">
+                                    <inline name="label">Adopted at plenary</inline>
+                                </p>
+                            </td>
+                            <td xml:id="d2e187">
+                                <p xml:id="d2e189">DD/03/2023</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e193">
+                            <td xml:id="d2e195">
+                                <p xml:id="d2e197">
+                                    <inline xml:id="d2e198" name="label">Plenary session No</inline>
+                                </p>
+                            </td>
+                            <td xml:id="d2e202">
+                                <p xml:id="d2e204">577</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e208">
+                            <td xml:id="d2e210">
+                                <p xml:id="d2e212">
+                                    <inline xml:id="d2e213" name="label">Outcome of vote<br
+                                            xml:id="d2e215"/> (for/against/abstentions)</inline>
+                                </p>
+                            </td>
+                            <td xml:id="d2e219">
+                                <p xml:id="d2e221">…/…/…</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </container>
+            <container xml:id="d2e16398" name="mainDocLanguage">
+                <p xml:id="d2e165758">(<inline xml:id="d2e158667" name="language" refersTo="~FRBRlanguage">EN</inline>)</p>
+            </container>
+        </coverPage>
+        <collectionBody xml:id="d2e228">
+            <component xml:id="d2e230">
+                <documentRef xml:id="d2e232" href="RES_EESC-cl6caiyaf00013a6ktmshwgo1-en.xml"
+                    showAs=""/>
+            </component>
+        </collectionBody>
+    </documentCollection>
+</akomaNtoso>

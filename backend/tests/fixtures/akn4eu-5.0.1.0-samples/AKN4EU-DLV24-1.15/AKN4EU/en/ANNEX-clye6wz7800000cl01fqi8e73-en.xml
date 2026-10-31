@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="ANNEX">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clye6wz7800000cl01fqi8e73"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="eli/dir_impl/2022/905"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <analysis source="~PUBL">
+                <activeModifications>
+                    <textualMod type="substitution">
+                        <source href="~d2e103"/>
+                        <destination href="http://data.europa.eu/eli/dir/2003/90/anx_1"/>
+                        <destination href="http://data.europa.eu/eli/dir/2003/90/anx_2"/>
+                        <new href="ANNEX-clycp4krs00020clbdw2j2z9h-en.xml"/>
+                    </textualMod>
+                    <textualMod type="substitution">
+                        <source href="~d2e713"/>
+                        <destination href="http://data.europa.eu/eli/dir/2003/91/anx_1"/>
+                        <destination href="http://data.europa.eu/eli/dir/2003/91/anx_2"/>
+                        <new href="ANNEX-clycp4krs00020clbdw2j2z9h-en.xml"/>
+                    </textualMod>
+                </activeModifications>
+            </analysis>
+            <references source="~PUBL">
+                <TLCReference xml:id="ANNEX" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/ANNEX" showAs=""/>
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+            </references>
+        </meta>
+
+        <mainBody xml:id="d2e97">
+         <annex xml:id="d2e98">
+           <num xml:id="d2e99">ANNEX</num>
+            <part xml:id="d2e100">
+                <num xml:id="d2e102">PART A</num>
+                <paragraph xml:id="d2e105">
+                    <content xml:id="d2e107">
+                        <p xml:id="d2e109">
+                            <mod xml:id="d2e103">
+                                <quotedStructure xml:id="d2e113" startQuote="‘" endQuote="’">
+                                    <documentRef xml:id="d2e115" href="ANNEX-clyeddkpo00000cl74hsl7cst-en.xml" showAs=""/>
+                                    <documentRef xml:id="d2e117" href="ANNEX-clyfffgt000000cl2dnhhbz3x-en.xml" showAs=""/>
+                                </quotedStructure>
+                            </mod>
+                        </p>
+                    </content>
+                </paragraph>
+            </part>
+            <part xml:id="d2e125">
+                <num xml:id="d2e127">PART B</num>
+                <paragraph xml:id="d2e130">
+                    <content xml:id="d2e132">
+                        <p xml:id="d2e134">
+                            <mod xml:id="d2e713">
+                                <quotedStructure xml:id="d2e138" startQuote="‘" endQuote="’">
+                                    <documentRef xml:id="d2e140" href="ANNEX-clyffg3ki00010cl2d5z09x34-en.xml" showAs=""/>
+                                    <documentRef xml:id="d2e142" href="ANNEX-clyffgufr00020cl22zuyfs5a-en.xml" showAs=""/>
+                                </quotedStructure>
+                            </mod>
+                        </p>
+                    </content>
+                </paragraph>
+            </part>
+          </annex>
+        </mainBody>
+    </doc>
+</akomaNtoso>

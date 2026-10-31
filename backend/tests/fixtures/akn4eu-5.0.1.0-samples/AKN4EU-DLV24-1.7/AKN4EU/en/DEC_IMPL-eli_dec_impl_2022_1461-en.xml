@@ -1,0 +1,1249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <act name="DEC_IMPL">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRcountry value="EU"/>
+                    <FRBRsubtype value="DEC_IMPL" refersTo="~COM_AUTO_PROC"/>
+                    <FRBRnumber value="eli/dec_impl/2022/1461"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <analysis source="~PUBL">
+                <activeModifications>
+                    <legalSystemMod type="implementation">
+                        <source/>
+                        <destination href="http://data.europa.eu/eli/reg/1997/88"/>
+                    </legalSystemMod>
+                </activeModifications>
+            </analysis>
+            <references source="~PUBL">
+                <TLCReference xml:id="DEC_IMPL" name="docType"
+                    href="http://publications.europa.eu/resource/authority/resource-type/DEC_IMPL"
+                    showAs=""/>
+                <TLCProcess xml:id="COM_AUTO_PROC"
+                    href="http://publications.europa.eu/resource/authority/internal-procedure/COM_AUTO_PROC"
+                    showAs=""/>
+                <TLCReference name="language"
+                    href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference xml:id="legalBasis" name="contentSubject"
+                    href="http://eurovoc.europa.eu/5456" showAs=""/>
+                <TLCOrganization xml:id="PUBL"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+                    showAs=""/>
+                <TLCOrganization xml:id="COM"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/COM"
+                    showAs=""/>
+                <TLCLocation xml:id="BEL_BRU"
+                    href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCRole xml:id="PRESID_VICE_EXEC"
+                    href="http://publications.europa.eu/resource/authority/role/PRESID_VICE_EXEC"
+                    showAs=""/>
+                <TLCReference xml:id="EU_2022_1461" name="identifier"
+                    href="http://publications.europa.eu/resource/authority/document-identifier-format/COM_NUMBER"
+                    showAs="(EU) 2022/1461" shortForm="EU/2022/1461"/>
+            </references>
+        </meta>
+
+        <preface xml:id="d2e97">
+            <longTitle xml:id="d2e99">
+                <p xml:id="d2e101"><docType xml:id="d2e102" refersTo="~DEC_IMPL">COMMISSION
+                        IMPLEMENTING DECISION
+                    <docNumber xml:id="d2e105" refersTo="~EU_2022_1461">(EU) 2022/1461</docNumber></docType> of <date xml:id="d2e108"
+                        date="2022-08-26">26 August 2022</date>
+                    <docPurpose xml:id="d2e111">concerning exemptions from the extended anti-dumping
+                        duty on certain bicycle parts originating in the People’s Republic of China
+                        pursuant to <ref xml:id="d2e113"
+                            href="http://data.europa.eu/eli/reg/1997/88">Regulation (EC) No
+                            88/97</ref></docPurpose></p>
+                
+            </longTitle>
+
+            <container xml:id="d2e117" name="notificationReference">
+                <p xml:id="d2e119">(notified under document <docNumber xml:id="d2e121">C(2022)
+                        6011)</docNumber></p>
+            </container>
+        </preface>
+
+        <preamble xml:id="d2e126">
+            <formula xml:id="d2e128" name="actingEntity">
+                <p xml:id="d2e130">THE EUROPEAN COMMISSION,</p>
+            </formula>
+            <citations xml:id="d2e134">
+                <citation xml:id="d2e136" refersTo="~legalBasis">
+                    <p xml:id="d2e138">Having regard to the Treaty on the Functioning of the
+                        European Union,</p>
+                </citation>
+                <citation xml:id="d2e142">
+                    <p xml:id="d2e144">Having regard to Regulation (EU) 2016/1036 of the European
+                        Parliament and of the Council of 8 June 2016 on protection against dumped
+                        imports from countries not members of the European Union (<authorialNote
+                            xml:id="d2e146" marker="1" placement="bottom">
+                            <p xml:id="d2e148">OJ L 176, 30.6.2016, p. 21.</p>
+                        </authorialNote>), and in particular Article 13(4) thereof, </p>
+                </citation>
+                <citation xml:id="d2e154">
+                    <p xml:id="d2e156">Having regard to Council Regulation (EC) No 71/97 of 10
+                        January 1997 extending the definitive anti-dumping duty imposed by
+                        Regulation (EEC) No 2474/93 on bicycles originating in the People's Republic
+                        of China to imports of certain bicycle parts from the People's Republic of
+                        China, and levying the extended duty on such imports registered under
+                        Regulation (EC) No 703/96 (<authorialNote xml:id="d2e158" marker="2"
+                            placement="bottom">
+                            <p xml:id="d2e160">OJ L 16, 18.1.1997, p. 55.</p>
+                        </authorialNote>) and in particular Article 3 thereof, </p>
+                </citation>
+                <citation xml:id="d2e166">
+                    <p xml:id="d2e168">Having regard to Commission Implementing Regulation (EU)
+                        2020/45 of 20 January 2020 amending Implementing Regulation (EU) 2019/1379
+                        as regards the extension of the anti-dumping duty imposed on imports of
+                        bicycles originating in the People's Republic of China to imports of certain
+                        bicycle parts originating in the People's Republic of China by Council
+                        Regulation (EC) No 71/97 (<authorialNote xml:id="d2e170" marker="3"
+                            placement="bottom">
+                            <p xml:id="d2e172">OJ L 16, 21.1.2020, p. 7.</p>
+                        </authorialNote>), </p>
+                </citation>
+                <citation xml:id="d2e178">
+                    <p xml:id="d2e180">Having regard to Commission Regulation (EC) No 88/97 of 20
+                        January 1997 on the authorisation of the exemption of imports of certain
+                        bicycle parts originating in the People's Republic of China from the
+                        extension by Council Regulation (EC) No 71/97 of the anti-dumping duty
+                        imposed by Council Regulation (EEC) No 2474/93 (<authorialNote
+                            xml:id="d2e182" marker="4" placement="bottom">
+                            <p xml:id="d2e184">OJ L 17, 21.1.1997, p. 17.</p>
+                        </authorialNote>), and in particular Articles 4 to 7 thereof, </p>
+                </citation>
+                <citation xml:id="d2e191">
+                    <p xml:id="d2e193">After informing the Member States,</p>
+                </citation>
+            </citations>
+            <recitals xml:id="d2e198">
+                <intro xml:id="d2e200">
+                    <p xml:id="d2e202">Whereas:</p>
+                </intro>
+                <recital xml:id="d2e206">
+                    <num xml:id="d2e208">(1)</num>
+                    <p xml:id="d2e211">An anti-dumping duty applies on imports of essential bicycle
+                        parts originating in the People's Republic of China ('China') ('the extended
+                        duty') as a result of the extension of the anti-dumping duty imposed on
+                        imports of bicycles originating in China by Regulation (EC) No 71/97.</p>
+                </recital>
+                <recital xml:id="d2e215">
+                    <num xml:id="d2e217">(2)</num>
+                    <p xml:id="d2e220">Under Article 3 of Regulation (EC) No 71/97 the Commission is
+                        empowered to adopt the necessary measures to authorise the exemption of
+                        imports of essential bicycle parts which do not circumvent the anti-dumping
+                        duty.</p>
+                </recital>
+                <recital xml:id="d2e224">
+                    <num xml:id="d2e226">(3)</num>
+                    <p xml:id="d2e229">Those implementing measures are set forth in Regulation (EC)
+                        No 88/97 ('the exemption Regulation') establishing the specific exemption
+                        system.</p>
+                </recital>
+                <recital xml:id="d2e233">
+                    <num xml:id="d2e235">(4)</num>
+                    <p xml:id="d2e238">On that basis the Commission has exempted a number of bicycle
+                        assemblers from the extended duty ('the exempted parties').</p>
+                </recital>
+                <recital xml:id="d2e243">
+                    <num xml:id="d2e245">(5)</num>
+                    <p xml:id="d2e248">As provided for in Article 16(2) of the exemption Regulation,
+                        the Commission has published in the Official Journal of the European Union
+                        subsequent lists of the exempted parties<authorialNote xml:id="d2e250"
+                            marker="5" placement="bottom">
+                            <p xml:id="d2e252">OJ C 45, 13.2.1997, p. 3, OJ C 112, 10.4.1997, p. 9,
+                                OJ C 220, 19.7.1997, p. 6, OJ L 193, 22.7.1997, p. 32, OJ L 334,
+                                5.12.1997, p. 37, OJ C 378, 13.12.1997, p. 2, OJ C 217, 11.7.1998,
+                                p. 9, OJ C 37, 11.2.1999, p. 3, OJ C 186, 2.7.1999, p. 6, OJ C 216,
+                                28.7.2000, p. 8, OJ C 170, 14.6.2001, p. 5, OJ C 103, 30.4.2002, p.
+                                2, OJ C 35, 14.2.2003, p. 3, OJ C 43, 22.2.2003, p. 5, OJ C 54,
+                                2.3.2004, p. 2, OJ L 343, 19.11.2004, p. 23, OJ C 299, 4.12.2004, p.
+                                4, OJ L 17, 21.1.2006, p. 16, OJ L 313, 14.11.2006, p. 5, OJ L 81,
+                                20.3.2008, p. 73, OJ C 310, 5.12.2008, p. 19, OJ L 19, 23.1.2009, p.
+                                62, OJ L 314, 1.12.2009, p. 106, OJ L 136, 24.5.2011, p. 99, OJ L
+                                343, 23.12.2011, p. 86, OJ L 119, 23.4.2014, p. 67, OJ L 132,
+                                29.5.2015, p. 32, OJ L 331, 17.12.2015, p. 30, OJ L 47, 24.2.2017,
+                                p. 13, OJ L 79, 22.3.2018, p. 31, OJ L 171, 26.6.2019, p. 117, OJ L
+                                138, 30.4.2020, p. 8, OJ L 158, 20.5.2020, p. 7, OJ L 325,
+                                7.10.2020, p. 74, OJ L 140, 23.4.2021, p. 1, OJ L 83, 10.3.2022, p.
+                                39, OJ L 102, 30.3.2022, p. 16.</p>
+                        </authorialNote>.</p>
+                </recital>
+                <recital xml:id="d2e258">
+                    <num xml:id="d2e260">(6)</num>
+                    <p xml:id="d2e263">The most recent Commission Implementing Decision (EU)
+                            2022/505<authorialNote xml:id="d2e265" marker="6" placement="bottom">
+                            <p xml:id="d2e267">Commission Implementing Decision (EU) 2022/505 of 23
+                                March 2022 concerning exemptions from the extended anti-dumping duty
+                                on certain bicycle parts originating in the People's Republic of
+                                China pursuant to Regulation (EC) No 88/97 (OJ L 102, 30.3.2022, p.
+                                16.)</p>
+                        </authorialNote> concerning exemptions under the exemption Regulation was
+                        adopted on 23 March 2022.</p>
+                </recital>
+                <recital xml:id="d2e273">
+                    <num xml:id="d2e275">(7)</num>
+                    <p xml:id="d2e278">For the purposes of this Decision, the definitions set out in
+                        Article 1 of the exemption Regulation apply.</p>
+                </recital>
+                <recitals xml:id="d2e282">
+                    <num xml:id="d2e284">1.</num>
+                    <heading xml:id="d2e287">REQUESTS FOR EXEMPTION</heading>
+                    <recital xml:id="d2e290">
+                        <num xml:id="d2e292">(8)</num>
+                        <p xml:id="d2e295">Between 15 July 2020 and 30 March 2022, the Commission
+                            received from the parties listed in Tables 1 and 2 requests for
+                            exemption with the information required to determine whether these
+                            requests were admissible in accordance with Article 4 of the exemption
+                            Regulation.</p>
+                    </recital>
+                    <recital xml:id="d2e299">
+                        <num xml:id="d2e301">(9)</num>
+                        <p xml:id="d2e304">The parties requesting exemption were given an
+                            opportunity to comment on the Commission's conclusions concerning the
+                            admissibility of their requests. Their comments have been addressed in
+                            recitals (22) to (27).</p>
+                    </recital>
+                    <recital xml:id="d2e308">
+                        <num xml:id="d2e310">(10)</num>
+                        <p xml:id="d2e313">In accordance with Article 5(1) of the exemption
+                            Regulation, pending a decision on the merits of requests from the
+                            parties requesting exemption, the payment of the extended duty in
+                            respect of any imports of essential bicycle parts declared for free
+                            circulation by these parties listed in Tables 1 and 2 below was
+                            suspended as from the day on which the Commission received their
+                            respective duly substantiated requests pursuant to Article 4(1) and (2)
+                            of the exemption Regulation.</p>
+                    </recital>
+                </recitals>
+                <recitals xml:id="d2e318">
+                    <num xml:id="d2e320">2.</num>
+                    <heading xml:id="d2e323">AUTHORISATION OF EXEMPTION</heading>
+                    <recital xml:id="d2e326">
+                        <num xml:id="d2e328">(11)</num>
+                        <p xml:id="d2e331">The examination of the merits of the request from the
+                            parties listed in Table 1 has been concluded.</p>
+                        <p><subFlow xml:id="d2e333" name="structuredContent">
+                                <hcontainer xml:id="d2e335" name="TAB">
+                                    <num xml:id="d2e337">Table 1</num>
+                                    <hcontainer xml:id="d2e340" name="TAB_CONTAINER">
+                                        <content xml:id="d2e342">
+                                            <table xml:id="d2e344">
+                                                <thead xml:id="d2e346">
+                                                  <tr xml:id="d2e348">
+                                                  <th xml:id="d2e350">
+                                                  <p xml:id="d2e352">TARIC additional code</p>
+                                                  </th>
+                                                  <th xml:id="d2e356">
+                                                  <p xml:id="d2e358">Name</p>
+                                                  </th>
+                                                  <th xml:id="d2e362">
+                                                  <p xml:id="d2e364">Address</p>
+                                                  </th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody xml:id="d2e370">
+                                                  <tr xml:id="d2e372">
+                                                  <td xml:id="d2e374">
+                                                  <p xml:id="d2e376">C492</p>
+                                                  </td>
+                                                  <td xml:id="d2e380">
+                                                  <p xml:id="d2e382">MOTOKIT Veiculos e Acessórios
+                                                  Lda</p>
+                                                  </td>
+                                                  <td xml:id="d2e386">
+                                                  <p xml:id="d2e388">Rua Alto do Vale do Grou 36,
+                                                  3750-870 Borralha/ Águeda, Portugal</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e393">
+                                                  <td xml:id="d2e395">
+                                                  <p xml:id="d2e397">C559</p>
+                                                  </td>
+                                                  <td xml:id="d2e401">
+                                                  <p xml:id="d2e403">Northtec Sp. z o.o.</p>
+                                                  </td>
+                                                  <td xml:id="d2e407">
+                                                  <p xml:id="d2e409">ul. Dworcowa 15a, 43-502
+                                                  Czechowice-Dziedzice, Poland</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e414">
+                                                  <td xml:id="d2e416">
+                                                  <p xml:id="d2e418">C560</p>
+                                                  </td>
+                                                  <td xml:id="d2e422">
+                                                  <p xml:id="d2e424">Giant Gyártó Hungary Kft.</p>
+                                                  </td>
+                                                  <td xml:id="d2e428">
+                                                  <p xml:id="d2e430">Jedlik Ányos utca 1, 3200
+                                                  Gyöngyös, Hungary</p>
+                                                  </td>
+                                                  </tr>
+                                                </tbody>
+                                            </table>
+                                        </content>
+                                    </hcontainer>
+                                </hcontainer>
+                            </subFlow>
+                        </p>
+                    </recital>
+                    <recital xml:id="d2e443">
+                        <num xml:id="d2e445">(12)</num>
+                        <p xml:id="d2e448">The Commission established during its examination that
+                            the value of the parts originating in China constituted less than 60 %
+                            of the total value of the parts of all the bicycles assembled by the
+                            parties listed in Table 1.</p>
+                    </recital>
+                    <recital xml:id="d2e452">
+                        <num xml:id="d2e454">(13)</num>
+                        <p xml:id="d2e457">Consequently, the Commission concluded that the assembly
+                            operations of the parties listed in Table 1 respectively fall outside
+                            the scope of Article 13(2) of Regulation (EU) 2016/1036.</p>
+                    </recital>
+                    <recital xml:id="d2e462">
+                        <num xml:id="d2e464">(14)</num>
+                        <p xml:id="d2e467">For that reason, and in accordance with Article 7(1) of
+                            the exemption Regulation, the parties listed in Table 1 fulfilled the
+                            conditions for exemption from the extended duty.</p>
+                    </recital>
+                    <recital xml:id="d2e471">
+                        <num xml:id="d2e473">(15)</num>
+                        <p xml:id="d2e476">In accordance with Article 7(2) of the exemption
+                            Regulation, the exemption should take effect as from the date of receipt
+                            of the duly substantiated request pursuant to Article 4(1) and (2) of
+                            the exemption Regulation. The customs debts in respect of the extended
+                            duty from the parties requesting exemption should therefore be
+                            considered void from the same date.</p>
+                    </recital>
+                    <recital xml:id="d2e480">
+                        <num xml:id="d2e482">(16)</num>
+                        <p xml:id="d2e485">The interested parties were informed of the Commission's
+                            conclusions on the merits of their requests respectively and were given
+                            an opportunity to comment thereon.</p>
+                    </recital>
+                    <recital xml:id="d2e489">
+                        <num xml:id="d2e491">(17)</num>
+                        <p xml:id="d2e494">Since the exemption applies only to the parties
+                            specifically referred to in Table 1, the exempted parties should notify
+                            the Commission<authorialNote xml:id="d2e496" marker="7"
+                                placement="bottom">
+                                <p xml:id="d2e498">The parties are advised to use the following
+                                    email address: TRADE-BICYCLE-PARTS@ec.europa.eu</p>
+                            </authorialNote> without delay of any changes to this exemption (for
+                            instance, following a change in the name, legal form or address or
+                            following the setting up of new assembly entities).</p>
+                    </recital>
+                    <recital xml:id="d2e504">
+                        <num xml:id="d2e506">(18)</num>
+                        <p xml:id="d2e509">In case of change in reference, the exempted party should
+                            provide relevant information, including on any modification in its
+                            activity linked to assembly operations. Where appropriate, the
+                            Commission will update the references accordingly.</p>
+                    </recital>
+                </recitals>
+                <recitals xml:id="d2e514">
+                    <num xml:id="d2e516">3.</num>
+                    <heading xml:id="d2e519">SUSPENSION OF PAYMENTS OF THE DUTIES FOR PARTIES UNDER
+                        EXAMINATION</heading>
+                    <recital xml:id="d2e522">
+                        <num xml:id="d2e524">(19)</num>
+                        <p xml:id="d2e527">The examination of the merits of the requests from the
+                            parties listed in Table 2 is ongoing. Pending a decision on the merits
+                            of their requests, the payment of the extended duty by these parties is
+                            suspended.</p>
+                    </recital>
+                    <recital xml:id="d2e531">
+                        <num xml:id="d2e533">(20)</num>
+                        <p xml:id="d2e536">Since the suspensions apply only to the parties
+                            specifically referred to in Table 2, these parties should notify the
+                                Commission<authorialNote xml:id="d2e538" marker="8"
+                                placement="bottom">
+                                <p xml:id="d2e540">The parties are advised to use the following
+                                    email address: TRADE-BICYCLE-PARTS@ec.europa.eu</p>
+                            </authorialNote> without delay of any changes to these (for instance
+                            following a change in the name, legal form or address or following the
+                            setting up of new assembly entities).</p>
+                    </recital>
+                    <recital xml:id="d2e546">
+                        <num xml:id="d2e548">(21)</num>
+                        <p xml:id="d2e551">In case of change in reference, the party concerned
+                            should provide all relevant information, including on any modification
+                            in its activities linked to assembly operations. Where appropriate, the
+                            Commission will update the references to such party.</p>
+                        <p><subFlow xml:id="d2e553" name="structuredContent">
+                                <hcontainer xml:id="d2e555" name="TAB">
+                                    <num xml:id="d2e557">Table 2</num>
+                                    <hcontainer xml:id="d2e560" name="TAB_CONTAINER">
+                                        <content xml:id="d2e562">
+                                            <table xml:id="d2e564">
+                                                <thead xml:id="d2e566">
+                                                  <tr xml:id="d2e568">
+                                                  <th xml:id="d2e570">
+                                                  <p xml:id="d2e572">TARIC additional code</p>
+                                                  </th>
+                                                  <th xml:id="d2e576">
+                                                  <p xml:id="d2e578">Name</p>
+                                                  </th>
+                                                  <th xml:id="d2e582">
+                                                  <p xml:id="d2e584">Address</p>
+                                                  </th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody xml:id="d2e590">
+                                                  <tr xml:id="d2e592">
+                                                  <td xml:id="d2e594">
+                                                  <p xml:id="d2e596">C557</p>
+                                                  </td>
+                                                  <td xml:id="d2e600">
+                                                  <p xml:id="d2e602">Berria Bike S.L.</p>
+                                                  </td>
+                                                  <td xml:id="d2e606">
+                                                  <p xml:id="d2e608">Calle Blasco de Garay 19, 02600
+                                                  Villarrobledo, Spain</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e613">
+                                                  <td xml:id="d2e615">
+                                                  <p xml:id="d2e617">C720</p>
+                                                  </td>
+                                                  <td xml:id="d2e621">
+                                                  <p xml:id="d2e623">Propain Bicycles GmbH</p>
+                                                  </td>
+                                                  <td xml:id="d2e627">
+                                                  <p xml:id="d2e629">Schachenstraße 39, 88267 Vogt,
+                                                  Germany</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e634">
+                                                  <td xml:id="d2e636">
+                                                  <p xml:id="d2e638">C860</p>
+                                                  </td>
+                                                  <td xml:id="d2e642">
+                                                  <p xml:id="d2e644">Profil Bicycles CZ s.r.o.</p>
+                                                  </td>
+                                                  <td xml:id="d2e648">
+                                                  <p xml:id="d2e650">Hněvotín 31, 783 47 Hněvotín,
+                                                  Czech Republic</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e655">
+                                                  <td xml:id="d2e657">
+                                                  <p xml:id="d2e659">C863</p>
+                                                  </td>
+                                                  <td xml:id="d2e663">
+                                                  <p xml:id="d2e665">Decathlon Sp. z o.o.</p>
+                                                  </td>
+                                                  <td xml:id="d2e669">
+                                                  <p xml:id="d2e671">ul. Geodezyjna 76, 03-290
+                                                  Warszawa, Poland</p>
+                                                  </td>
+                                                  </tr>
+                                                </tbody>
+                                            </table>
+                                        </content>
+                                    </hcontainer>
+                                </hcontainer>
+                            </subFlow>
+                        </p>
+                    </recital>
+                    <recital xml:id="d2e685">
+                        <num xml:id="d2e687">(22)</num>
+                        <p xml:id="d2e690">Decathlon Sp. z o.o. Poland (‘Decathlon’) listed in Table
+                            2 commented by requesting the Commission to reconsider the date of
+                            effect of the suspension of payments of the duties for parties under
+                            examination.</p>
+                    </recital>
+                    <recital xml:id="d2e694">
+                        <num xml:id="d2e696">(23)</num>
+                        <p xml:id="d2e699">Decathlon claimed that the request for exemption was
+                            lodged on 1 December 2021 together with the necessary documents and
+                            information in order for the Commission to determine its admissibility
+                            and therefore, the suspension of payments of the duties should take
+                            effect as from that date.</p>
+                    </recital>
+                    <recital xml:id="d2e703">
+                        <num xml:id="d2e705">(24)</num>
+                        <p xml:id="d2e708">In this regard, Article 4(3) of the exemption Regulation
+                            states that the admissibility of requests of exemption is determined
+                            when it is duly substantiated pursuant to Article 4(1) and (2) of the
+                            same Regulation.</p>
+                    </recital>
+                    <recital xml:id="d2e712">
+                        <num xml:id="d2e714">(25)</num>
+                        <p xml:id="d2e717">The request of exemption lodged by Decathlon on 1
+                            December 2021 was not duly substantiated to determine its admissibility.
+                            The Commission informed Decathlon accordingly and requested additional
+                            information as well as missing documentation pursuant to Article 4(2) of
+                            the exemption Regulation.</p>
+                    </recital>
+                    <recital xml:id="d2e721">
+                        <num xml:id="d2e723">(26)</num>
+                        <p xml:id="d2e726">Decathlon provided the missing documentation and
+                            information on 31 January 2022 and 21 March 2022. Therefore, the request
+                            for exemption lodged by Decathlon was considered duly substantiated only
+                            as of 21 March 2022 and accordingly this is the date of effect of the
+                            suspension of payment of the extended duties.</p>
+                    </recital>
+                    <recital xml:id="d2e730">
+                        <num xml:id="d2e732">(27)</num>
+                        <p xml:id="d2e735">For the above, the date of 21 March 2022, as previously
+                            disclosed, is confirmed and the request of Decathlon dismissed.</p>
+                    </recital>
+                </recitals>
+                <recitals xml:id="d2e741">
+                    <num xml:id="d2e743">4.</num>
+                    <heading xml:id="d2e746">UPDATE OF REFERENCES TO EXEMPTED PARTIES</heading>
+                    <recital xml:id="d2e749">
+                        <num xml:id="d2e751">(28)</num>
+                        <p xml:id="d2e754">Between 16 November 2021 and 24 May 2022, the exempted
+                            parties listed in Table 3 notified the Commission of changes in their
+                            addresses. The Commission, after having examined the information
+                            submitted, concluded that those changes do not affect the assembly
+                            operations with regard to the conditions of exemption or suspension set
+                            forth in the exemption Regulation.</p>
+                    </recital>
+                    <recital xml:id="d2e758">
+                        <num xml:id="d2e760">(29)</num>
+                        <p xml:id="d2e763">While the exemption of these parties from the extended
+                            duty authorised in accordance with Articles 5(1) or 7(1) of the
+                            exemption Regulation remains unaffected, the references to these parties
+                            should be updated.</p>
+                        <p><subFlow xml:id="d2e765" name="structuredContent">
+                                <hcontainer xml:id="d2e767" name="TAB">
+                                    <num xml:id="d2e769">Table 3</num>
+                                    <hcontainer xml:id="d2e772" name="TAB_CONTAINER">
+                                        <content xml:id="d2e774">
+                                            <table xml:id="d2e776">
+                                                <thead xml:id="d2e778">
+                                                  <tr xml:id="d2e780">
+                                                  <th xml:id="d2e782">
+                                                  <p xml:id="d2e784">TARIC additional code</p>
+                                                  </th>
+                                                  <th xml:id="d2e788">
+                                                  <p xml:id="d2e790">Former reference</p>
+                                                  </th>
+                                                  <th xml:id="d2e794">
+                                                  <p xml:id="d2e796">Change</p>
+                                                  </th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody xml:id="d2e802">
+                                                  <tr xml:id="d2e804">
+                                                  <td xml:id="d2e806">
+                                                  <p xml:id="d2e808">A984</p>
+                                                  </td>
+                                                  <td xml:id="d2e812">
+                                                  <p xml:id="d2e814">Blue Factory Team S.L. Calle
+                                                  Juan de la Cierva 62, Elche-Alicante, Spain</p>
+                                                  </td>
+                                                  <td xml:id="d2e818">
+                                                  <p xml:id="d2e820">The address of this exempted
+                                                  party has been changed to: Calle Nicolás Copérnico
+                                                  4, Elche Parque Empresarial, 03203 Elche-Alicante,
+                                                  Spain</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e825">
+                                                  <td xml:id="d2e827">
+                                                  <p xml:id="d2e829">A605</p>
+                                                  </td>
+                                                  <td xml:id="d2e833">
+                                                  <p xml:id="d2e835">Bohemia Bike a.s. Na Pankráci
+                                                  1724/129 Nusle, 140 00 Praha 4, Czech Republic</p>
+                                                  </td>
+                                                  <td xml:id="d2e839">
+                                                  <p xml:id="d2e841">The address of this exempted
+                                                  party has been changed to: Pujmanové 1753/10a
+                                                  Nusle, 140 00 Praha 4, Czech Republic</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e846">
+                                                  <td xml:id="d2e848">
+                                                  <p xml:id="d2e850">B940</p>
+                                                  </td>
+                                                  <td xml:id="d2e854">
+                                                  <p xml:id="d2e856">Solo International Oy Pyynitie
+                                                  1B, 02230 Espoo, Finland</p>
+                                                  </td>
+                                                  <td xml:id="d2e860">
+                                                  <p xml:id="d2e862">The address of this exempted
+                                                  party has been changed to: Komeetankatu 1, 02210
+                                                  Espoo, Finland</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e867">
+                                                  <td xml:id="d2e869">
+                                                  <p xml:id="d2e871">A730</p>
+                                                  </td>
+                                                  <td xml:id="d2e875">
+                                                  <p xml:id="d2e877">Alubike – Bicicletas S.A. Zona
+                                                  Industrial de Oiã Lote C10, Oiã, 3770 068 Oliveira
+                                                  do Bairro, Portugal</p>
+                                                  </td>
+                                                  <td xml:id="d2e881">
+                                                  <p xml:id="d2e883">The address of this exempted
+                                                  party has been changed to: Zona Industrial de
+                                                  Aveiro Sul, lote 11, Mamodeiro, Aveiro Concelho,
+                                                  Freguesia, 3810 783 Aveiro, Portugal</p>
+                                                  </td>
+                                                  </tr>
+                                                </tbody>
+                                            </table>
+                                        </content>
+                                    </hcontainer>
+                                </hcontainer>
+                            </subFlow>
+                        </p>
+                    </recital>
+                </recitals>
+                <recitals xml:id="d2e897">
+                    <num xml:id="d2e899">5.</num>
+                    <heading xml:id="d2e902">SUSPENSION OF PAYMENTS OF THE DUTIES FOR PARTIES UNDER
+                        EXAMINATION LIFTED (WITHDRAWAL OF REQUESTS FOR EXEMPTION)</heading>
+                    <recital xml:id="d2e905">
+                        <num xml:id="d2e907">(30)</num>
+                        <p xml:id="d2e910">The suspension of payment of the duties for the parties
+                            under examination should be lifted for the parties listed in Table 4.</p>
+                        <p><subFlow xml:id="d2e912" name="structuredContent">
+                                <hcontainer xml:id="d2e914" name="TAB">
+                                    <num xml:id="d2e916">Table 4</num>
+                                    <hcontainer xml:id="d2e919" name="TAB_CONTAINER">
+                                        <content xml:id="d2e921">
+                                            <table xml:id="d2e923">
+                                                <thead xml:id="d2e925">
+                                                  <tr xml:id="d2e927">
+                                                  <th xml:id="d2e929">
+                                                  <p xml:id="d2e931">TARIC additional code</p>
+                                                  </th>
+                                                  <th xml:id="d2e935">
+                                                  <p xml:id="d2e937">Name</p>
+                                                  </th>
+                                                  <th xml:id="d2e941">
+                                                  <p xml:id="d2e943">Address</p>
+                                                  </th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody xml:id="d2e949">
+                                                  <tr xml:id="d2e951">
+                                                  <td xml:id="d2e953">
+                                                  <p xml:id="d2e955">C557</p>
+                                                  </td>
+                                                  <td xml:id="d2e959">
+                                                  <p xml:id="d2e961">Berria Bike S.L.</p>
+                                                  </td>
+                                                  <td xml:id="d2e965">
+                                                  <p xml:id="d2e967">Calle Blasco de Garay 19, 02600
+                                                  Villarrobledo, Spain</p>
+                                                  </td>
+                                                  </tr>
+                                                  <tr xml:id="d2e972">
+                                                  <td xml:id="d2e974">
+                                                  <p xml:id="d2e976">C609</p>
+                                                  </td>
+                                                  <td xml:id="d2e980">
+                                                  <p xml:id="d2e982">Nextbike GmbH</p>
+                                                  </td>
+                                                  <td xml:id="d2e986">
+                                                  <p xml:id="d2e988">Erich Zeigner Allee 69-73 04229
+                                                  Leipzig, Germany</p>
+                                                  </td>
+                                                  </tr>
+                                                </tbody>
+                                            </table>
+                                        </content>
+                                    </hcontainer>
+                                </hcontainer>
+                            </subFlow>
+                        </p>
+                    </recital>
+                    <recital xml:id="d2e1001">
+                        <num xml:id="d2e1003">(31)</num>
+                        <p xml:id="d2e1006">On 27 July 2020 and on 25 November 2020 the Commission
+                            received from the parties listed in Table 4 a request for exemption with
+                            the information required to determine whether the respective requests
+                            were admissible in accordance with Article 4(1) of the exemption
+                            Regulation.</p>
+                    </recital>
+                    <recital xml:id="d2e1010">
+                        <num xml:id="d2e1012">(32)</num>
+                        <p xml:id="d2e1015">In accordance with Article 5(1) of Regulation (EC) No
+                            88/97, pending a decision on the merits of the requests, the payment of
+                            the extended duty in respect of any imports of essential bicycle parts
+                            declared for free circulation by the parties listed in Table 4 was
+                            suspended as from the day on which the Commission received their
+                            requests for exemption respectively.</p>
+                    </recital>
+                    <recital xml:id="d2e1020">
+                        <num xml:id="d2e1022">(33)</num>
+                        <p xml:id="d2e1025">TARIC additional codes C557 and C609 were assigned to
+                            Berria Bike S.L. Spain ('Berria Bike') and Nextbike GmbH, Germany
+                            ('Nextbike') respectively, in order to identify the imports of essential
+                            bicycle parts declared for free circulation and subject to the
+                            suspension of the payment of the extended duty.</p>
+                    </recital>
+                    <recital xml:id="d2e1029">
+                        <num xml:id="d2e1031">(34)</num>
+                        <p xml:id="d2e1034">On 25 March 2022 the Commission received from Berria
+                            Bike a request to withdraw the application for an exemption while the
+                            examination of its merits was ongoing and the payment of the extended
+                            duty was suspended.</p>
+                    </recital>
+                    <recital xml:id="d2e1038">
+                        <num xml:id="d2e1040">(35)</num>
+                        <p xml:id="d2e1043">The Commission accepted the withdrawal and consequently
+                            the suspension of the payment of the extended duty should be lifted. The
+                            extended duty should be collected as from the date of receipt of the
+                            request for exemption submitted by Berria Bike, namely the date on which
+                            the suspension took effect, that is 27 July 2020.</p>
+                    </recital>
+                    <recital xml:id="d2e1047">
+                        <num xml:id="d2e1049">(36)</num>
+                        <p xml:id="d2e1052">On 30 March 2022 the Commission received from Berria
+                            Bike a new request for exemption with the information required to
+                            determine whether this request was admissible in accordance with Article
+                            4(1) of the exemption Regulation.</p>
+                    </recital>
+                    <recital xml:id="d2e1056">
+                        <num xml:id="d2e1058">(37)</num>
+                        <p xml:id="d2e1061">In accordance with Article 5(1) of the exemption
+                            Regulation, pending a decision on the merits of the new request, the
+                            payment of the extended duty in respect of any imports of essential
+                            bicycle parts declared for free circulation by Berria Bike was suspended
+                            as from the day on which the Commission received its new duly
+                            substantiated request for exemption pursuant to Article 4(1) and (2) of
+                            Regulation (EC) No 88/97, that is 30 March 2022.</p>
+                    </recital>
+                    <recital xml:id="d2e1065">
+                        <num xml:id="d2e1067">(38)</num>
+                        <p xml:id="d2e1070">Accordingly, pending a decision on the merits of the
+                            latest exemption request, the new date on which the suspension of the
+                            extended duty took effect should be changed to 30 March 2022.</p>
+                    </recital>
+                    <recital xml:id="d2e1075">
+                        <num xml:id="d2e1077">(39)</num>
+                        <p xml:id="d2e1080">On 5 May 2022 the Commission received from Nextbike a
+                            request to withdraw the application for an exemption while the
+                            examination of its merits was ongoing and the payment of the extended
+                            duty was suspended.</p>
+                    </recital>
+                    <recital xml:id="d2e1084">
+                        <num xml:id="d2e1086">(40)</num>
+                        <p xml:id="d2e1089">The Commission accepted the withdrawal and consequently
+                            the suspension of the payment of the extended duty should be lifted. The
+                            extended duty should be collected as from the date of receipt of the
+                            request for exemption submitted by Nextbike, namely the date on which
+                            the suspension took effect, that is 25 November 2020.</p>
+                    </recital>
+                    <recital xml:id="d2e1093">
+                        <num xml:id="d2e1095">(41)</num>
+                        <p xml:id="d2e1098">The parties listed in Table 4 were informed of the
+                            Commission's conclusions and were given an opportunity to comment
+                            thereon. No comments were received,</p>
+                    </recital>
+                </recitals>
+            </recitals>
+
+            <formula xml:id="d2e1104" name="enactingFormula">
+                <p xml:id="d2e1106">HAS ADOPTED THIS DECISION:</p>
+            </formula>
+        </preamble>
+        <body xml:id="d2e1111">
+            <article xml:id="d2e1113">
+                <num xml:id="d2e1115">Article 1</num>
+                <paragraph xml:id="d2e1118">
+                    <content xml:id="d2e1120">
+                        <p xml:id="d2e1122">The parties listed in the Table in this Article are
+                            hereby exempted from the extension by Council Regulation (EC) No 71/97
+                            of the definitive anti-dumping duty on bicycles originating in the
+                            People's Republic of China imposed by Council Regulation (EEC) No
+                                2474/93<authorialNote xml:id="d2e1124" marker="9" placement="bottom">
+                                <p xml:id="d2e1126">Council Regulation (EEC) No 2474/93 of 8
+                                    September 1993 imposing a definitive anti-dumping duty on
+                                    imports into the Community of bicycles originating in the
+                                    People’s Republic of China and collecting definitively the
+                                    provisional anti-dumping duty (OJ L 228, 9.9.1993, p. 1).</p>
+                            </authorialNote> to imports of certain bicycle parts from the People's
+                            Republic of China.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1133">
+                    <content xml:id="d2e1135">
+                        <p xml:id="d2e1137">In accordance with Article 7(2) of Regulation (EC) No
+                            88/97 the exemption shall take effect as from the date of receipt of the
+                            parties' request. This date is provided for in the Table column headed
+                            'Date of effect'.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1142">
+                    <content xml:id="d2e1144">
+                        <p xml:id="d2e1146">The exemption shall apply only to the parties
+                            specifically referred to in the Table in this Article.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1151">
+                    <content xml:id="d2e1153">
+                        <p xml:id="d2e1155">The exempted parties shall notify the Commission without
+                            delay of any change to their name and address, providing all relevant
+                            information, in particular on any modification in the party' activities
+                            linked to assembly operations with regard to the conditions of
+                            exemption.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1161">
+                    <hcontainer xml:id="d2e1163" name="TAB">
+                        <heading xml:id="d2e1165">Exempted party</heading>
+                        <hcontainer xml:id="d2e1168" name="TAB_CONTAINER">
+                            <content xml:id="d2e1170">
+                                <table xml:id="d2e1172">
+                                    <thead xml:id="d2e1174">
+                                        <tr xml:id="d2e1176">
+                                            <th xml:id="d2e1178">
+                                                <p xml:id="d2e1180">TARIC additional code</p>
+                                            </th>
+                                            <th xml:id="d2e1184">
+                                                <p xml:id="d2e1186">Name</p>
+                                            </th>
+                                            <th xml:id="d2e1190">
+                                                <p xml:id="d2e1192">Address</p>
+                                            </th>
+                                            <th xml:id="d2e1196">
+                                                <p xml:id="d2e1198">Date of effect</p>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody xml:id="d2e1204">
+                                        <tr xml:id="d2e1206">
+                                            <td xml:id="d2e1208">
+                                                <p xml:id="d2e1210">C492</p>
+                                            </td>
+                                            <td xml:id="d2e1214">
+                                                <p xml:id="d2e1216">MOTOKIT Veiculos e Acessórios
+                                                  Lda</p>
+                                            </td>
+                                            <td xml:id="d2e1220">
+                                                <p xml:id="d2e1222">Rua Alto do Vale do Grou 36,
+                                                  3750-870 Borralha/Águeda, Portugal</p>
+                                            </td>
+                                            <td xml:id="d2e1226">
+                                                <p xml:id="d2e1228">25.9.2020</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1233">
+                                            <td xml:id="d2e1235">
+                                                <p xml:id="d2e1237">C559</p>
+                                            </td>
+                                            <td xml:id="d2e1241">
+                                                <p xml:id="d2e1243">Northtec Sp. z o.o.</p>
+                                            </td>
+                                            <td xml:id="d2e1247">
+                                                <p xml:id="d2e1249">ul. Dworcowa 15a, 43-502
+                                                  Czechowice-Dziedzice, Poland</p>
+                                            </td>
+                                            <td xml:id="d2e1253">
+                                                <p xml:id="d2e1255">27.7.2020</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1260">
+                                            <td xml:id="d2e1262">
+                                                <p xml:id="d2e1264">C560</p>
+                                            </td>
+                                            <td xml:id="d2e1268">
+                                                <p xml:id="d2e1270">Giant Gyártó Hungary Kft.</p>
+                                            </td>
+                                            <td xml:id="d2e1274">
+                                                <p xml:id="d2e1276">Jedlik Ányos utca 1, 3200
+                                                  Gyöngyös, Hungary</p>
+                                            </td>
+                                            <td xml:id="d2e1280">
+                                                <p xml:id="d2e1282">15.7.2020</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </content>
+                        </hcontainer>
+                    </hcontainer>
+                </paragraph>
+            </article>
+            <article xml:id="d2e1294">
+                <num xml:id="d2e1296">Article 2</num>
+
+                <paragraph xml:id="d2e1299">
+                    <content xml:id="d2e1301">
+                        <p xml:id="d2e1303">The parties listed in the Table in this Article are
+                            under examination in accordance with Article 6 of Regulation (EC) No
+                            88/97.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1308">
+                    <content xml:id="d2e1310">
+                        <p xml:id="d2e1312">The suspensions of payment of the extended anti-dumping
+                            duty in accordance with Article 5 of Regulation (EC) No 88/97 shall be
+                            effective as from the dates of receipt of the parties' respective
+                            supension requests. Those dates are provided for in the Table column
+                            headed 'Date of effect'.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1317">
+                    <content xml:id="d2e1319">
+                        <p xml:id="d2e1321">Those suspensions of payments shall apply only to the
+                            parties under examination specifically referred to in the Table in this
+                            Article.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1326">
+                    <content xml:id="d2e1328">
+                        <p xml:id="d2e1330">The parties under examination shall notify the
+                            Commission without delay of any changes in their assembly operations
+                            linked to the conditions of suspension and provide the Commission with
+                            all relevant information as evidence. These changes include but are not
+                            limited to, any changes of the parties' names, activities, legal forms,
+                            addresses</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e1336">
+                    <hcontainer xml:id="d2e1338" name="TAB">
+                        <heading xml:id="d2e1340">Parties under examination</heading>
+                        <hcontainer xml:id="d2e1343" name="TAB_CONTAINER">
+                            <content xml:id="d2e1345">
+                                <table xml:id="d2e1347">
+                                    <thead xml:id="d2e1349">
+                                        <tr xml:id="d2e1351">
+                                            <th xml:id="d2e1353">
+                                                <p xml:id="d2e1355">TARIC additional code</p>
+                                            </th>
+                                            <th xml:id="d2e1359">
+                                                <p xml:id="d2e1361">Name</p>
+                                            </th>
+                                            <th xml:id="d2e1365">
+                                                <p xml:id="d2e1367">Address</p>
+                                            </th>
+                                            <th xml:id="d2e1371">
+                                                <p xml:id="d2e1373">Date of effect</p>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody xml:id="d2e1379">
+                                        <tr xml:id="d2e1381">
+                                            <td xml:id="d2e1383">
+                                                <p xml:id="d2e1385">C557</p>
+                                            </td>
+                                            <td xml:id="d2e1389">
+                                                <p xml:id="d2e1391">Berria Bike S.L.</p>
+                                            </td>
+                                            <td xml:id="d2e1395">
+                                                <p xml:id="d2e1397">Calle Blasco de Garay 19, 02600
+                                                  Villarrobledo – Spain</p>
+                                            </td>
+                                            <td xml:id="d2e1401">
+                                                <p xml:id="d2e1403">30.3.2022</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1408">
+                                            <td xml:id="d2e1410">
+                                                <p xml:id="d2e1412">C720</p>
+                                            </td>
+                                            <td xml:id="d2e1416">
+                                                <p xml:id="d2e1418">Propain Bicycles GmbH</p>
+                                            </td>
+                                            <td xml:id="d2e1422">
+                                                <p xml:id="d2e1424">Schachenstraße 39, 88267 Vogt,
+                                                  Germany</p>
+                                            </td>
+                                            <td xml:id="d2e1428">
+                                                <p xml:id="d2e1430">1.7.2021</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1435">
+                                            <td xml:id="d2e1437">
+                                                <p xml:id="d2e1439">C860</p>
+                                            </td>
+                                            <td xml:id="d2e1443">
+                                                <p xml:id="d2e1445">Profil Bicycles CZ s.r.o.</p>
+                                            </td>
+                                            <td xml:id="d2e1449">
+                                                <p xml:id="d2e1451">Hněvotín 31, 783 47 Hněvotín,
+                                                  Czech Republic</p>
+                                            </td>
+                                            <td xml:id="d2e1455">
+                                                <p xml:id="d2e1457">20.2.2022</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1462">
+                                            <td xml:id="d2e1464">
+                                                <p xml:id="d2e1466">C863</p>
+                                            </td>
+                                            <td xml:id="d2e1470">
+                                                <p xml:id="d2e1472">Decathlon Sp. z o.o.</p>
+                                            </td>
+                                            <td xml:id="d2e1476">
+                                                <p xml:id="d2e1478">ul. Geodezyjna 76, 03-290
+                                                  Warszawa, Poland</p>
+                                            </td>
+                                            <td xml:id="d2e1482">
+                                                <p xml:id="d2e1484">21.3.2022</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </content>
+                        </hcontainer>
+                    </hcontainer>
+                </paragraph>
+            </article>
+            <article xml:id="d2e1496">
+                <num xml:id="d2e1498">Article 3</num>
+
+                <paragraph xml:id="d2e1501">
+                    <content xml:id="d2e1503">
+                        <p xml:id="d2e1505">Updated references to the exempted or suspended parties
+                            listed in the Table in this Article are provided for in the column
+                            headed ‘New reference’. Those updates shall take effect as from the
+                            dates provided for in the Table column headed ‘Date of effect’.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1510">
+                    <content xml:id="d2e1512">
+                        <p xml:id="d2e1514">The corresponding TARIC additional codes previously
+                            attributed to those exempted or suspended parties as provided for in the
+                            Table column headed ‘TARIC additional code’ remain unchanged.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e1519">
+                    <hcontainer xml:id="d2e1521" name="TAB">
+                        <heading xml:id="d2e1523">Exempted/suspended parties for which the reference
+                            shall be updated</heading>
+                        <hcontainer xml:id="d2e1526" name="TAB_CONTAINER">
+                            <content xml:id="d2e1528">
+                                <table xml:id="d2e1530">
+                                    <thead xml:id="d2e1532">
+                                        <tr xml:id="d2e1534">
+                                            <th xml:id="d2e1536">
+                                                <p xml:id="d2e1538">TARIC additional code</p>
+                                            </th>
+                                            <th xml:id="d2e1542">
+                                                <p xml:id="d2e1544">Former reference</p>
+                                            </th>
+                                            <th xml:id="d2e1548">
+                                                <p xml:id="d2e1550">New reference</p>
+                                            </th>
+                                            <th xml:id="d2e1554">
+                                                <p xml:id="d2e1556">Date of effect</p>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody xml:id="d2e1562">
+                                        <tr xml:id="d2e1564">
+                                            <td xml:id="d2e1566">
+                                                <p xml:id="d2e1568">A984</p>
+                                            </td>
+                                            <td xml:id="d2e1572">
+                                                <p xml:id="d2e1574">Blue Factory Team S.L. Calle
+                                                  Juan de la Cierva 62, Elche-Alicante, Spain</p>
+                                            </td>
+                                            <td xml:id="d2e1578">
+                                                <p xml:id="d2e1580">Blue Factory Team S.L. Calle
+                                                  Nicolás Copérnico 4, Elche Parque Empresarial,
+                                                  03203 Elche-Alicante, Spain</p>
+                                            </td>
+                                            <td xml:id="d2e1584">
+                                                <p xml:id="d2e1586">10.8.2021</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1591">
+                                            <td xml:id="d2e1593">
+                                                <p xml:id="d2e1595">A605</p>
+                                            </td>
+                                            <td xml:id="d2e1599">
+                                                <p xml:id="d2e1601">Bohemia Bike a.s. Na Pankráci
+                                                  1724/129 Nusle, 140 00 Praha 4, Czech Republic</p>
+                                            </td>
+                                            <td xml:id="d2e1605">
+                                                <p xml:id="d2e1607">Bohemia Bike a.s. Pujmanové
+                                                  1753/10a Nusle, 140 00 Praha 4, Czech Republic</p>
+                                            </td>
+                                            <td xml:id="d2e1611">
+                                                <p xml:id="d2e1613">11.4.2022</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1618">
+                                            <td xml:id="d2e1620">
+                                                <p xml:id="d2e1622">B940</p>
+                                            </td>
+                                            <td xml:id="d2e1626">
+                                                <p xml:id="d2e1628">Solo International Oy Pyynitie
+                                                  1B, 02230 Espoo, Finland</p>
+                                            </td>
+                                            <td xml:id="d2e1632">
+                                                <p xml:id="d2e1634">Solo International Oy
+                                                  Komeetankatu 1, 02210 Espoo, Finland</p>
+                                            </td>
+                                            <td xml:id="d2e1638">
+                                                <p xml:id="d2e1640">28.4.2022</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1645">
+                                            <td xml:id="d2e1647">
+                                                <p xml:id="d2e1649">A730</p>
+                                            </td>
+                                            <td xml:id="d2e1653">
+                                                <p xml:id="d2e1655">Alubike – Bicicletas S.A. Zona
+                                                  Industrial de Oiã Lote C10, Oiã, 3770 068 Oliveira
+                                                  do Bairro, Portugal</p>
+                                            </td>
+                                            <td xml:id="d2e1659">
+                                                <p xml:id="d2e1661">Alubike – Bicicletas S.A. Zona
+                                                  Industrial de Aveiro Sul, lote 11, Mamodeiro,
+                                                  Aveiro Concelho, Freguesia, 3810 783 Aveiro,
+                                                  Portugal</p>
+                                            </td>
+                                            <td xml:id="d2e1665">
+                                                <p xml:id="d2e1667">11.6.2022</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </content>
+                        </hcontainer>
+                    </hcontainer>
+                </paragraph>
+            </article>
+            <article xml:id="d2e1679">
+                <num xml:id="d2e1681">Article 4</num>
+
+                <paragraph xml:id="d2e1684">
+                    <content xml:id="d2e1686">
+                        <p xml:id="d2e1688">The suspension of the payment of the extended
+                            anti-dumping duty pursuant to Article 5 of Regulation (EC) No 88/97 is
+                            hereby lifted during the period 27 July 2020 to 29 March 2022 for the
+                            party listed in the Table in this Article under TARIC additional code
+                            C557.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1693">
+                    <content xml:id="d2e1695">
+                        <p xml:id="d2e1697">The extended duty shall be collected as from 27 July
+                            2020 to 29 March 2022.</p>
+                    </content>
+                </paragraph>
+
+                <paragraph xml:id="d2e1702">
+                    <content xml:id="d2e1704">
+                        <p xml:id="d2e1706">The suspension of the payment of the extended
+                            anti-dumping duty pursuant to Article 5 of Regulation (EC) No 88/97 is
+                            hereby lifted for the party listed in the Table in this Article under
+                            TARIC additional code C609 and the extended duty shall be collected.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e1711">
+                    <hcontainer xml:id="d2e1713" name="TAB">
+                        <heading xml:id="d2e1715">Parties for which the suspension is
+                            lifted</heading>
+                        <hcontainer xml:id="d2e1718" name="TAB_CONTAINER">
+                            <content xml:id="d2e1720">
+                                <table xml:id="d2e1722">
+                                    <thead xml:id="d2e1724">
+                                        <tr xml:id="d2e1726">
+                                            <th xml:id="d2e1728">
+                                                <p xml:id="d2e1730">TARIC additional code</p>
+                                            </th>
+                                            <th xml:id="d2e1734">
+                                                <p xml:id="d2e1736">Name</p>
+                                            </th>
+                                            <th xml:id="d2e1740">
+                                                <p xml:id="d2e1742">Address</p>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody xml:id="d2e1748">
+                                        <tr xml:id="d2e1750">
+                                            <td xml:id="d2e1752">
+                                                <p xml:id="d2e1754">C557</p>
+                                            </td>
+                                            <td xml:id="d2e1758">
+                                                <p xml:id="d2e1760">Berria Bike S.L.</p>
+                                            </td>
+                                            <td xml:id="d2e1764">
+                                                <p xml:id="d2e1766">Calle Blasco de Garay 19, 02600
+                                                  Villarrobledo, Spain</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e1771">
+                                            <td xml:id="d2e1773">
+                                                <p xml:id="d2e1775">C609</p>
+                                            </td>
+                                            <td xml:id="d2e1779">
+                                                <p xml:id="d2e1781">Nextbike GmbH</p>
+                                            </td>
+                                            <td xml:id="d2e1785">
+                                                <p xml:id="d2e1787">Erich-Zeigner-Allee 69-73 04229
+                                                  Leipzig, Germany</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </content>
+                        </hcontainer>
+                    </hcontainer>
+                </paragraph>
+            </article>
+            <article xml:id="d2e1799">
+                <num xml:id="d2e1801">Article 5</num>
+                <paragraph xml:id="d2e1804">
+                    <content xml:id="d2e1806">
+                        <p xml:id="d2e1808">This Decision is addressed to the Member States and to
+                            the parties listed in Articles 1 to 4 and published in the Official
+                            Journal of the European Union</p>
+                    </content>
+                </paragraph>
+            </article>
+        </body>
+        <conclusions xml:id="d2e1815">
+            <p xml:id="d2e1817">Done at <location xml:id="d2e1819" refersTo="~BEL_BRU"
+                    >Brussels</location>, <date xml:id="d2e1822" date="2022-08-26">26 August
+                    2022</date>.</p>
+            <block xml:id="d2e1826" name="signatory">
+                <signature xml:id="d2e1828">
+                    <organization xml:id="d2e1830" refersTo="~COM">For the Commission</organization>
+                    <person xml:id="d2e1833" refersTo="">Valdis DOMBROVSKIS</person>
+                    <role xml:id="d2e1836" refersTo="~PRESID_VICE_EXEC">Executive
+                        Vice-President</role>
+                </signature>
+            </block>
+        </conclusions>
+    </act>
+</akomaNtoso>

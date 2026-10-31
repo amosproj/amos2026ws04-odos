@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+	<!-- OJ Publication before ABA.  not covered by AKN4EU 5.0 -->
+	<doc name="RES_COR">
+		<meta>
+			<!-- OJ Publication before ABA.  not covered by AKN4EU 5.0 -->
+			<identification source="~PUBL">
+				<FRBRWork>
+					<!-- OJ Publication before ABA.  Proposed ELI-DL -->
+					<FRBRthis value="http://data.europa.eu/eli/dl/doc/COR/C_39_7_2020/oj"/>
+					<FRBRuri value="http://data.europa.eu/eli/dl/doc/COR/C_39_7_2020/oj"/>
+					<FRBRdate date="2020-02-05" name="publication"/>
+					<FRBRauthor href="~COR"/>
+					<FRBRcountry value="EU"/>
+					<FRBRnumber value="eli/dl/doc/COR/C_39_7_2020"/>
+				</FRBRWork>
+				<FRBRExpression>
+					<FRBRthis value="http://data.europa.eu/eli/dl/doc/COR/C_39_7_2020/oj/eng"/>
+					<FRBRuri value="http://data.europa.eu/eli/dl/doc/COR/C_39_7_2020/oj/eng"/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRlanguage xml:id="FRBRlanguage" language="en" refersTo="~ENG"/>
+				</FRBRExpression>
+				<FRBRManifestation>
+					<FRBRthis
+						value="http://data.europa.eu/eli/dl/doc/COR/C_39_7_2020/oj/eng/akn4eu"/>
+					<FRBRuri
+						value="http://data.europa.eu/eli/dl/doc/COR/C_39_7_2020/oj/eng/akn4eu"/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:akn4euVersion value="5.0.0.1"/>
+						<akn4eu:akn4euDocumentation
+							href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+						/>
+					</preservation>
+				</FRBRManifestation>
+			</identification>
+			<!-- publication to be defined for OJ document published before the ABA publication. -->
+			<publication date="2020-02-05" showAs="OJ C, 2020 C 39/02, 2020-02-05"
+				name="Official Journal of the European Union" number="2020/C 39/02"/>
+			<references source="~PUBL">
+				<TLCReference name="language" xml:id="ENG" eId="ENG" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+				<TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+				<TLCOrganization xml:id="COR" href="http://publications.europa.eu/resource/authority/corporate-body/COR" showAs=""/>
+				<TLCReference xml:id="RES_COR" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/RES_COR" showAs=""/>
+				<TLCRole xml:id="PRESID" href="http://publications.europa.eu/resource/authority/role/PRESID" showAs=""/>
+				<TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+				<TLCOrganization xml:id="COR_GROUP_EPP" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_EPP" showAs=""/>
+				<TLCOrganization xml:id="COR_GROUP_PES" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_PES" showAs=""/>
+				<TLCOrganization xml:id="COR_GROUP_RENEW" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_RENEW" showAs=""/>
+				<TLCOrganization xml:id="COR_GROUP_EA" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_EA" showAs=""/>
+				<TLCOrganization xml:id="COR_GROUP_ECR" href="http://publications.europa.eu/resource/authority/corporate-body/COR_GROUP_ECR" showAs=""/>
+			</references>
+		</meta>
+		<preface xml:id="d2e94">
+			<longTitle xml:id="d2e96">
+				<p xml:id="d2e98"><docType xml:id="d2e99" refersTo="~RES_COR">Resolution of the European Committee of the
+					Regions</docType><docPurpose xml:id="d2e101"> — The 2019 European Semester and in view of
+						the 2020 Annual Growth Survey</docPurpose></p>
+			</longTitle>
+			<container xml:id="d2e104" name="mainDoc">
+				<block xml:id="d2e106" name="reference">(<docNumber xml:id="d2e108">2020/C 39/02</docNumber>)</block>
+			</container>
+			<container xml:id="d2e113" name="mainDocProponents">
+				<p xml:id="d2e115">Submitted by the <organization xml:id="d2e117" refersTo="~COR_GROUP_EPP">EPP</organization>,
+						<organization xml:id="d2e120" refersTo="~COR_GROUP_PES">PES</organization>, <organization xml:id="d2e123" refersTo="~COR_GROUP_RENEW">Renew Europe</organization>, <organization xml:id="d2e126" refersTo="~COR_GROUP_EA">EA</organization> and <organization xml:id="d2e129" refersTo="~COR_GROUP_ECR">ECR</organization> political groups</p>
+			</container>
+		</preface>
+		<mainBody xml:id="d2e135">
+			<paragraph xml:id="d2e137">
+				<content xml:id="d2e139">
+					<p xml:id="d2e141"><organization xml:id="d2e142" refersTo="~COR">THE EUROPEAN COMMITTEE OF THE REGIONS
+							(CoR),</organization></p>
+				</content>
+			</paragraph>
+			<paragraph xml:id="d2e147">
+				<list xml:id="d2e149">
+					<indent xml:id="d2e151"><num xml:id="d2e152">—</num>
+						<content xml:id="d2e154">
+							<p xml:id="d2e156">having regard to the European Commission’s Communication on the
+								Annual Growth Survey 2019 (AGS)<authorialNote xml:id="d2e158" marker="1" placement="bottom">
+									<p xml:id="d2e160">Commission communication of 21 November 2018 entitled Annual
+										Growth Survey 2019: For a stronger Europe in the face of
+										global uncertainty (COM(2018) 770).</p>
+								</authorialNote> and to the 2019 European Semester,</p>
+						</content>
+					</indent>
+					<indent xml:id="d2e166"><num xml:id="d2e167">—</num>
+						<content xml:id="d2e169">
+							<p xml:id="d2e171">having regard to its resolution of 10 October 2018 on economic
+								policies of the euro area and in view of the 2019 Annual Growth
+									Survey<authorialNote xml:id="d2e173" marker="2" placement="bottom">
+									<p xml:id="d2e175">https://webapi2016.cor.europa.eu/v1/documents/cor-2018-03900-00-00-res-tra-en.docx/content</p>
+								</authorialNote> (AGS) and to its opinion of 10 April 2019 on ‘the
+								European Semester and cohesion policy: aligning structural reforms
+								with long-term investments’,</p>
+						</content>
+					</indent>
+					<indent xml:id="d2e181"><num xml:id="d2e182">—</num>
+						<content xml:id="d2e184">
+							<p xml:id="d2e186">having regard to the European Parliament resolution of 13 March 2019
+								on the European Semester for economic policy coordination: Annual
+								Growth Survey 2019<authorialNote xml:id="d2e188" marker="3" placement="bottom">
+									<p xml:id="d2e190">http://www.europarl.europa.eu/doceo/document/TA-8-2019-0201_EN.html</p>
+								</authorialNote>;</p>
+						</content>
+					</indent>
+				</list>
+			</paragraph>
+			<level xml:id="d2e198">
+				<num xml:id="d2e200">1.</num>
+				<content xml:id="d2e202">
+					<p xml:id="d2e204">welcomes the 2019 Annual Growth Survey’s focus on investment and reforms
+						fostering sustainable and inclusive growth as a way to improve
+						competitiveness and cohesion among and within Member States and regions and
+						to coordinate all EU investment policies, including cohesion policy;</p>
+				</content>
+			</level>
+			<level xml:id="d2e208">
+				<num xml:id="d2e210">2.</num>
+				<content xml:id="d2e212">
+					<p xml:id="d2e214">insists that, to ensure ownership and effectiveness of structural reforms of
+						the European Semester process, the local and regional authorities should be
+						formally associated with it, based on the principles of partnership and
+						multi-level governance<authorialNote xml:id="d2e216" marker="4" placement="bottom">
+							<p xml:id="d2e218">On the European Semester and cohesion policy: aligning structural
+								reforms with long-term investments, adopted unanimously by the CoR
+								Plenary of 10 April
+								2019 https://webapi2016.cor.europa.eu/v1/documents/cor-2018-05504-00-00-ac-tra-en.docx/content</p>
+						</authorialNote> and using the CoR’s proposal for a ‘Code of Conduct for the
+						involvement of the local and regional authorities in the European
+							Semester’<authorialNote xml:id="d2e221" marker="5" placement="bottom">
+							<p xml:id="d2e223">https://webapi2016.cor.europa.eu/v1/documents/cor-2016-05386-00-00-ac-tra-en.docx/content</p>
+						</authorialNote>;</p>
+				</content>
+			</level>
+			<level xml:id="d2e229">
+				<num xml:id="d2e231">3.</num>
+				<content xml:id="d2e233">
+					<p xml:id="d2e235">notes that growth is slowing down and that trade tensions and the risk of a
+						no-deal Brexit generate uncertainty which discourages investment. Calls,
+						against this background, on the EU to consider frontloading measures to
+						boost the EU’s investment programmes and to support those areas that could
+						be mostly affected by a no-deal Brexit;</p>
+				</content>
+			</level>
+			<level xml:id="d2e240">
+				<num xml:id="d2e242">4.</num>
+				<content xml:id="d2e244">
+					<p xml:id="d2e246">stresses that public investment at country level has shrunk significantly and
+						remains too low, especially in the countries that were most affected by the
+						crisis; notes that, in times of severe budget constraints, current
+						expenditure was not cut nearly as much as investment; underlines that
+						subnational governments, responsible for more than half of public investment
+						in the EU, had to cut their investment disproportionately<authorialNote xml:id="d2e248" marker="6" placement="bottom">
+							<p xml:id="d2e250">https://www.eib.org/attachments/efs/economic_investment_report_2018_key_findings_en.pdf</p>
+						</authorialNote>;</p>
+				</content>
+			</level>
+			<level xml:id="d2e256">
+				<num xml:id="d2e258">5.</num>
+				<content xml:id="d2e260">
+					<p xml:id="d2e262">asks the Commission to present, ahead of the reform process of the Stability
+						and Growth Pact (SGP) envisaged in 2020, an assessment of the use of the
+						flexibility clauses of the SGP since 2015. Considers that the SGP reform
+						should lead to clearer rules that will help avoid procyclical fiscal
+						policies, allow for reasonable and sustainable debt reduction for the most
+						vulnerable economies in a context of low inflation, remove national
+						co-financing of Cohesion Policy programmes from the accounting for the SGP
+						ceilings and introduce a ‘golden rule’ of public accounting giving public
+						authorities at all levels the fiscal space necessary to undertake long-term
+						investments needed to ensure sustainable development;</p>
+				</content>
+			</level>
+			<level xml:id="d2e266">
+				<num xml:id="d2e268">6.</num>
+				<content xml:id="d2e270">
+					<p xml:id="d2e272">stresses that Member States with available fiscal room should engage in the
+						public investment needed to boost long-term growth, which would reduce
+						macroeconomic imbalances in the EU and the euro area;</p>
+				</content>
+			</level>
+			<level xml:id="d2e276">
+				<num xml:id="d2e278">7.</num>
+				<content xml:id="d2e280">
+					<p xml:id="d2e282">strongly supports the Commission President-elect’s commitment to refocusing
+						the European Semester as an instrument that integrates the United Nations
+						Sustainable Development Goals;</p>
+				</content>
+			</level>
+			<level xml:id="d2e286">
+				<num xml:id="d2e288">8.</num>
+				<content xml:id="d2e290">
+					<p xml:id="d2e292">welcomes in principle the Commission President-elect’s intention to put
+						forward a Sustainable Europe Investment Plan, to support EUR 1trillion of
+						investment over the next decade in every corner of the EU, but expects
+						further clarification on how this Plan relates in particular to the InvestEU
+						programme and how it is expected to affect investment in the EU’s regions
+						and cities. Also supports the Commission President-elect’s intention to put
+						forward a strategy for green financing;</p>
+				</content>
+			</level>
+			<level xml:id="d2e296">
+				<num xml:id="d2e298">9.</num>
+				<content xml:id="d2e300">
+					<p xml:id="d2e302">shares the Commission President-elect’s stress on promoting the EU transition
+						towards climate neutrality by 2050 by appropriate industrial strategies, as
+						well as to support the people and regions most affected through a new Just
+						Transition Fund. Advocates that such a fund should in particular help
+						mitigate the social, socioeconomic and environmental impact of structural
+						change in European coal regions;</p>
+				</content>
+			</level>
+			<level xml:id="d2e307">
+				<num xml:id="d2e309">10.</num>
+				<content xml:id="d2e311">
+					<p xml:id="d2e313">stresses that trade agreements negotiated and concluded by the European Union
+						should contribute to achieving the Sustainable Development Goals;</p>
+				</content>
+			</level>
+			<level xml:id="d2e317">
+				<num xml:id="d2e319">11.</num>
+				<content xml:id="d2e321">
+					<p xml:id="d2e323">notes that the implementation rate of the Country-Specific Recommendations
+						remains slow and uneven and considers that this is also the result of a lack
+						of ownership and an insufficient administrative and institutional capacity;
+						highlights that, in 2019, 137 of the individual recommendations packaged in
+						the broader Country-Specific Recommendations (sub-recommendations) were
+						either directly/indirect addressed to LRAs or had a territorial impact, up
+						from 120 in 2018, currently representing 62 % of all 2019
+							sub-recommendations<authorialNote xml:id="d2e325" marker="7" placement="bottom">
+							<p xml:id="d2e327">CoR, 2019 European Semester. Territorial Analysis of the
+								Country-Specific Recommendations
+								(https://portal.cor.europa.eu/europe2020/Pages/welcome.aspx#).</p>
+						</authorialNote>. 112 of these sub-recommendations addressed obstacles to
+						investment, up from 79 in 2018, as a consequence of the European Semester’s
+						stronger focus on investment this year, while 26 were about improving
+						administrative capacity of local and regional authorities and were addressed
+						to 17 Member States. Stresses that these findings underline the role of
+						local and regional authorities in delivering on the European Semester’s
+						goals, which is not sufficiently recognised in the Semester’s governance
+						process;</p>
+				</content>
+			</level>
+			<level xml:id="d2e333">
+				<num xml:id="d2e335">12.</num>
+				<content xml:id="d2e337">
+					<p xml:id="d2e339">emphasises that 55 sub-recommendations included in the 2019 Country-Specific
+						Recommendations addressed the role of local and regional authorities in the
+						implementation of the European Pillar of Social Rights. As social
+						disparities are often rooted in regional disparities, they should be
+						thoroughly analysed in the Country Reports and the National Reform
+						Programmes. Recalls that the CoR, in cooperation with Eurostat, has
+						contributed to a methodological study on how to build a European Regional
+						Social Scoreboard which could be used, in the context of the European
+						Semester, to monitor the progress of the European Pillar of Social Rights
+						and asks the upcoming Commission to further support this process;</p>
+				</content>
+			</level>
+			<level xml:id="d2e343">
+				<num xml:id="d2e345">13.</num>
+				<content xml:id="d2e347">
+					<p xml:id="d2e349">acknowledges the European Commission’s multi-annual assessment of the
+						implementation of Country-specific Recommendations, which shows that more
+						than two-thirds of country-specific recommendations issued up to 2018 have
+						been implemented with at least ‘some progress’ <authorialNote xml:id="d2e351" marker="8" placement="bottom">
+							<p xml:id="d2e353">Commission Communication on the 2019 CSRs, p. 3.
+								https://eur-lex.europa.eu/legal-content/EN/TXT/?qid=1560257977630&amp;uri=CELEX%3A52019DC0500</p>
+						</authorialNote>, but regrets once again the persistent lack of transparency
+						on the criteria upon which such assessment is based;</p>
+				</content>
+			</level>
+			<level xml:id="d2e359">
+				<num xml:id="d2e361">14.</num>
+				<content xml:id="d2e363">
+					<p xml:id="d2e365">welcomes the guidelines for the 2021-2027 programming of the ESI Funds
+						included in the Country Reports (Annex D); notes however that the underlying
+						analysis of regional disparities is still insufficient, also because of the
+						failure to involve the local and regional authorities in its preparation, as
+						revealed by a survey carried out by the CoR right after the publication of
+						the Country Reports;</p>
+				</content>
+			</level>
+			<level xml:id="d2e369">
+				<num xml:id="d2e371">15.</num>
+				<content xml:id="d2e373">
+					<p xml:id="d2e375">stresses that the European Semester should assess the state of implementation
+						of investment policies on a yearly basis; stresses that local and regional
+						authorities, through their representative organisations, should be involved
+						in this assessment from the publication of the Country Reports, including in
+						the dialogue between the Commission’s Vice-President in charge and the
+						Member States;</p>
+				</content>
+			</level>
+			<level xml:id="d2e380">
+				<num xml:id="d2e382">16.</num>
+				<content xml:id="d2e384">
+					<p xml:id="d2e386">emphasises that the lack of structured and ongoing involvement of the local
+						and regional authorities throughout the European Semester, in particular in
+						the design and implementation of the National Reform Programmes, creates an
+						asymmetry between the Semester, which is centralised and top-down, and
+						Cohesion Policy, which is under shared management and decentralised.
+						Proposes to address this issue as a matter of urgency by expanding the
+						current Code of Conduct on Partnership to cover the European Semester policy
+						process;</p>
+				</content>
+			</level>
+			<level xml:id="d2e390">
+				<num xml:id="d2e392">17.</num>
+				<content xml:id="d2e394">
+					<p xml:id="d2e396">points out that the National Reform Programme (NRP) is also the only document
+						through which each Member State of the European Union sets out each year to
+						the European Commission the specific policies that it intends to implement
+						in pursuit of common goals, sustainable public finances and structural
+						reforms, along with proposals to deliver the growth and employment
+						objectives, in line with the recommendations made in the European Semester
+						and the ten-yearly targets set by the Europe 2020 strategy. Therefore,
+						complying fully with the principle of multilevel governance, the regions
+						should be involved in shaping the NRP; several Member States are indeed
+						already doing so, using the NRP as a mechanism for integrated planning of
+						action on the ground, including in light of the innovative features of the
+						EU regulations on the 2021-2027 programming period which are intended to
+						align it with the European Semester; recalls against this background that
+						the CoR has produced a European Regional Social Scoreboard<authorialNote xml:id="d2e398" marker="9" placement="bottom">
+							<p xml:id="d2e400">https://cor.europa.eu/en/engage/studies/Documents/European%20Regional%20Social%20Scoreboard/European-Regional-Social-Scoreboard.pdf?_cldee=bWF0dGhpZXUuaG9ybnVuZ0Bjb3IuZXVyb3BhLmV1&amp;recipientid=contact-09d0f0455cf2e4118a29005056a05119-28d790990cbf4dcc890968d369dec000&amp;esid=8685471a-6dd4-e911-8116-005056a043ea</p>
+						</authorialNote>, welcomes the European Commission’s proposal for adding a
+						regional dimension to the Social Scoreboard in the European Semester process
+						and looks forward to its swift implementation;</p>
+				</content>
+			</level>
+			<level xml:id="d2e406">
+				<num xml:id="d2e408">18.</num>
+				<content xml:id="d2e410">
+					<p xml:id="d2e412">reiterates its concern that the European Commission has still not provided a
+						definition of ‘structural reforms’he Treaty objectives and which relate
+						directly to EU competences;</p>
+				</content>
+			</level>
+			<level xml:id="d2e416">
+				<num xml:id="d2e418">19.</num>
+				<content xml:id="d2e420">
+					<p xml:id="d2e422">expects the European Semester to provide for a broad, coordinated and
+						integrated EU response to the disruptive effects of demographic change,
+						particularly by reinforcing the effectiveness of cohesion policy and by
+						promoting regional strategies, especially those aimed at developing smart
+						and competitive rural areas;</p>
+				</content>
+			</level>
+			<level xml:id="d2e426">
+				<num xml:id="d2e428">20.</num>
+				<content xml:id="d2e430">
+					<p xml:id="d2e432">notes that the CSRs identify the housing market as critical for financial
+						stability and that the scarcity of adequate and affordable housing is a
+						growing problem in several Member States. This analysis strengthens the case
+						for evaluating the need for a European Agenda for Housing leaving a wide
+						margin of discretion for the Member States in what is their area of
+							responsibility<authorialNote xml:id="d2e434" marker="10" placement="bottom">
+							<p xml:id="d2e436">Point 20 of the CoR Resolution on the Proposals for the new European
+								Union legislative mandate, 27 June
+								2019 https://webapi2016.cor.europa.eu/v1/documents/cor-2019-02550-00-01-res-tra-en.docx/content</p>
+						</authorialNote>;</p>
+				</content>
+			</level>
+			<level xml:id="d2e442">
+				<num xml:id="d2e444">21.</num>
+				<content xml:id="d2e446">
+					<p xml:id="d2e448">highlights that multilateralism and a rules-based global order are in the
+						EU’s interest and must be defended. Welcomes therefore initiatives intended
+						to fight for a level playing field and to be tough against states that
+						compete by dumping, deregulating or subsidising; warns, however, that EU
+						internal competition policy rules are far stricter than is the case
+						internationally and therefore risk putting European companies at
+						disadvantage at the global level;</p>
+				</content>
+			</level>
+			<level xml:id="d2e453">
+				<num xml:id="d2e455">22.</num>
+				<content xml:id="d2e457">
+					<p xml:id="d2e459">considers that the negotiation of Free Trade Agreements should be informed,
+						among other, by regional impact assessments, as they would facilitate the
+						early identification and quantification of possible asymmetric impacts on
+						European regions, so as to allow for swift public policy responses;</p>
+				</content>
+			</level>
+			<level xml:id="d2e463">
+				<num xml:id="d2e465">23.</num>
+				<content xml:id="d2e467">
+					<p xml:id="d2e469">supports the European Council’s call<authorialNote xml:id="d2e471" marker="11" placement="bottom">
+							<p xml:id="d2e473">As expressed in its conclusions of 20 June 2019
+								https://www.consilium.europa.eu/media/39922/20-21-euco-final-conclusions-en.pdf</p>
+						</authorialNote> for an integrated policy approach in deepening and
+						strengthening the Single Market, designing an industrial policy fit for the
+						future, addressing the digital revolution and ensuring fair and effective
+						taxation;</p>
+				</content>
+			</level>
+			<level xml:id="d2e479">
+				<num xml:id="d2e481">24.</num>
+				<content xml:id="d2e483">
+					<p xml:id="d2e485">welcomes the report of the European Commission’s high-level group on the
+						future of European industry<authorialNote xml:id="d2e487" marker="12" placement="bottom">
+							<p xml:id="d2e489">Published on 26 June 2019
+								https://ec.europa.eu/growth/industry/policy/industry-2030_en#vision2030</p>
+						</authorialNote>, outlining a long-term vision for a European industrial
+						strategy and emphasising the regional dimension of such a strategy;</p>
+				</content>
+			</level>
+			<level xml:id="d2e495">
+				<num xml:id="d2e497">25.</num>
+				<content xml:id="d2e499">
+					<p xml:id="d2e501">reiterates its call for strengthened EU support for pan-European and
+						inter-regional collaboration that focuses on developing synergies and
+						reaching critical mass in co-investment for innovation in industrial value
+						chains across Europe, as well as on realising the potential of the circular
+						and carbon neutral economy;</p>
+				</content>
+			</level>
+			<level xml:id="d2e505">
+				<num xml:id="d2e507">26.</num>
+				<content xml:id="d2e509">
+					<p xml:id="d2e511">recognises that the competitiveness of the European economy and industry is
+						based on the entrepreneurial and innovative potential of SMEs; calls on the
+						European Commission and the Council to take account of the specific needs of
+						SMEs when developing the EU’s long-term economic strategies, including
+						measures to break down existing barriers to the free movement of goods and
+						services in the EU Single Market, which are particularly hampering the
+						growth of European SMEs;</p>
+				</content>
+			</level>
+			<level xml:id="d2e515">
+				<num xml:id="d2e517">27.</num>
+				<content xml:id="d2e519">
+					<p xml:id="d2e521">highlights that improving local and regional public procurement would bring
+						sizeable competitiveness and efficiency gains. This is corroborated by the
+						CoR’s analytical work showing that the complexity of current public
+						procurement rules, and goldplating tendencies in many Member States,
+						increase the likelihood of errors and subsequent risk of legal action, which
+						in turn leads to overly risk-averse procurement strategies among many local
+						and regional authorities;</p>
+				</content>
+			</level>
+			<level xml:id="d2e526">
+				<num xml:id="d2e528">28.</num>
+				<content xml:id="d2e530">
+					<p xml:id="d2e532">instructs the President to forward this resolution to the European
+						Commission, the European Parliament, the Finnish Presidency of the Council
+						and the President of the European Council.</p>
+				</content>
+			</level>
+		</mainBody>
+		<conclusions xml:id="d2e537">
+			<p xml:id="d2e539"><location xml:id="d2e540" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e543" date="2019-10-09">9 October
+					2019</date>.</p>
+			<block xml:id="d2e547" name="signatory">
+				<signature xml:id="d2e549">
+					<role xml:id="d2e551" refersTo="~PRESID">The President</role>
+					<organization xml:id="d2e554" refersTo="~COR">of the European Committee of the
+						Regions</organization>
+					<person xml:id="d2e557" refersTo="">Karl-Heinz Lambertz</person>
+				</signature>
+			</block>
+		</conclusions>
+	</doc>
+</akomaNtoso>

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "odos"
+version = "0.1.0"
+description = "ODOS backend: legal PDFs to a canonical document model, Custom Legal JSON 1.1 and Akoma Ntoso 3.1"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "docling>=2.143,<3",
+    "pydantic>=2.10,<3",
+    "lxml>=5.3",
+    "jsonschema>=4.20",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+odos = "odos.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]  # tests/private/ imports conftest and golden_outputs like the tests next to it
+addopts = "-rs"  # always show why a test was skipped (missing fixtures are reported, never silent)
+markers = ["slow: runs the real Docling conversion on the BDSG PDF"]

@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <bill name="DEC_IMPL">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="cly8cniu3000a0clbctjxe1gl"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRsubtype value="DEC_IMPL" refersTo="~COM_AUTO_PROC"/>
+                    <FRBRnumber value="C(2022) 1538"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+                        />
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <analysis source="~PUBL">
+                <activeModifications>
+                    <legalSystemMod type="implementation">
+                        <source/>
+                        <destination href="http://data.europa.eu/eli/reg/2009/1107"/>
+                    </legalSystemMod>
+                </activeModifications>
+            </analysis>
+            <references source="~PUBL">
+                <TLCReference xml:id="DEC_IMPL" name="docType"
+                    href="http://publications.europa.eu/resource/authority/resource-type/DEC_IMPL"
+                    showAs=""/>
+                <TLCProcess xml:id="COM_AUTO_PROC"
+                    href="http://publications.europa.eu/resource/authority/internal-procedure/COM_AUTO_PROC"
+                    showAs=""/>
+                <TLCReference name="language"
+                    href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference xml:id="legalBasis" name="contentSubject"
+                    href="http://eurovoc.europa.eu/5456" showAs=""/>
+                <TLCOrganization xml:id="PUBL"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+                    showAs=""/>
+                <TLCOrganization xml:id="COM"
+                    href="http://publications.europa.eu/resource/authority/corporate-body/COM"
+                    showAs=""/>
+                <TLCLocation xml:id="BEL_BRU"
+                    href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCRole xml:id="MEMBER_COM"
+                    href="http://publications.europa.eu/resource/authority/role/MEMBER_COM"
+                    showAs=""/>
+                <TLCConcept xml:id="INP"
+                    href="http://publications.europa.eu/resource/authority/subdivision/INP"
+                    showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e101">
+            <longTitle xml:id="d2e103">
+                <p xml:id="d2e105"><docType xml:id="d2e106" refersTo="~DEC_IMPL">COMMISSION
+                        IMPLEMENTING DECISION </docType> of <date xml:id="d2e109" date="2022-03-09"
+                        >9.3.2022</date>
+                    <docPurpose xml:id="d2e112">adopting the IPA III Rural Development programme
+                        (IPARD III) of the Republic of North Macedonia for the years
+                        2021-2027</docPurpose></p>
+            </longTitle>
+        </preface>
+        <preamble xml:id="d2e117">
+            <formula xml:id="d2e119" name="actingEntity">
+                <p xml:id="d2e121">THE EUROPEAN COMMISSION,</p>
+            </formula>
+            <citations xml:id="d2e125">
+                <citation xml:id="d2e127" refersTo="~legalBasis">
+                    <p xml:id="d2e129">Having regard to the Treaty on the Functioning of the
+                        European Union,</p>
+                </citation>
+                <citation xml:id="d2e133">
+                    <p xml:id="d2e135">Regulation (EU, Euratom) 2018/1046 of the European Parliament
+                        and of the Council of 18 July 2018 on the financial rules applicable to the
+                        general budget of the Union, amending Regulations (EU) No 1296/2013, (EU) No
+                        1301/2013, (EU) No 1303/2013, (EU) No 1304/2013, (EU) No 1309/2013, (EU) No
+                        1316/2013, (EU) No 223/2014, (EU) No 283/2014, and Decision No 541/2014/EU
+                        and repealing Regulation (EU, Euratom) No 966/2012<authorialNote
+                            xml:id="d2e137" marker="1" placement="bottom">
+                            <p xml:id="d2e138">OJ L 193, 30.7.2019, p.1.</p>
+                        </authorialNote>, and in particular Article 110 thereof,</p>
+                </citation>
+
+                <citation xml:id="d2e143">
+                    <p xml:id="d2e144"> Regulation (EU) 2021/1529 of the European Parliament and of
+                        the Council of 15 September 2021 establishing the Instrument for
+                        Pre-Accession Assistance (IPA III)<authorialNote xml:id="d2e146" marker="2"
+                            placement="bottom">
+                            <p xml:id="d2e147">OJ L 330, 20.9.2021, p.1.</p>
+                        </authorialNote>, and in particular Article 9(1) thereof,</p>
+                </citation>
+            </citations>
+            <recitals xml:id="d2e153">
+                <intro xml:id="d2e155">
+                    <p xml:id="d2e157">Whereas:</p>
+                </intro>
+                <recital xml:id="d2e161">
+                    <num xml:id="d2e163">(1)</num>
+                    <p xml:id="d2e166">In order to ensure the implementation of the IPA III Rural
+                        Development programme (IPARD III) of North Macedonia for the years
+                        2021-2027, it is necessary to adopt a multi-annual financing decision, which
+                        constitutes the multi-annual action plan for 2021-2027.</p>
+                </recital>
+
+                <recital xml:id="d2e170">
+                    <num xml:id="d2e172">(2)</num>
+                    <p xml:id="d2e175">Article 110 of Regulation (EU, Euratom) 2018/1046 ('the
+                        Financial Regulation') establishes detailed rules on financing
+                        decisions.</p>
+                </recital>
+
+                <recital xml:id="d2e179">
+                    <num xml:id="d2e181">(3)</num>
+                    <p xml:id="d2e184">The envisaged assistance is to comply with the conditions and
+                        procedures set out by the restrictive measures adopted pursuant to Article
+                        215 TFEU<authorialNote xml:id="d2e186" marker="3" placement="bottom">
+                            <p xml:id="d2e187">www.sanctionsmap.eu Please note that the sanctions
+                                map is an IT tool for identifying the sanctions regimes. The source
+                                of the sanctions stems from legal acts published in the Official
+                                Journal (OJ). In case of discrepancy between the published legal
+                                acts and the updates on the website it is the OJ version that
+                                prevails.</p>
+                        </authorialNote>.</p>
+                </recital>
+
+                <recital xml:id="d2e192">
+                    <num xml:id="d2e194">(4)</num>
+                    <p xml:id="d2e197">Regulation (EU) 2021/1529 lays down the rules and objectives
+                        for pre-accession assistance to beneficiaries listed in Annex 1 of that
+                        Regulation.</p>
+                </recital>
+
+                <recital xml:id="d2e202">
+                    <num xml:id="d2e204">(5)</num>
+                    <p xml:id="d2e207">The Commission has adopted an IPA III Programming
+                            Framework<authorialNote xml:id="d2e209" marker="4" placement="bottom">
+                            <p xml:id="d2e210">Decision C(2021) 8914 of 10 December 2021</p>
+                        </authorialNote> for the period 2021–2027, which identifies five thematic
+                        windows for the delivery of the specific objectives and thematic priorities
+                        of Regulation (EU) 2021/1529.</p>
+                </recital>
+
+                <recital xml:id="d2e215">
+                    <num xml:id="d2e217">(6)</num>
+                    <p xml:id="d2e220">In accordance with Article 20(1) of Commission Implementing
+                        Regulation 2021/2236 of 15 December 2021, rural development assistance
+                        should be subject to a multi-annual programme, which is a multi-annual
+                        action plan in accordance with Articles 23 and 24 of Regulation (EU) No
+                        2021/947, to be drawn-up at central level, prepared by the relevant
+                        authorities designated by the IPA III beneficiary and submitted to the
+                        Commission after consulting the appropriate stakeholders.</p>
+                </recital>
+                <recital xml:id="d2e224">
+                    <num xml:id="d2e226">(7)</num>
+                    <p xml:id="d2e229">The actions provided for in this Decision contribute to
+                        climate and biodiversity mainstreaming in line with the European Green
+                        Deal.</p>
+                </recital>
+                <recital xml:id="d2e233">
+                    <num xml:id="d2e235">(8)</num>
+                    <p xml:id="d2e238">The objectives pursued by the IPA III Rural Development
+                        programme (IPARD III) of North Macedonia for 2021-2027 are: to support
+                        sustainable food systems, through increasing the competitiveness of the
+                        agri-food sector, progressively aligning it with the EU standards and
+                        improving the efficiency and sustainability of on-farm production, which
+                        will provide a better response to societal demands for safe, nutritious and
+                        sustainable food and animal welfare; to facilitate business development,
+                        growth and employment in rural areas, improve farmers' position within the
+                        value chain and attract young farmers into agriculture; to contribute to
+                        climate change mitigation and adaptation, foster sustainable management of
+                        natural resources and contribute to the protection of the environment; and
+                        to improve community development and social capital in rural areas and
+                        build-up modern public administrations for agriculture and rural
+                        development, respecting good governance principles.</p>
+                </recital>
+
+                <recital xml:id="d2e242">
+                    <num xml:id="d2e244">(9)</num>
+                    <p xml:id="d2e247">In accordance with Article 9(1) of Regulation (EU) 2021/1529,
+                        the assistance under this Regulation may be implemented through indirect
+                        management.</p>
+                </recital>
+
+                <recital xml:id="d2e251">
+                    <num xml:id="d2e253">(10)</num>
+                    <p xml:id="d2e256">The Commission is to ensure a level of protection of the
+                        financial interests of the Union with regards to entities and persons
+                        entrusted with the implementation of Union funds by indirect management as
+                        provided for in Article 154(3) of the Financial Regulation.</p>
+                </recital>
+
+                <recital xml:id="d2e261">
+                    <num xml:id="d2e263">(11)</num>
+                    <p xml:id="d2e266">To this end, the Commission should be able to entrust the
+                        implementation to North Macedonia, or the bodies designated by North
+                        Macedonia, subject to the conclusion of a financing agreement in accordance
+                        with Article 158 of the Financial Regulation.</p>
+                </recital>
+
+                <recital xml:id="d2e270">
+                    <num xml:id="d2e272">(12)</num>
+                    <p xml:id="d2e275">The maximum contribution of the European Union set by this
+                        Decision should cover any possible claims for interest due for late payment
+                        on the basis of Article 116(5) of the Financial Regulation.</p>
+                </recital>
+
+                <recital xml:id="d2e279">
+                    <num xml:id="d2e281">(13)</num>
+                    <p xml:id="d2e284">In order to allow for flexibility in the implementation of
+                        the IPARD programme of North Macedonia, it is appropriate to allow changes
+                        which should not be considered substantial for the purposes of Article
+                        110(5) of the Financial Regulation.</p>
+                </recital>
+
+                <recital xml:id="d2e288">
+                    <num xml:id="d2e290">(14)</num>
+                    <p xml:id="d2e293">The multi-annual programme (IPARD III) provided for in this
+                        Decision is in accordance with the opinion of the IPA III Committee,
+                        established under Article 17 of Regulation (EU) 2021/1529</p>
+                </recital>
+
+            </recitals>
+            <formula xml:id="d2e298" name="enactingFormula">
+                <p xml:id="d2e300">HAS ADOPTED THIS DECISION:</p>
+            </formula>
+        </preamble>
+        <body xml:id="d2e305">
+            <article xml:id="d2e307">
+                <num xml:id="d2e309">Article 1</num>
+                <heading xml:id="d2e312">Adoption of the Programme</heading>
+                <paragraph xml:id="d2e315">
+                    <content xml:id="d2e317">
+                        <p xml:id="d2e319"> The multi-annual financing decision, constituting the
+                            multi-annual action plan for the implementation of the IPA III Rural
+                            Development programme (IPARD III) for the years 2021-2027 for North
+                            Macedonia, as set out in the Annex, is adopted. </p>
+                    </content>
+                </paragraph>
+            </article>
+
+            <article xml:id="d2e325">
+                <num xml:id="d2e327">Article 2</num>
+                <heading xml:id="d2e330">EU financial contribution</heading>
+                <paragraph xml:id="d2e333">
+                    <content xml:id="d2e335">
+                        <p xml:id="d2e337">The indicative maximum European Union contribution for
+                            the implementation of the IPARD III programme referred to in Article 1
+                            is set at EUR 97 000 000, split per year as follows, in million euros,
+                            and shall be financed from appropriations entered in the budget line 15
+                            02 02 02 of the general budget of the Union.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e342">
+                    <hcontainer xml:id="d2e343" name="TAB">
+                        <hcontainer xml:id="d2e944" name="TAB_CONTAINER">
+                            <content xml:id="d2e344">
+                                <table xml:id="d2e346">
+                                    <thead xml:id="d2e347">
+                                        <tr xml:id="d2e348">
+                                            <th xml:id="d2e350">
+                                                <p xml:id="d2e351">Year</p>
+                                            </th>
+                                            <th xml:id="d2e354">
+                                                <p xml:id="d2e355">2021</p>
+                                            </th>
+                                            <th xml:id="d2e358">
+                                                <p xml:id="d2e359">2022 indicative amount</p>
+                                            </th>
+                                            <th xml:id="d2e362">
+                                                <p xml:id="d2e363">2023 indicative amount</p>
+                                            </th>
+                                            <th xml:id="d2e366">
+                                                <p xml:id="d2e367">2024 indicative amount</p>
+                                            </th>
+                                            <th xml:id="d2e371">
+                                                <p xml:id="d2e372">2025 indicative amount</p>
+                                            </th>
+                                            <th xml:id="d2e375">
+                                                <p xml:id="d2e376">2026 indicative amount</p>
+                                            </th>
+                                            <th xml:id="d2e379">
+                                                <p xml:id="d2e380">2027 indicative amount</p>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody xml:id="d9e384">
+                                        <tr xml:id="d2e384">
+                                            <th xml:id="d2e386">
+                                                <p xml:id="d2e387">Total</p>
+                                            </th>
+                                            <td xml:id="d2e390">
+                                                <p xml:id="d2e391">7</p>
+                                            </td>
+                                            <td xml:id="d2e394">
+                                                <p xml:id="d2e395">8</p>
+                                            </td>
+                                            <td xml:id="d2e398">
+                                                <p xml:id="d2e399">12</p>
+                                            </td>
+                                            <td xml:id="d2e402">
+                                                <p xml:id="d2e403">15</p>
+                                            </td>
+                                            <td xml:id="d2e407">
+                                                <p xml:id="d2e408">17</p>
+                                            </td>
+                                            <td xml:id="d2e411">
+                                                <p xml:id="d2e412">18</p>
+                                            </td>
+                                            <td xml:id="d2e415">
+                                                <p xml:id="d2e416">20</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </content>
+                        </hcontainer>
+                    </hcontainer>
+                </paragraph>
+                <paragraph xml:id="d2e423">
+                    <hcontainer xml:id="d2e1682" name="TAB">
+                        <subparagraph xml:id="d2e425">
+                            <content xml:id="d2e426">
+                                <p xml:id="d2e926">The indicative amounts of the EU contribution per
+                                    measure are set out as follows:</p>
+                            </content>
+                        </subparagraph>
+                        <hcontainer xml:id="d2e1687" name="TAB_CONTAINER">
+                            <content xml:id="d2e1689">
+                                <table xml:id="d2e437">
+                                    <thead xml:id="d2e1699">
+                                        <tr xml:id="d2e439">
+                                            <th xml:id="d2e441">
+                                                <p xml:id="d2e442">Measure</p>
+                                            </th>
+                                            <th xml:id="d2e445">
+                                                <p xml:id="d2e446">EU contribution</p>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody xml:id="d8e384">
+                                        <tr xml:id="d2e450">
+                                            <td xml:id="d2e452">
+                                                <p xml:id="d2e453">Investments in physical assets of
+                                                  agricultural holdings</p>
+                                            </td>
+                                            <td xml:id="d2e456">
+                                                <p xml:id="d2e457">29 150 000</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e461">
+                                            <td xml:id="d2e463">
+                                                <p xml:id="d2e464">Investments in physical assets
+                                                  concerning processing and marketing of
+                                                  agricultural and fishery products</p>
+                                            </td>
+                                            <td xml:id="d2e467">
+                                                <p xml:id="d2e468">29 780 000</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e472">
+                                            <td xml:id="d2e474">
+                                                <p xml:id="d2e475">Agri-environment - climate and
+                                                  organic farming measure</p>
+                                            </td>
+                                            <td xml:id="d2e478">
+                                                <p xml:id="d2e479">1 400 000</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e483">
+                                            <td xml:id="d2e485">
+                                                <p xml:id="d2e486">Implementation of local
+                                                  development strategies – LEADER approach</p>
+                                            </td>
+                                            <td xml:id="d2e489">
+                                                <p xml:id="d2e490">1 950 000</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e495">
+                                            <td xml:id="d2e497">
+                                                <p xml:id="d2e498">Investments in rural public
+                                                  infrastructure</p>
+                                            </td>
+                                            <td xml:id="d2e501">
+                                                <p xml:id="d2e502">12 550 000</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e506">
+                                            <td xml:id="d2e508">
+                                                <p xml:id="d2e509">Farm diversification and business
+                                                  development</p>
+                                            </td>
+                                            <td xml:id="d2e512">
+                                                <p xml:id="d2e513">18 300 000</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e517">
+                                            <td xml:id="d2e519">
+                                                <p xml:id="d2e520">Technical Assistance</p>
+                                            </td>
+                                            <td xml:id="d2e523">
+                                                <p xml:id="d2e524">2 470 000</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e528">
+                                            <td xml:id="d2e530">
+                                                <p xml:id="d2e531">Advisory services</p>
+                                            </td>
+                                            <td xml:id="d2e534">
+                                                <p xml:id="d2e535">1 400 000</p>
+                                            </td>
+                                        </tr>
+                                        <tr xml:id="d2e539">
+                                            <th xml:id="d2e541">
+                                                <p xml:id="d2e542">Total</p>
+                                            </th>
+                                            <th xml:id="d2e545">
+                                                <p xml:id="d2e546">97 000 000</p>
+                                            </th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </content>
+                        </hcontainer>
+                    </hcontainer>
+
+                </paragraph>
+                <paragraph xml:id="d2e553">
+                    <content xml:id="d2e555">
+                        <p xml:id="d2e557">The appropriations provided for in the first paragraph
+                            may also cover interest due for late payment.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e562">
+                    <content xml:id="d2e564">
+                        <p xml:id="d2e566">The implementation of this Decision is subject to the
+                            availability of the appropriations provided for in the general budget of
+                            the Union for 2021-2027 following the adoption of that budget by the
+                            budgetary authority for the respective years 2022-2027.</p>
+                    </content>
+                </paragraph>
+            </article>
+
+            <article xml:id="d2e572">
+                <num xml:id="d2e574">Article 3</num>
+                <heading xml:id="d2e577">Methods of implementation</heading>
+                <paragraph xml:id="d2e580">
+                    <content xml:id="d2e582">
+                        <p xml:id="d2e584">The implementation of the actions carried out by way of
+                            indirect management, as set out in the Annex, may be entrusted to North
+                            Macedonia subject to the conclusion of the relevant agreements, provided
+                            that North Macedonia, has fulfilled the requirements pursuant to Article
+                            154 of the Financial Regulation.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e589">
+                    <list xml:id="d2e591">
+                        <subparagraph xml:id="d2e593" refersTo="~INP">
+                            <content xml:id="d2e595">
+                                <p xml:id="d2e596">The implementation of the actions shall
+                                    correspond to the following measures contained in the IPARD III
+                                    for North Macedonia:</p>
+                            </content>
+                        </subparagraph>
+                        <indent xml:id="d2e600">
+                            <num xml:id="d2e602">–</num>
+                            <content xml:id="d2e605">
+                                <p xml:id="d2e607">Investments in physical assets of agricultural
+                                    holdings,</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e612">
+                            <num xml:id="d2e614">–</num>
+                            <content xml:id="d2e617">
+                                <p xml:id="d2e619">Investments in physical assets concerning
+                                    processing and marketing of agricultural and fishery
+                                    products,</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e624">
+                            <num xml:id="d2e626">–</num>
+                            <content xml:id="d2e629">
+                                <p xml:id="d2e631">Agri-environment - climate and organic farming
+                                    measure,</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e636">
+                            <num xml:id="d2e638">–</num>
+                            <content xml:id="d2e641">
+                                <p xml:id="d2e643">Implementation of local development strategies –
+                                    LEADER approach,</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e649">
+                            <num xml:id="d2e651">–</num>
+                            <content xml:id="d2e654">
+                                <p xml:id="d2e656">Investments in rural public infrastructure,</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e661">
+                            <num xml:id="d2e663">–</num>
+                            <content xml:id="d2e666">
+                                <p xml:id="d2e668">Farm diversification and business
+                                    development,</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e673">
+                            <num xml:id="d2e675">–</num>
+                            <content xml:id="d2e678">
+                                <p xml:id="d2e680">Technical Assistance,</p>
+                            </content>
+                        </indent>
+                        <indent xml:id="d2e685">
+                            <num xml:id="d2e687">–</num>
+                            <content xml:id="d2e690">
+                                <p xml:id="d2e692">Advisory services</p>
+                            </content>
+                        </indent>
+                    </list>
+                </paragraph>
+            </article>
+            <article xml:id="d2e700">
+                <num xml:id="d2e702">Article 4</num>
+                <heading xml:id="d2e705">Flexibility clause</heading>
+                <paragraph xml:id="d2e708">
+                    <content xml:id="d2e710">
+                        <p xml:id="d2e712">Increases<authorialNote xml:id="d2e714" marker="5"
+                                placement="bottom">
+                                <p xml:id="d2e715">These changes can come from assigned revenue made
+                                    available after the adoption of the financing Decision.</p>
+                            </authorialNote> or decreases of up to EUR 10 million and not exceeding
+                            20% of the contribution set in the first paragraph of Article 2,
+                            considering each financial year separately, or cumulated reassignments
+                            of funds between actions contained in an action plan not exceeding 20%
+                            of that contribution, as well as extensions of the implementation and
+                            execution period shall not be considered substantial within the meaning
+                            of Article 110(5) of the Financial Regulation, where these changes do
+                            not significantly affect the nature and objectives of the actions.</p>
+                    </content>
+                </paragraph>
+                <paragraph xml:id="d2e721">
+                    <content xml:id="d2e723">
+                        <p xml:id="d2e725">The authorising officer responsible may apply the changes
+                            referred to in the first paragraph acting in accordance with the
+                            principles of sound financial management and proportionality.</p>
+                    </content>
+                </paragraph>
+            </article>
+        </body>
+        <conclusions xml:id="d2e732">
+            <p xml:id="d2e734">Done at <location xml:id="d2e736" refersTo="~BEL_BRU">
+                    Brussels</location>, <date xml:id="d2e739" date="2022-03-09">9.3.2022</date></p>
+            <block xml:id="d2e742" name="signatory">
+                <signature xml:id="d2e744">
+                    <organization xml:id="d2e746" refersTo="~COM">For the Commission</organization>
+                    <person xml:id="d2e749" refersTo="">Janusz WOJCIECHOWSKI</person>
+                    <role xml:id="d2e752" refersTo="~MEMBER_COM">Member of the Commission</role>
+                </signature>
+            </block>
+        </conclusions>
+    </bill>
+</akomaNtoso>

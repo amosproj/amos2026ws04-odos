@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="EXPL_MEMORANDUM">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clxvj5q7h00020cl26xsn0anz"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="C(2022) 4292"/>
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference xml:id="ENG" name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCReference xml:id="EXPL_MEMORANDUM" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/EXPL_MEMORANDUM" showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e72">
+            <longTitle xml:id="d2e74">
+                <p xml:id="d2e76">
+                    <docType xml:id="d2e78" refersTo="~EXPL_MEMORANDUM">EXPLANATORY MEMORANDUM</docType>
+                </p>
+            </longTitle>
+        </preface>
+        <mainBody xml:id="d2e84">
+            <tblock xml:id="d2e86">
+                <num xml:id="d2e88">1.</num>
+                <heading xml:id="d2e91">CONTEXT OF THE DELEGATED ACT</heading>
+                <blockContainer xml:id="d2e94">
+                    <p xml:id="d2e96">Rules on granting financial assistance to beneficiaries under
+                        the common fisheries policy (CFP) are set out in Regulation (EU) No
+                        1380/2013 (‘CFP Regulation’), Article 42 of which provides that ‘Union
+                        financial assistance to operators shall be conditional upon compliance with
+                        the CFP rules by operators'.</p>
+                    <p xml:id="d2e99">Article 11 of Regulation (EU) 2021/1139 on the European
+                        Maritime, Fisheries and Aquaculture Fund (‘EMFAF Regulation’) lays down
+                        rules on the admissibility of applications submitted by operators. The
+                        following cases trigger inadmissibility:</p>
+                    <blockList xml:id="d2e102">
+                        <item xml:id="d2e104">
+                            <num xml:id="d2e106">•</num>
+                            <p xml:id="d2e108"> serious infringements of the rules of the CFP, as
+                                provided for in Regulation (EC) No 1005/2008 (‘IUU Regulation’) and
+                                Regulation (EC) No 1224/2009 (‘Control Regulation’), </p>
+                        </item>
+                        <item xml:id="d2e111">
+                            <num xml:id="d2e113">•</num>
+                            <p xml:id="d2e115"> involvement in the operation, management or
+                                ownership of a fishing vessel included in the Union IUU (‘illegal,
+                                unreported, unregulated’) vessel list, or of a vessel flying the
+                                flag of countries identified as non-cooperating third countries,
+                            </p>
+                        </item>
+                        <item xml:id="d2e118">
+                            <num xml:id="d2e120">•</num>
+                            <p xml:id="d2e122"> as regards aquaculture, environmental offences set
+                                out in Articles 3 and 4 of Directive 2008/99/EC on the protection of
+                                the environment through criminal law, </p>
+                        </item>
+                        <item xml:id="d2e125">
+                            <num xml:id="d2e127">•</num>
+                            <p xml:id="d2e129"> fraud in the context of the European Maritime and
+                                Fisheries Fund (EMFF) or the EMFAF. </p>
+                        </item>
+                    </blockList>
+                    <p xml:id="d2e133">Under Article 11 of the EMFAF Regulation, these
+                        inadmissibility arrangements must ‘be proportionate to the nature, gravity,
+                        duration and repetition of the serious infringements’</p>
+                    <p xml:id="d2e136">For this purpose, the EMFAF Regulation empowers the
+                        Commission to adopt a delegated act establishing: (a) the threshold above
+                        which applications by operators who have committed serious infringements,
+                        environmental offences or fraud are no longer admissible; (b) the duration
+                        of the period of inadmissibility that shall be at least of one year’
+                        duration, including its starting and ending dates and the conditions for
+                        reducing it; and (c) the arrangements for recovering the aid granted under
+                        financial corrections by Member States.</p>
+                    <p xml:id="d2e140">Serious infringements of the CFP cause grave harm to fishing
+                        resources and the marine environment. Such infringements include e.g.
+                        fishing without a valid licence, using prohibited gear, falsifying markings,
+                        identity or registration, and manipulating an engine with the aim of
+                        increasing its power beyond the maximum continuous engine power according to
+                        the engine certificate. Pursuant to Article 90(1) of the Control Regulation,
+                        Member States determine if an infringement qualifies as ‘serious’, taking
+                        into account criteria such as the nature of the damage, the value of the
+                        damage, the economic situation of the offender and the extent of the
+                        infringement or its repetition.</p>
+                </blockContainer>
+            </tblock>
+            <tblock xml:id="d2e145">
+                <num xml:id="d2e147">2.</num>
+                <heading xml:id="d2e150">CONSULTATIONS PRIOR TO THE ADOPTION OF THE ACT</heading>
+                <blockContainer xml:id="d2e153">
+                    <p xml:id="d2e155">Member States were consulted on the content of the draft
+                        delegated act on 11 May 2022 through an EMFAF Expert Group. They were
+                        invited to submit their observations and share their experience with
+                        admissibility rules under the EMFF.</p>
+                </blockContainer>
+            </tblock>
+            <tblock xml:id="d2e160">
+                <num xml:id="d2e162">3.</num>
+                <heading xml:id="d2e165">LEGAL ELEMENTS OF THE DELEGATED ACT</heading>
+                <blockContainer xml:id="d2e168">
+                    <p xml:id="d2e170">The provisions on the admissibility of applications under the
+                        EMFAF are very close to those established in Commission Delegated Regulation
+                        (EU) No 2015/288 on the admissibility of applications under the EMFF.</p>
+                    <p xml:id="d2e173">As regards the threshold triggering inadmissibility, the
+                        delegated act is based upon the number of serious infringements,
+                        environmental offences or fraud committed by the operator. In the case of
+                        serious infringements of the rules of the CFP, the delegated act takes into
+                        account the gravity and seriousness of the case by modulating the threshold
+                        based upon the number of infringements points assigned to the operator
+                        pursuant to Annex XXX to Commission Implementing Regulation (EU) No
+                        404/2011.</p>
+                    <p xml:id="d2e176">The duration of inadmissibility is in principle 12 months,
+                        which is the minimum required by Article 11 of the EMFAF Regulation. The
+                        delegated act takes into account the repetition of serious infringements by
+                        extending that duration if additional serious infringements are committed
+                        during the period of inadmissibility.</p>
+                    <p xml:id="d2e179">The delegated act also establishes rules as regards operators
+                        that own or control more than one fishing vessel, and rules on transfer of
+                        ownership of fishing vessels.</p>
+                </blockContainer>
+            </tblock>
+        </mainBody>
+    </doc>
+</akomaNtoso>

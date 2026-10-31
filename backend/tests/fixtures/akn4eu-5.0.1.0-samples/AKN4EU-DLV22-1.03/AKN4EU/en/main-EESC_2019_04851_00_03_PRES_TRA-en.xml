@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+	<documentCollection name="RES_DRAFT_EESC">
+		<meta xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<identification source="~PUBL">
+				<FRBRWork>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRcountry value="EU"/>
+					<FRBRnumber value="EESC-2019-04851-00-03-PRES-TRA"/>
+					<FRBRprescriptive value="false"/>
+				</FRBRWork>
+				<FRBRExpression>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+				</FRBRExpression>
+				<FRBRManifestation>
+					<FRBRthis value=""/>
+					<FRBRuri value=""/>
+					<FRBRdate date="2999-01-01" name=""/>
+					<FRBRauthor href=""/>
+					<preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+						<akn4eu:akn4euVersion value="5.0.0.1"/>
+						<akn4eu:akn4euDocumentation
+							href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"
+						/>
+					</preservation>
+				</FRBRManifestation>
+			</identification>
+			<references source="~PUBL">
+				<TLCReference xml:id="ENG" name="language"
+					href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+				<TLCOrganization xml:id="EESC"
+					href="http://publications.europa.eu/resource/authority/corporate-body/EESC"
+					showAs=""/>
+				<TLCReference xml:id="RES_DRAFT_EESC" name="docType"
+					href="http://publications.europa.eu/resource/authority/resource-type/RES_DRAFT_EESC"
+					showAs=""/>
+				<TLCOrganization xml:id="PUBL"
+					href="http://publications.europa.eu/resource/authority/corporate-body/PUBL"
+					showAs=""/>
+				<TLCLocation xml:id="BEL_BRU"
+					href="http://publications.europa.eu/resource/authority/place/BEL_BRU"
+					showAs=""/>
+				<TLCRole xml:id="PRESID"
+					href="http://publications.europa.eu/resource/authority/role/PRESID"
+					showAs=""/>
+				<TLCReference xml:id="PNG" name="fileType" href="http://publications.europa.eu/resource/authority/file-type/PNG" showAs=""/>
+			</references>
+		</meta>
+		<coverPage xml:id="d2e76">
+			<container xml:id="d2e78" name="logo">
+				<p xml:id="d2e80">
+					<img xml:id="d2e81" src="RSC_PNG-cjk7q0l8r0000i3m3f5q1z8h0-en.png" refersTo="~PNG"/>
+				</p>
+			</container>
+			<container xml:id="d2e84" name="actingEntity">
+				<p xml:id="d2e86">
+					<organization xml:id="d2e87" refersTo="~EESC">European Economic and Social
+						Committee</organization>
+				</p>
+			</container>
+			<container xml:id="d2e91" name="mainDoc">
+				<block xml:id="d2e93" name="placeAndDate"><location xml:id="d2e94"
+						refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e97"
+						date="2019-11-04">04 November 2019</date></block>
+			</container>
+			<longTitle xml:id="d2e101">
+				<p xml:id="d2e103">
+					<docType xml:id="d2e104" refersTo="~RES_DRAFT_EESC">RESOLUTION</docType>
+					<docIntroducer xml:id="d2e107">Proposed by <role xml:id="d2e109"
+							refersTo="~PRESID">EESC President</role></docIntroducer>
+					<docStatus xml:id="d2e112">adopted by the European Economic and Social Committee
+						on <date xml:id="d2e114" date="2019-10-31">31 October
+						2019</date></docStatus>
+					<docPurpose xml:id="d2e117">Opening accession negotiations with North Macedonia
+						and Albania:<eol xml:id="d2e119"/> EU credibility and geostrategic interests
+						should be upheld</docPurpose>
+				</p>
+			</longTitle>
+			<container xml:id="d2e123" name="mainDocReference">
+				<block xml:id="d2e125" name="reference"><docNumber xml:id="d2e126">EESC-2019-04851-00-03-PRES-TRA</docNumber> (EN)</block>
+			</container>
+			<container xml:id="d2e131" name="mainDocLanguage">
+				<p xml:id="d2e133">
+					<inline xml:id="d2e134" name="language" refersTo="~FRBRlanguage">EN</inline>
+				</p>
+			</container>
+		</coverPage>
+		<collectionBody xml:id="d2e139">
+			<component xml:id="d2e141">
+				<documentRef xml:id="d2e143" href="RES_EESC-cjld2cyuq0000t5rmniod3vub-en.xml"
+					showAs=""/>
+			</component>
+		</collectionBody>
+	</documentCollection>
+</akomaNtoso>

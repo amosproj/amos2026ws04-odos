@@ -1,0 +1,1158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/amosproj/amos2026ws04-odos/schemas/odos-legal-json/1.1/legal-document.schema.json",
+  "$defs": {
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "PDF user space in points, origin bottom-left (top > bottom). See `CoordinateSystem`.",
+      "properties": {
+        "left": {
+          "title": "Left",
+          "type": "number"
+        },
+        "top": {
+          "title": "Top",
+          "type": "number"
+        },
+        "right": {
+          "title": "Right",
+          "type": "number"
+        },
+        "bottom": {
+          "title": "Bottom",
+          "type": "number"
+        }
+      },
+      "required": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "CellSource": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BoundingBox"
+        }
+      },
+      "required": [
+        "page",
+        "bbox"
+      ],
+      "title": "CellSource",
+      "type": "object"
+    },
+    "CoordinateSystem": {
+      "additionalProperties": false,
+      "properties": {
+        "space": {
+          "const": "pdf_user_space",
+          "default": "pdf_user_space",
+          "title": "Space",
+          "type": "string"
+        },
+        "unit": {
+          "const": "pt",
+          "default": "pt",
+          "title": "Unit",
+          "type": "string"
+        },
+        "origin": {
+          "const": "bottom-left",
+          "default": "bottom-left",
+          "title": "Origin",
+          "type": "string"
+        },
+        "note": {
+          "default": "top > bottom; top-left viewer y = page height - top",
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "title": "CoordinateSystem",
+      "type": "object"
+    },
+    "Footnote": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marker"
+        },
+        "number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Number"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "content": {
+          "items": {
+            "$ref": "#/$defs/Node"
+          },
+          "title": "Content",
+          "type": "array"
+        },
+        "anchorElementId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the single anchor, set only when source evidence establishes it; null when there is none or more than one (see anchorElementIds)",
+          "title": "Anchorelementid"
+        },
+        "anchorElementIds": {
+          "description": "1.1: every element that prints a reference to this footnote",
+          "items": {
+            "type": "string"
+          },
+          "title": "Anchorelementids",
+          "type": "array"
+        },
+        "references": {
+          "description": "1.1: each printed reference mark, with its glyph box where known",
+          "items": {
+            "$ref": "#/$defs/FootnoteReference"
+          },
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "anchorElementId"
+      ],
+      "title": "Footnote",
+      "type": "object"
+    },
+    "FootnoteReference": {
+      "additionalProperties": false,
+      "properties": {
+        "elementId": {
+          "title": "Elementid",
+          "type": "string"
+        },
+        "marker": {
+          "title": "Marker",
+          "type": "string"
+        },
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "the reference mark's own glyph box"
+        }
+      },
+      "required": [
+        "elementId",
+        "marker",
+        "page"
+      ],
+      "title": "FootnoteReference",
+      "type": "object"
+    },
+    "Identifiers": {
+      "additionalProperties": false,
+      "properties": {
+        "documentNumber": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Documentnumber"
+        },
+        "publicationJournal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publicationjournal"
+        },
+        "publicationReference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publicationreference"
+        },
+        "citation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Citation"
+        }
+      },
+      "title": "Identifiers",
+      "type": "object"
+    },
+    "LegalSentence": {
+      "additionalProperties": false,
+      "description": "1.1: a legal sentence as ordered text ranges, possibly across several nodes (an Absatz, its list items and\nthe text after the list). Text is never repeated: read it from the referenced nodes.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "unitId": {
+          "title": "Unitid",
+          "type": "string"
+        },
+        "number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "only when the document prints the Satz number",
+          "title": "Number"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "where the printed number stands"
+        },
+        "numberSource": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SentenceNumberSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "the printed number's glyph box"
+        },
+        "ranges": {
+          "items": {
+            "$ref": "#/$defs/TextRange"
+          },
+          "title": "Ranges",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "unitId",
+        "ranges"
+      ],
+      "title": "LegalSentence",
+      "type": "object"
+    },
+    "Node": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "part",
+            "title",
+            "chapter",
+            "division",
+            "subdivision",
+            "section",
+            "article",
+            "subsection",
+            "paragraph",
+            "sentence",
+            "number",
+            "letter",
+            "point",
+            "subpoint",
+            "numeral",
+            "annex",
+            "heading",
+            "text",
+            "item",
+            "table",
+            "picture",
+            "preamble",
+            "preambleFormula",
+            "citation",
+            "recitalsIntro",
+            "recital",
+            "enactingFormula",
+            "conclusions",
+            "finalFormula",
+            "signature",
+            "frontMatter",
+            "documentTitle",
+            "tableOfContents",
+            "tocEntry"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "nativeType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "term of the source legal tradition",
+          "title": "Nativetype"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "exact marker as printed",
+          "title": "Marker"
+        },
+        "markerStyle": {
+          "anyOf": [
+            {
+              "enum": [
+                "arabic",
+                "roman_upper",
+                "roman_lower",
+                "alpha_lower",
+                "alpha_upper",
+                "alpha_lower_double",
+                "decimal_hierarchy",
+                "section_sign",
+                "ordinal_word",
+                "symbol"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Markerstyle"
+        },
+        "number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Number"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "the element's own text, without marker, title or children",
+          "title": "Text"
+        },
+        "numRows": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Numrows"
+        },
+        "numCols": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Numcols"
+        },
+        "rows": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "$ref": "#/$defs/TableCell"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rows"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "children": {
+          "items": {
+            "$ref": "#/$defs/Node"
+          },
+          "title": "Children",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "source"
+      ],
+      "title": "Node",
+      "type": "object"
+    },
+    "PageSize": {
+      "additionalProperties": false,
+      "properties": {
+        "number": {
+          "title": "Number",
+          "type": "integer"
+        },
+        "width": {
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "title": "Height",
+          "type": "number"
+        }
+      },
+      "required": [
+        "number",
+        "width",
+        "height"
+      ],
+      "title": "PageSize",
+      "type": "object"
+    },
+    "SentenceNumberSource": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BoundingBox"
+        }
+      },
+      "required": [
+        "page",
+        "bbox"
+      ],
+      "title": "SentenceNumberSource",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "pages": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Pages",
+          "type": "array"
+        },
+        "sourceSpans": {
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          },
+          "title": "Sourcespans",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pages",
+        "sourceSpans"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "SourceFile": {
+      "additionalProperties": false,
+      "properties": {
+        "filename": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filename"
+        },
+        "doclingJsonSha256": {
+          "title": "Doclingjsonsha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "doclingJsonSha256"
+      ],
+      "title": "SourceFile",
+      "type": "object"
+    },
+    "SourceSpan": {
+      "additionalProperties": false,
+      "properties": {
+        "itemRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Docling item reference, e.g. '#/texts/373'",
+          "title": "Itemref"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "charStart": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "offset into the source item's verbatim text",
+          "title": "Charstart"
+        },
+        "charEnd": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Charend"
+        },
+        "bboxScope": {
+          "const": "source_item",
+          "default": "source_item",
+          "description": "the box covers the whole source item, not only this span's characters",
+          "title": "Bboxscope",
+          "type": "string"
+        }
+      },
+      "title": "SourceSpan",
+      "type": "object"
+    },
+    "TableCell": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CellSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1.1: the cell's own box, where Docling gives one"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "TableCell",
+      "type": "object"
+    },
+    "TextRange": {
+      "additionalProperties": false,
+      "description": "[start, end) in Python str indices (Unicode code points) into the `text` of node `elementId` in this file.",
+      "properties": {
+        "elementId": {
+          "title": "Elementid",
+          "type": "string"
+        },
+        "start": {
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "title": "End",
+          "type": "integer"
+        },
+        "textSha256": {
+          "description": "SHA-256 (UTF-8) of that node's `text`: detects a range used on another revision",
+          "title": "Textsha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "elementId",
+        "start",
+        "end",
+        "textSha256"
+      ],
+      "title": "TextRange",
+      "type": "object"
+    },
+    "TocEntryOut": {
+      "additionalProperties": false,
+      "description": "1.1: one logical TOC line, rebuilt from the raw tableOfContents nodes (which stay unchanged).",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "marker": {
+          "title": "Marker",
+          "type": "string"
+        },
+        "number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Number"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "targetElementId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "only for a confirmed link",
+          "title": "Targetelementid"
+        },
+        "sourceSpans": {
+          "items": {
+            "$ref": "#/$defs/TocSourceSpan"
+          },
+          "title": "Sourcespans",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "marker",
+        "level",
+        "sourceSpans"
+      ],
+      "title": "TocEntryOut",
+      "type": "object"
+    },
+    "TocSourceSpan": {
+      "additionalProperties": false,
+      "properties": {
+        "elementId": {
+          "description": "a node of tableOfContents",
+          "title": "Elementid",
+          "type": "string"
+        },
+        "cell": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "[row, col] when the text is in a table cell",
+          "title": "Cell"
+        },
+        "start": {
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "title": "End",
+          "type": "integer"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bboxScope": {
+          "enum": [
+            "text_line",
+            "table_cell",
+            "source_item"
+          ],
+          "title": "Bboxscope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "elementId",
+        "start",
+        "end",
+        "bboxScope"
+      ],
+      "title": "TocSourceSpan",
+      "type": "object"
+    },
+    "Version": {
+      "additionalProperties": false,
+      "properties": {
+        "statement": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Statement"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        }
+      },
+      "title": "Version",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "1.1",
+      "default": "1.1",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Title"
+    },
+    "shortTitle": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Shorttitle"
+    },
+    "documentType": {
+      "enum": [
+        "de_legislation",
+        "eu_regulation",
+        "eu_directive",
+        "eu_decision",
+        "eu_legislation",
+        "technical_standard"
+      ],
+      "title": "Documenttype",
+      "type": "string"
+    },
+    "nativeDocumentType": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nativedocumenttype"
+    },
+    "legalSystem": {
+      "enum": [
+        "de",
+        "eu"
+      ],
+      "title": "Legalsystem",
+      "type": "string"
+    },
+    "language": {
+      "title": "Language",
+      "type": "string"
+    },
+    "version": {
+      "$ref": "#/$defs/Version"
+    },
+    "publicationDate": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Publicationdate"
+    },
+    "adoptionDate": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Adoptiondate"
+    },
+    "enactmentDate": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Enactmentdate"
+    },
+    "subject": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Subject"
+    },
+    "identifiers": {
+      "$ref": "#/$defs/Identifiers"
+    },
+    "sourceFile": {
+      "$ref": "#/$defs/SourceFile"
+    },
+    "pageCount": {
+      "title": "Pagecount",
+      "type": "integer"
+    },
+    "coordinateSystem": {
+      "$ref": "#/$defs/CoordinateSystem",
+      "default": {
+        "space": "pdf_user_space",
+        "unit": "pt",
+        "origin": "bottom-left",
+        "note": "top > bottom; top-left viewer y = page height - top"
+      }
+    },
+    "pages": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/PageSize"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pages"
+    },
+    "frontMatter": {
+      "items": {
+        "$ref": "#/$defs/Node"
+      },
+      "title": "Frontmatter",
+      "type": "array"
+    },
+    "tableOfContents": {
+      "items": {
+        "$ref": "#/$defs/Node"
+      },
+      "title": "Tableofcontents",
+      "type": "array"
+    },
+    "structure": {
+      "items": {
+        "$ref": "#/$defs/Node"
+      },
+      "title": "Structure",
+      "type": "array"
+    },
+    "footnotes": {
+      "items": {
+        "$ref": "#/$defs/Footnote"
+      },
+      "title": "Footnotes",
+      "type": "array"
+    },
+    "tableOfContentsEntries": {
+      "items": {
+        "$ref": "#/$defs/TocEntryOut"
+      },
+      "title": "Tableofcontentsentries",
+      "type": "array"
+    },
+    "sentences": {
+      "items": {
+        "$ref": "#/$defs/LegalSentence"
+      },
+      "title": "Sentences",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "documentType",
+    "legalSystem",
+    "language",
+    "version",
+    "identifiers",
+    "sourceFile",
+    "pageCount",
+    "frontMatter",
+    "tableOfContents",
+    "structure",
+    "footnotes"
+  ],
+  "title": "LegalDocument",
+  "type": "object"
+}

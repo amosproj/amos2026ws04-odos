@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="EXPL_MEMORANDUM">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clxii7ijs00000ckz5gz41mpx"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="C(2023) 950"/>
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference xml:id="ENG" name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCReference xml:id="EXPL_MEMORANDUM" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/EXPL_MEMORANDUM" showAs=""/>
+            </references>
+        </meta>
+        <preface xml:id="d2e75">
+            <longTitle xml:id="d2e77">
+                <p xml:id="d2e79">
+                    <docType xml:id="d2e81" refersTo="~EXPL_MEMORANDUM">EXPLANATORY MEMORANDUM</docType>
+                </p>
+            </longTitle>
+        </preface>
+        <mainBody xml:id="d2e87">
+            <tblock xml:id="d2e89">
+                <num xml:id="d2e91">1.</num>
+                <heading xml:id="d2e94">CONTEXT OF THE DELEGATED ACT</heading>
+                <blockContainer xml:id="d2e97">
+                    <p xml:id="d2e99">In September 2018, the European Parliament and the Council
+                        adopted Regulation (EU) 2018/1240 establishing the European Travel
+                        Information and Authorisation System (ETIAS)<authorialNote xml:id="d2e101" marker="1" placement="bottom">
+                            <p xml:id="d2e103">Regulation (EU) 2018/1240 of the European Parliament and of the
+                                Council of 12 September 2018 establishing a European Travel
+                                Information and Authorisation System (ETIAS) and amending
+                                Regulations (EU) No 1077/2011, (EU) No 515/2014, (EU) 2016/399, (EU)
+                                2016/1624 and (EU) 2017/2226 (OJ L 236, 19.9.2018, p. 1).</p>
+                        </authorialNote>.</p>
+                    <p xml:id="d2e108"> It requires the European Commission to adopt delegated acts
+                        for the development and technical implementation of the European Travel
+                        Information and Authorisation System. In particular, pursuant to Article
+                        11(9) of Regulation (EU) 2018/1240, the Commission is delegated the task ‘to
+                        specify the conditions for the correspondence between the data present in a
+                        record, alert or file of the other EU information systems consulted and an
+                        ETIAS application file”.</p>
+                </blockContainer>
+            </tblock>
+            <tblock xml:id="d2e113">
+                <num xml:id="d2e115">2.</num>
+                <heading xml:id="d2e118">CONSULTATIONS PRIOR TO THE ADOPTION OF THE ACT</heading>
+                <blockContainer xml:id="d2e121">
+                    <p xml:id="d2e123">An ETIAS subgroup to the Expert Group on Information Systems
+                        for Borders and Security was established to help draft the delegated act.
+                        All Member States were given an opportunity to nominate experts, in
+                        accordance with Article 89(4) of Regulation (EU) 2018/1240 and the
+                        principles laid down in the Interinstitutional Agreement of 13 April 2016 on
+                        Better Law- Making.</p>
+                    <p xml:id="d2e126">As a result, this Commission Decision was developed on the
+                        basis of the input given by experts of the Member States in the framework of
+                        the above-mentioned Expert subgroup. In addition, the European Border and
+                        Coast Guard Agency (‘Frontex’), within which the ETIAS Central Unit will be
+                        established, and the European Union Agency for Law Enforcement Cooperation
+                        (‘Europol’) were consulted.</p>
+                    <p xml:id="d2e129">Furthermore, the European Agency for the Operational
+                        Management of Large-Scale IT Systems in the Area of Freedom, Security and
+                        Justice (‘eu-LISA’) advised the Commission regarding the technical needs and
+                        feasibility of the measure proposed. Additionally, the European Data
+                        Protection Supervisor was consulted before adoption to ensure the respect of
+                        data protection provisions.</p>
+                </blockContainer>
+            </tblock>
+            <tblock xml:id="d2e134">
+                <num xml:id="d2e136">3.</num>
+                <heading xml:id="d2e139">LEGAL ELEMENTS OF THE DELEGATED ACT</heading>
+                <blockContainer xml:id="d2e142">
+                    <p xml:id="d2e144">In accordance with Articles 19 and 20 of Regulation (EU)
+                        2018/1240, where an application for a travel authorisation is submitted and
+                        deemed valid, the ETIAS Central System will create an application file. The
+                        Central System will compare the data in the application file with the data
+                        present in a record, alert or file of the other EU information systems in
+                        order to verify whether there is a correspondence between the data.</p>
+                    <p xml:id="d2e147">In accordance with Article 11(9) of Regulation (EU)
+                        2018/1240, the Commission should specify the conditions for the
+                        correspondence between the data present in a record, alert or file of the
+                        other EU information systems and an ETIAS application file.</p>
+                    <p xml:id="d2e150">This Decision conforms to the principle of proportionality,
+                        as it reduces the burden for the authorities and the public by providing a
+                        possibility to limit the number of hits which would need to be manually
+                        verified.</p>
+                </blockContainer>
+            </tblock>
+        </mainBody>
+    </doc>
+</akomaNtoso>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <documentCollection name="ACT_AUTO_COM">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="C(2022) 8515"/>
+                    <FRBRprescriptive value="false"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRversionNumber value="final"/>
+                    <FRBRlanguage xml:id="FRBRlanguage" language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference xml:id="ENG" name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCReference xml:id="DEC_IMPL" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/DEC_IMPL" showAs=""/>
+                <TLCReference xml:id="C_2022_8515" name="identifier" href="http://publications.europa.eu/resource/authority/document-identifier-format/COM_NUMBER" showAs="C(2022) 8515" shortForm="C/2022/8515"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+                <TLCOrganization xml:id="COM" href="http://publications.europa.eu/resource/authority/corporate-body/COM" showAs=""/>
+                <TLCLocation xml:id="BEL_BRU" href="http://publications.europa.eu/resource/authority/place/BEL_BRU" showAs=""/>
+                <TLCReference xml:id="ACT_AUTO_COM" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/ACT_AUTO_COM" showAs=""/>
+                <TLCReference name="language" xml:id="POL" href="http://publications.europa.eu/resource/authority/language/POL" showAs="pl"/>
+                <TLCReference xml:id="PNG" name="fileType" href="http://publications.europa.eu/resource/authority/file-type/PNG" showAs=""/>
+            </references>
+        </meta>
+        <coverPage xml:id="d2e83">
+            <container xml:id="d2e85" name="logo">
+                <p xml:id="d2e87">
+                    <img xml:id="d2e89" src="RSC_PNG-cjk7q0l8r0000i3m3f5q1z8h0-en.png" refersTo="~PNG"/>
+                </p>
+            </container>
+            <container xml:id="d2e93" name="actingEntity">
+                <p xml:id="d2e95">
+                    <organization xml:id="d2e97" refersTo="~COM">EUROPEAN COMMISSION</organization>
+                </p>
+            </container>
+            <container xml:id="d2e102" name="mainDoc">
+                <block xml:id="d2e104" name="placeAndDate">
+                    <location xml:id="d2e106" refersTo="~BEL_BRU">Brussels</location>, <date xml:id="d2e109" date="2022-11-29">29.11.2022</date>
+                </block>
+                <block xml:id="d2e113" name="reference">
+                    <docNumber xml:id="d2e115" refersTo="~C_2022_8515">C(2022) 8515 <inline xml:id="d2e117" name="version">final</inline></docNumber>
+                </block>
+            </container>
+            <longTitle xml:id="d2e122">
+                <p xml:id="d2e124"><docType xml:id="d2e125" refersTo="~DEC_IMPL">COMMISSION
+                    IMPLEMENTING DECISION </docType> of <date xml:id="d2e128" date="2022-11-29">29.11.2022</date>
+                    <docPurpose xml:id="d2e131">approving the programme “European Funds for Opolskie
+                        2021-2027” for support from the European Regional Development Fund and the
+                        European Social Fund Plus under the Investment for jobs and growth goal for
+                        the region Opolskie in Poland</docPurpose></p>
+            </longTitle>
+            <container xml:id="d2e138" name="externalReference"><p xml:id="d2e139">CCI 2021PL16FFPR008</p></container>
+            <container xml:id="d2e142" name="authenticLanguages">
+                <p xml:id="d2e144">(ONLY THE <inline xml:id="d2e146" name="language" refersTo="~POL">POLISH</inline> TEXT IS AUTHENTIC)</p>
+            </container>
+            
+            <container xml:id="d2e151" name="mainDocLanguage">
+                <p xml:id="d2e153">
+                    <inline xml:id="d2e155" name="language" refersTo="~FRBRlanguage">EN</inline>
+                </p>
+            </container>
+        </coverPage>
+        <collectionBody xml:id="d2e161">
+            <component xml:id="d2e163">
+                <documentRef xml:id="d2e165" href="DEC_IMPL-cly8g82qj00000dl3cr720qki-en.xml" showAs=""/>
+            </component>
+        </collectionBody>
+    </documentCollection>
+</akomaNtoso>

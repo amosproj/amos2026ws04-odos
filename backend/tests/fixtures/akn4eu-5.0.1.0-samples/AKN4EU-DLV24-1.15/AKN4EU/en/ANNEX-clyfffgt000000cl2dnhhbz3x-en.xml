@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <doc name="ANNEX">
+        <meta>
+            <identification source="~PUBL">
+                <FRBRWork>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:fileCUID value="clyfffgt000000cl2dnhhbz3x"/>
+                    </preservation>
+                    <FRBRcountry value="EU"/>
+                    <FRBRnumber value="eli/dir_impl/2022/905"/>
+                    <FRBRprescriptive value="true"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <FRBRlanguage language="en"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value=""/>
+                    <FRBRuri value=""/>
+                    <FRBRdate date="2999-01-01" name=""/>
+                    <FRBRauthor href=""/>
+                    <preservation xmlns:akn4eu="http://imfc.europa.eu/akn4eu">
+                        <akn4eu:akn4euVersion value="5.0.0.1"/>
+                        <akn4eu:akn4euDocumentation
+                            href="https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"/>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <references source="~PUBL">
+                <TLCReference xml:id="ANNEX" name="docType" href="http://publications.europa.eu/resource/authority/resource-type/ANNEX" showAs=""/>
+                <TLCReference name="language" href="http://publications.europa.eu/resource/authority/language/ENG" showAs="en"/>
+                <TLCOrganization xml:id="PUBL" href="http://publications.europa.eu/resource/authority/corporate-body/PUBL" showAs=""/>
+            </references>
+        </meta>
+
+        <mainBody xml:id="d2e89">
+          <annex xml:id="d2e90">
+            <num xml:id="d2e76">ANNEX II</num>
+              <heading xml:id="d2e79">List of species referred to in Article 1(2),
+                  point (b), which are to comply with UPOV test guidelines<authorialNote
+                      xml:id="d2e81" marker="*" placement="bottom" placementBase="~d2e89">
+                      <p xml:id="d2e83"> The text of these guidelines can be found on the UPOV web
+                          site (www.upov.int).</p></authorialNote></heading>
+            <paragraph xml:id="d2e91">
+                <hcontainer xml:id="d2e92" name="TAB">
+                  <hcontainer xml:id="d2e93" name="TAB_CONTAINER">
+                     <content xml:id="d2e94">
+                       <table xml:id="d2e95">
+                         <thead  xml:id="d2e98">
+                          <tr xml:id="d2e97">
+                            <th xml:id="d2e99">
+                                <p xml:id="d2e101">Scientific name</p>
+                            </th>
+                            <th xml:id="d2e105">
+                                <p xml:id="d2e107">Common name</p>
+                            </th>
+                            <th xml:id="d2e111">
+                                <p xml:id="d2e113">UPOV guideline</p>
+                            </th>
+                          </tr>
+                         </thead>
+                        <tbody xml:id="d2e114">
+                           <tr xml:id="d2e118">
+                            <td xml:id="d2e120">
+                                <p xml:id="d2e122">Beta vulgaris L.</p>
+                            </td>
+                            <td xml:id="d2e126">
+                                <p xml:id="d2e128">Fodder beet</p>
+                            </td>
+                            <td xml:id="d2e132">
+                                <p xml:id="d2e134">TG/150/3 of 4.11.1994</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e139">
+                            <td xml:id="d2e141">
+                                <p xml:id="d2e143">Agrostis canina L.</p>
+                            </td>
+                            <td xml:id="d2e147">
+                                <p xml:id="d2e149">Velvet bent</p>
+                            </td>
+                            <td xml:id="d2e153">
+                                <p xml:id="d2e155">TG/30/6 of 12.10.1990</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e160">
+                            <td xml:id="d2e162">
+                                <p xml:id="d2e164">Agrostis gigantea Roth</p>
+                            </td>
+                            <td xml:id="d2e168">
+                                <p xml:id="d2e170">Red top</p>
+                            </td>
+                            <td xml:id="d2e174">
+                                <p xml:id="d2e176">TG/30/6 of 12.10.1990</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e181">
+                            <td xml:id="d2e183">
+                                <p xml:id="d2e185">Agrostis stolonifera L.</p>
+                            </td>
+                            <td xml:id="d2e189">
+                                <p xml:id="d2e191">Creeping bent grass</p>
+                            </td>
+                            <td xml:id="d2e195">
+                                <p xml:id="d2e197">TG/30/6 of 12.10.1990</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e203">
+                            <td xml:id="d2e205">
+                                <p xml:id="d2e207">Agrostis capillaris L.</p>
+                            </td>
+                            <td xml:id="d2e211">
+                                <p xml:id="d2e213">Brown top</p>
+                            </td>
+                            <td xml:id="d2e217">
+                                <p xml:id="d2e219">TG/30/6 of 12.10.1990</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e224">
+                            <td xml:id="d2e226">
+                                <p xml:id="d2e228">Bromus catharticus Vahl</p>
+                            </td>
+                            <td xml:id="d2e232">
+                                <p xml:id="d2e234">Rescue grass</p>
+                            </td>
+                            <td xml:id="d2e238">
+                                <p xml:id="d2e240">TG/180/3 of 4.4.2001</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e245">
+                            <td xml:id="d2e247">
+                                <p xml:id="d2e249">Bromus sitchensis Trin.</p>
+                            </td>
+                            <td xml:id="d2e253">
+                                <p xml:id="d2e255">Alaska brome grass</p>
+                            </td>
+                            <td xml:id="d2e259">
+                                <p xml:id="d2e261">TG/180/3 of 4.4.2001</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e266">
+                            <td xml:id="d2e268">
+                                <p xml:id="d2e270">xFestulolium Asch. et Graebn.</p>
+                            </td>
+                            <td xml:id="d2e274">
+                                <p xml:id="d2e276">Hybrids resulting from the crossing of a species
+                                    of the genus Festuca with a species of the genus Lolium</p>
+                            </td>
+                            <td xml:id="d2e280">
+                                <p xml:id="d2e282">TG/243/1 of 9.4.2008</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e287">
+                            <td xml:id="d2e289">
+                                <p xml:id="d2e291">Lotus corniculatus L.</p>
+                            </td>
+                            <td xml:id="d2e295">
+                                <p xml:id="d2e297">Birdsfoot trefoil</p>
+                            </td>
+                            <td xml:id="d2e301">
+                                <p xml:id="d2e303">TG 193/1 of 9.4.2008</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e308">
+                            <td xml:id="d2e310">
+                                <p xml:id="d2e312">Lupinus albus L.</p>
+                            </td>
+                            <td xml:id="d2e316">
+                                <p xml:id="d2e318">White lupin</p>
+                            </td>
+                            <td xml:id="d2e322">
+                                <p xml:id="d2e324">TG/66/4 of 31.3.2004</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e330">
+                            <td xml:id="d2e332">
+                                <p xml:id="d2e334">Lupinus angustifolius L.</p>
+                            </td>
+                            <td xml:id="d2e338">
+                                <p xml:id="d2e340">Narrow-leaved lupin</p>
+                            </td>
+                            <td xml:id="d2e344">
+                                <p xml:id="d2e346">TG/66/4 of 31.3.2004</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e351">
+                            <td xml:id="d2e353">
+                                <p xml:id="d2e355">Lupinus luteus L.</p>
+                            </td>
+                            <td xml:id="d2e359">
+                                <p xml:id="d2e361">Yellow lupin</p>
+                            </td>
+                            <td xml:id="d2e365">
+                                <p xml:id="d2e367">TG/66/4 of 31.3.2004</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e372">
+                            <td xml:id="d2e374">
+                                <p xml:id="d2e376">Medicago doliata Carmign.</p>
+                            </td>
+                            <td xml:id="d2e380">
+                                <p xml:id="d2e382">Straight-spined medic</p>
+                            </td>
+                            <td xml:id="d2e386">
+                                <p xml:id="d2e388">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e393">
+                            <td xml:id="d2e395">
+                                <p xml:id="d2e397">Medicago italica (Mill.) Fiori</p>
+                            </td>
+                            <td xml:id="d2e401">
+                                <p xml:id="d2e403">Disc medic</p>
+                            </td>
+                            <td xml:id="d2e407">
+                                <p xml:id="d2e409">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e414">
+                            <td xml:id="d2e416">
+                                <p xml:id="d2e418">Medicago littoralis Rohde ex Loisel.</p>
+                            </td>
+                            <td xml:id="d2e422">
+                                <p xml:id="d2e424">Shore medic/Strand medic</p>
+                            </td>
+                            <td xml:id="d2e428">
+                                <p xml:id="d2e430">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e435">
+                            <td xml:id="d2e437">
+                                <p xml:id="d2e439">Medicago lupulina L.</p>
+                            </td>
+                            <td xml:id="d2e443">
+                                <p xml:id="d2e445">Trefoil</p>
+                            </td>
+                            <td xml:id="d2e449">
+                                <p xml:id="d2e451">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e457">
+                            <td xml:id="d2e459">
+                                <p xml:id="d2e461">Medicago murex Willd.</p>
+                            </td>
+                            <td xml:id="d2e465">
+                                <p xml:id="d2e467">Sphere medic</p>
+                            </td>
+                            <td xml:id="d2e471">
+                                <p xml:id="d2e473">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e478">
+                            <td xml:id="d2e480">
+                                <p xml:id="d2e482">Medicago polymorpha L.</p>
+                            </td>
+                            <td xml:id="d2e486">
+                                <p xml:id="d2e488">Bur medic</p>
+                            </td>
+                            <td xml:id="d2e492">
+                                <p xml:id="d2e494">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e499">
+                            <td xml:id="d2e501">
+                                <p xml:id="d2e503">Medicago rugosa Desr.</p>
+                            </td>
+                            <td xml:id="d2e507">
+                                <p xml:id="d2e509">Wrinkled medic/Gama medic</p>
+                            </td>
+                            <td xml:id="d2e513">
+                                <p xml:id="d2e515">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e520">
+                            <td xml:id="d2e522">
+                                <p xml:id="d2e524">Medicago scutellata (L.) Mill.</p>
+                            </td>
+                            <td xml:id="d2e528">
+                                <p xml:id="d2e530">Snail medic/Shield medic</p>
+                            </td>
+                            <td xml:id="d2e534">
+                                <p xml:id="d2e536">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e541">
+                            <td xml:id="d2e543">
+                                <p xml:id="d2e545">Medicago truncatula Gaertn.</p>
+                            </td>
+                            <td xml:id="d2e549">
+                                <p xml:id="d2e551">Barrel medic</p>
+                            </td>
+                            <td xml:id="d2e555">
+                                <p xml:id="d2e557">TG/228/1 of 5.4.2006</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e562">
+                            <td xml:id="d2e564">
+                                <p xml:id="d2e566">Trifolium repens L.</p>
+                            </td>
+                            <td xml:id="d2e570">
+                                <p xml:id="d2e572">White clover</p>
+                            </td>
+                            <td xml:id="d2e576">
+                                <p xml:id="d2e578">TG/38/7 of 9.4.2003</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e584">
+                            <td xml:id="d2e586">
+                                <p xml:id="d2e588">Trifolium subterraneum L.</p>
+                            </td>
+                            <td xml:id="d2e592">
+                                <p xml:id="d2e594">Subterranean clover</p>
+                            </td>
+                            <td xml:id="d2e598">
+                                <p xml:id="d2e600">TG/170/3 of 4.4.2001</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e605">
+                            <td xml:id="d2e607">
+                                <p xml:id="d2e609">Phacelia tanacetifolia Benth.</p>
+                            </td>
+                            <td xml:id="d2e613">
+                                <p xml:id="d2e615">California Bluebell</p>
+                            </td>
+                            <td xml:id="d2e619">
+                                <p xml:id="d2e621">TG/319/1 of 5.4.2017</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e626">
+                            <td xml:id="d2e628">
+                                <p xml:id="d2e630">Arachis hypogaea L.</p>
+                            </td>
+                            <td xml:id="d2e634">
+                                <p xml:id="d2e636">Groundnut/Peanut</p>
+                            </td>
+                            <td xml:id="d2e640">
+                                <p xml:id="d2e642">TG/93/4 of 9.4.2014</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e647">
+                            <td xml:id="d2e649">
+                                <p xml:id="d2e651">Brassica juncea (L.) Czern</p>
+                            </td>
+                            <td xml:id="d2e655">
+                                <p xml:id="d2e657">Brown mustard</p>
+                            </td>
+                            <td xml:id="d2e661">
+                                <p xml:id="d2e663">TG/335/1 of 17.12.2020</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e668">
+                            <td xml:id="d2e670">
+                                <p xml:id="d2e672">Brassica rapa L. var. silvestris (Lam.)
+                                    Briggs</p>
+                            </td>
+                            <td xml:id="d2e676">
+                                <p xml:id="d2e678">Turnip rape</p>
+                            </td>
+                            <td xml:id="d2e682">
+                                <p xml:id="d2e684">TG/185/3 of 17.4.2002</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e689">
+                            <td xml:id="d2e691">
+                                <p xml:id="d2e693">Carthamus tinctorius L.</p>
+                            </td>
+                            <td xml:id="d2e697">
+                                <p xml:id="d2e699">Safflower</p>
+                            </td>
+                            <td xml:id="d2e703">
+                                <p xml:id="d2e705">TG/134/3 of 12.10.1990</p>
+                            </td>
+                        </tr>
+                        <tr xml:id="d2e711">
+                            <td xml:id="d2e713">
+                                <p xml:id="d2e715">Papaver somniferum L.</p>
+                            </td>
+                            <td xml:id="d2e719">
+                                <p xml:id="d2e721">Poppy</p>
+                            </td>
+                            <td xml:id="d2e725">
+                                <p xml:id="d2e727">TG/166/4 of 9.4.2014</p>
+                            </td>
+                        </tr>
+                        </tbody>
+                       </table>
+                        </content>
+                </hcontainer>
+              </hcontainer>
+            </paragraph>
+          </annex>
+        </mainBody>
+    </doc>
+</akomaNtoso>
