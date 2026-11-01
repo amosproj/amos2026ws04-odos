@@ -1,9 +1,14 @@
 """AKN4EU export profile (``akn4eu``) for EU legislation, separate from the generic AKN exports.
 
 Modelled on the official AKN4EU 5.0.1.0 samples of the Publications Office (above all the published
-Implementing Regulation (EU) 2025/864) and validated against the OASIS AKN 3.1 schema, the base of
-AKN4EU 5.x. The result is *sample-compatible*; no official AKN4EU schema or Schematron was available,
-so AKN4EU conformance is not verified (see Documentation/akn4eu-mapping.md).
+Implementing Regulation (EU) 2025/864) and on the AKN4EU 5.0.1.0 specification (Part 1 Guidelines and
+Modelling, Part 2 Document types); validated against the OASIS AKN 3.1 schema, the base of AKN4EU 5.x,
+and against the specification rules in ``akn4eu_validate``. No official AKN4EU schema or Schematron was
+available, so official AKN4EU conformance is not verified (see Documentation/akn4eu-mapping.md).
+
+Where the specification and the older samples differ, the specification is followed (version 5.0.1.0,
+body eId ``enc_1``, empty ``showAs`` on annex references and authority entries); ``akn4eu_validate``
+lists each difference.
 
 What differs from the generic EU export (``eu_generator``), each following the samples:
 
@@ -13,7 +18,10 @@ What differs from the generic EU export (``eu_generator``), each following the s
   caller supplies one that agrees with the printed type and number, otherwise empty as in the drafting
   samples (nothing is invented);
 - footnotes as inline ``authorialNote`` at their "( n )" reference, points inside ``list``, the binding
-  clause in ``body/clause``, each annex a separate ``doc name="ANNEX"`` file linked by ``documentRef``.
+  clause in ``body/clause``, each annex a separate ``doc name="ANNEX"`` file linked by ``documentRef``;
+- the package entry file ``main-…`` (Part 1 §1.2, pp.21–22): an ``officialGazette`` for the printed
+  Official Journal publication (Part 2.8 §2), pointing to the act. Its OJ URI is used only when the
+  caller supplies one that agrees with the printed reference, like the ELI.
 
 No ODOS attributes are written into the XML: provenance, uncertainty and review state go to the
 traceability data. Text is written verbatim from the model; the only rearrangements (a footnote
@@ -36,9 +44,14 @@ from odos.document_model import DocumentModel, Element, ElementType as T
 
 A = f"{{{AKN_NS}}}"
 AKN4EU_NS = "http://imfc.europa.eu/akn4eu"
-AKN4EU_VERSION = "5.0.0.1"  # the value the files of the AKN4EU 5.0.1.0 sample package declare
+AKN4EU_VERSION = "5.0.1.0"  # Part 1 §9.2.2.10, p.111 (and p.107)
+SAMPLE_AKN4EU_VERSION = "5.0.0.1"  # what the files of the AKN4EU 5.0.1.0 sample package declare
 AKN4EU_DOCUMENTATION = "https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/akn4eu"  # fmt: skip
 AUTH = "http://publications.europa.eu/resource/authority/"
+ODOS_ORG_HREF = "/ontology/organization/odos"  # the converter: not an entry of the EU corporate-body table
+OJ_RESOURCE = "http://publications.europa.eu/resource/oj/"
+OJ_REF_PRE_ABA = re.compile(r"^(?P<series>[LC]) (?P<issue>\d+[A-Z]?)/(?P<page>\d+)$")  # printed "L 165/1"
+OJ_URI_PRE_ABA = re.compile(r"^http://publications\.europa\.eu/resource/oj/(?P<frag>JO(?P<series>[LC])_(?P<year>\d{4})_(?P<issue>\d+[A-Z]?)_(?P<kind>[RAEIM])_(?P<vol>\d{4}))$")  # Part 2.8 §2.3.3.1, p.209  # fmt: skip
 PLACEHOLDER_DATE = "2999-01-01"  # AKN4EU's "no date" value (all samples)
 XID = "{http://www.w3.org/XML/1998/namespace}id"
 LANG = ("de", "DEU", "deu")  # ISO 639-1, EU authority code, ELI language segment; the EU parser reads German acts
@@ -85,8 +98,9 @@ def signatories(e: Element) -> tuple[list[tuple[str, str, str]], bool]:
 
 
 class Akn4EuResult(BaseModel):
-    files: dict[str, bytes]  # file name -> XML, the act first, then the annexes in order
+    files: dict[str, bytes]  # file name -> XML: the main- file (if any), the act, then the annexes in order
     act_file: str
+    main_file: str | None = None  # None: no Official Journal publication printed in a supported form
     entries: list[dict]  # one per included model element, in document order
     included_ids: list[str]
     excluded: dict[str, list[str]]
@@ -128,6 +142,22 @@ def check_eli(eli: str | None, rtype: str, number: str) -> str | None:
     if eli.rstrip("/") != want:
         raise ValueError(f"ELI {eli!r} does not match the printed act ({want}); refusing to use it")
     return want
+
+
+def check_oj_uri(oj_uri: str | None, reference: str | None, publication_date: str | None) -> str | None:
+    """A caller-supplied URI of the pre-ABA Official Journal publication is used only if its series, year and
+    issue agree with the printed reference ("L 165/1") and publication date. The kind (_R, _A, ...) and the
+    volume are not printed, so they cannot be checked; nothing is derived."""
+    if oj_uri is None:
+        return None
+    m, ref = OJ_URI_PRE_ABA.match(oj_uri), OJ_REF_PRE_ABA.match(reference or "")
+    if m is None:
+        raise ValueError(f"OJ URI {oj_uri!r} is not a pre-ABA Official Journal URI ({OJ_RESOURCE}JOL_<year>_<issue>_<kind>_<volume>)")  # fmt: skip
+    if ref is None or not publication_date:
+        raise ValueError(f"no printed Official Journal reference and date to check the OJ URI against (reference {reference!r}); refusing to use it")  # fmt: skip
+    if (m["series"], m["year"], m["issue"].lstrip("0")) != (ref["series"], publication_date[:4], ref["issue"].lstrip("0")):
+        raise ValueError(f"OJ URI {oj_uri!r} does not match the printed publication {reference} of {publication_date}; refusing to use it")  # fmt: skip
+    return oj_uri
 
 
 class _File:
@@ -416,7 +446,7 @@ class _G:
             self.fill_ids(c, c.get(XID) or f"{base}__{tag}")
 
 
-def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None = None) -> Akn4EuResult:
+def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None = None, oj_uri: str | None = None) -> Akn4EuResult:  # fmt: skip
     if model.profile != "eu_legislation":
         raise ValueError("the akn4eu profile needs a model parsed with the eu_legislation profile")
     md = model.metadata
@@ -426,8 +456,11 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
     if rtype is None:
         raise ValueError(f"no AKN4EU resource type for the printed document type {md.document_type!r}")
     eli = check_eli(eli, rtype, md.document_number)
+    oj_uri = check_oj_uri(oj_uri, md.publication_reference, md.publication_date)
+    oj = bool(md.publication_date and md.publication_reference)  # an OJ document: <publication>, eIds on references
     year, no = md.document_number.split("/", 1)
-    slug = f"{rtype.lower()}_{year}_{int(no)}"
+    # the technical identifier of an OJ act's files is its ELI (Part 2.8 §1.5.1, p.201); without one, the printed type and number
+    slug = ("eli_" if eli else "") + f"{rtype.lower()}_{year}_{int(no)}"
     g = _G(model)
     by_id = g.by_id
     tops = [by_id[c] for c in by_id[model.root_id].children_ids]
@@ -441,18 +474,20 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
         g.warnings.append({"code": "ANNEX_ELI_UNKNOWN", "detail": "the ELI of each of several annexes is not known; annex FRBRthis left empty"})  # fmt: skip
     files: dict[str, etree._Element] = {}
     act_file = f"act-{slug}-{LANG[0]}.xml"
-    labels = {c: label for c, _, label in CORPORATE}
 
     def comment(root, what: str) -> None:
         n_unc = sum(1 for e in model.elements if e.uncertain)
         root.addprevious(etree.Comment(
             f" PROTOTYPE CONVERSION: {what} generated by ODOS from Docling output of {md.title}, modelled on the AKN4EU "
-            f"{AKN4EU_VERSION} samples. Text is the extracted text, not the authentic Official Journal edition. "
-            f"Sample-compatible AKN4EU, NOT officially verified. {n_unc} model elements are uncertain; provenance, "
+            f"{AKN4EU_VERSION} specification and samples. Text is the extracted text, not the authentic Official Journal edition. "
+            f"NOT officially verified AKN4EU. {n_unc} model elements are uncertain; provenance, "
             "uncertainty and review state are in akn4eu_traceability.json. "))  # fmt: skip
 
+    def source() -> str:  # the agent of the metadata: ODOS, which is not an EU body (reported as a deviation)
+        return "~" + g.ref("ODOS", "TLCOrganization", href=ODOS_ORG_HREF, showAs="ODOS prototype converter (AMOS 2026)")
+
     def identification(meta, annex_no: int | None) -> None:
-        ident = etree.SubElement(meta, A + "identification", source="~" + g.ref("ODOS", "TLCOrganization", href="/ontology/organization/odos", showAs="ODOS prototype converter (AMOS 2026)"))  # fmt: skip
+        ident = etree.SubElement(meta, A + "identification", source=source())
         work = eli or ""
         this = work
         if annex_no is not None:
@@ -464,42 +499,55 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
             if d:
                 fd = etree.SubElement(w, A + "FRBRdate", date=d, name=name, eId=name)
                 fd.set(XID, g.f.reg(name))
-        for c in authors or [""]:
-            etree.SubElement(w, A + "FRBRauthor", href=("#" + g.ref(c, "TLCOrganization", href=AUTH + f"corporate-body/{c}", showAs=labels[c])) if c else "")  # fmt: skip
+        for c in authors or [""]:  # authority entries: @showAs empty (Part 1 §9.4, p.113)
+            etree.SubElement(w, A + "FRBRauthor", href=("#" + g.ref(c, "TLCOrganization", href=AUTH + f"corporate-body/{c}", showAs="")) if c else "")  # fmt: skip
         etree.SubElement(w, A + "FRBRcountry", value="EU")
         if annex_no is None:
             etree.SubElement(w, A + "FRBRsubtype", value=rtype)
-        etree.SubElement(w, A + "FRBRnumber", value=md.document_number)
-        if eli:
+        if eli:  # the extract of the ELI in FRBRthis (Part 1 §9.2.2.4, pp.109-110)
             etree.SubElement(w, A + "FRBRnumber", value=f"eli/{rtype.lower()}/{year}/{int(no)}" + ("/anx" if annex_no is not None else ""),
                              refersTo="#" + g.ref("ELI", "TLCReference", name="identifier", href=AUTH + "document-identifier-format/ELI", showAs=""))  # fmt: skip
+        else:  # no official URI known: the printed number (reported by akn4eu_validate)
+            etree.SubElement(w, A + "FRBRnumber", value=md.document_number)
         etree.SubElement(w, A + "FRBRprescriptive", value="true")
         ex = etree.SubElement(ident, A + "FRBRExpression")
         etree.SubElement(ex, A + "FRBRthis", value=f"{this}/{LANG[2]}" if this else "")
         etree.SubElement(ex, A + "FRBRuri", value=f"{work}/{LANG[2]}" if work else "")
         etree.SubElement(ex, A + "FRBRdate", date=PLACEHOLDER_DATE, name="")
         etree.SubElement(ex, A + "FRBRauthor", href="")
-        lang = etree.SubElement(ex, A + "FRBRlanguage", language=LANG[0], refersTo="~" + g.ref(LANG[1], "TLCReference", name="language", href=AUTH + f"language/{LANG[1]}", showAs=LANG[0]))  # fmt: skip
-        lang.set(XID, g.f.reg("FRBRlanguage"))
-        mf = etree.SubElement(ident, A + "FRBRManifestation")
-        etree.SubElement(mf, A + "FRBRthis", value=f"{this}/{LANG[2]}/akn4eu" if this else "")
-        etree.SubElement(mf, A + "FRBRuri", value=f"{work}/{LANG[2]}/akn4eu" if work else "")
-        etree.SubElement(mf, A + "FRBRdate", date=retrieval_date, name="conversion")
-        etree.SubElement(mf, A + "FRBRauthor", href="#ODOS")
-        pres = etree.SubElement(mf, A + "preservation", nsmap={"akn4eu": AKN4EU_NS})
-        etree.SubElement(pres, f"{{{AKN4EU_NS}}}akn4euVersion", value=AKN4EU_VERSION)
-        etree.SubElement(pres, f"{{{AKN4EU_NS}}}akn4euDocumentation", href=AKN4EU_DOCUMENTATION)
-        if md.publication_date and md.publication_reference:
+        language(ex)
+        manifestation(ident, f"{this}/{LANG[2]}/akn4eu" if this else "", f"{work}/{LANG[2]}/akn4eu" if work else "")
+        if oj:
             show = ", ".join(x for x in (f"{md.publication_journal or ''} {md.publication_reference}".strip(), md.publication_date_text) if x)  # fmt: skip
             etree.SubElement(meta, A + "publication", date=md.publication_date, number=md.publication_reference,
                              showAs=show, name=md.publication_journal or "Official Journal of the European Union")  # fmt: skip
 
-    def references(meta, doc_type: str, show: str) -> None:
-        g.ref(doc_type, "TLCReference", name="docType", href=AUTH + f"resource-type/{doc_type}", showAs=show)
-        g.ref("EU", "TLCReference", name="legalActDomain", href=AUTH + "dataset/legal-act-domain/EU", showAs="EU")
+    def language(ex) -> None:
+        lang = etree.SubElement(ex, A + "FRBRlanguage", language=LANG[0], refersTo="~" + g.ref(LANG[1], "TLCReference", name="language", href=AUTH + f"language/{LANG[1]}", showAs=LANG[0]))  # fmt: skip
+        lang.set(XID, g.f.reg("FRBRlanguage"))
+
+    def manifestation(ident, this: str, uri: str) -> None:
+        mf = etree.SubElement(ident, A + "FRBRManifestation")
+        etree.SubElement(mf, A + "FRBRthis", value=this)
+        etree.SubElement(mf, A + "FRBRuri", value=uri)
+        etree.SubElement(mf, A + "FRBRdate", date=retrieval_date, name="conversion")
+        etree.SubElement(mf, A + "FRBRauthor", href="")  # empty below the Work level (Part 1 §9.2.2.3, p.109)
+        pres = etree.SubElement(mf, A + "preservation", nsmap={"akn4eu": AKN4EU_NS})
+        etree.SubElement(pres, f"{{{AKN4EU_NS}}}akn4euVersion", value=AKN4EU_VERSION)
+        etree.SubElement(pres, f"{{{AKN4EU_NS}}}akn4euDocumentation", href=AKN4EU_DOCUMENTATION)
+
+    def write_refs(meta) -> None:
         refs = etree.SubElement(meta, A + "references", source="~ODOS")
         for key, (tag, attrs) in g.f.refs.items():
-            etree.SubElement(refs, A + tag, **attrs).set(XID, key)
+            r = etree.SubElement(refs, A + tag, **attrs)
+            r.set(XID, key)
+            if oj:  # in OJ documents the eId of a reference equals its xml:id (Part 1 §9.4, p.113)
+                r.set("eId", key)
+
+    def references(meta, doc_type: str) -> None:
+        g.ref(doc_type, "TLCReference", name="docType", href=AUTH + f"resource-type/{doc_type}", showAs="")
+        g.ref("EU", "TLCReference", name="legalActDomain", href=AUTH + "dataset/legal-act-domain/EU", showAs="")
+        write_refs(meta)
 
     # ================================ the act ================================================================
     g.f = act_f = _File(act_file)
@@ -523,6 +571,7 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
     rest = front[t_idx:] if t_idx is not None else front
     if rest:
         pre = g.node(act, "preface", "preface")
+        g.eid(pre, "prf_1")  # Part 2.8 §1.5.3, p.201
         lt = lp = None
         for e in rest:
             eea = e.original_text.strip() == "(Text von Bedeutung für den EWR)"
@@ -614,7 +663,7 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
 
     # ---- body --------------------------------------------------------------------------------------------------
     body = g.node(act, "body", "body")
-    g.eid(body, "ent_1")
+    g.eid(body, "enc_1")  # Part 2.8 §1.5.3, p.202 (the 5.0.0.1 samples use "ent_1")
     for e in tops:
         if e.type == T.ARTICLE:
             g.article(e, body)
@@ -645,7 +694,7 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
                 p = g.text(cn, "p", m.group(1), "conclusions__doneAt", e)
                 g.trace(e, "p", p, text_ids=[p.get(XID)])
                 place = PLACES.get(m.group(2))
-                loc = g.node(p, "location", "conclusions__doneAt__location", refersTo=("#" + g.ref(place, "TLCLocation", href=AUTH + f"place/{place}", showAs=m.group(2))) if place else None)  # fmt: skip
+                loc = g.node(p, "location", "conclusions__doneAt__location", refersTo=("#" + g.ref(place, "TLCLocation", href=AUTH + f"place/{place}", showAs="")) if place else None)  # fmt: skip
                 loc.text, loc.tail = m.group(2), m.group(3)
                 iso = german_date(m.group(4))
                 dt = g.node(p, "date", "conclusions__doneAt__date", date=iso) if iso else None
@@ -662,8 +711,8 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
                     if not from_table:
                         tr["text_ids"].append(s.get(XID))  # signature has mixed content; block gets indented by pretty printing
                     code = next((c for c, rx, _ in CORPORATE if rx.search(org)), None)
-                    o = g.node(s, "organization", f"{s.get(XID)}__organization", refersTo=("#" + g.ref(code, "TLCOrganization", href=AUTH + f"corporate-body/{code}", showAs=labels[code])) if code else None)  # fmt: skip
-                    r = g.node(s, "role", f"{s.get(XID)}__role", refersTo="#" + g.ref("PRESID", "TLCRole", href=AUTH + "role/PRESID", showAs="Präsident"))  # fmt: skip
+                    o = g.node(s, "organization", f"{s.get(XID)}__organization", refersTo=("#" + g.ref(code, "TLCOrganization", href=AUTH + f"corporate-body/{code}", showAs="")) if code else None)  # fmt: skip
+                    r = g.node(s, "role", f"{s.get(XID)}__role", refersTo="#" + g.ref("PRESID", "TLCRole", href=AUTH + "role/PRESID", showAs=""))  # fmt: skip
                     pe = g.node(s, "person", f"{s.get(XID)}__person", refersTo="")
                     o.text, o.tail, r.text, r.tail, pe.text = org, " ", role, " ", person
                     cols.append([o, r, pe])
@@ -686,9 +735,10 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
         atts = g.node(act, "attachments")  # attachments takes no xml:id (schema)
         for e in annexes:
             n = e.id.rsplit("-", 1)[-1]
-            name = f"ANNEX-{slug}_anx_{n}-{LANG[0]}.xml"
+            # a unique annex of an act with an ELI is "..._anx" like its ELI (Part 2.8 §1.6, p.202)
+            name = f"ANNEX-{slug}_anx-{LANG[0]}.xml" if eli and len(annexes) == 1 else f"ANNEX-{slug}_anx_{n}-{LANG[0]}.xml"
             at = g.node(atts, "attachment", f"attachments__attachment_{n}")
-            g.node(at, "documentRef", f"{at.get(XID)}__documentRef", href=name, showAs=e.marker or "ANNEX")
+            g.node(at, "documentRef", f"{at.get(XID)}__documentRef", href=name, showAs="")  # @showAs empty (Part 2.1 §3.9.1, p.44)
             g.f = _File(name)
             aroot = etree.Element(A + "akomaNtoso", nsmap={None: AKN_NS})
             comment(aroot, f"annex {e.marker or n}")
@@ -702,12 +752,64 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
             g.notes_of(e)
             g.hier_kids(anx, "anx", e, ("anx", "par"))
             g.fill_ids(doc, "")
-            references(dmeta, "ANNEX", "Anhang")
+            references(dmeta, "ANNEX")
             annex_roots.append((name, aroot))
             g.f = act_f
 
     g.fill_ids(act, "")
-    references(meta, rtype, md.document_type)
+    references(meta, rtype)
+
+    # ---- the package entry file: officialGazette of the pre-ABA OJ publication (Part 1 §1.2; Part 2.8 §2) -------------
+    main_file = None
+    ref = OJ_REF_PRE_ABA.match(md.publication_reference or "")
+    if ref and md.publication_date:
+        frag = OJ_URI_PRE_ABA.match(oj_uri)["frag"] if oj_uri else None
+        tech = f"OJ_{frag}" if frag else f"OJ_{ref['series']}_{md.publication_date[:4]}_{ref['issue']}"
+        main_file = f"main-{tech}-{LANG[0]}.xml"
+        coll = f"OJ-{ref['series']}"
+        g.f = _File(main_file)
+        mroot = etree.Element(A + "akomaNtoso", nsmap={None: AKN_NS})
+        comment(mroot, "Official Journal entry file")
+        og = etree.SubElement(mroot, A + "officialGazette", name=coll)
+        mmeta = etree.SubElement(og, A + "meta")
+        ident = etree.SubElement(mmeta, A + "identification", source=source())
+        w = etree.SubElement(ident, A + "FRBRWork")
+        etree.SubElement(w, A + "FRBRthis", value=oj_uri or "")  # an OJ resource URI, not an ELI (Part 2.8 §1.3.3, p.198)
+        etree.SubElement(w, A + "FRBRuri", value=oj_uri or "")
+        fd = etree.SubElement(w, A + "FRBRdate", date=md.publication_date, name="publication", eId="publication")
+        fd.set(XID, g.f.reg("publication"))
+        etree.SubElement(w, A + "FRBRauthor", href="#" + g.ref("EURUN", "TLCOrganization", href=AUTH + "corporate-body/EURUN", showAs=""))  # Part 1 p.109  # fmt: skip
+        etree.SubElement(w, A + "FRBRcountry", value="EU")
+        etree.SubElement(w, A + "FRBRnumber", value=f"oj/{frag}" if frag else md.publication_reference)  # no FRBRprescriptive (Part 1 p.110)  # fmt: skip
+        ex = etree.SubElement(ident, A + "FRBRExpression")
+        etree.SubElement(ex, A + "FRBRthis", value=f"{oj_uri}/{LANG[2]}" if oj_uri else "")
+        etree.SubElement(ex, A + "FRBRuri", value=f"{oj_uri}/{LANG[2]}" if oj_uri else "")
+        etree.SubElement(ex, A + "FRBRdate", date=PLACEHOLDER_DATE, name="")
+        etree.SubElement(ex, A + "FRBRauthor", href="")
+        language(ex)
+        manifestation(ident, f"{oj_uri}/{LANG[2]}/akn4eu" if oj_uri else "", f"{oj_uri}/{LANG[2]}/akn4eu" if oj_uri else "")
+        g.ref(coll, "TLCReference", name="docType", href=AUTH + f"document-collection/{coll}", showAs="")
+        write_refs(mmeta)
+        # coverPage/publicationInfo of a pre-ABA publication (Part 2.8 §2.3.3.2, pp.209-210): only what is printed
+        info = g.node(g.node(og, "coverPage", "coverPage"), "container", "coverPage__publicationInfo", name="publicationInfo")
+        d = g.node(g.node(info, "block", f"{info.get(XID)}__publicationDate", name="publicationDate"), "date", f"{info.get(XID)}__publicationDate__date", date=md.publication_date)  # fmt: skip
+        d.text = md.publication_date_text or md.publication_date
+        g.node(info, "block", f"{info.get(XID)}__publicationLang", name="publicationLang", refersTo="#FRBRlanguage").text = LANG[0].upper()  # fmt: skip
+        if md.publication_journal:
+            g.node(info, "block", f"{info.get(XID)}__publicationTitle", name="publicationTitle").text = md.publication_journal
+        dn = g.node(g.node(info, "block", f"{info.get(XID)}__reference", name="reference"), "docNumber", f"{info.get(XID)}__reference__docNumber")  # fmt: skip
+        cn = g.node(dn, "inline", f"{dn.get(XID)}__collectionNumber", name="collectionNumber")
+        cn.text, cn.tail = f"{ref['series']} {ref['issue']}", "/"
+        g.node(dn, "inline", f"{dn.get(XID)}__page", name="page").text = ref["page"]
+        comp = g.node(g.node(og, "collectionBody", "collectionBody"), "component", "collectionBody__component_1")
+        g.node(comp, "documentRef", f"{comp.get(XID)}__documentRef", href=act_file, showAs="")  # Part 2.8 §1.4.1, p.200
+        g.fill_ids(og, "")
+        files[main_file] = mroot
+        g.f = act_f
+        if not oj_uri:
+            g.warnings.append({"code": "NO_OJ_URI", "detail": "the Official Journal URI is neither printed nor supplied: officialGazette FRBRthis/FRBRuri left empty, main- file named after the printed reference"})  # fmt: skip
+    else:
+        g.warnings.append({"code": "NO_OJ_ENTRY_FILE", "detail": f"Official Journal reference {md.publication_reference!r} of {md.publication_date!r} not printed in the supported pre-ABA form ('L 165/1'): no main- file"})  # fmt: skip
     files[act_file] = root
     for name, r in annex_roots:
         files[name] = r
@@ -728,10 +830,11 @@ def generate_akn4eu(model: DocumentModel, retrieval_date: str, eli: str | None =
 
     out = {k: etree.tostring(v.getroottree(), pretty_print=True, encoding="UTF-8", xml_declaration=True) for k, v in files.items()}  # fmt: skip
     return Akn4EuResult(
-        files=out, act_file=act_file, entries=[g.entries[i] for i in included], included_ids=included,
+        files=out, act_file=act_file, main_file=main_file, entries=[g.entries[i] for i in included], included_ids=included,
         excluded=excluded, unmapped=g.unmapped, warnings=g.warnings,
         identifiers={"eli": eli, "eli_source": "supplied by caller, checked against the printed type and number" if eli else None,
+                     "oj_uri": oj_uri, "oj_uri_source": "supplied by caller, checked against the printed OJ reference and date" if oj_uri else None,
                      "resource_type": rtype, "authors": authors, "language": LANG[1], "akn4eu_version": AKN4EU_VERSION},
-        scope={"complete": True, "profile": "akn4eu", "articles": len(model.of_type(T.ARTICLE)),
+        scope={"complete": not excluded["unmapped"], "profile": "akn4eu", "articles": len(model.of_type(T.ARTICLE)),
                "recitals": len(model.of_type(T.RECITAL)), "annexes": len(annexes), "retrieval_date": retrieval_date},
     )  # fmt: skip

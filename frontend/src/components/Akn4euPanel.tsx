@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../api";
-import { akn4euHeadline, akn4euLayers } from "../exports";
+import { akn4euHeadline, akn4euLayers, akn4euNotices, akn4euStatusLines } from "../exports";
 import { fmtBytes } from "../format";
 import type { Akn4euReport } from "../types";
 
@@ -19,6 +19,12 @@ export function Akn4euReportView({ docId, report, selected, onView }: { docId: s
   return (
     <>
       <div className={`alert ${head.kind}`} role="status" data-testid="akn4eu-status"><strong>{head.title}</strong></div>
+      <ul className="artlist" data-testid="akn4eu-status-lines">
+        {akn4euStatusLines(report).map((l) => (
+          <li key={l.label}><strong>{l.label}</strong> <span className={`badge ${l.tone === "ok" ? "ok" : l.tone === "fail" ? "warn" : "uncertain"}`}>{l.text}</span></li>
+        ))}
+      </ul>
+      {akn4euNotices(report).map((n) => <div key={n} className="alert warn" role="status" data-testid="akn4eu-notice">{n}</div>)}
       <table className="layers" data-testid="akn4eu-layers">
         <thead><tr><th>Check</th><th>Result</th><th>What it shows</th></tr></thead>
         <tbody>
@@ -35,6 +41,7 @@ export function Akn4euReportView({ docId, report, selected, onView }: { docId: s
         {report.identifiers.resource_type} · {report.scope.articles} articles, {report.scope.recitals} recitals, {report.scope.annexes} annexes ·
         language {report.identifiers.language} · AKN4EU {report.identifiers.akn4eu_version} layout ·{" "}
         {report.identifiers.eli ? <>ELI {report.identifiers.eli} (supplied, checked)</> : <>no ELI (not printed in the PDF, none supplied — FRBR identifiers left empty, nothing invented)</>}
+        {report.model_source && <> · built from {report.model_source.kind === "effective_reviewed_model" ? `the reviewed model (revision ${report.model_source.model_revision}, review ${report.model_source.approved ? "approved" : "NOT approved"})` : "the extracted model (no review)"}</>}
       </p>
       {Object.keys(warn).length > 0 && (
         <p className="muted pad" data-testid="akn4eu-warnings">Generator notes: {Object.entries(warn).map(([c, n]) => `${c} ×${n}`).join(", ")}</p>
@@ -46,7 +53,7 @@ export function Akn4euReportView({ docId, report, selected, onView }: { docId: s
         {Object.entries(report.files).map(([name, f]) => (
           <li key={name} className={name === selected ? "active" : ""}>
             <button className="artname" onClick={() => onView(name)}>
-              {name === report.act_file ? "Act" : "Annex"} · {name}<span className="muted"> · {fmtBytes(f.bytes)}</span>
+              {name === report.act_file ? "Act" : name === report.main_file ? "OJ entry file" : "Annex"} · {name}<span className="muted"> · {fmtBytes(f.bytes)}</span>
             </button>
             <span className={`badge ${f.valid_akn_3_1 ? "ok" : "warn"}`}>{f.valid_akn_3_1 ? "XSD valid" : `${f.errors.length} XSD errors`}</span>
             <span className={`badge ${f.sample_checks.passed ? "ok" : "warn"}`}>{f.sample_checks.passed ? "sample rules ok" : `${f.sample_checks.findings.length} rule findings`}</span>

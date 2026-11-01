@@ -12,7 +12,7 @@ import re
 
 from lxml import etree
 
-from odos.akn.akn4eu import AKN4EU_NS, AKN4EU_VERSION, XID
+from odos.akn.akn4eu import AKN4EU_NS, SAMPLE_AKN4EU_VERSION, XID
 from odos.akn.mapping import AKN_NS
 
 A = f"{{{AKN_NS}}}"
@@ -20,7 +20,8 @@ XML_NS = "http://www.w3.org/XML/1998/namespace"
 XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
 DOC_TYPES = {"act", "bill", "doc", "documentCollection", "officialGazette"}
 NEEDS_XML_ID = {"article", "paragraph", "subparagraph", "point", "list", "recital", "citation", "chapter", "num", "heading", "content"}  # fmt: skip
-CONTENT_EID = re.compile(r"^(art_\d+(/unp_\d+)?|rct_\d+|cit_\d+|pbl_\d+|ent_\d+|fnp_\d+|tit_\d+|anx(/par_\d+(/tab_\d+(/(hdt|row)_\d+)?)?)?)$")  # fmt: skip
+# prf_N and enc_N: required by the specification (Part 2.8 §1.5.3, pp.201-202); the 5.0.0.1 samples use ent_N for the body
+CONTENT_EID = re.compile(r"^(art_\d+(/unp_\d+)?|rct_\d+|cit_\d+|pbl_\d+|ent_\d+|enc_\d+|prf_\d+|fnp_\d+|tit_\d+|anx(/par_\d+(/tab_\d+(/(hdt|row)_\d+)?)?)?)$")  # fmt: skip
 
 RULES = {
     "ROOT": "root akomaNtoso in the AKN namespace with one document element (act, bill, doc, documentCollection, officialGazette)",
@@ -29,7 +30,7 @@ RULES = {
     "FRBR_COUNTRY": "FRBRWork/FRBRcountry/@value is 'EU'",
     "FRBR_LANGUAGE": "FRBRExpression/FRBRlanguage/@language is a two-letter code",
     "EXPRESSION_DATE": "FRBRExpression/FRBRdate is the AKN4EU placeholder 2999-01-01",
-    "AKN4EU_VERSION": f"FRBRManifestation/preservation declares akn4eu:akn4euVersion (samples: {AKN4EU_VERSION})",
+    "AKN4EU_VERSION": f"FRBRManifestation/preservation declares akn4eu:akn4euVersion with a four-part version value (samples: {SAMPLE_AKN4EU_VERSION}; the exact value is checked by akn4eu_validate)",
     "FOREIGN_MARKUP": "no foreign-namespace attributes (except xsi:schemaLocation on the root); foreign elements only akn4eu:* inside preservation",  # fmt: skip
     "XML_ID": "every " + ", ".join(sorted(NEEDS_XML_ID)) + " outside meta has an xml:id",
     "XML_ID_UNIQUE": "xml:id values are unique",
@@ -70,8 +71,11 @@ def check_document(xml: bytes, package: set[str] | None = None) -> list[dict]:
             fail("FRBR_LANGUAGE", "FRBRlanguage/@language is not a two-letter code")
         if [x.get("date") for x in levels["FRBRExpression"].findall(A + "FRBRdate")] != ["2999-01-01"]:
             fail("EXPRESSION_DATE", "FRBRExpression/FRBRdate is not the placeholder date")
-        if levels["FRBRManifestation"].find(f"{A}preservation/{{{AKN4EU_NS}}}akn4euVersion") is None:
+        version = levels["FRBRManifestation"].find(f"{A}preservation/{{{AKN4EU_NS}}}akn4euVersion")
+        if version is None:
             fail("AKN4EU_VERSION", "no akn4eu:akn4euVersion")
+        elif not re.fullmatch(r"\d+\.\d+\.\d+\.\d+", version.get("value") or ""):
+            fail("AKN4EU_VERSION", f"akn4eu:akn4euVersion/@value {version.get('value')!r} is not a version number")
     in_meta = set(meta.iter()) if meta is not None else set()
     ids: list[str] = []
     for n in root.iter():

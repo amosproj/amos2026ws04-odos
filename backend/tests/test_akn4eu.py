@@ -106,7 +106,7 @@ def test_official_sample_packages_resolve_their_document_refs():
 
 # ==== our output: OASIS AKN 3.1 XSD and the sample rules ===========================================================
 def test_every_generated_file_is_valid_against_the_official_akn_3_1_xsd(result):
-    assert len(result.files) == 13  # act + 12 annexes
+    assert len(result.files) == 14  # main- entry file (officialGazette) + act + 12 annexes
     for name, xml in result.files.items():
         v = validate_xml(xml)
         assert v.valid and v.errors == [], (name, [e.message for e in v.errors[:3]])
@@ -182,7 +182,7 @@ def test_meta_follows_the_akn4eu_conventions(act, eu_model):
     e = q(act, "//a:FRBRExpression")[0]
     assert q(e, "string(a:FRBRdate/@date)") == "2999-01-01"  # AKN4EU placeholder, as in every sample
     assert (q(e, "string(a:FRBRlanguage/@language)"), q(e, "string(a:FRBRlanguage/@refersTo)")) == ("de", "~DEU")
-    assert q(act, "string(//akn4eu:akn4euVersion/@value)") == "5.0.0.1"
+    assert q(act, "string(//akn4eu:akn4euVersion/@value)") == "5.0.1.0"  # Part 1 p.111; the samples declare 5.0.0.1
     refs = {r.get(XID): r.get("href") for r in q(act, "//a:references/*")}
     auth = "http://publications.europa.eu/resource/authority/"
     assert refs["EP"] == auth + "corporate-body/EP" and refs["CONSIL"] == auth + "corporate-body/CONSIL"
@@ -218,7 +218,9 @@ def test_eids_only_where_the_samples_use_them(act, trees):
                        if isinstance(n.tag, str) and n.get("eId") and not q(n, "ancestor::a:meta")}  # fmt: skip
     ours = {re.sub(r"\d+", "N", n.get("eId")) for t in trees.values() for n in t.iter()
             if isinstance(n.tag, str) and n.get("eId") and not q(n, "ancestor::a:meta")}  # fmt: skip
-    assert ours <= sample_patterns, ours - sample_patterns
+    spec_patterns = {"prf_N", "enc_N"}  # Part 2.8 §1.5.3, pp.201-202 (the samples: no preface eId, body "ent_1")
+    assert ours <= sample_patterns | spec_patterns, ours - sample_patterns - spec_patterns
+    assert (q(act, "string(//a:preface/@eId)"), q(act, "string(//a:body/@eId)")) == ("prf_1", "enc_1")
     assert [r.get("eId") for r in q(act, "//a:recital")][:3] == ["rct_1", "rct_2", "rct_3"]
     assert q(act, "string(//a:article[@eId='art_3']/a:paragraph/@eId)") == "art_3/unp_1"
 
@@ -298,7 +300,7 @@ def test_text_and_order_match_the_model_exactly(eu_model, result):
     assert t["document_order_preserved"] and t["footnote_order_preserved"] and t["original_text_reconstruction_diffs"] == []
     assert t["elements_not_in_xml"] == {"document_root": 1, "page_furniture": len(eu_model.furniture), "unmapped": 0}
     assert t["counts"] == {"recitals": len(eu_model.of_type(T.RECITAL)), "chapters": len(eu_model.of_type(T.CHAPTER)),
-                           "articles": len(eu_model.of_type(T.ARTICLE)), "annexes": len(eu_model.of_type(T.ANNEX)), "files": 13}  # fmt: skip
+                           "articles": len(eu_model.of_type(T.ARTICLE)), "annexes": len(eu_model.of_type(T.ANNEX)), "files": 14}  # fmt: skip
     missing = [e.id for e in eu_model.elements if e.id not in set(result.included_ids) and e.type != T.DOCUMENT]
     assert missing == [] and result.unmapped == []
 
@@ -439,7 +441,7 @@ def test_api_export(api, eu_raw_json):  # eu_raw_json: skips (with the reason) w
     assert api.get(f"/api/documents/{doc}/exports/akn4eu/files/..%2Fmeta.json").status_code == 404
     assert r.json()["status"] == STATUS_OK and r.json()["conformance"]["official_akn4eu_validation"]["performed"] is False
     z = zipfile.ZipFile(io.BytesIO(api.get(f"/api/documents/{doc}/exports/akn4eu/package").content))
-    assert len(z.namelist()) == 13 and z.namelist()[0].startswith("act-reg_2023_1230")
+    assert len(z.namelist()) == 14 and z.namelist()[0] == r.json()["main_file"] == "main-OJ_L_2023_165-de.xml" and z.namelist()[1].startswith("act-reg_2023_1230")
     assert api.get(f"/api/documents/{doc}/exports/akn4eu/traceability").json()["profile"] == "akn4eu"
     assert api.post(f"/api/documents/{doc}/exports/akn4eu", json={"eli": "http://data.europa.eu/eli/reg/2023/9/oj"}).status_code == 422  # fmt: skip
     assert api.get(f"/api/documents/{doc}/exports/akn4eu/other").status_code == 404

@@ -270,9 +270,14 @@ export interface Akn4euReport {
     akn4eu_sample_checks: { passed: boolean; rules: number; meaning: string };
     official_akn4eu_validation: { performed: boolean; reason: string };
     text_and_order_against_model: boolean;
+    // added with the AKN4EU 5.0.1.0 rules; absent in exports made before
+    akn4eu_5_0_1_0_rules?: { passed: boolean; complete: boolean; verdict: string; failed: string[]; missing_input: string[]; deviations: string[]; warnings?: string[]; meaning: string };
   };
   files: Record<string, Akn4euFileReport>;
   act_file: string;
+  main_file?: string | null;
+  model_source?: { kind: string; model_revision: number | null; corrected_elements?: string[]; review_state?: string | null; approved?: boolean | null };
+  export_warnings?: { code: string; detail: string }[];
   package: string;
   identifiers: { eli: string | null; resource_type: string; authors: string[]; language: string; akn4eu_version: string };
   scope: { articles: number; recitals: number; annexes: number; retrieval_date: string };

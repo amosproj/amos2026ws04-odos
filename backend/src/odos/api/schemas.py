@@ -79,6 +79,7 @@ class DeleteResult(BaseModel):
 
 class Akn4EuRequest(BaseModel):
     eli: str | None = Field(default=None, description="The act's ELI if known; checked against the printed type and number, never derived.")  # fmt: skip
+    oj_uri: str | None = Field(default=None, description="The URI of the (pre-ABA) Official Journal publication if known, e.g. http://publications.europa.eu/resource/oj/JOL_2023_165_R_0001; checked against the printed reference and date, never derived.")  # fmt: skip
 
 
 class ErrorBody(BaseModel):

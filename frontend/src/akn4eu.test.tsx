@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { Akn4euReportView } from "./components/Akn4euPanel";
-import { akn4euHeadline, akn4euLayers } from "./exports";
+import { akn4euHeadline, akn4euLayers, akn4euNotices, akn4euStatusLines } from "./exports";
 import type { Akn4euReport } from "./types";
 
 const file = (valid = true, passed = true) => ({
@@ -62,5 +62,40 @@ describe("AKN4EU export view", () => {
     expect(html).toContain("0 of 1 files valid");
     expect(html).toContain("1 XSD errors");
     expect(html).toContain("1 rule findings");
+  });
+
+  it("shows the AKN4EU 5.0.1.0 rules as a separate layer, with what is not met", () => {
+    const spec = { passed: true, complete: false, verdict: "NOT conformant", failed: [], missing_input: ["OJ_URI", "FRBR_SUBTYPE"], deviations: ["META_SOURCE"], meaning: "" };
+    const r: Akn4euReport = { ...report, main_file: "main-OJ_L_2023_165-de.xml", conformance: { ...report.conformance, akn4eu_5_0_1_0_rules: spec },
+      files: { "main-OJ_L_2023_165-de.xml": file(), ...report.files }, model_source: { kind: "effective_reviewed_model", model_revision: 2 } };
+    expect(akn4euLayers(r).map((l) => [l.name, l.tone])).toContainEqual(["AKN4EU 5.0.1.0 specification rules", "notdone"]);
+    const html = renderToStaticMarkup(<Akn4euReportView docId="d1" report={r} selected={null} onView={() => {}} />);
+    expect(html).toContain("not met: 2 need information not in the PDF, 1 deliberate deviation(s)");
+    expect(html).toContain("OJ entry file · main-OJ_L_2023_165-de.xml");
+    expect(html).toContain("built from the reviewed model (revision 2, review NOT approved)");
+    const bad = { ...r, conformance: { ...r.conformance, akn4eu_5_0_1_0_rules: { ...spec, passed: false, failed: ["MODEL_COMPLETE"] } } };
+    expect(akn4euLayers(bad).find((l) => l.name.startsWith("AKN4EU 5.0.1.0"))).toMatchObject({ tone: "fail", result: "1 mandatory rule(s) violated" });
+    expect(html).not.toMatch(/AKN4EU (conformant|compliant|valid)\b/i);
+  });
+
+  it("keeps XSD-valid and AKN4EU-conformant apart, and names an unapproved review", () => {
+    const spec = { passed: true, complete: false, verdict: "NOT conformant", failed: [], missing_input: ["OJ_URI"], deviations: [], warnings: ["OJ_CLASSIFICATION"], meaning: "" };
+    const r: Akn4euReport = { ...report, conformance: { ...report.conformance, akn4eu_5_0_1_0_rules: spec },
+      model_source: { kind: "effective_reviewed_model", model_revision: 3, review_state: "in_review", approved: false },
+      export_warnings: [{ code: "UNAPPROVED_REVIEW", detail: "built from the reviewed model of revision 3, but the review is 'in_review', not approved" }] };
+    const lines = akn4euStatusLines(r);
+    expect(lines.map((l) => [l.label, l.tone])).toEqual([["XSD (AKN 3.1)", "ok"], ["AKN4EU 5.0.1.0", "notdone"], ["Official AKN4EU validator", "notdone"]]);
+    expect(lines[0].text).toContain("says nothing about AKN4EU conformance");
+    expect(lines[1].text).toContain("NOT conformant: 1 required item(s) missing");
+    expect(akn4euNotices(r)).toEqual([expect.stringContaining("not approved"), "Recommended (SHOULD) requirements not met: OJ_CLASSIFICATION"]);
+    const html = renderToStaticMarkup(<Akn4euReportView docId="d1" report={r} selected={null} onView={() => {}} />);
+    expect(html).toContain("review NOT approved");
+    expect(html).toContain('data-testid="akn4eu-notice"');
+    // an XSD-valid export that violates a mandatory rule is a failure, not a pass
+    const bad = { ...r, conformance: { ...r.conformance, akn4eu_5_0_1_0_rules: { ...spec, passed: false, failed: ["ATTACHMENTS"] } } };
+    expect(akn4euStatusLines(bad).map((l) => l.tone).slice(0, 2)).toEqual(["ok", "fail"]);
+    // approved review: no notice about approval
+    const ok = { ...r, export_warnings: [], model_source: { kind: "effective_reviewed_model", model_revision: 3, review_state: "approved", approved: true } };
+    expect(akn4euNotices(ok)).toEqual(["Recommended (SHOULD) requirements not met: OJ_CLASSIFICATION"]);
   });
 });

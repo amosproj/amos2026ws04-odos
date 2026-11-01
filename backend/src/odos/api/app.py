@@ -21,7 +21,7 @@ from odos.classification import ClassificationResult, classify_lines, lines_from
 from odos.classification.model import Band, DocumentType, InputInfo, SupportStatus
 from odos.document_model import DocumentModel
 from odos.parsing.profiles import for_model
-from odos.review.model import ConfirmRequest, CorrectionRequest, DecisionRequest, ReviewView
+from odos.review.model import ConfirmRequest, CorrectionRequest, DecisionRequest, ReviewState, ReviewView
 from odos.review.service import ReviewError, ReviewService
 from odos.pipeline import Outcome, ProcessingMode, load_json, run_pipeline
 
@@ -221,16 +221,38 @@ def create_app(settings: Settings | None = None, pipeline: PipelineFn = run_pipe
     def akn4eu_dir(doc_id: str):
         return store.output_dir(doc_id) / "akn4eu"
 
+    def export_model(doc_id: str, original: DocumentModel) -> tuple[DocumentModel, dict]:
+        """The model an export is built from: the effective reviewed model of the current revision when the
+        document has a review (so review corrections reach the export), otherwise the original model.
+
+        The review record and the model are read under the review lock, so a correction cannot land between
+        them: the revision reported is the revision of the model returned. An unapproved review is used as it
+        is and reported as such (``review_state``, ``approved``); it is never treated as approved."""
+        with reviews.store.lock(doc_id):
+            if reviews.store.load(doc_id) is None:
+                model, source = original, {"kind": "original_document_model", "model_revision": None, "review_state": None, "approved": None}  # fmt: skip
+            else:  # a review of an earlier processing is archived first, as on every review access
+                model = reviews.effective_model(doc_id)
+                rec = reviews.store.load(doc_id)
+                source = {"kind": "effective_reviewed_model", "model_revision": rec.model_revision, "review_revision": rec.review_revision,
+                          "review_state": rec.state.value, "approved": rec.state == ReviewState.APPROVED}  # fmt: skip
+        source["corrected_elements"] = [e.id for e in model.elements if e.reviewed]
+        source["model_sha256"] = hashlib.sha256(model.model_dump_json().encode()).hexdigest()
+        return model, source
+
     @app.post("/api/documents/{doc_id}/exports/akn4eu", responses={404: {"model": ErrorBody}, 409: {"model": ErrorBody}, 422: {"model": ErrorBody}})  # fmt: skip
     async def export_akn4eu(doc_id: str, req: Akn4EuRequest | None = None):
-        """Generate the AKN4EU files from the EU document model and return the validation report."""
-        model = DocumentModel.model_validate(structure(doc_id))
-        if "akn4eu" not in for_model(model).capabilities:
+        """Generate the AKN4EU files from the EU document model (the effective reviewed model if the document
+        has a review) and return the validation report."""
+        original = DocumentModel.model_validate(structure(doc_id))
+        if "akn4eu" not in for_model(original).capabilities:
             raise err(409, "profile_not_supported", "The AKN4EU export is only available for documents processed as EU legislation.")  # fmt: skip
         from odos.akn.akn4eu_artifacts import build_akn4eu_artifacts
 
+        req = req or Akn4EuRequest()
+        model, source = await run_in_threadpool(export_model, doc_id, original)
         try:
-            art = await run_in_threadpool(build_akn4eu_artifacts, model, date.today().isoformat(), akn4eu_dir(doc_id), (req or Akn4EuRequest()).eli)  # fmt: skip
+            art = await run_in_threadpool(build_akn4eu_artifacts, model, date.today().isoformat(), akn4eu_dir(doc_id), req.eli, req.oj_uri, source)  # fmt: skip
         except ValueError as exc:
             raise err(422, "akn4eu_refused", str(exc)) from None
         return art["report"]

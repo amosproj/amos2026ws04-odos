@@ -37,6 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     a4e.add_argument("document_model", type=Path)
     a4e.add_argument("-o", "--output-dir", type=Path, default=None, help="default: <model dir>/akn4eu")
     a4e.add_argument("--eli", default=None, help="the act's ELI (e.g. http://data.europa.eu/eli/reg/2023/1230/oj); checked against the printed type/number, never derived")  # fmt: skip
+    a4e.add_argument("--oj-uri", default=None, help="the Official Journal URI (e.g. http://publications.europa.eu/resource/oj/JOL_2023_165_R_0001); checked against the printed reference, never derived")  # fmt: skip
     a4e.add_argument("--conversion-date", default=None, help="YYYY-MM-DD for FRBRManifestation; default: today")
     lj = sub.add_parser("legal-json", help="Serialize a document_model.json to document.json (public JSON) and validate it")
     lj.add_argument("document_model", type=Path)
@@ -163,16 +164,24 @@ def run_akn4eu(args) -> int:
     model = DocumentModel.model_validate_json(args.document_model.read_text(encoding="utf-8"))
     out = args.output_dir or args.document_model.parent / "akn4eu"
     try:
-        art = build_akn4eu_artifacts(model, args.conversion_date or date.today().isoformat(), out, eli=args.eli)
+        art = build_akn4eu_artifacts(model, args.conversion_date or date.today().isoformat(), out, eli=args.eli, oj_uri=args.oj_uri)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     rep = art["report"]
     c = rep["conformance"]
+    spec = c["akn4eu_5_0_1_0_rules"]
+    annexes = len(rep["files"]) - 1 - (1 if rep["main_file"] else 0)
     print(f"status:            {rep['status']}")
-    print(f"files:             {len(rep['files'])} ({rep['act_file']} + {len(rep['files']) - 1} annex file(s)), package {out / rep['package']}")  # fmt: skip
+    print(f"files:             {len(rep['files'])} ({rep['main_file'] or 'no main- file'}, {rep['act_file']}, {annexes} annex file(s)), package {out / rep['package']}")  # fmt: skip
     print(f"AKN 3.1 XSD:       {'valid' if c['oasis_akn_3_1_xsd']['valid'] else 'INVALID'} (official OASIS schema)")
     print(f"AKN4EU samples:    {'all ' + str(c['akn4eu_sample_checks']['rules']) + ' rules hold' if c['akn4eu_sample_checks']['passed'] else 'rules FAILED'} (sample compatibility)")  # fmt: skip
+    print(f"AKN4EU 5.0.1.0:    {spec['verdict']} (rules implemented by ODOS)")
+    for x in rep["akn4eu_5_0_1_0"]["rules"]:
+        if x["rule"] in spec["failed"] + spec["missing_input"] + spec["deviations"]:
+            print(f"  {x['status']:<14} {x['rule']}: {x['findings'][0]['message'] if x['findings'] else x['requirement']}")
+    if not c["model_completeness"]["complete"]:
+        print(f"model:             {len(c['model_completeness']['unmapped'])} element(s) NOT in the XML: export rejected")
     print("AKN4EU official:   not verified (no official AKN4EU validation artefacts available)")
     print(f"text vs model:     {'identical, order preserved' if c['text_and_order_against_model'] else 'DIFFERENCES'}")
     for f, v in rep["files"].items():
