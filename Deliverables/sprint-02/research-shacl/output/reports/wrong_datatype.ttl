@@ -1,0 +1,30 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[] a sh:ValidationReport ;
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode ex:wrong_datatype ;
+            sh:resultMessage "MBO 37(5): clear width >= 0.90 m (demo orientation mapping)." ;
+            sh:resultPath ex:clearWidthM ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:MinInclusiveConstraintComponent ;
+            sh:sourceShape _:n39fc97d1b3d347ba8f51f2f3eb05fb23b5 ;
+            sh:value "0.90" ],
+        [ a sh:ValidationResult ;
+            sh:focusNode ex:wrong_datatype ;
+            sh:resultMessage "MBO 37(5): clear width >= 0.90 m (demo orientation mapping)." ;
+            sh:resultPath ex:clearWidthM ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:DatatypeConstraintComponent ;
+            sh:sourceShape _:n39fc97d1b3d347ba8f51f2f3eb05fb23b5 ;
+            sh:value "0.90" ] .
+
+_:n39fc97d1b3d347ba8f51f2f3eb05fb23b5 sh:datatype xsd:decimal ;
+    sh:maxCount 1 ;
+    sh:message "MBO 37(5): clear width >= 0.90 m (demo orientation mapping)." ;
+    sh:minCount 1 ;
+    sh:minInclusive 0.90 ;
+    sh:path ex:clearWidthM .
+

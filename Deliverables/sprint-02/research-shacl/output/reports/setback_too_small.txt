@@ -1,0 +1,16 @@
+Validation Report
+Conforms: False
+Results (1):
+Constraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):
+	Severity: sh:Violation
+	Source Shape: ex:GeneralSetbackShape
+	Focus Node: ex:setback_too_small
+	Value Node: Literal("3.99", datatype=xsd:decimal)
+	Source Constraint: [ sh:message Literal("Setback depth must be at least max(factor * H, minimumM).") ; sh:select Literal("PREFIX ex: <https://example.org/amos/mbo#>
+SELECT $this ?value WHERE {
+ $this ex:effectiveHeightHM ?h ; ex:setbackDepthM ?value .
+ BIND((0.4 * ?h) AS ?scaled)
+ BIND(IF(?scaled > 3.0, ?scaled, 3.0) AS ?required)
+ FILTER(?value < ?required)
+}") ]
+	Message: Setback depth must be at least max(factor * H, minimumM).

@@ -1,0 +1,14 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[] a sh:ValidationReport ;
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode ex:roof_too_far ;
+            sh:resultMessage "Node ex:roof_too_far must conform to one or more shapes in ex:NonRoofBranch , ex:RoofBranch" ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:OrConstraintComponent ;
+            sh:sourceShape ex:EscapeWindowShape ;
+            sh:value ex:roof_too_far ] .
+

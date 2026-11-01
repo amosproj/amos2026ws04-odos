@@ -1,0 +1,95 @@
+{
+  "schema_version": "demo-1",
+  "interpretation_method": "Manually interpreted demo template. NOT automatically inferred from PDF. Phrase checks are guards, not proof of semantic correctness.",
+  "assumptions": [
+    "All lengths are xsd:decimal in metres; no automatic unit conversion.",
+    "EscapeWindow is assigned upstream ONLY to escape-route windows under section 33(2) sentence 2. This demo does not determine legal applicability.",
+    "For this demo, 0.90 x 1.20 m maps to width then height. Rotation/orientation is not inferred; confirm measurement and orientation conventions with a domain expert.",
+    "heightAboveFloorM is the assessed opening lower edge above finished floor. Nonnegative bounds are additional data-contract checks.",
+    "inRoofSlopeOrRoofStructure must be supplied explicitly, including false for ordinary windows.",
+    "For roof windows either the lower edge OR a qualifying step may meet the horizontal eaves-distance condition. Step suitability is supplied by upstream assessment.",
+    "GeneralSetbackCase is restricted to section 6(5) sentence 1. Commercial/industrial zones, residential exceptions, municipal statutes and other exceptions are excluded.",
+    "effectiveHeightHM is H already derived according to section 6(4); it is not simply raw building height. H derivation is not implemented.",
+    "Passing only means satisfying these selected constraints on supplied data, not full MBO compliance."
+  ],
+  "escape_window": {
+    "source_clause": "37.5",
+    "targetClass": "EscapeWindow",
+    "properties": [
+      {
+        "property": "clearWidthM",
+        "datatype": "decimal",
+        "minInclusive": "1.00",
+        "message": "Mutation experiment: clear width must be at least 1.00 m."
+      },
+      {
+        "property": "clearHeightM",
+        "datatype": "decimal",
+        "minInclusive": "1.20",
+        "message": "MBO 37(5): clear height >= 1.20 m (demo orientation mapping)."
+      },
+      {
+        "property": "heightAboveFloorM",
+        "datatype": "decimal",
+        "minInclusive": "0",
+        "maxInclusive": "1.20",
+        "message": "MBO 37(5): lower edge above floor <= 1.20 m; nonnegative is a data-contract check."
+      },
+      {
+        "property": "inRoofSlopeOrRoofStructure",
+        "datatype": "boolean",
+        "message": "Data contract: roof applicability must be explicitly supplied as a boolean."
+      }
+    ],
+    "roof_distance_alternatives": [
+      {
+        "property": "lowerEdgeHorizontalDistanceToEavesM",
+        "minInclusive": "0",
+        "maxInclusive": "1.00",
+        "message": "MBO 37(5) sentence 2: lower-edge horizontal distance to eaves <= 1 m."
+      },
+      {
+        "property": "stepHorizontalDistanceToEavesM",
+        "minInclusive": "0",
+        "maxInclusive": "1.00",
+        "message": "MBO 37(5) sentence 2: qualifying step horizontal distance to eaves <= 1 m."
+      }
+    ]
+  },
+  "general_setback": {
+    "source_clause": "6.5",
+    "scope": "Section 6(5) sentence 1 ONLY; all exceptions and H derivation excluded.",
+    "targetClass": "GeneralSetbackCase",
+    "factor": "0.4",
+    "minimumM": "3.0",
+    "properties": [
+      {
+        "property": "effectiveHeightHM",
+        "datatype": "decimal",
+        "minInclusive": "0",
+        "message": "Data contract: effective H from section 6(4), in metres."
+      },
+      {
+        "property": "setbackDepthM",
+        "datatype": "decimal",
+        "minInclusive": "0",
+        "message": "Data contract: assessed setback depth in metres."
+      }
+    ]
+  },
+  "source_document_sha256": "53fd13388013263c3f676a3a8024f6932e38b8d326af6d2d844ecb9be61d340c",
+  "source_clauses": {
+    "37.5": {
+      "section": "37",
+      "subsection": 5,
+      "pdf_page": 34,
+      "text": "1Fenster, die als Rettungswege nach § 33 Abs. 2 Satz 2 dienen, müssen im Lichten mindestens 0,90 m x 1,20 m groß und nicht höher als 1,20 m über der Fußbodenoberkante angeordnet sein. 2Liegen diese Fenster in Dachschrägen oder Dachaufbauten, so darf ihre Unterkante oder ein davor liegender Austritt von der Traufkante horizontal gemessen nicht mehr als 1 m entfernt sein."
+    },
+    "6.5": {
+      "section": "6",
+      "subsection": 5,
+      "pdf_page": 10,
+      "text": "1Die Tiefe der Abstandsflächen beträgt 0,4 H, mindestens 3 m. 2In Gewerbe￾und Industriegebieten genügt eine Tiefe von 0,2 H, mindestens 3 m. 3Vor den Außenwänden von Wohngebäuden der Gebäudeklassen 1 und 2 mit nicht mehr als drei oberirdischen Geschossen genügt als Tiefe der Abstandsfläche 3 m. 4Werden von einer städtebaulichen Satzung oder einer Satzung nach § 86 Außenwände zugelassen oder vorgeschrieben, vor denen Abstandsflächen größerer oder geringerer Tiefe als nach den Sätzen 1 bis 3 liegen müssten, finden die Sätze 1 bis 3 keine Anwendung, es sei denn, die Satzung ordnet die Geltung dieser Vorschriften an."
+    }
+  }
+}

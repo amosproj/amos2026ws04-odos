@@ -1,0 +1,13 @@
+{
+  "conforms": false,
+  "target_count": 1,
+  "results": [
+    {
+      "focus_node": "https://example.org/amos/mbo#roof_too_far",
+      "path": "",
+      "value": "https://example.org/amos/mbo#roof_too_far",
+      "message": "Node ex:roof_too_far must conform to one or more shapes in ex:NonRoofBranch , ex:RoofBranch",
+      "constraint": "http://www.w3.org/ns/shacl#OrConstraintComponent"
+    }
+  ]
+}

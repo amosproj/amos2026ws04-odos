@@ -1,0 +1,24 @@
+# Local environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.uv-cache/
+
+# Personal experiments and generated ad-hoc reports
+my-*.ttl
+my-*.json
+output/reports/custom.*
+output/reports/changed_threshold.*
+output/reports/restored_threshold.*
+
+# Operating-system metadata
+*Zone.Identifier*
+.DS_Store
+Thumbs.db
+
+# Local build and transfer artifacts
+.codex-finalizer/
+presentation/build/
+*.zip

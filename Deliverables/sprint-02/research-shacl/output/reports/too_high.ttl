@@ -1,0 +1,21 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[] a sh:ValidationReport ;
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode ex:too_high ;
+            sh:resultMessage "MBO 37(5): lower edge above floor <= 1.20 m; nonnegative is a data-contract check." ;
+            sh:resultPath ex:heightAboveFloorM ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:MaxInclusiveConstraintComponent ;
+            sh:sourceShape [ sh:datatype xsd:decimal ;
+                    sh:maxCount 1 ;
+                    sh:maxInclusive 1.20 ;
+                    sh:message "MBO 37(5): lower edge above floor <= 1.20 m; nonnegative is a data-contract check." ;
+                    sh:minCount 1 ;
+                    sh:minInclusive 0.0 ;
+                    sh:path ex:heightAboveFloorM ] ;
+            sh:value 1.21 ] .
+

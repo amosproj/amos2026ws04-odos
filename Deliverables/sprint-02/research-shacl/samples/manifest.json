@@ -1,0 +1,82 @@
+[
+  {
+    "file": "valid_boundary.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": true
+  },
+  {
+    "file": "too_narrow.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "too_short.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "too_high.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "missing_width.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "wrong_datatype.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "wrong_boolean.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "roof_edge_boundary.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": true
+  },
+  {
+    "file": "roof_too_far.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "roof_missing_distance.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "roof_step_alternative.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": true
+  },
+  {
+    "file": "missing_roof_classification.ttl",
+    "shapes": "window_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "setback_boundary.ttl",
+    "shapes": "setback_shapes.ttl",
+    "expected": true
+  },
+  {
+    "file": "setback_too_small.ttl",
+    "shapes": "setback_shapes.ttl",
+    "expected": false
+  },
+  {
+    "file": "setback_minimum.ttl",
+    "shapes": "setback_shapes.ttl",
+    "expected": true
+  },
+  {
+    "file": "setback_below_minimum.ttl",
+    "shapes": "setback_shapes.ttl",
+    "expected": false
+  }
+]

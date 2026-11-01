@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "method": "Clean archive extraction into a separate temporary directory; fresh virtual environment using an existing compatible interpreter.",
+  "python_downloads": "disabled",
+  "steps": [
+    {
+      "command": "uv sync --locked",
+      "exit_code": 0
+    },
+    {
+      "command": "uv run --locked",
+      "exit_code": 0
+    },
+    {
+      "command": "uv run --locked",
+      "exit_code": 0
+    }
+  ],
+  "tests_total": 17,
+  "tests_passed": 17,
+  "threshold_experiment": "true / false / true; original shapes restored"
+}

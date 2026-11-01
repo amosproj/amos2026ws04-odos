@@ -1,0 +1,18 @@
+OK valid_boundary.ttl: conforms=True expected=True
+OK too_narrow.ttl: conforms=False expected=False
+OK too_short.ttl: conforms=False expected=False
+OK too_high.ttl: conforms=False expected=False
+OK missing_width.ttl: conforms=False expected=False
+OK wrong_datatype.ttl: conforms=False expected=False
+OK wrong_boolean.ttl: conforms=False expected=False
+OK roof_edge_boundary.ttl: conforms=True expected=True
+OK roof_too_far.ttl: conforms=False expected=False
+OK roof_missing_distance.ttl: conforms=False expected=False
+OK roof_step_alternative.ttl: conforms=True expected=True
+OK missing_roof_classification.ttl: conforms=False expected=False
+OK setback_boundary.ttl: conforms=True expected=True
+OK setback_too_small.ttl: conforms=False expected=False
+OK setback_minimum.ttl: conforms=True expected=True
+OK setback_below_minimum.ttl: conforms=False expected=False
+OK no_target.ttl: must reject instead of silently passing
+17/17 tests passed. Reports: output/reports/

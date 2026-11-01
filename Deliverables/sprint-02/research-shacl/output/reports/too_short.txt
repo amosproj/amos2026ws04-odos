@@ -1,0 +1,10 @@
+Validation Report
+Conforms: False
+Results (1):
+Constraint Violation in MinInclusiveConstraintComponent (http://www.w3.org/ns/shacl#MinInclusiveConstraintComponent):
+	Severity: sh:Violation
+	Source Shape: [ sh:datatype xsd:decimal ; sh:maxCount Literal("1", datatype=xsd:integer) ; sh:message Literal("MBO 37(5): clear height >= 1.20 m (demo orientation mapping).") ; sh:minCount Literal("1", datatype=xsd:integer) ; sh:minInclusive Literal("1.20", datatype=xsd:decimal) ; sh:path ex:clearHeightM ]
+	Focus Node: ex:too_short
+	Value Node: Literal("1.19", datatype=xsd:decimal)
+	Result Path: ex:clearHeightM
+	Message: MBO 37(5): clear height >= 1.20 m (demo orientation mapping).

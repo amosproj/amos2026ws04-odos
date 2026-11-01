@@ -1,0 +1,59 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:EscapeWindowShape a sh:NodeShape ;
+    sh:description "MBO section 37(5); see rules.json for source and interpretation assumptions." ;
+    sh:or ( ex:NonRoofBranch ex:RoofBranch ) ;
+    sh:property [ sh:datatype xsd:boolean ;
+            sh:maxCount 1 ;
+            sh:message "Data contract: roof applicability must be explicitly supplied as a boolean." ;
+            sh:minCount 1 ;
+            sh:path ex:inRoofSlopeOrRoofStructure ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:message "Mutation experiment: clear width must be at least 1.00 m." ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.00 ;
+            sh:path ex:clearWidthM ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:maxInclusive 1.20 ;
+            sh:message "MBO 37(5): lower edge above floor <= 1.20 m; nonnegative is a data-contract check." ;
+            sh:minCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path ex:heightAboveFloorM ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:message "MBO 37(5): clear height >= 1.20 m (demo orientation mapping)." ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.20 ;
+            sh:path ex:clearHeightM ] ;
+    sh:targetClass ex:EscapeWindow .
+
+ex:NonRoofBranch sh:property [ sh:hasValue false ;
+            sh:maxCount 1 ;
+            sh:message "inRoofSlopeOrRoofStructure" ;
+            sh:minCount 1 ;
+            sh:path ex:inRoofSlopeOrRoofStructure ] .
+
+ex:RoofBranch sh:or ( [ sh:property [ sh:datatype xsd:decimal ;
+                        sh:maxCount 1 ;
+                        sh:maxInclusive 1.00 ;
+                        sh:message "MBO 37(5) sentence 2: lower-edge horizontal distance to eaves <= 1 m." ;
+                        sh:minCount 1 ;
+                        sh:minInclusive 0.0 ;
+                        sh:path ex:lowerEdgeHorizontalDistanceToEavesM ] ] [ sh:property [ sh:datatype xsd:decimal ;
+                        sh:maxCount 1 ;
+                        sh:maxInclusive 1.00 ;
+                        sh:message "MBO 37(5) sentence 2: qualifying step horizontal distance to eaves <= 1 m." ;
+                        sh:minCount 1 ;
+                        sh:minInclusive 0.0 ;
+                        sh:path ex:stepHorizontalDistanceToEavesM ] ] ) ;
+    sh:property [ sh:hasValue true ;
+            sh:maxCount 1 ;
+            sh:message "inRoofSlopeOrRoofStructure" ;
+            sh:minCount 1 ;
+            sh:path ex:inRoofSlopeOrRoofStructure ] .
+

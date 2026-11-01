@@ -1,0 +1,26 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[] a sh:ValidationReport ;
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode ex:wrong_boolean ;
+            sh:resultMessage "Data contract: roof applicability must be explicitly supplied as a boolean." ;
+            sh:resultPath ex:inRoofSlopeOrRoofStructure ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:DatatypeConstraintComponent ;
+            sh:sourceShape [ sh:datatype xsd:boolean ;
+                    sh:maxCount 1 ;
+                    sh:message "Data contract: roof applicability must be explicitly supplied as a boolean." ;
+                    sh:minCount 1 ;
+                    sh:path ex:inRoofSlopeOrRoofStructure ] ;
+            sh:value "false" ],
+        [ a sh:ValidationResult ;
+            sh:focusNode ex:wrong_boolean ;
+            sh:resultMessage "Node ex:wrong_boolean must conform to one or more shapes in ex:NonRoofBranch , ex:RoofBranch" ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:OrConstraintComponent ;
+            sh:sourceShape ex:EscapeWindowShape ;
+            sh:value ex:wrong_boolean ] .
+

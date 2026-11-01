@@ -1,0 +1,28 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:GeneralSetbackShape a sh:NodeShape ;
+    sh:description "Section 6(5) sentence 1 ONLY; H derivation and exceptions excluded." ;
+    sh:property [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:message "Data contract: assessed setback depth in metres." ;
+            sh:minCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path ex:setbackDepthM ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:message "Data contract: effective H from section 6(4), in metres." ;
+            sh:minCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path ex:effectiveHeightHM ] ;
+    sh:sparql [ sh:message "Setback depth must be at least max(factor * H, minimumM)." ;
+            sh:select """PREFIX ex: <https://example.org/amos/mbo#>
+SELECT $this ?value WHERE {
+ $this ex:effectiveHeightHM ?h ; ex:setbackDepthM ?value .
+ BIND((0.4 * ?h) AS ?scaled)
+ BIND(IF(?scaled > 3.0, ?scaled, 3.0) AS ?required)
+ FILTER(?value < ?required)
+}""" ] ;
+    sh:targetClass ex:GeneralSetbackCase .
+

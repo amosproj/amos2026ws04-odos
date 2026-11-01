@@ -1,0 +1,10 @@
+Validation Report
+Conforms: False
+Results (1):
+Constraint Violation in MaxInclusiveConstraintComponent (http://www.w3.org/ns/shacl#MaxInclusiveConstraintComponent):
+	Severity: sh:Violation
+	Source Shape: [ sh:datatype xsd:decimal ; sh:maxCount Literal("1", datatype=xsd:integer) ; sh:maxInclusive Literal("1.20", datatype=xsd:decimal) ; sh:message Literal("MBO 37(5): lower edge above floor <= 1.20 m; nonnegative is a data-contract check.") ; sh:minCount Literal("1", datatype=xsd:integer) ; sh:minInclusive Literal("0.0", datatype=xsd:decimal) ; sh:path ex:heightAboveFloorM ]
+	Focus Node: ex:too_high
+	Value Node: Literal("1.21", datatype=xsd:decimal)
+	Result Path: ex:heightAboveFloorM
+	Message: MBO 37(5): lower edge above floor <= 1.20 m; nonnegative is a data-contract check.

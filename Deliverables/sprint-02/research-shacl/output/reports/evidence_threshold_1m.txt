@@ -1,0 +1,10 @@
+Validation Report
+Conforms: False
+Results (1):
+Constraint Violation in MinInclusiveConstraintComponent (http://www.w3.org/ns/shacl#MinInclusiveConstraintComponent):
+	Severity: sh:Violation
+	Source Shape: [ sh:datatype xsd:decimal ; sh:maxCount Literal("1", datatype=xsd:integer) ; sh:message Literal("Mutation experiment: clear width must be at least 1.00 m.") ; sh:minCount Literal("1", datatype=xsd:integer) ; sh:minInclusive Literal("1.00", datatype=xsd:decimal) ; sh:path ex:clearWidthM ]
+	Focus Node: ex:valid_boundary
+	Value Node: Literal("0.90", datatype=xsd:decimal)
+	Result Path: ex:clearWidthM
+	Message: Mutation experiment: clear width must be at least 1.00 m.

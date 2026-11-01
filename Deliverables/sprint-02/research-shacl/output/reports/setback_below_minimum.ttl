@@ -1,0 +1,22 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[] a sh:ValidationReport ;
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode ex:setback_below_minimum ;
+            sh:resultMessage "Setback depth must be at least max(factor * H, minimumM)." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint [ sh:message "Setback depth must be at least max(factor * H, minimumM)." ;
+                    sh:select """PREFIX ex: <https://example.org/amos/mbo#>
+SELECT $this ?value WHERE {
+ $this ex:effectiveHeightHM ?h ; ex:setbackDepthM ?value .
+ BIND((0.4 * ?h) AS ?scaled)
+ BIND(IF(?scaled > 3.0, ?scaled, 3.0) AS ?required)
+ FILTER(?value < ?required)
+}""" ] ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape ex:GeneralSetbackShape ;
+            sh:value 2.99 ] .
+

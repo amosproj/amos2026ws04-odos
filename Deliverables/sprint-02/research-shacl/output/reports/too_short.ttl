@@ -1,0 +1,20 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[] a sh:ValidationReport ;
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode ex:too_short ;
+            sh:resultMessage "MBO 37(5): clear height >= 1.20 m (demo orientation mapping)." ;
+            sh:resultPath ex:clearHeightM ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:MinInclusiveConstraintComponent ;
+            sh:sourceShape [ sh:datatype xsd:decimal ;
+                    sh:maxCount 1 ;
+                    sh:message "MBO 37(5): clear height >= 1.20 m (demo orientation mapping)." ;
+                    sh:minCount 1 ;
+                    sh:minInclusive 1.20 ;
+                    sh:path ex:clearHeightM ] ;
+            sh:value 1.19 ] .
+
