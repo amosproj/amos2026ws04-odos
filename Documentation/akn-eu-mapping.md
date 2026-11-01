@@ -1,8 +1,7 @@
 # EU legislation → Akoma Ntoso (profile `eu_legislation`)
 
 Generator: `backend/src/odos/akn/eu_generator.py`. Validated against the unmodified OASIS AKN 3.1 XSD in
-`backend/schemas/akn-3.1-os/` (same pinned files and validator as the German mapping; for the AKN4EU-shaped
-export of the same model see [akn4eu-mapping.md](akn4eu-mapping.md)). Tested on Regulation (EU)
+`backend/schemas/akn-3.1-os/` (same pinned files and validator as the German mapping). Tested on Regulation (EU)
 2023/1230 (German language version). Element choices were checked against the XSD content models
 (quoted in brackets).
 

@@ -1,18 +1,9 @@
-import hashlib
 from pathlib import Path
 
 import pytest
 
 from odos.cli import build_parser, main
 from odos.extraction import extract_pdf, load_raw_json
-
-BACKEND = Path(__file__).resolve().parents[1]
-BDSG = BACKEND / "data" / "input" / "BDSG.pdf"
-BDSG_SHA256 = "859631d6203e0c3d12b280a1982c83d0521ccfe6c4eaa04ae5bc264112711004"
-
-
-def test_input_pdf_hash_matches_recorded_value():
-    assert hashlib.sha256(BDSG.read_bytes()).hexdigest() == BDSG_SHA256
 
 
 def test_missing_pdf_raises(tmp_path):
@@ -30,20 +21,22 @@ def test_cli_parser_defaults():
 
 
 @pytest.fixture(scope="module")
-def bdsg_result(tmp_path_factory):
-    return extract_pdf(BDSG, tmp_path_factory.mktemp("bdsg"))
+def synthetic_result(synthetic_german_raw_json, tmp_path_factory):
+    """The real Docling conversion of the generated synthetic German law (original text, freely redistributable)."""
+    pdf = synthetic_german_raw_json.parent / "original.pdf"
+    return extract_pdf(pdf, tmp_path_factory.mktemp("synthetic_extraction"))
 
 
 @pytest.mark.slow
-def test_bdsg_extraction_outputs(bdsg_result):
-    assert bdsg_result.json_path.stat().st_size > 0
-    md = bdsg_result.markdown_path.read_text(encoding="utf-8")
-    assert "Bundesdatenschutzgesetz" in md
-    assert bdsg_result.pages == 45
+def test_extraction_outputs(synthetic_result):
+    assert synthetic_result.json_path.stat().st_size > 0
+    md = synthetic_result.markdown_path.read_text(encoding="utf-8")
+    assert "Beispielgesetz" in md
+    assert synthetic_result.pages == 3
 
 
 @pytest.mark.slow
-def test_bdsg_json_has_structure_and_provenance(bdsg_result):
-    raw = load_raw_json(bdsg_result.json_path)
+def test_extracted_json_has_structure_and_provenance(synthetic_result):
+    raw = load_raw_json(synthetic_result.json_path)
     assert raw["texts"] and raw["pages"]
     assert raw["texts"][0]["prov"][0]["page_no"] >= 1

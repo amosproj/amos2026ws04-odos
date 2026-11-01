@@ -257,10 +257,10 @@ def test_explicit_parser_modes(eu_raw_json, eu_model):
         parse_document(eu_raw_json, "auto")
 
 
-def test_german_models_carry_no_eu_fields(model, mbo_model):
-    for m in (model, mbo_model):
-        d = json.loads(m.model_dump_json())
-        assert "profile" not in d and "document_number" not in d["metadata"] and "metadata_provenance" not in d["metadata"]
+@pytest.mark.parametrize("fixture", ["synthetic_german_model", "mbo_model"])
+def test_german_models_carry_no_eu_fields(request, fixture):
+    d = json.loads(request.getfixturevalue(fixture).model_dump_json())
+    assert "profile" not in d and "document_number" not in d["metadata"] and "metadata_provenance" not in d["metadata"]
 
 
 @pytest.mark.slow

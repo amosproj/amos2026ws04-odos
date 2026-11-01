@@ -6,7 +6,6 @@ source of truth for a document. Everything else is a one-way serialization of it
 - `document.json` (Custom Legal JSON 1.1)
 - the Akoma Ntoso XML
 - the validation reports
-- review revisions, as an *effective* model with the corrections applied
 
 Nothing reads those outputs back as input. The model keeps the internal diagnostics (warnings,
 uncertainty, hygiene flags) that the public outputs leave out.
@@ -26,7 +25,7 @@ uncertainty, hygiene flags) that the public outputs leave out.
 | `structure_notes` | valid exceptions the parser recognised and verified (not problems) |
 | `sentences` | derived: sentences as text ranges over elements |
 | `toc_entries` | derived: logical table-of-contents entries with their verified links |
-| `review` | only in an effective (reviewed) model: the revision and its corrections |
+| `review` | reserved for an effective (corrected) model; the prototype has no correction step, so it stays empty |
 
 ## Element IDs
 
@@ -39,8 +38,8 @@ Further rules:
 
 - **Repeated or restarted numbering** gets a suffix (`~2`) or a run prefix (`run2-nr-1`).
 - **Only the profile's recognizer assigns IDs**; later lifecycle stages never renumber.
-- **Review corrections, revisions, sentences, TOC links and footnote anchors all refer to these IDs.**
-  Changing an ID scheme is therefore a breaking change for stored reviews.
+- **Sentences, TOC links, footnote anchors and the exports' element IDs all refer to these IDs.**
+  Changing an ID scheme is therefore a breaking change.
 
 ## Elements
 
@@ -53,7 +52,7 @@ Further rules:
 | Provenance | `source_refs` (Docling item refs), `pages`, `provenance` (page, box, character span), `source_spans` (the slice of a Docling item a split element covers), `highlight_boxes` (exact per-line rectangles proven from the PDF glyphs; empty = use `provenance`) |
 | Footnotes | `anchor_id` (the single anchor), `anchor_ids` (all anchors), `footnote_refs` (each reference mark with page, box and evidence) |
 | Diagnostics | `uncertain`, `uncertainty_reasons`, `hygiene_flags`, `docling_label` |
-| Review | `reviewed`: only in an effective model, the corrected fields with their original values |
+| Review | `reviewed`: reserved for corrected elements (corrected fields with their original values); empty in this prototype |
 
 **Coordinates.** Boxes are in PDF points with `coord_origin: "BOTTOMLEFT"`. The frontend converts them
 for display (`frontend/src/structure.ts`, `bboxToRect`).
@@ -86,6 +85,5 @@ These never change an element, ID or text.
 
 - New fields are optional and left out when empty (`exclude_if`). Stored models stay valid.
 - Fields are never renamed or given a new meaning. `profile` keeps its stored values.
-- Moving the module (Phase 4: `normalization/model.py` → `document_model.py`) changes no JSON. A
-  contract test reads every stored document and review revision through the API before and after each
-  change.
+- Moving the module (Phase 4: `normalization/model.py` → `document_model.py`) changes no JSON. The
+  golden baselines (`backend/tests/golden/`) pin every output before and after each change.

@@ -1,85 +1,33 @@
 import json
-from pathlib import Path
 
 import pytest
 
 from odos.normalization.docling_reader import SourceItem, read_docling_json
-from odos.document_model import ElementType as T, Provenance, SourceInfo
+from odos.document_model import BoundingBox, ElementType as T, Provenance, SourceInfo
 from odos.parsing import parse_document
 from odos.parsing.profiles.german_law.recognizer import parse_items
 from odos.parsing.profiles.german_law.report import build_report
 from odos.parsing.profiles.german_law.rules import GERMAN_LAW_RULES
 
-BACKEND = Path(__file__).resolve().parents[1]
-BDSG = BACKEND / "data" / "input" / "BDSG.pdf"
-RAW = BACKEND / "output" / "bdsg" / "docling_raw.json"
 
-
-@pytest.fixture(scope="session")
-def by_id(model):
-    return model.by_id()
-
-
-# ---- real BDSG -------------------------------------------------------------
-def test_paragraphs_1_and_2_found_in_body_not_toc(model, by_id):
-    for n, title in (("1", "Anwendungsbereich des Gesetzes"), ("2", "Begriffsbestimmungen")):
-        p = by_id[f"doc/teil-1/kapitel-1/par-{n}"]
-        assert p.type == T.PARAGRAPH and p.region == "body"
-        assert p.marker == f"§ {n}" and p.title == title
-        assert p.pages and p.pages[0] >= 5  # TOC ends on page 5, body starts after it
-
-
-def test_toc_is_separate_from_body(model):
-    assert not [e for e in model.elements if e.region == "toc" and e.type == T.PARAGRAPH]
-    toc = model.by_id()["doc/toc"]
-    assert toc.type == T.TOC and toc.children_ids
-    body_paragraphs = {e.number for e in model.of_type(T.PARAGRAPH)}
-    assert len(body_paragraphs) == len(model.of_type(T.PARAGRAPH)) == 86
-
-
-def test_hierarchy(model, by_id):
-    p1 = by_id["doc/teil-1/kapitel-1/par-1"]
-    assert by_id[p1.parent_id].type == T.KAPITEL
-    assert by_id[by_id[p1.parent_id].parent_id].type == T.TEIL
-    assert [by_id[c].marker for c in p1.children_ids if by_id[c].type == T.ABSATZ] == [f"({i})" for i in range(1, 9)]  # fmt: skip
-    nr2 = by_id["doc/teil-1/kapitel-1/par-1/abs-1/nr-2"]
-    assert [by_id[c].marker for c in nr2.children_ids] == ["a)", "b)"]
-    assert by_id[nr2.parent_id].type == T.ABSATZ
-    # Abschnitt only inside Teil 2 / Kapitel 1
-    assert {e.id for e in model.of_type(T.ABSCHNITT)} == {
-        "doc/teil-2/kapitel-1/abschnitt-1",
-        "doc/teil-2/kapitel-1/abschnitt-2",
-    }
-    allowed = {
-        T.TEIL: {T.DOCUMENT}, T.KAPITEL: {T.TEIL}, T.ABSCHNITT: {T.KAPITEL},
-        T.ABSATZ: {T.PARAGRAPH}, T.BUCHSTABE: {T.NUMMER},
-    }  # fmt: skip
-    for e in model.elements:
-        if e.type in allowed:
-            assert by_id[e.parent_id].type in allowed[e.type], e.id
-        assert e.id in by_id[e.parent_id].children_ids if e.parent_id else True
-
-
-def test_counts_of_real_structure(model):
-    c = {t: len(model.of_type(t)) for t in (T.TEIL, T.KAPITEL, T.ABSCHNITT, T.PARAGRAPH)}
-    assert c == {T.TEIL: 4, T.KAPITEL: 19, T.ABSCHNITT: 2, T.PARAGRAPH: 86}
-
-
-def test_no_duplicate_ids(model):
+# ---- the synthetic German law (tests/synthetic_german.py): the real-document checks, without a partner document ----
+def test_no_duplicate_ids(synthetic_german_model):
+    model = synthetic_german_model
     ids = [e.id for e in [*model.elements, *model.furniture]]
     assert len(ids) == len(set(ids))
     pids = [e.id for e in model.of_type(T.PARAGRAPH)]
     assert len(pids) == len(set(pids))
 
 
-def test_provenance_preserved(model, raw_json):
-    raw = json.loads(raw_json.read_text())
+def test_provenance_preserved(synthetic_german_model, synthetic_german_raw_json):
+    model = synthetic_german_model
+    raw = json.loads(synthetic_german_raw_json.read_text())
     for e in [*model.elements, *model.furniture]:
         if not e.source_refs:
             continue
         assert e.provenance and e.pages, e.id
         for p in e.provenance:
-            assert 1 <= p.page_no <= 45 and p.bbox is not None
+            assert p.page_no >= 1 and p.bbox is not None
     _, kind, idx = model.by_id()["doc/teil-1/kapitel-1/par-1"].source_refs[0].split("/")
     node = raw[kind][int(idx)]
     p = model.by_id()["doc/teil-1/kapitel-1/par-1"].provenance[0]
@@ -87,17 +35,8 @@ def test_provenance_preserved(model, raw_json):
     assert p.bbox.l == node["prov"][0]["bbox"]["l"]
 
 
-def test_footnotes_and_tables(model, by_id):
-    heads = model.of_type(T.FOOTNOTE_HEADING)
-    assert len(heads) == 13  # 12 in the body + 1 in the front matter
-    footnotes = model.of_type(T.FOOTNOTE)
-    assert len(footnotes) == 12 and all(by_id[f.parent_id].type == T.FOOTNOTE_HEADING for f in footnotes)  # fmt: skip
-    assert any("Textnachweis" in e.original_text for e in model.elements)
-    tables = model.of_type(T.TABLE)
-    assert len(tables) == 5 and all(t.table and t.table.rows and t.region == "toc" for t in tables)  # fmt: skip
-
-
-def test_no_silent_content_loss(model, raw_json):
+def test_no_silent_content_loss(synthetic_german_model, synthetic_german_raw_json):
+    model, raw_json = synthetic_german_model, synthetic_german_raw_json
     _, items = read_docling_json(raw_json)
     src = {i.ref: i for i in items}
     refs = [r for e in [*model.elements, *model.furniture] for r in e.source_refs]
@@ -109,34 +48,27 @@ def test_no_silent_content_loss(model, raw_json):
     assert not report.docling_items_missing and not report.docling_items_duplicated
     assert not report.text_mismatches
     rep = report.source_text_repairs
-    assert rep["reverts_to_docling_exactly"] and rep["without_evidence"] == 0 and rep["verified_text_changes"] == 39
+    assert rep["reverts_to_docling_exactly"] and rep["without_evidence"] == 0
 
 
-def test_nothing_invented(model):
-    for e in model.elements:
+def test_nothing_invented(synthetic_german_model):
+    for e in synthetic_german_model.elements:
         assert e.content_text in e.original_text or e.type in (T.DOCUMENT,), e.id
         if e.title:
             assert e.title.replace(" ", "") in e.original_text.replace(" ", "").replace("\n", "")
 
 
-def test_ambiguous_content_is_flagged(model):
-    ids = {e.id for e in model.elements if e.uncertain}
-    r = next(e for e in model.elements if e.id == "doc/teil-1/kapitel-2/par-4/abs-1/run2-nr-1")
-    assert not r.uncertain and "sentence_interlaced_list_restart" in r.hygiene_flags
-    assert any(w.code == "HEADING_PATTERN_IN_TEXT" for w in model.warnings)  # "§ 63 Nummer 3 ..."
-
-
-def test_stable_across_runs(raw_json):
-    a = parse_document(raw_json, "german_law").model_dump_json()
-    b = parse_document(raw_json, "german_law").model_dump_json()
+def test_stable_across_runs(synthetic_german_raw_json):
+    a = parse_document(synthetic_german_raw_json, "german_law").model_dump_json()
+    b = parse_document(synthetic_german_raw_json, "german_law").model_dump_json()
     assert a == b
 
 
-def test_normalize_cli_does_not_run_extraction(raw_json, tmp_path, monkeypatch):
+def test_normalize_cli_does_not_run_extraction(synthetic_german_raw_json, tmp_path, monkeypatch):
     import odos.cli as cli
 
     monkeypatch.setattr(cli, "extract_pdf", lambda *a, **k: pytest.fail("extraction ran"))
-    assert cli.main(["normalize", str(raw_json), "-o", str(tmp_path)]) == 0
+    assert cli.main(["normalize", str(synthetic_german_raw_json), "-o", str(tmp_path)]) == 0
     assert (tmp_path / "document_model.json").stat().st_size > 0
     assert (tmp_path / "validation_report.md").exists()
 
@@ -185,6 +117,16 @@ def test_synthetic_unknown_header_and_orphans_are_kept():
     assert sum(1 for e in m.elements if e.source_refs) == 3
     codes = {w.code for w in m.warnings}
     assert {"UNRECOGNIZED_HEADING", "ABSATZ_OUTSIDE_PARAGRAPH", "LIST_ITEM_WITHOUT_RECOGNIZED_MARKER"} <= codes  # fmt: skip
+
+
+def test_text_that_looks_like_a_heading_stays_text_with_a_warning():
+    m = _parse([
+        _item(0, "section_header", "§ 1 A"),
+        _item(1, "text", "(1) Es gilt."),
+        _item(2, "text", "§ 63 Nummer 3 bleibt unberührt."),
+    ])  # fmt: skip
+    assert any(w.code == "HEADING_PATTERN_IN_TEXT" for w in m.warnings)
+    assert [e.number for e in m.of_type(T.PARAGRAPH)] == ["1"]  # not turned into a § 63
 
 
 def test_synthetic_sequence_gaps_warn_but_do_not_drop():
@@ -332,11 +274,50 @@ def test_nummer_labelled_as_section_header_by_docling_is_confirmed():
 
 def test_no_redundant_possible_continuation_with_page_break():
     """When a page-break continuation reason exists, possible_continuation is not added redundantly."""
+    a = _item(1, "text", "(1) Es gilt für")
+    n = _item(2, "list_item", "Gebäude und", "1.", True)
+    b = _item(3, "text", "deren Umgebung.")
+    a.provenance = n.provenance = [Provenance(page_no=1)]
+    b.provenance = [Provenance(page_no=2)]
+    m = _parse([_item(0, "section_header", "§ 1 A"), a, n, b])
+    cont = [e for e in m.elements if "deren Umgebung" in e.original_text][0]
+    assert cont.parent_id == "doc/par-1/abs-1/nr-1"  # a Nummer runs on: stays its own flagged element
+    assert "continuation_across_page_break_attached_to_previous_element" in cont.uncertainty_reasons
+    assert "possible_continuation_of_previous_element" not in cont.uncertainty_reasons
+
+
+def _bbox(t: float, b: float) -> BoundingBox:
+    return BoundingBox(l=60, t=t, r=530, b=b, coord_origin="BOTTOMLEFT")
+
+
+def test_absatz_text_over_a_page_break_is_one_text():
+    """The text of an Absatz runs on lowercase on the next page before its list: one Absatz, both sources kept."""
+    a = _item(1, "text", "(1) 1 Vor den Wänden sind Flächen von")
+    b = _item(2, "text", "oberirdischen Gebäuden freizuhalten. 2 Sie sind nicht erforderlich vor Wänden,")
+    n1 = _item(3, "list_item", "die an der Grenze stehen, oder", "1.", True)
+    n2 = _item(4, "list_item", "soweit Abstände zulässig sind.", "2.", True)
+    a.provenance = [Provenance(page_no=9, bbox=_bbox(62, 51), charspan=(0, len(a.orig)))]
+    b.provenance = [Provenance(page_no=10, bbox=_bbox(776, 696), charspan=(0, len(b.orig)))]
+    n1.provenance = n2.provenance = [Provenance(page_no=10)]
+    m = _parse([_item(0, "section_header", "§ 6 Abstände"), a, b, n1, n2])
+    by = m.by_id()
+    abs1 = by["doc/par-6/abs-1"]
+    assert abs1.content_text == "1 Vor den Wänden sind Flächen von oberirdischen Gebäuden freizuhalten. 2 Sie sind nicht erforderlich vor Wänden,"
+    assert abs1.original_text == a.orig + "\n" + b.orig  # the source pieces, one per line
+    assert abs1.source_refs == ["#/texts/1", "#/texts/2"] and abs1.pages == [9, 10]
+    assert [(p.page_no, p.charspan) for p in abs1.provenance] == [(9, (0, len(a.orig))), (10, (0, len(b.orig)))]
+    assert abs1.children_ids == ["doc/par-6/abs-1/nr-1", "doc/par-6/abs-1/nr-2"]
+    assert not abs1.uncertain and "page_break_continuation_merged_confirmed" in abs1.hygiene_flags
+    assert not any("txt" in e.id for e in m.elements)
+
+
+def test_uppercase_text_after_a_page_break_stays_separate():
+    """A capitalised line on the next page may start a new sentence: kept as its own flagged element."""
     a = _item(1, "text", "(1) Es gilt für Gebäude")
-    b = _item(2, "text", "und deren Umgebung.")
+    b = _item(2, "text", "Deren Umgebung bleibt unberührt.")
     a.provenance = [Provenance(page_no=1)]
     b.provenance = [Provenance(page_no=2)]
     m = _parse([_item(0, "section_header", "§ 1 A"), a, b])
-    cont = [e for e in m.elements if "und deren Umgebung" in e.original_text][0]
-    assert "continuation_across_page_break_attached_to_previous_element" in cont.uncertainty_reasons
-    assert "possible_continuation_of_previous_element" not in cont.uncertainty_reasons
+    cont = m.by_id()["doc/par-1/abs-1/txt-1"]
+    assert cont.uncertain and "continuation_across_page_break_attached_to_previous_element" in cont.uncertainty_reasons
+    assert m.by_id()["doc/par-1/abs-1"].source_refs == ["#/texts/1"]

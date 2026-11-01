@@ -77,15 +77,16 @@ def test_unreadable_pdf_is_recorded_not_raised(eu_raw_json, tmp_path):
     assert ev["error"] and ev["pages"] == {}
 
 
-def test_evidence_without_overlaps_has_item_text_but_no_lines(raw_json):
-    ev = load_evidence(raw_json)  # BDSG: no overlapping layout boxes; written by the fixture from the PDF
+def test_evidence_without_overlaps_has_item_text_but_no_lines(synthetic_german_raw_json):
+    ev = load_evidence(synthetic_german_raw_json)  # no overlapping layout boxes; written by the fixture from the PDF
     assert ev is not None and ev.error is None and ev.pages == {}
-    assert len(ev.item_text) == 875 and ev.small_marks  # every text item's PDF text, and the superscript marks
+    n_texts = len(json.loads(synthetic_german_raw_json.read_text())["texts"])
+    assert len(ev.item_text) == n_texts and ev.small_marks  # every text item's PDF text, and the superscript marks
 
 
-def test_missing_pdf_is_recorded_and_nothing_is_restored(raw_json, tmp_path):
+def test_missing_pdf_is_recorded_and_nothing_is_restored(synthetic_german_raw_json, tmp_path):
     raw = tmp_path / "docling_raw.json"
-    raw.write_bytes(raw_json.read_bytes())
+    raw.write_bytes(synthetic_german_raw_json.read_bytes())
     write_evidence(tmp_path / "missing.pdf", raw)
     ev = load_evidence(raw)
     assert ev.error and not ev.item_text

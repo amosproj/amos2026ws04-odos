@@ -19,7 +19,7 @@ thing:
 | Teil | top-level division | `part` | Direct equivalent of a "Part". |
 | Kapitel | division of a Teil | `chapter` | Direct equivalent. |
 | Abschnitt | division of a Kapitel | `section` | Same position in the tree as AKN `section` used below `chapter`. A German **§ is not** a `section`. |
-| Unterabschnitt | division of an Abschnitt | `subsection` | Not present in BDSG; mapped for reuse. |
+| Unterabschnitt | division of an Abschnitt | `subsection` | Not present in the verified documents; mapped for reuse. |
 | **§ (Paragraph)** | basic numbered provision, has a title | **`article`** | `article` is AKN's basic numbered provision unit (heading + numbered sub-paragraphs). Using `<paragraph>` for § would collide with Absatz and put the wrong legal level under `chapter`. |
 | **Absatz (1), (2)** | numbered sub-division of a § | **`paragraph`** | AKN `paragraph` is the numbered sub-division of an `article`. |
 | Nummer 1., 2. | enumeration in an Absatz | `point` | Numbered enumerated item. |
@@ -41,9 +41,9 @@ take `num`, `heading`, then **either** `content` **or** `[intro?, sub-hierarchy*
 
 * **Absatz/Nummer without enumeration** → `<num>` + `<content><p>text</p></content>`.
 * **With enumeration (one run)** → `<num>`, `<intro><p>own text</p></intro>`, `<point>`…, optional
-  `<wrapUp>` containing the unnumbered text that follows the list (e.g. BDSG § 1 (1): "Für
-  nichtöffentliche Stellen gilt …").
-* **Enumeration interrupted by text** (e.g. BDSG § 4 (1)) → one `<list>` per run; text between runs
+  `<wrapUp>` containing the unnumbered text that follows the list (e.g. a § 1 (1) whose list is
+  followed by a sentence that continues it: "Für nichtöffentliche Stellen gilt …").
+* **Enumeration interrupted by text** (e.g. an Absatz with two separate 1.-2. lists) → one `<list>` per run; text between runs
   becomes the `wrapUp` of the preceding list. That text could equally be the `intro` of the next
   list; the parser flags it uncertain and it is kept in document order.
 * § without Absätze → `<article>` with `<content>`; text before enumerations → `<intro>`.
@@ -101,12 +101,12 @@ I could not consult the German LegalDocML profile for its recommended handling o
 
 | Field | Value | Source |
 |---|---|---|
-| Work date (`Ausfertigung`) | 2017-06-30 | "Ausfertigungsdatum" in the PDF |
+| Work date (`Ausfertigung`) | the "Ausfertigungsdatum" (e.g. 2099-03-15 in the synthetic test law) | "Ausfertigungsdatum" in the PDF |
 | Work/Expression author | `#unspecified` ("Not determined from the source") | not in the model |
 | Manifestation author | `#odos` | the converter |
-| Expression/Manifestation date | 2026-10-27 (`Abruf`, `Konvertierung`) | download date in `backend/data/input/SOURCE.md` |
+| Expression/Manifestation date | the retrieval date (`Abruf`, `Konvertierung`) | `--retrieval-date` of `odos akn` / `odos process` (required) |
 | Country, language | `de`, `deu` | assumption: German federal law in German |
-| Work URI | `/akn/de/act/2017-06-30/bdsg` | convention applied to the above; not an official identifier |
+| Work URI | `/akn/de/act/2099-03-15/bspg` (synthetic test law) | convention applied to the above; not an official identifier |
 
 The excerpt is declared as such in an XML comment, in `FRBRalias`, in
 `meta/proprietary/odos:excerpt complete="false"` and in the reports.

@@ -268,15 +268,3 @@ def segment(model: DocumentModel, evidence=None, only_units: set[str] | None = N
         stats[found[0].method] += len(found)
         model.sentences.extend(found)
     return stats
-
-
-def regenerate_after_corrections(model: DocumentModel, corrected_ids: set[str]) -> None:
-    """Review: every sentence with a range on a corrected element is invalidated and rebuilt from the reviewed text
-    (text rules only, no PDF evidence; status ``regenerated_from_reviewed_text``), or dropped if that fails."""
-    affected = {s.unit_id for s in model.sentences if any(r.element_id in corrected_ids for r in s.ranges)}
-    if not affected:
-        return
-    model.sentences = [s for s in model.sentences if s.unit_id not in affected]
-    segment(model, None, only_units=affected, reviewed=True)
-    order = {e.id: i for i, e in enumerate(model.elements)}
-    model.sentences.sort(key=lambda s: (order.get(s.ranges[0].element_id, 0) if s.ranges else 0, s.ranges[0].start if s.ranges else 0))

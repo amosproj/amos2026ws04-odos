@@ -27,7 +27,7 @@ generated from the Pydantic classes in `backend/src/odos/legal_json/view.py`; a 
   `odos/legal_json/legacy.py`. `odos.legal_json.view.downgrade_to_1_0` stays as the documented import
   path for 1.0 consumers.
 - **Deprecation status:** 1.0 is legacy and frozen.
-  - Every stored `document.json` (pipeline outputs and review revisions) is 1.1.
+  - Every `document.json` the pipeline writes is 1.1.
   - Nothing in ODOS reads or writes 1.0 except the downgrade check in the report.
   - Next step: once it is confirmed that no external consumer still needs 1.0 exports, stop computing the
     downgrade in the report. That changes the report, so it needs its own approval.
@@ -37,12 +37,10 @@ generated from the Pydantic classes in `backend/src/odos/legal_json/view.py`; a 
 
 `DocumentModel` (`document_model.json`) is the single source of truth. `document.json` is its
 one-way, deterministic serialization (`odos.legal_json.exporter.to_legal_json`). Nothing reads
-`document.json` back. Human-review corrections are applied to the model, and each review revision
-regenerates the Akoma Ntoso XML and `document.json` from the same effective model:
-`legal_json_validation_report.json` records the `model_sha256` it came from.
+`document.json` back. `legal_json_validation_report.json` records the `model_sha256` it came from.
 
 `document_model.json` keeps the internal diagnostics (uncertainty, warnings, hygiene flags). None of
-them, and no review data, appear in `document.json`.
+them appear in `document.json`.
 
 ## Top level
 
@@ -163,9 +161,8 @@ nodes.
   abbreviations, dates or ordinals. A unit with an undecidable boundary is not split and gets the
   warning `SENTENCE_SEGMENTATION_UNRESOLVED` (internal).
 - **IDs:** `<unit>/satz-<n>` (printed) and `<unit>/s<k>` (unnumbered).
-- **After a review correction:** every sentence with a range on the corrected element is invalidated
-  and rebuilt from the reviewed text. Numbered IDs stay the same; unnumbered IDs are only stable for
-  an unchanged text hash.
+- **Stability:** numbered IDs follow the printed number; unnumbered IDs are only stable for an unchanged
+  text hash.
 
 ## Footnote references (1.1)
 

@@ -1,7 +1,6 @@
-"""Exact highlight rectangles from PDF glyphs, and the normalized TOC order / regeneration after review."""
+"""Exact highlight rectangles from PDF glyphs, and the normalized TOC order."""
 
 import re
-from datetime import datetime, timezone
 
 from odos.normalization.highlight import IGNORE, boxes_for, glyph_map
 from odos.document_model import BoundingBox
@@ -46,7 +45,7 @@ def test_article_47_paragraphs_get_exact_non_overlapping_boxes(eu_model, eu_raw_
         assert p.uncertain and "reading_order_uncertain:repaired_from_pdf_text_layer" in p.uncertainty_reasons
 
 
-def test_every_partial_element_is_exact_or_approximate_never_wrong(eu_model, eu_raw_json, model, mbo_model):
+def test_every_partial_element_is_exact_or_approximate_never_wrong(eu_model, eu_raw_json, synthetic_german_model, mbo_model):
     ev = load_evidence(eu_raw_json)
     partial = [e for e in eu_model.elements if e.source_spans]
     assert partial and all(e.highlight_boxes for e in partial)
@@ -55,7 +54,7 @@ def test_every_partial_element_is_exact_or_approximate_never_wrong(eu_model, eu_
         own = [p.bbox for p in e.provenance]
         for b in e.highlight_boxes:  # inside the Docling boxes the element came from
             assert any(o.l - 2 <= b.bbox.l and b.bbox.r <= o.r + 2 and o.b - 2 <= b.bbox.b and b.bbox.t <= o.t + 2 for o in own), e.id
-    for m in (model, mbo_model):  # German laws: boxes only on partial elements
+    for m in (synthetic_german_model, mbo_model):  # German laws: boxes only on partial elements
         assert all(e.source_spans for e in m.elements if e.highlight_boxes)
 
 
@@ -91,21 +90,3 @@ def test_mbo_page_3_toc_is_in_printed_order(mbo_model):
         "§ 52", "§ 53", "§ 54", "§ 55", "§ 56", "Fünfter Teil", "Erster Abschnitt"]  # fmt: skip
     assert all(e.status == "linked" and e.target_id for e in page3)
     assert page3[0].target_id == "doc/teil-3/abschnitt-7" and page3[6].target_id == "doc/teil-4"
-
-
-def test_raw_toc_correction_regenerates_derived_entries(mbo_model):
-    from odos.review.model import Correction
-    from odos.review.service import build_effective_model
-
-    raw = mbo_model.by_id()["doc/toc/entry-2"]  # Docling merged "§ 1 … § 2 … § 3 …" into one item
-    new = raw.content_text.replace("Begriffe", "Begriffsbestimmungen")
-    c = Correction(id="c1", element_id=raw.id, field="content_text", original_value=raw.content_text, previous_value=raw.content_text,
-                   corrected_value=new, timestamp=datetime.now(timezone.utc), review_revision=1, model_revision=1)  # fmt: skip
-    eff = build_effective_model(mbo_model, [c], 1)
-    toc = {e.id: e for e in eff.toc_entries}
-    assert toc["toc/paragraph-2"].title == "Begriffsbestimmungen" and toc["toc/paragraph-2"].status == "candidate"  # no longer matches
-    assert toc["toc/paragraph-1"].status == "linked" and toc["toc/paragraph-1"].evidence.startswith("regenerated from reviewed text")
-    assert [e.id for e in eff.toc_entries] == [e.id for e in mbo_model.toc_entries]  # same entries, same order, same ids
-    assert {e.id: e.evidence for e in eff.toc_entries if "entry-2" not in "".join(e.source_element_ids)} == \
-           {e.id: e.evidence for e in mbo_model.toc_entries if "entry-2" not in "".join(e.source_element_ids)}  # fmt: skip
-    assert mbo_model.by_id()["doc/toc/entry-2"].content_text != new  # the original model is untouched

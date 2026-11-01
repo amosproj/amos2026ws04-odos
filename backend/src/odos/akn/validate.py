@@ -2,7 +2,7 @@
 
 AKN 3.1 keeps the namespace ``http://docs.oasis-open.org/legaldocml/ns/akn/3.0`` and the file name
 ``akomantoso30.xsd``. It is the base of AKN4EU 5.x. The earlier AKN 3.0 schema (OASIS Standard 2018) is no
-longer used: every ODOS export and all 60 official AKN4EU samples validate against AKN 3.1.
+longer used: every ODOS export validates against AKN 3.1.
 """
 
 from __future__ import annotations

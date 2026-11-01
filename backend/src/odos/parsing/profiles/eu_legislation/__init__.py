@@ -155,5 +155,4 @@ EU_LEGISLATION = LegalProfile(
     akn_summary=_akn_summary,
     completed_message=_completed_message,
     akn_refused_message=lambda exc: f"EU legislation structure extracted (prototype). Akoma Ntoso XML was not generated: {exc}",
-    capabilities=frozenset({"akn4eu"}),
 )

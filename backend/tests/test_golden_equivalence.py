@@ -1,7 +1,8 @@
 """Golden equivalence: every output is byte-identical to a baseline recorded before a refactoring started. A
 difference is a regression to investigate, never a value to refresh.
 
-* MBO, BDSG and Regulation (EU) 2023/1230: tests/golden/phase3_baseline.json (recorded 2026-10-31, before Phase 3).
+* MBO and Regulation (EU) 2023/1230: tests/golden/phase3_baseline.json (recorded 2026-10-31, before Phase 3; the
+  entry of a third, public German law was removed from it together with that law's test input).
   Each runs only on the exact Docling extraction the baseline was computed from (checked by sha256); a missing or
   different extraction is reported as missing coverage, with its reason, in the skip list and in the
   "GOLDEN COVERAGE" line at the end of the run -- never as a pass.
@@ -23,11 +24,10 @@ from golden_outputs import fingerprint, first_differences
 
 GOLDEN = Path(__file__).parent / "golden"
 BASELINE = json.loads((GOLDEN / "phase3_baseline.json").read_text())
-FIXTURES = {"mbo": ("mbo_model", "mbo_raw_json"), "bdsg": ("model", "raw_json"), "eu": ("eu_model", "eu_raw_json")}
+FIXTURES = {"mbo": ("mbo_model", "mbo_raw_json"), "eu": ("eu_model", "eu_raw_json")}
 # the Docling extractions the baseline was computed from (the model hash pins them too; checked first for a clear reason)
 INPUTS = {
     "mbo": "1c5ec2ab2c7b0330d274890b4f2fe654676f8b1ddd99691d369678ee7d585632",
-    "bdsg": "dd49591bfd8dab883a86c173dfbf93ca188fc0ed3685b569d718972614ef8ba0",
     "eu": "f8b091a72fd595b56f3ab050448bb4a3d83a100f6719c6ec13b7c3dda48a4879",
 }
 

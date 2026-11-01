@@ -134,7 +134,7 @@ GERMAN_LAW = LegalProfile(
                          "(raw JSON and Markdown) is still available."),  # fmt: skip
     summary=_summary,
     akn_summary=_akn_summary,
-    completed_message=lambda art: "German-law prototype conversion. Structure rules are tuned to the BDSG; other laws may be incomplete — check the warnings.",  # fmt: skip
+    completed_message=lambda art: "German-law prototype conversion. Structure rules were developed on a limited set of German laws; other documents may be incomplete — check the warnings.",  # fmt: skip
     akn_refused_message=lambda exc: f"Legal structure extracted, but Akoma Ntoso XML was not generated: {exc}",
     capabilities=frozenset({"akn_excerpt"}),
 )

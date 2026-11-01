@@ -1,7 +1,6 @@
-"""End-to-end pipeline used by the web API.
+"""End-to-end pipeline (`odos process`): Docling extraction, parsing, Custom Legal JSON and Akoma Ntoso.
 
-Reuses the existing extraction, normalization, AKN generation and validation
-functions unchanged; the CLI keeps working on its own.
+It produces the files the static demo is built from (see frontend/scripts/build-demo-fixtures.mjs).
 """
 
 from __future__ import annotations
@@ -22,9 +21,8 @@ from odos.normalization.reading_order import write_evidence
 
 
 class ProcessingMode(StrEnum):
-    EXTRACT_ONLY = "extract_only"  # Docling only; makes no claim about the document type
     GERMAN_LAW = "german_law"  # Docling + German legal structure parser + Akoma Ntoso
-    EU_LEGISLATION = "eu_legislation"  # Docling + EU legal structure parser (no Akoma Ntoso yet)
+    EU_LEGISLATION = "eu_legislation"  # Docling + EU legal structure parser + Akoma Ntoso
 
 
 class Outcome(StrEnum):
@@ -73,10 +71,6 @@ def run_pipeline(
     out_dir.mkdir(parents=True, exist_ok=True)
     progress("extracting")
     summary = extract_or_reuse(pdf, out_dir)
-    if mode == ProcessingMode.EXTRACT_ONLY:
-        return PipelineResult(outcome=Outcome.COMPLETED, summary=summary,
-                              message="Extraction only. No legal structure or Akoma Ntoso XML was produced for this mode.")  # fmt: skip
-
     # PDF text-layer evidence for pages where Docling's layout boxes overlap (read by the parsers to verify
     # and, where provable, repair the reading order; see odos.normalization.reading_order)
     write_evidence(pdf, out_dir / DOCLING_RAW)

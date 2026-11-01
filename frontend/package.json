@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
+    "build:demo": "npm run build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "demo:fixtures": "node scripts/build-demo-fixtures.mjs"
   },
   "dependencies": {
     "pdfjs-dist": "^6.4.299",

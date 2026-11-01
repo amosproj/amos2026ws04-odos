@@ -1,14 +1,12 @@
-import type { DocElement, DocumentModel, ParserWarning, Provenance, TocEntry } from "./types";
+import type { DocElement, DocumentModel, Provenance, TocEntry } from "./types";
 
-// Document structure display: tree, labels, filters and the PDF highlight geometry of elements.
+// Document structure display: tree, labels, search filter and the PDF highlight geometry of elements.
 
 export interface TreeNode {
   key: string;
   label: string;
   element: DocElement | null; // null for synthetic groups and normalized TOC entries
   children: TreeNode[];
-  uncertain: number; // flagged elements in this subtree (including this one)
-  warnings: number;
   toc?: TocEntry; // a normalized TOC entry (read-only); clicking it opens its confirmed body element
 }
 
@@ -81,16 +79,9 @@ export function elementLabel(e: DocElement, max = 90): string {
   return text.length > max ? text.slice(0, max - 1) + "…" : text;
 }
 
-export function warningsByElement(warnings: ParserWarning[]): Map<string, ParserWarning[]> {
-  const m = new Map<string, ParserWarning[]>();
-  for (const w of warnings) if (w.element_id) m.set(w.element_id, [...(m.get(w.element_id) ?? []), w]);
-  return m;
-}
-
 /** Builds the display tree from the flat model; nothing is hidden or reordered. */
 export function buildTree(model: DocumentModel): { roots: TreeNode[]; byKey: Map<string, TreeNode>; parentOf: Map<string, string> } {
   const byId = new Map(model.elements.map((e) => [e.id, e]));
-  const wmap = warningsByElement(model.warnings);
   const byKey = new Map<string, TreeNode>();
   const parentOf = new Map<string, string>();
 
@@ -98,8 +89,6 @@ export function buildTree(model: DocumentModel): { roots: TreeNode[]; byKey: Map
     const children = e.children_ids.map((c) => byId.get(c)).filter((x): x is DocElement => !!x).map(make);
     const node: TreeNode = {
       key: e.id, label: elementLabel(e), element: e, children,
-      uncertain: (e.uncertain ? 1 : 0) + children.reduce((a, c) => a + c.uncertain, 0),
-      warnings: (wmap.get(e.id)?.length ?? 0) + children.reduce((a, c) => a + c.warnings, 0),
     };
     byKey.set(node.key, node);
     children.forEach((c) => parentOf.set(c.key, node.key));
@@ -114,7 +103,6 @@ export function buildTree(model: DocumentModel): { roots: TreeNode[]; byKey: Map
     const kids = front.map(make);
     const group: TreeNode = {
       key: "group:front", label: `Front matter (${front.length})`, element: null, children: kids,
-      uncertain: kids.reduce((a, c) => a + c.uncertain, 0), warnings: kids.reduce((a, c) => a + c.warnings, 0),
     };
     byKey.set(group.key, group);
     kids.forEach((k) => parentOf.set(k.key, group.key));
@@ -136,18 +124,16 @@ export function clickAction(n: TreeNode): { select: string } | { toggle: string 
   return { toggle: n.key };
 }
 
-/** The TOC shows the normalized entries in printed order; Docling's raw TOC items stay available (and editable)
+/** The TOC shows the normalized entries in printed order; Docling's raw TOC items stay available
  *  in their own group. Nothing of the raw items is changed or hidden. */
 function tocView(toc: TreeNode, entries: TocEntry[], byKey: Map<string, TreeNode>, parentOf: Map<string, string>): void {
   const raw = toc.children;
   const rawGroup: TreeNode = {
     key: "group:toc-raw", label: `Raw Docling TOC items (${raw.length})`, element: null, children: raw,
-    uncertain: raw.reduce((a, c) => a + c.uncertain, 0), warnings: raw.reduce((a, c) => a + c.warnings, 0),
   };
   raw.forEach((c) => parentOf.set(c.key, rawGroup.key));
   const items: TreeNode[] = entries.map((t) => ({
-    key: `tocentry:${t.id}`, label: [t.marker, t.title].filter(Boolean).join(" ") || t.id, element: null, children: [],
-    uncertain: 0, warnings: 0, toc: t,
+    key: `tocentry:${t.id}`, label: [t.marker, t.title].filter(Boolean).join(" ") || t.id, element: null, children: [], toc: t,
   }));
   for (const n of [...items, rawGroup]) {
     byKey.set(n.key, n);
@@ -156,19 +142,15 @@ function tocView(toc: TreeNode, entries: TocEntry[], byKey: Map<string, TreeNode
   toc.children = [...items, rawGroup];
 }
 
-/** Keys of nodes matching the filters plus their ancestors. null = no filter active. */
-export function visibleKeys(
-  byKey: Map<string, TreeNode>, parentOf: Map<string, string>, query: string, onlyFlagged: boolean, hasWarning: (id: string) => boolean,
-): Set<string> | null {
+/** Keys of nodes whose text matches the search plus their ancestors. null = no search active. */
+export function visibleKeys(byKey: Map<string, TreeNode>, parentOf: Map<string, string>, query: string): Set<string> | null {
   const q = query.trim().toLowerCase();
-  if (!q && !onlyFlagged) return null;
+  if (!q) return null;
   const keep = new Set<string>();
   for (const n of byKey.values()) {
     const e = n.element;
     if (!e) continue;
-    const textOk = !q || (e.original_text + " " + (e.title ?? "")).toLowerCase().includes(q);
-    const flagOk = !onlyFlagged || e.uncertain || hasWarning(e.id);
-    if (textOk && flagOk) {
+    if ((e.original_text + " " + (e.title ?? "")).toLowerCase().includes(q)) {
       let k: string | undefined = n.key;
       while (k && !keep.has(k)) {
         keep.add(k);
@@ -187,3 +169,11 @@ export function bboxToRect(b: NonNullable<Provenance["bbox"]>, pageHeight: numbe
   const height = Math.abs(b.t - b.b);
   return { left: b.l * scale, top: top * scale, width: (b.r - b.l) * scale, height: height * scale };
 }
+
+/** The rectangles to draw on `page`: only the boxes of that page, converted to CSS pixels. */
+export function rectsOnPage(highlights: Provenance[], page: number, pageHeight: number, scale: number): Rect[] {
+  return highlights.filter((h) => h.page_no === page && h.bbox).map((h) => bboxToRect(h.bbox!, pageHeight, scale));
+}
+
+/** The page the PDF viewer jumps to when an element is selected: the first page its text is on. */
+export const firstPage = (e: DocElement | null | undefined): number | null => e?.pages[0] ?? null;

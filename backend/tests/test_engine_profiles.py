@@ -40,22 +40,21 @@ def test_registry_and_lookup():
     assert for_legal_system("de") is DE and for_legal_system("eu") is EU
 
 
-def test_processing_modes_and_router_use_the_registry():
-    from odos.classification.router import STRUCTURED
+def test_processing_modes_use_the_registry():
     from odos.pipeline import ProcessingMode
 
-    assert {m.value for m in ProcessingMode} == {"extract_only", *structured_modes()}
-    assert set(STRUCTURED) == set(structured_modes())
+    assert {m.value for m in ProcessingMode} == set(structured_modes())
 
 
-def test_akn_cli_dispatches_by_capability(tmp_path, eu_model, model, capsys):
+def test_akn_cli_dispatches_by_capability(tmp_path, synthetic_eu_model, synthetic_german_model, capsys):
     """`odos akn`: a profile with the § excerpt capability (German) writes the excerpt; any other profile its whole
     document. The files are exactly the generators' output."""
     from odos.akn.eu_generator import generate_eu_akn
     from odos.akn.generator import generate_excerpt
     from odos.cli import main
 
-    date = "2026-10-27"
+    eu_model, model = synthetic_eu_model, synthetic_german_model
+    date = "2099-03-16"
     (tmp_path / "eu").mkdir()
     (tmp_path / "eu" / "document_model.json").write_text(eu_model.model_dump_json(indent=2), encoding="utf-8")
     assert main(["akn", str(tmp_path / "eu" / "document_model.json"), "--retrieval-date", date]) == 0
@@ -65,22 +64,34 @@ def test_akn_cli_dispatches_by_capability(tmp_path, eu_model, model, capsys):
     (tmp_path / "de").mkdir()
     (tmp_path / "de" / "document_model.json").write_text(model.model_dump_json(indent=2), encoding="utf-8")
     assert main(["akn", str(tmp_path / "de" / "document_model.json"), "--retrieval-date", date, "--paragraphs", "1", "2"]) == 0
-    assert (tmp_path / "de" / "bdsg_excerpt.xml").read_bytes() == generate_excerpt(model, ["1", "2"], date).xml
+    assert (tmp_path / "de" / "german_law_excerpt.xml").read_bytes() == generate_excerpt(model, ["1", "2"], date).xml
     assert not (tmp_path / "de" / "document_akn.xml").exists()
 
 
-def test_akn4eu_export_is_a_capability_of_the_eu_profile():
-    assert "akn4eu" in EU.capabilities and "akn4eu" not in DE.capabilities
+@pytest.mark.parametrize("argv", [["akn", "document_model.json"], ["process", "in.pdf", "-o", "out", "--mode", "german_law"]])
+def test_the_retrieval_date_is_required_and_validated(argv, capsys):
+    """No default date (there is no recorded download date any more): `odos akn` and `odos process` need it."""
+    from odos.cli import main
+
+    with pytest.raises(SystemExit) as no_date:
+        main(argv)
+    assert no_date.value.code == 2 and "--retrieval-date" in capsys.readouterr().err
+    with pytest.raises(SystemExit) as bad_date:
+        main([*argv, "--retrieval-date", "27.10.2026"])
+    assert bad_date.value.code == 2 and "YYYY-MM-DD" in capsys.readouterr().err
+
+
+def test_the_paragraph_excerpt_is_a_capability_of_the_german_profile():
     assert "akn_excerpt" in DE.capabilities and "akn_excerpt" not in EU.capabilities
 
 
 def test_artifact_names_have_one_source():
-    from odos.artifact_names import AKN_XML, ARTIFACTS
+    from odos.artifact_names import AKN_XML
 
-    assert ARTIFACTS["akn_xml"][0] == AKN_XML == "document_akn.xml"  # every profile's build_akn writes this name
-    assert list(ARTIFACTS) == ["docling_raw", "extracted_md", "document_model", "legal_json", "legal_json_validation_report",
-                               "validation_report", "akn_xml", "akn_validation_report", "akn_traceability", "akn_text_report",
-                               "reading_order_evidence"]  # API artifact types and their order (the status lists them so)
+    assert AKN_XML == "document_akn.xml"  # every profile's build_akn writes this name; the demo fixture script reads it
+    from odos.artifact_names import AKN_EXCERPT_XML
+
+    assert AKN_EXCERPT_XML == "german_law_excerpt.xml"  # the default name of `odos akn`'s German-law § excerpt
 
 
 def test_profiles_import_no_shared_operation_module():
@@ -95,7 +106,8 @@ def test_profiles_import_no_shared_operation_module():
 
 
 # ---- lifecycle --------------------------------------------------------------------------------------------------------
-def test_stage_order_is_the_documented_lifecycle(raw_json, model):
+def test_stage_order_is_the_documented_lifecycle(synthetic_german_raw_json, synthetic_german_model):
+    raw_json, model = synthetic_german_raw_json, synthetic_german_model
     names = ["read_source", "load_evidence", "preprocess", "parse_structure", "finalize_structure", "resolve_footnotes",
              "segment_sentences", "normalize_toc"]  # fmt: skip
     assert [n for n, _ in engine.STAGES] == names

@@ -9,11 +9,11 @@ from pathlib import Path
 from odos.akn.generator import generate_excerpt
 from odos.akn.validate import validate_xml
 from odos.akn.verify import verify_text
-from odos.artifact_names import AKN_REPORT, AKN_TRACEABILITY
+from odos.artifact_names import AKN_EXCERPT_XML, AKN_REPORT, AKN_TRACEABILITY
 from odos.document_model import DocumentModel
 
 
-def build_artifacts(model: DocumentModel, paragraphs: list[str], retrieval_date: str, out: Path, xml_name: str = "bdsg_excerpt.xml", undated_policy: str = "refuse") -> dict:
+def build_artifacts(model: DocumentModel, paragraphs: list[str], retrieval_date: str, out: Path, xml_name: str = AKN_EXCERPT_XML, undated_policy: str = "refuse") -> dict:
     result = generate_excerpt(model, paragraphs, retrieval_date, undated_policy=undated_policy)
     out.mkdir(parents=True, exist_ok=True)
     xml_path = out / xml_name

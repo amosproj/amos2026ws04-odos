@@ -74,10 +74,7 @@ def test_mbo_restorations(mbo_model):
     assert any(w.code == "LINE_END_HYPHEN_UNRESOLVED" and w.element_id == e.id for w in mbo_model.warnings)
 
 
-def test_bdsg_and_eu_restorations(model, eu_model, eu_raw_json):
-    by = model.by_id()
-    assert "„personenbezogene Daten“" in by["doc/teil-3/kapitel-1/par-46/nr-1"].content_text
-    assert any("Schiffs- und Busverkehrs" in e.original_text for e in model.elements)
+def test_eu_restorations(eu_model, eu_raw_json):
     assert eu_model.by_id()["doc/preamble/formula"].original_text.endswith("UNION —")
     from odos.normalization.docling_reader import read_docling_json
 
@@ -90,9 +87,9 @@ def _soft_in_furniture(m):
 
 
 # ---- source fidelity of document.json -------------------------------------------------------------------------------
-@pytest.fixture(scope="module", params=["bdsg", "mbo", "eu"])
+@pytest.fixture(scope="module", params=["synthetic_german", "mbo", "eu"])
 def fidelity(request, tmp_path_factory):
-    m_name, raw_name = {"bdsg": ("model", "raw_json"), "mbo": ("mbo_model", "mbo_raw_json"), "eu": ("eu_model", "eu_raw_json")}[request.param]  # fmt: skip
+    m_name, raw_name = {"synthetic_german": ("synthetic_german_model", "synthetic_german_raw_json"), "mbo": ("mbo_model", "mbo_raw_json"), "eu": ("eu_model", "eu_raw_json")}[request.param]  # fmt: skip
     model, raw = request.getfixturevalue(m_name), request.getfixturevalue(raw_name)
     out = tmp_path_factory.mktemp(request.param)
     rep = build_legal_json_artifacts(model, raw, out)["report"]
@@ -104,7 +101,7 @@ def test_json_text_matches_the_pdf_text_layer(fidelity):
     sf = rep["source_fidelity"]
     assert sf["pdf_text_layer"] and sf["unexplained_differences"] == [], sf["unexplained_differences"][:3]
     assert sf["items_compared"] == sf["identical"] + sf["identical_except_recorded_word_divisions"]
-    assert sf["items_compared"] > {"bdsg": 780, "mbo": 1170, "eu": 1800}[name]
+    assert sf["items_compared"] > {"synthetic_german": 40, "mbo": 1170, "eu": 1800}[name]
     assert rep["text_preservation"]["identical_to_model"]  # and still equal to the canonical model
 
 

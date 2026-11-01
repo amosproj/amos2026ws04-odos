@@ -22,3 +22,9 @@ It is the only schema ODOS validates against (all export profiles). The AKN 3.0 
 stored review revision had been validated against AKN 3.1.
 
 `odos.akn.validate` refuses to run if a hash differs.
+
+Note (prototype clean-up): the AKN4EU 5.0.1.0 sample files and the AKN4EU export that this paragraph's validation
+claim refers to were removed from this repository (they belonged to the AKN4EU export, which the static prototype
+does not use). The statement above is a record of the check that was made at the time and can no longer be
+reproduced from this repository; the XSD files themselves and their hashes are unchanged. The removed files are in
+the git history of the branch the prototype was derived from.

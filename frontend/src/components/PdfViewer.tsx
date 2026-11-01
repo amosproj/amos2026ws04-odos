@@ -1,7 +1,7 @@
 import * as pdfjs from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { bboxToRect, type Rect } from "../structure";
+import { rectsOnPage, type Rect } from "../structure";
 import type { Provenance } from "../types";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -68,9 +68,7 @@ export function PdfViewer({ url, page, onPageChange, highlights, approximate = f
   const pageHeight = useRef(0);
   const rects: Rect[] = useMemo(() => {
     if (!size || rendered !== pageNo) return []; // never draw boxes over a stale page image
-    return highlights
-      .filter((h) => h.page_no === pageNo && h.bbox)
-      .map((h) => bboxToRect(h.bbox!, pageHeight.current, size.scale));
+    return rectsOnPage(highlights, pageNo, pageHeight.current, size.scale);
   }, [highlights, pageNo, size, rendered]);
 
   useEffect(() => {

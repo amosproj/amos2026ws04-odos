@@ -231,21 +231,16 @@ def test_full_eu_document_accounting(eu_raw_json):
     assert [s["ref"] for s in rep.segmented_items] == [*MERGED, *repaired] and all(s["tiles_item_exactly"] for s in rep.segmented_items)  # fmt: skip
 
 
-# ---- BDSG and MBO stay stable ----------------------------------------------------------------------------------------------
+# ---- the MBO stays stable -------------------------------------------------------------------------------------------------
 # Pinned before the hygiene layer existed (same Docling JSON). New derived fields are excluded from the model hash.
 # Model and full-XML hashes changed with the PDF text-layer restoration (Docling's dropped line-end hyphens and
-# ASCII quotes/dashes restored, page numbers out of the structure, evidenced footnote anchors). The BDSG § 1-2
-# excerpt contains no repaired character and is unchanged.
-# Then: sentences, TOC entries and table-cell boxes added to the model (annotations only: BDSG XML unchanged); MBO XML
-# changed only where 14 footnotes became proven from their reference marks and lost their odos:uncertain attribute.
+# ASCII quotes/dashes restored, page numbers out of the structure, evidenced footnote anchors). Then: sentences, TOC
+# entries and table-cell boxes added to the model (annotations only); the MBO XML changed only where 14 footnotes
+# became proven from their reference marks and lost their odos:uncertain attribute.
 PINNED = {
-    "bdsg": {"raw": "dd49591bfd8dab883a86c173dfbf93ca188fc0ed3685b569d718972614ef8ba0",
-             "model": "391d99def0d7b1a89c4f9dac267815e44b153ea297f6fadface9841926a5476b",
-             "xml_excerpt": "0e7a7141ecbb643637a4488636acc33bc15e26b04c5474b9158f14c44f222019",
-             "xml_full": "232e7818cc097a224c507564928fd83898b07da532027a3383bc43a158bb2670"},
     "mbo": {"raw": "1c5ec2ab2c7b0330d274890b4f2fe654676f8b1ddd99691d369678ee7d585632",
-            "model": "bd6f345e394d9d16f2029c8d6edf03faa56dfc6f22d53fde0509a79bd1d2a504",
-            "xml_full": "d99b7dc2cb1d510d16dceec327ffde433d709d9adf96023446159c6408b146a0"},
+            "model": "de11c92997010ced4f4ff2ef4afabd6da3fac0752bea5a48d19371c07aa2c296",
+            "xml_full": "072769c285ca385c401f2047f0dc114e8d1fd152cca223c127909a5b642a556c"},
 }  # fmt: skip
 NEW_FIELDS = {"source_spans", "search_text", "hygiene_flags"}
 
@@ -254,30 +249,22 @@ def _sha(b: bytes) -> str:
     return hashlib.sha256(b).hexdigest()
 
 
-@pytest.mark.parametrize("name", ["bdsg", "mbo"])
-def test_existing_documents_are_unchanged(name, raw_json, mbo_raw_json):
+def test_existing_documents_are_unchanged(mbo_raw_json):
     from odos.akn.generator import generate_excerpt
 
-    path = raw_json if name == "bdsg" else mbo_raw_json
-    if _sha(path.read_bytes()) != PINNED[name]["raw"]:
+    name = "mbo"
+    if _sha(mbo_raw_json.read_bytes()) != PINNED[name]["raw"]:
         pytest.skip("Docling output differs from the pinned extraction on this machine; hashes not comparable")
-    m = parse_document(path, "german_law")
+    m = parse_document(mbo_raw_json, "german_law")
     excl = {"elements": {"__all__": NEW_FIELDS}, "furniture": {"__all__": NEW_FIELDS}}
     assert _sha(m.model_dump_json(exclude=excl).encode()) == PINNED[name]["model"]
     allp = [e.number for e in m.of_type(T.PARAGRAPH)]
-    if name == "bdsg":
-        assert _sha(generate_excerpt(m, ["1", "2"], "2026-10-27").xml) == PINNED[name]["xml_excerpt"]
-        assert _sha(generate_excerpt(m, allp, "2026-10-27").xml) == PINNED[name]["xml_full"]
-    else:
-        assert _sha(generate_excerpt(m, allp, "2026-10-27", undated_policy="processing_date").xml) == PINNED[name]["xml_full"]
+    assert _sha(generate_excerpt(m, allp, "2026-10-27", undated_policy="processing_date").xml) == PINNED[name]["xml_full"]
     assert not any(e.source_spans for e in m.elements)  # nothing split
 
 
-def test_additive_hygiene_annotations_on_existing_documents(model, mbo_model):
+def test_additive_hygiene_annotations_on_existing_documents(mbo_model):
     flags = lambda m: Counter(f for e in [*m.elements, *m.furniture] for f in e.hygiene_flags)  # noqa: E731
-    assert flags(model) == {"running_header": 45, "running_footer": 45, "letter_spacing_collapsed": 17,
-                            "enumeration_closing_clause_confirmed": 9, "text_restored_from_pdf_text_layer": 21,
-                            "sentence_interlaced_list_restart": 1, "sentence_interlaced_list_continuation": 1}
     assert flags(mbo_model) == {"running_footer": 83, "furniture_labelled_as_body_by_docling": 6,
                                 "moved_out_of_structure_as_page_furniture": 6, "text_restored_from_pdf_text_layer": 25,
                                 "footnote_anchor_from_pdf_reference_mark": 35, "footnote_recognised_from_pdf_reference_mark": 1,
@@ -287,7 +274,8 @@ def test_additive_hygiene_annotations_on_existing_documents(model, mbo_model):
                                 "absatz_labelled_section_header_by_docling_confirmed": 2,
                                 "enumeration_closing_clause_confirmed": 21,
                                 "unmarked_list_item_satz_n_confirmed": 4,
-                                "sentence_interlaced_list_restart": 15, "sentence_interlaced_list_continuation": 27}
+                                "sentence_interlaced_list_restart": 15, "sentence_interlaced_list_continuation": 27,
+                                "page_break_continuation_merged_confirmed": 9}
     leaked = [e for e in mbo_model.furniture if "furniture_labelled_as_body_by_docling" in e.hygiene_flags]
     assert all(e.original_text.strip() == str(e.pages[0]) for e in leaked) and len(leaked) == 6  # page numbers labelled as text
     assert not [e for e in mbo_model.elements if "furniture_labelled_as_body_by_docling" in e.hygiene_flags]  # none left in the tree
@@ -317,12 +305,12 @@ def test_overlapping_body_boxes_are_flagged_and_kept():
     assert reasons == ["reading_order_uncertain:layout_box_overlaps_other_item"] * 2
 
 
-def test_layout_overlaps_in_the_reference_extractions(raw_json, mbo_raw_json, eu_raw_json):
+def test_layout_overlaps_in_the_reference_extractions(mbo_raw_json, eu_raw_json):
     def overlaps(p):
         _, items = read_docling_json(p)
         return apply_hygiene(items, read_page_sizes(p)).report["layout_overlaps"]
 
-    assert overlaps(raw_json) == [] and overlaps(mbo_raw_json) == []  # BDSG and MBO: nothing flagged, outputs unchanged
+    assert overlaps(mbo_raw_json) == []  # MBO: nothing flagged, outputs unchanged
     # Regulation (EU) 2023/1230, Art. 47: the last lines of paragraphs (1)-(3) form one stray item (#/texts/748)
     assert [(o["page"], o["refs"]) for o in overlaps(eu_raw_json)] == [(36, ["#/texts/746", "#/texts/748"]), (36, ["#/texts/747", "#/texts/748"])]  # fmt: skip
 

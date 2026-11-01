@@ -489,6 +489,10 @@ def _add_text(b: _Builder, item, type_: T, reasons: list[str], after_list: bool)
     page_break = (prev is not None and prev.type in UNIT_TYPES and b.stack and b.stack[-1] is prev
                   and prev.pages and item.pages and item.pages[0] > prev.pages[-1]
                   and not prev.original_text.rstrip().endswith((".", ":", ";", "!", "?")))  # fmt: skip
+    if page_break and _continues_absatz_intro(prev, item, type_, reasons):
+        b.extend(prev, item)
+        prev.hygiene_flags.append("page_break_continuation_merged_confirmed")
+        return
     if page_break:
         reasons.append("continuation_across_page_break_attached_to_previous_element")
     elif after_list and b.stack and b.stack[-1].type == T.NUMMER and not b.stack[-1].children_ids \
@@ -526,6 +530,15 @@ def _add_text(b: _Builder, item, type_: T, reasons: list[str], after_list: bool)
     el = b.add(item, type_, container, "body", local=b.seq_local(container, "txt"), reasons=reasons)  # fmt: skip
     el.hygiene_flags.extend(confirmed)
     _continuation_check(b, el, item)
+
+
+def _continues_absatz_intro(prev: Element, item, type_: T, reasons: list[str]) -> bool:
+    """The text of an Absatz runs on over a page break: the Absatz has no child yet, its text stops without
+    sentence-end punctuation (checked by the caller) and the next page goes on lowercase with a plain, unsplit item.
+    Only then is the item the same text; every other page-break continuation stays a flagged element of its own."""
+    return (type_ == T.TEXT and not reasons and prev.type == T.ABSATZ and not prev.children_ids
+            and item.orig.lstrip()[:1].islower() and item.span is None and not item.parts
+            and not item.boundary_flags and not item.order_flags and not prev.source_spans)  # fmt: skip
 
 
 _SPECIFIC_PLACEMENT_REASONS = frozenset({
@@ -573,7 +586,7 @@ BULLET_SHORT = re.compile(r"^[-–]\s*([A-ZÄÖÜ][\wÄÖÜäöüß]{1,14})\s*[-
 def _finish_meta(meta: DocumentMetadata, headers: list[str], front: list[SourceItem]) -> DocumentMetadata:
     if headers:
         meta.title = headers[0]
-    # the short title is a short second header ("BDSG") or a "- MBO -" line; never a sentence
+    # the short title is a short second header (e.g. "BspG") or a "- MBO -" style line; never a sentence
     if len(headers) > 1 and SHORT_TITLE.match(headers[1].strip()):
         meta.short_title = headers[1].strip()
     else:

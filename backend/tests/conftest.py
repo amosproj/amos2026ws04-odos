@@ -5,18 +5,6 @@ import pytest
 from odos.parsing import parse_document
 
 BACKEND = Path(__file__).resolve().parents[1]
-BDSG = BACKEND / "data" / "input" / "BDSG.pdf"
-RAW = BACKEND / "output" / "bdsg" / "docling_raw.json"
-
-
-@pytest.fixture(scope="session")
-def raw_json() -> Path:
-    if not RAW.exists():  # slow path: only when nobody ran `odos extract` yet
-        from odos.extraction import extract_pdf
-
-        extract_pdf(BDSG, RAW.parent)
-    _evidence(BDSG, RAW)
-    return RAW
 
 
 def _evidence(pdf: Path, raw: Path) -> None:
@@ -26,11 +14,6 @@ def _evidence(pdf: Path, raw: Path) -> None:
 
     if pdf.exists():
         write_evidence(pdf, raw)
-
-
-@pytest.fixture(scope="session")
-def model(raw_json):
-    return parse_document(raw_json, "german_law")
 
 
 # The Musterbauordnung PDF was supplied by the industry partner and is not redistributed: tests take it from
@@ -186,8 +169,8 @@ def pytest_terminal_summary(terminalreporter, config):
     if not cov:
         terminalreporter.write_line("GOLDEN COVERAGE: not run in this session (tests/test_golden_equivalence.py not selected)")
         return
-    names = {"mbo": "MBO", "bdsg": "BDSG", "eu": "EU", "synthetic_eu": "synthetic EU"}
+    names = {"mbo": "MBO", "eu": "EU", "synthetic_eu": "synthetic EU"}
     parts = [f"{names[k]} {cov[k]}" for k in names if k in cov]
-    full = all(cov.get(k) == "✓" for k in ("mbo", "bdsg", "eu"))
+    full = all(cov.get(k) == "✓" for k in ("mbo", "eu"))
     terminalreporter.write_line("GOLDEN COVERAGE: " + " · ".join(parts))
-    terminalreporter.write_line("full three-document equivalence: " + ("yes" if full else "NO (see the reasons above)"))
+    terminalreporter.write_line("full partner-document equivalence (MBO and EU): " + ("yes" if full else "NO (see the reasons above)"))

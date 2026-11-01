@@ -18,8 +18,8 @@ from odos.parsing.profiles.german_law.recognizer import parse_items
 from odos.parsing.profiles.german_law.rules import GERMAN_LAW_RULES
 
 SRC = Path(__file__).resolve().parents[1] / "src" / "odos"
-DOCS = ["bdsg", "mbo", "eu"]
-FIXTURES = {"bdsg": ("model", "raw_json"), "mbo": ("mbo_model", "mbo_raw_json"), "eu": ("eu_model", "eu_raw_json")}
+DOCS = ["synthetic_german", "mbo", "eu"]  # the synthetic German law always runs; MBO and EU need the partner PDFs
+FIXTURES = {"synthetic_german": ("synthetic_german_model", "synthetic_german_raw_json"), "mbo": ("mbo_model", "mbo_raw_json"), "eu": ("eu_model", "eu_raw_json")}
 # internal data that must never reach document.json (in any spelling)
 FORBIDDEN = {"uncertain", "uncertainty_reasons", "uncertaintyReasons", "warnings", "structure_notes", "hygiene_flags",
              "hygieneFlags", "docling_label", "doclingLabel", "search_text", "reviewed", "review", "confidence",
@@ -108,8 +108,8 @@ def test_boxes_are_the_models_provenance_in_one_coordinate_system(case):
                 assert 0 <= s.bbox.left <= s.bbox.right <= w + 0.5 and 0 <= s.bbox.bottom <= s.bbox.top <= h + 0.5
 
 
-def test_multi_page_items_map_each_box_to_its_item(model, raw_json):
-    doc = to_legal_json(model, load_source_context(raw_json))
+def test_multi_page_items_map_each_box_to_its_item(mbo_model, mbo_raw_json):  # MBO § 6 (1) runs from page 9 to 10
+    doc = to_legal_json(mbo_model, load_source_context(mbo_raw_json))
     two = [n for n in nodes(doc) if len(n.source.pages) > 1]
     assert two and all(s.itemRef for n in two for s in n.source.sourceSpans)
 
@@ -125,10 +125,9 @@ def test_footnote_anchors_only_with_source_evidence(case):
         assert all((f.anchorElementId is not None) == (len(f.anchorElementIds) == 1) for f in doc.footnotes)  # 1.0 meaning kept
         assert sum(len(f.anchorElementIds) > 1 for f in doc.footnotes) == 3  # one "*)" note referenced on several elements
         assert next(f for f in doc.footnotes if f.marker == "*").anchorElementId == "doc/front-4"
-    if name == "bdsg":
-        assert len(doc.footnotes) == 13 and len(anchored) == 12
-        assert all(index[f.anchorElementId].type == T.PARAGRAPH and f.title == "Fußnote" and f.content for f in anchored)
-        assert next(f for f in doc.footnotes if not f.anchorElementId).id.startswith("doc/front")
+    if name == "synthetic_german":  # the one footnote is proven by its superscript reference mark
+        assert len(doc.footnotes) == len(anchored) == 1
+        assert anchored[0].anchorElementId == "doc/teil-1/kapitel-1/par-2/abs-2" and anchored[0].text.startswith("1 siehe")
     if name == "eu":
         assert len(doc.footnotes) == len(anchored) == 26
         for f in anchored:
@@ -199,7 +198,7 @@ def test_eu_example(eu_model, eu_raw_json):
     assert {by[i].type for i in by if by[i].nativeType == "Erwägungsgrund"} == {"recital"}
 
 
-def test_tables_keep_rows_and_toc_is_separate(eu_model, eu_raw_json, model, raw_json):
+def test_tables_keep_rows_and_toc_is_separate(eu_model, eu_raw_json, synthetic_german_model, synthetic_german_raw_json):
     eu = to_legal_json(eu_model, load_source_context(eu_raw_json))
     index = eu_model.by_id()
     tables = [n for n in nodes(eu) if n.type == "table"]
@@ -208,9 +207,9 @@ def test_tables_keep_rows_and_toc_is_separate(eu_model, eu_raw_json, model, raw_
         assert [[c.text for c in row] for row in t.rows] == index[t.id].table.rows
         assert (t.numRows, t.numCols) == (index[t.id].table.num_rows, index[t.id].table.num_cols)
     assert sorted((t.numRows, t.numCols) for t in tables) == [(25, 2), (27, 4)]
-    de = to_legal_json(model, load_source_context(raw_json))
+    de = to_legal_json(synthetic_german_model, load_source_context(synthetic_german_raw_json))
     assert [n.type for n in de.tableOfContents] == ["tableOfContents"]
-    assert {c.type for c in de.tableOfContents[0].children} == {"tocEntry", "table"}
+    assert {c.type for c in de.tableOfContents[0].children} == {"tocEntry"}
     assert not [n for n in de.structure for x in [n] if x.type in ("tableOfContents", "tocEntry")]
 
 
@@ -299,8 +298,8 @@ def test_only_the_exporter_builds_the_public_json():
     assert users == [], users  # everything else works on the canonical DocumentModel; document.json is never read back
 
 
-def test_reviewed_model_exports_corrections_without_review_data(model):
-    m = model.model_copy(deep=True)
+def test_reviewed_model_exports_corrections_without_review_data(synthetic_german_model):
+    m = synthetic_german_model.model_copy(deep=True)
     el = m.by_id()["doc/teil-1/kapitel-1/par-1/abs-2"]
     el.content_text = "korrigierter Text"
     el.reviewed = {"fields": {"content_text": {"original": "x", "corrected": "korrigierter Text"}}, "corrections": ["c1"]}

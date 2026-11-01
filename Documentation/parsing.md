@@ -1,14 +1,14 @@
 # Parsing: one engine, declarative legal profiles
 
 ODOS turns a PDF into one canonical `DocumentModel` (`document_model.json`, see
-[document-model.md](document-model.md)). The public outputs (`document.json`, Akoma Ntoso XML) and human
-review are all derived from that model.
+[document-model.md](document-model.md)). The public outputs (`document.json`, Akoma Ntoso XML) are
+derived from that model.
 
 German law and EU legislation are parsed by the **same lifecycle** (`backend/src/odos/parsing/engine.py`).
 The genuine legal differences live in **profiles** (`backend/src/odos/parsing/profiles/<name>/`): a
 declaration of tables and small hooks, plus the profile's recognizer, rules and validation report.
 
-> **Scope.** Two profiles are verified, each on specific documents: German law on the MBO and BDSG,
+> **Scope.** Two profiles are verified, each on specific documents: German law on the MBO,
 > and EU legislation on Regulation (EU) 2023/1230, a German-language Official Journal regulation. A
 > synthetic EU regulation (`backend/tests/synthetic_eu.py`) and a synthetic German law
 > (`backend/tests/synthetic_german.py`, with a generated PDF) cover both profiles when the partner documents
@@ -22,13 +22,13 @@ declaration of tables and small hooks, plus the profile's recognizer, rules and 
 ```python
 from odos.parsing import parse_document
 
-model = parse_document("output/bdsg/docling_raw.json", "german_law")   # or "eu_legislation"
+model = parse_document("output/doc/docling_raw.json", "german_law")   # or "eu_legislation"
 ```
 
 `parse_document(path, mode)` is the one public entry point. It is used by the CLI
 (`odos normalize --mode …`), the pipeline (through `engine.parse`) and the tests. An unknown mode is a
-`ValueError`, and nothing is auto-detected: classification only *suggests* a mode, see
-[architecture.md](architecture.md).
+`ValueError`, and nothing is auto-detected: the profile is always chosen explicitly (`odos process --mode …`).
+See [architecture.md](architecture.md).
 
 ## Lifecycle
 
@@ -83,7 +83,7 @@ backend/src/odos/
 ### Dependency rules
 
 - The dependency direction is `document_model` ← `normalization` ← `parsing` ← exporters
-  (`legal_json`, `akn`) ← `pipeline`, `review`, `api`, `cli`.
+  (`legal_json`, `akn`) ← `pipeline` ← `cli`.
 - **A profile declaration** imports only the model, `profiles.base` and language data at import time.
   Its hooks import its recognizer, its report and the AKN generator lazily.
   - So the shared operations and the pipeline can import the registry without an import cycle.
@@ -96,14 +96,14 @@ backend/src/odos/
 
 | Group | Fields |
 |---|---|
-| Identity | `mode` (router and API value), `model_profile` (`DocumentModel.profile`: `None` = German law, as stored historically; `"eu_legislation"`), `legal_system` (`legalSystem`), `language` |
+| Identity | `mode` (the CLI's `--mode` value), `model_profile` (`DocumentModel.profile`: `None` = German law, as stored historically; `"eu_legislation"`), `legal_system` (`legalSystem`), `language` |
 | Lifecycle | `recognize` (stage 4), `resolve_footnotes` (stage 6, or `None`) |
 | Sentences | `sentence_units`, `units_if_no_subunits`, `list_types` |
 | TOC | `toc`: a `TocVocabulary` with kinds, levels, containers, markers, provisions, inline marker and citation rule, ordinals |
 | Public JSON | `json_types`, `json_native_terms`, `json_nesting`, `json_document_type`, `json_id_parts` |
 | Outputs | `write_reports`, `build_akn` |
 | Pipeline | `has_structure` with `unsupported_summary` / `unsupported_message`, `summary`, `akn_summary`, `completed_message`, `akn_refused_message` |
-| Capabilities | `akn_excerpt` (German `odos akn --paragraphs`), `akn4eu` (EU AKN4EU export) |
+| Capabilities | `akn_excerpt` (German `odos akn --paragraphs`) |
 
 ## What is shared and what stays profile-specific
 
@@ -116,7 +116,7 @@ backend/src/odos/
 - sentence segmentation and TOC normalization
 - content accounting and the validation-report writer
 - the public JSON exporter and its structural checks
-- the pipeline run and review regeneration
+- the pipeline run
 - language data and Roman numerals
 
 **Profile-specific, because the law differs:**
@@ -129,8 +129,23 @@ backend/src/odos/
 - front matter and metadata
 - the footnote strategy
 - the validation report sections
-- the Akoma Ntoso mapping (German `akn/generator.py`, EU `akn/eu_generator.py` and AKN4EU)
+- the Akoma Ntoso mapping (German `akn/generator.py`, EU `akn/eu_generator.py`)
 - the furniture ID scheme (`furniture/p3-header` vs `furniture/p3-page_header-1`)
+
+## Absatz text across a page break (German profile)
+
+The text of an Absatz can run on over a page break (MBO § 6 Absatz 1: page 9 to 10, followed by the Nummern 1 and 2).
+The recognizer (`german_law/recognizer.py`, `_continues_absatz_intro`) merges the next page's item into the Absatz
+only when **all** of these hold:
+
+- the previous element is an Absatz without children, and its text ends without sentence-end punctuation
+- the item is an unnumbered text on a later page, starts in lowercase, and is plain (not split, no boundary or order flags)
+- the Absatz has no source spans of its own yet, and the item raised no uncertainty reasons
+
+`StructureBuilder.extend` then adds the item's text, source reference, provenance box and page to the Absatz (the element
+keeps both pages and one reference per item) and the flag `page_break_continuation_merged_confirmed` is recorded. Every other continuation
+across a page break stays a separate element, flagged `continuation_across_page_break_attached_to_previous_element`.
+Nothing else is merged. The golden baseline of the MBO records this one deliberate change.
 
 ## Adding a profile
 
@@ -141,9 +156,8 @@ backend/src/odos/
    - leave page-furniture detachment to the engine
 2. **Declare the profile.** Put the `LegalProfile` (tables plus lazy hooks) in the folder's
    `__init__.py`, and register it in `PROFILES` (`parsing/profiles/__init__.py`).
-3. **Add the processing mode.** Add the mode to `pipeline.ProcessingMode`, the API contract. The
-   registry-consistency test fails until the enum and the registry agree. Route a document type to the
-   mode in `classification/router.py` (`MODE_FOR_TYPE`) only after the profile is verified.
+3. **Add the processing mode.** Add the mode to `pipeline.ProcessingMode`. The
+   registry-consistency test fails until the enum and the registry agree.
 4. **Give it outputs.**
    - JSON nesting rules for its `legal_system`
    - a validation report (with `parsing/accounting.py`)
@@ -155,7 +169,7 @@ backend/src/odos/
 
 `backend/tests/test_golden_equivalence.py` compares every output against two recorded baselines:
 
-- **MBO, BDSG and EU 2023/1230:** `tests/golden/phase3_baseline.json`. Each runs only on the exact
+- **MBO and EU 2023/1230:** `tests/golden/phase3_baseline.json`. Each runs only on the exact
   Docling extraction its baseline was computed from (checked by SHA-256).
 - **The synthetic EU regulation:** `tests/golden/synthetic_eu_baseline.json`. It always runs.
 
@@ -166,8 +180,7 @@ The comparison covers:
 
 All values are deterministic: fixed dates, no paths or timestamps, and reports compared by content.
 
-**Coverage is always reported.** Every run ends with a `GOLDEN COVERAGE: MBO ✓ · BDSG ✓ · EU ✓ ·
-synthetic EU ✓` line. A missing or different extraction shows as `✗` with its reason, never as a pass.
+**Coverage is always reported.** Every run ends with a `GOLDEN COVERAGE: MBO ✓ · EU ✓ · synthetic EU ✓` line. A missing or different extraction shows as `✗` with its reason, never as a pass.
 A difference is a regression to investigate, never a value to refresh: `golden_outputs.record_baseline`
 refuses to overwrite a baseline.
 
@@ -175,6 +188,6 @@ refuses to overwrite a baseline.
 
 - **German:** an Artikelgesetz; a law with Unterabschnitte and `aa)` Doppelbuchstaben; a Verordnung
   with Anlagen and tables; a Landesbauordnung.
-- **EU:** a directive (the router still sends directives to `extract_only`); implementing and
+- **EU:** a directive; implementing and
   delegated regulations; an act with TITEL in the enacting terms; a consolidated EUR-Lex text (►M
   markers); a pre-2013 two-column Official Journal layout; an English-language act (needs `lang_en`).

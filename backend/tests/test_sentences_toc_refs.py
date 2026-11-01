@@ -95,7 +95,7 @@ def test_unresolved_numbering_is_left_unsplit(mbo_model):
     assert any(w.code == "SENTENCE_SEGMENTATION_UNRESOLVED" and w.element_id.endswith("par-28/abs-5") for w in mbo_model.warnings)
 
 
-@pytest.mark.parametrize("fixture", ["mbo_model", "model", "eu_model"])
+@pytest.mark.parametrize("fixture", ["mbo_model", "synthetic_german_model", "eu_model"])
 def test_sentences_cover_their_units_exactly(request, fixture):
     m = request.getfixturevalue(fixture)
     by = m.by_id()
@@ -112,33 +112,23 @@ def test_sentences_cover_their_units_exactly(request, fixture):
     assert len(ids) == len(set(ids)) and not set(ids) & set(by)
 
 
-def test_bdsg_and_eu_sentences_are_unnumbered_and_not_split_at_abbreviations(model, eu_model):
-    for m in (model, eu_model):
-        assert m.sentences and all(s.number is None and s.method == "punctuation" for s in m.sentences)
-        for s in m.sentences:
-            t = _text(m, s)
-            assert not re.search(r"\b(Abs|Nr|Art|S|ABl|vgl|bzw)\.$", t), t[-60:]
-    inside = [s for m in (model, eu_model) for s in m.sentences if re.search(r"\b(Abs|Nr|Art|ABl|vgl|bzw|S)\. \S", _text(m, s))]
+def test_german_sentences_without_printed_numbers_are_split_by_punctuation(synthetic_german_model):
+    m = synthetic_german_model
+    unnumbered = [s for s in m.sentences if s.method == "punctuation"]
+    assert unnumbered and all(s.number is None for s in unnumbered)  # a number is only ever a printed one
+    assert any(s.method == "printed_number" and s.number for s in m.sentences)
+    for s in unnumbered:
+        assert not re.search(r"\b(Abs|Nr|Art|S|ABl|vgl|bzw)\.$", _text(m, s)), _text(m, s)[-60:]
+
+
+def test_eu_sentences_are_unnumbered_and_not_split_at_abbreviations(eu_model):
+    m = eu_model
+    assert m.sentences and all(s.number is None and s.method == "punctuation" for s in m.sentences)
+    for s in m.sentences:
+        t = _text(m, s)
+        assert not re.search(r"\b(Abs|Nr|Art|S|ABl|vgl|bzw)\.$", t), t[-60:]
+    inside = [s for s in m.sentences if re.search(r"\b(Abs|Nr|Art|ABl|vgl|bzw|S)\. \S", _text(m, s))]
     assert inside  # sentences that contain such abbreviations were kept whole
-
-
-def test_review_correction_regenerates_affected_sentences(mbo_model):
-    from odos.review.model import Correction
-    from odos.review.service import build_effective_model
-
-    unit = "doc/teil-2/par-6/abs-5"
-    old = mbo_model.by_id()[unit].content_text
-    new = old.replace("0,4 H, mindestens 3 m.", "0,4 H, mindestens 3 m (korrigiert).")
-    c = Correction(id="c1", element_id=unit, field="content_text", original_value=old, previous_value=old, corrected_value=new,
-                   timestamp="2026-10-30T00:00:00Z", review_revision=1, model_revision=1)  # fmt: skip
-    eff = build_effective_model(mbo_model, [c], 1)
-    after = [s for s in eff.sentences if s.unit_id == unit]
-    assert [s.id for s in after] == [s.id for s in _of(mbo_model, unit)]  # numbered ids stable across revisions
-    assert all(s.status == "regenerated_from_reviewed_text" and s.mark_box is None for s in after)
-    assert all(r.text_sha256 == hashlib.sha256(new.encode()).hexdigest() for s in after for r in s.ranges)
-    assert "(korrigiert)" in _text(eff, after[0])
-    untouched = [s for s in eff.sentences if s.unit_id != unit]
-    assert all(s.status == "verified" for s in untouched if s.method == "printed_number")
 
 
 # ---- table of contents -----------------------------------------------------------------------------------------------
@@ -157,27 +147,18 @@ def test_mbo_toc_entries_rebuilt_and_linked(mbo_model):
     assert toc["toc/paragraph-73"].candidate_ids == ["doc/teil-5/abschnitt-3/par-73"] and toc["toc/paragraph-73"].target_id is None
 
 
-def test_bdsg_toc_handles_letter_spacing_and_printed_order(model):
-    toc = {e.id: e for e in model.toc_entries}
-    assert sum(e.status == "linked" for e in model.toc_entries) == 103 and len(model.toc_entries) == 111
-    assert toc["toc/kapitel-6"].status == "linked"  # letter-spaced "Ka p i t e l 6", printed between § 19 and § 20
-    ids = [e.id for e in model.toc_entries]
-    assert ids.index("toc/paragraph-19") < ids.index("toc/kapitel-6") < ids.index("toc/paragraph-20")
-    assert toc["toc/paragraph-20"].target_id == "doc/teil-1/kapitel-6/par-20"
-    assert all(e.target_id is None for e in model.toc_entries if e.status != "linked")
-
-
-def test_toc_entries_never_invent_text(mbo_model, model):
-    for m in (mbo_model, model):
-        by = m.by_id()
-        for e in m.toc_entries:
-            src = []
-            for s in e.source_spans:
-                el = by[s.element_id]
-                text = next(c.text for c in el.table.cells if [c.row, c.col] == s.cell) if s.cell else el.content_text
-                src.append(text[s.start : s.end])
-            joined = re.sub(r"\s", "", "".join(src))
-            assert re.sub(r"\s", "", f"{e.marker}{e.title or ''}") in joined or re.sub(r"\s", "", e.title or "") in joined, e.id
+@pytest.mark.parametrize("fixture", ["synthetic_german_model", "mbo_model"])
+def test_toc_entries_never_invent_text(request, fixture):
+    m = request.getfixturevalue(fixture)
+    by = m.by_id()
+    for e in m.toc_entries:
+        src = []
+        for s in e.source_spans:
+            el = by[s.element_id]
+            text = next(c.text for c in el.table.cells if [c.row, c.col] == s.cell) if s.cell else el.content_text
+            src.append(text[s.start : s.end])
+        joined = re.sub(r"\s", "", "".join(src))
+        assert re.sub(r"\s", "", f"{e.marker}{e.title or ''}") in joined or re.sub(r"\s", "", e.title or "") in joined, e.id
 
 
 # ---- public JSON 1.1 -----------------------------------------------------------------------------------------------
@@ -185,7 +166,7 @@ def test_frozen_1_0_schema_is_unchanged():
     assert hashlib.sha256(SCHEMA_1_0_PATH.read_bytes()).hexdigest() == FROZEN_1_0
 
 
-@pytest.mark.parametrize("fixture,raw", [("mbo_model", "mbo_raw_json"), ("model", "raw_json"), ("eu_model", "eu_raw_json")])
+@pytest.mark.parametrize("fixture,raw", [("mbo_model", "mbo_raw_json"), ("synthetic_german_model", "synthetic_german_raw_json"), ("eu_model", "eu_raw_json")])
 def test_json_1_1_and_its_1_0_downgrade_validate(request, fixture, raw, tmp_path):
     m, r = request.getfixturevalue(fixture), request.getfixturevalue(raw)
     rep = build_legal_json_artifacts(m, r, tmp_path)["report"]

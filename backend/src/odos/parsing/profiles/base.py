@@ -62,4 +62,4 @@ class LegalProfile:
     akn_summary: Callable[[dict], dict]  # pipeline summary of the AKN artifacts
     completed_message: Callable[[dict], str]  # pipeline message, given the AKN artifacts
     akn_refused_message: Callable[[Exception], str]  # pipeline message when AKN refuses (e.g. a date is not printed)
-    capabilities: frozenset[str] = frozenset()  # optional features: "akn_excerpt" (§ excerpt CLI), "akn4eu" export
+    capabilities: frozenset[str] = frozenset()  # optional features: "akn_excerpt" (§ excerpt CLI)

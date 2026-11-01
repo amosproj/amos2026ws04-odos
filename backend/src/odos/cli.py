@@ -1,18 +1,23 @@
-"""Command line interface `odos`: extract, normalize, akn, akn4eu, legal-json, classify, serve (see `odos --help`)."""
+"""Command line interface `odos`: process (the whole pipeline), extract, normalize, akn, legal-json (see `odos --help`)."""
 
 from __future__ import annotations
 
 import argparse
-import re
 import sys
+from datetime import date
 from pathlib import Path
 
 from odos.extraction import extract_pdf
 from odos.parsing import parse_document
 from odos.parsing.profiles import for_model, structured_modes
 
-# the retrieval date `odos akn` records when none is given (the test inputs' download date)
-SOURCE_MD = Path(__file__).resolve().parents[2] / "data" / "input" / "SOURCE.md"
+
+def iso_date(value: str) -> str:
+    """argparse type: a calendar date as YYYY-MM-DD (the retrieval date is always stated, never assumed)."""
+    try:
+        return date.fromisoformat(value).isoformat()
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"not a date in the form YYYY-MM-DD: {value!r}") from None
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -32,54 +37,27 @@ def build_parser() -> argparse.ArgumentParser:
     akn.add_argument("-o", "--output-dir", type=Path, default=None)
     akn.add_argument("--paragraphs", nargs="+", default=["1", "2"], help="§ numbers to include")
     akn.add_argument("--allow-undated", action="store_true", help="if the source has no Ausfertigungsdatum, label the processing date as such instead of refusing")  # fmt: skip
-    akn.add_argument("--retrieval-date", default=None, help="YYYY-MM-DD; default: from data/input/SOURCE.md")
-    a4e = sub.add_parser("akn4eu", help="Export an EU document_model.json in the AKN4EU profile (sample-compatible, AKN 3.1 XSD)")
-    a4e.add_argument("document_model", type=Path)
-    a4e.add_argument("-o", "--output-dir", type=Path, default=None, help="default: <model dir>/akn4eu")
-    a4e.add_argument("--eli", default=None, help="the act's ELI (e.g. http://data.europa.eu/eli/reg/2023/1230/oj); checked against the printed type/number, never derived")  # fmt: skip
-    a4e.add_argument("--oj-uri", default=None, help="the Official Journal URI (e.g. http://publications.europa.eu/resource/oj/JOL_2023_165_R_0001); checked against the printed reference, never derived")  # fmt: skip
-    a4e.add_argument("--conversion-date", default=None, help="YYYY-MM-DD for FRBRManifestation; default: today")
+    akn.add_argument("--retrieval-date", type=iso_date, required=True, help="YYYY-MM-DD: the date the PDF was retrieved (recorded in the XML)")  # fmt: skip
     lj = sub.add_parser("legal-json", help="Serialize a document_model.json to document.json (public JSON) and validate it")
     lj.add_argument("document_model", type=Path)
     lj.add_argument("--docling-json", type=Path, default=None, help="for page sizes; default: docling_raw.json next to the model")
     lj.add_argument("-o", "--output-dir", type=Path, default=None, help="default: directory of the model")
-    cls = sub.add_parser("classify", help="Classify a PDF (text layer) or a docling_raw.json and show the suggested route")
-    cls.add_argument("path", type=Path)
-    serve = sub.add_parser("serve", help="Run the local web API (FastAPI)")
-    serve.add_argument("--host", default="127.0.0.1")
-    serve.add_argument("--port", type=int, default=8000)
-    serve.add_argument("--reload", action="store_true")
+    proc = sub.add_parser("process", help="Run the whole pipeline (extraction, parsing, Legal JSON, Akoma Ntoso) on a PDF")
+    proc.add_argument("pdf", type=Path)
+    proc.add_argument("-o", "--output-dir", type=Path, required=True)
+    proc.add_argument("--mode", choices=list(structured_modes()), required=True, help="parser profile (explicit, never guessed)")
+    proc.add_argument("--retrieval-date", type=iso_date, required=True, help="YYYY-MM-DD: the date the PDF was retrieved (recorded in the XML)")  # fmt: skip
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.command == "classify":
-        from odos.classification import classify_lines, lines_from_docling, lines_from_pdf, route
-
-        if not args.path.is_file():
-            print(f"error: file not found: {args.path}", file=sys.stderr)
-            return 1
-        data = lines_from_docling(args.path) if args.path.suffix == ".json" else lines_from_pdf(args.path)
-        r = classify_lines(data)
-        print(f"type:        {r.document_type.value}\nconfidence:  {r.confidence_band.value} (heuristic band)")
-        print(f"route:       {route(r).chosen_mode}  [{r.support_status.value}]\npoints:      {r.points}")
-        for e in r.evidence:
-            print(f"  +{e.weight} {e.rule_id}: {e.description}" + (f" (p.{e.page}: {e.snippet!r})" if e.snippet else ""))
-        for w in r.warnings:
-            print(f"warning: {w}", file=sys.stderr)
-        return 0
-    if args.command == "serve":
-        import uvicorn
-
-        uvicorn.run("odos.api.app:app", host=args.host, port=args.port, reload=args.reload)
-        return 0
+    if args.command == "process":
+        return run_process(args)
     if args.command == "akn":
         return run_akn(args)
     if args.command == "legal-json":
         return run_legal_json(args)
-    if args.command == "akn4eu":
-        return run_akn4eu(args)
     if args.command == "normalize":
         if not args.docling_json.is_file():
             print(f"error: file not found: {args.docling_json}", file=sys.stderr)
@@ -112,16 +90,9 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def retrieval_date_from_source() -> str:
-    m = re.search(r"Downloaded:\s*(\d{4}-\d{2}-\d{2})", SOURCE_MD.read_text(encoding="utf-8"))
-    if not m:
-        raise ValueError(f"no 'Downloaded: YYYY-MM-DD' in {SOURCE_MD}")
-    return m.group(1)
-
-
 def run_akn(args) -> int:
     from odos.akn.german_artifacts import build_artifacts
-    from odos.artifact_names import AKN_REPORT, AKN_TEXT_REPORT, AKN_TRACEABILITY, AKN_XML
+    from odos.artifact_names import AKN_EXCERPT_XML, AKN_REPORT, AKN_TEXT_REPORT, AKN_TRACEABILITY, AKN_XML
     from odos.document_model import DocumentModel
 
     path: Path = args.document_model
@@ -132,7 +103,7 @@ def run_akn(args) -> int:
     out = args.output_dir or path.parent
     profile = for_model(model)
     if "akn_excerpt" not in profile.capabilities:  # the profile's whole document; --paragraphs does not apply
-        art = profile.build_akn(model, args.retrieval_date or retrieval_date_from_source(), out)
+        art = profile.build_akn(model, args.retrieval_date, out)
         v, t = art["validation"], art["text"]
         print(f"XSD valid:        {v.valid}  (well-formed: {v.well_formed}, errors: {len(v.errors)})")
         print(f"text identical:   {t['same_order_and_text']} ({t['atoms_in_xml']} text atoms), order preserved: {t.get('document_order_preserved')}")  # fmt: skip
@@ -140,54 +111,31 @@ def run_akn(args) -> int:
         for e in v.errors:
             print(f"  line {e.line}: {e.message}", file=sys.stderr)
         return 0 if v.valid and t["same_order_and_text"] else 2
-    art = build_artifacts(model, args.paragraphs, args.retrieval_date or retrieval_date_from_source(), out,
+    art = build_artifacts(model, args.paragraphs, args.retrieval_date, out,
                           undated_policy="processing_date" if args.allow_undated else "refuse")
     v, t = art["validation"], art["text"]
     print(f"XSD valid:        {v.valid}  (well-formed: {v.well_formed}, errors: {len(v.errors)})")
     print(f"schema:           {v.schema_version}")
     print(f"text identical:   {t['same_order_and_text']} ({t['atoms_in_xml']} text atoms)")
-    print(f"wrote:            {out}/bdsg_excerpt.xml, {AKN_REPORT}, {AKN_TRACEABILITY}")
+    print(f"wrote:            {out}/{AKN_EXCERPT_XML}, {AKN_REPORT}, {AKN_TRACEABILITY}")
     for e in v.errors:
         print(f"  line {e.line}: {e.message}", file=sys.stderr)
     return 0 if v.valid and t["same_order_and_text"] else 2
 
 
-def run_akn4eu(args) -> int:
-    from datetime import date
+def run_process(args) -> int:
+    from odos.pipeline import Outcome, ProcessingMode, run_pipeline
 
-    from odos.akn.akn4eu_artifacts import build_akn4eu_artifacts
-    from odos.document_model import DocumentModel
-
-    if not args.document_model.is_file():
-        print(f"error: file not found: {args.document_model}", file=sys.stderr)
+    if not args.pdf.is_file():
+        print(f"error: file not found: {args.pdf}", file=sys.stderr)
         return 1
-    model = DocumentModel.model_validate_json(args.document_model.read_text(encoding="utf-8"))
-    out = args.output_dir or args.document_model.parent / "akn4eu"
-    try:
-        art = build_akn4eu_artifacts(model, args.conversion_date or date.today().isoformat(), out, eli=args.eli, oj_uri=args.oj_uri)
-    except ValueError as exc:
-        print(f"error: {exc}", file=sys.stderr)
-        return 1
-    rep = art["report"]
-    c = rep["conformance"]
-    spec = c["akn4eu_5_0_1_0_rules"]
-    annexes = len(rep["files"]) - 1 - (1 if rep["main_file"] else 0)
-    print(f"status:            {rep['status']}")
-    print(f"files:             {len(rep['files'])} ({rep['main_file'] or 'no main- file'}, {rep['act_file']}, {annexes} annex file(s)), package {out / rep['package']}")  # fmt: skip
-    print(f"AKN 3.1 XSD:       {'valid' if c['oasis_akn_3_1_xsd']['valid'] else 'INVALID'} (official OASIS schema)")
-    print(f"AKN4EU samples:    {'all ' + str(c['akn4eu_sample_checks']['rules']) + ' rules hold' if c['akn4eu_sample_checks']['passed'] else 'rules FAILED'} (sample compatibility)")  # fmt: skip
-    print(f"AKN4EU 5.0.1.0:    {spec['verdict']} (rules implemented by ODOS)")
-    for x in rep["akn4eu_5_0_1_0"]["rules"]:
-        if x["rule"] in spec["failed"] + spec["missing_input"] + spec["deviations"]:
-            print(f"  {x['status']:<14} {x['rule']}: {x['findings'][0]['message'] if x['findings'] else x['requirement']}")
-    if not c["model_completeness"]["complete"]:
-        print(f"model:             {len(c['model_completeness']['unmapped'])} element(s) NOT in the XML: export rejected")
-    print("AKN4EU official:   not verified (no official AKN4EU validation artefacts available)")
-    print(f"text vs model:     {'identical, order preserved' if c['text_and_order_against_model'] else 'DIFFERENCES'}")
-    for f, v in rep["files"].items():
-        for e in v["errors"][:3]:
-            print(f"  {f}:{e['line']}: {e['message']}", file=sys.stderr)
-    return 0 if art["ok"] else 2
+    res = run_pipeline(args.pdf, args.output_dir, ProcessingMode(args.mode), args.retrieval_date,
+                       progress=lambda stage: print(f"stage:      {stage}"))  # fmt: skip
+    print(f"outcome:    {res.outcome.value}")
+    if res.message:
+        print(f"message:    {res.message}")
+    print(f"output:     {args.output_dir}")
+    return 0 if res.outcome == Outcome.COMPLETED else 2
 
 
 def run_legal_json(args) -> int:

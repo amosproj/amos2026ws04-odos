@@ -74,15 +74,41 @@ class StructureBuilder:
             el.original_text += "\n" + extra.orig
         if item is not None:
             apply_source_fields(el, [item, *(merge or [])])
-            for r in el.text_repairs:
-                if r.status == "unresolved":
-                    self.warn("LINE_END_HYPHEN_UNRESOLVED", f"Page {r.page}: the PDF prints a hyphen at a line end and "
-                              f"neither the rules nor the document decide whether it belongs to the word; the printed "
-                              f"hyphen is kept ({r.evidence}).", el, severity="info")  # fmt: skip
+            self._warn_unresolved(el, el.text_repairs)
         self.index[eid] = el
         parent.children_ids.append(eid)
         self.elements.append(el)
         return el
+
+    def extend(self, el: Element, item: SourceItem) -> None:
+        """Append a later, unsplit source item to an existing element (its text continued on the next page). Like a
+        merged item in `add`: the source pieces stay one per line in `original_text`, every item keeps its own
+        reference, box and repairs, and `content_text` reads as one text."""
+        before = el.original_text
+        el.source_refs.append(item.ref)
+        el.provenance.extend(item.provenance)
+        el.pages = sorted({*el.pages, *item.pages})
+        el.original_text += "\n" + item.orig
+        el.content_text = f"{el.content_text} {item.orig}" if el.content_text else item.orig
+        el.hygiene_flags += [f for f in item.hygiene_flags if f not in el.hygiene_flags]
+        if el.docling_text is not None or item.docling_orig is not None:
+            el.docling_text = "\n".join([el.docling_text if el.docling_text is not None else before,
+                                         item.docling_orig if item.docling_orig is not None else item.orig])  # fmt: skip
+        el.text_repairs += item.text_repairs
+        for r in item.text_repairs:
+            if r.status == "unresolved" and f"source_text_uncertain:{r.rule}" not in el.uncertainty_reasons:
+                el.uncertain = True
+                el.uncertainty_reasons.append(f"source_text_uncertain:{r.rule}")
+        self._warn_unresolved(el, item.text_repairs)
+        st, _ = search_normalize(el.original_text)
+        el.search_text = st if st != el.original_text else None
+
+    def _warn_unresolved(self, el: Element, repairs) -> None:
+        for r in repairs:
+            if r.status == "unresolved":
+                self.warn("LINE_END_HYPHEN_UNRESOLVED", f"Page {r.page}: the PDF prints a hyphen at a line end and "
+                          f"neither the rules nor the document decide whether it belongs to the word; the printed "
+                          f"hyphen is kept ({r.evidence}).", el, severity="info")  # fmt: skip
 
     def seq_local(self, parent: Element, kind: str) -> str:
         n = self.counters.get((parent.id, kind), 0) + 1

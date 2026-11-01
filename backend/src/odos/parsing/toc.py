@@ -150,9 +150,9 @@ def _lines(model: DocumentModel, toc: Element, evidence) -> tuple[list[_Line], l
 
 def _reading_order(lines: list[_Line]) -> list[_Line]:
     """The printed order: by page, then column, then top to bottom. Docling's item order inside a TOC page is not
-    reliable (BDSG: "Kapitel 6" comes after § 25 although it is printed between § 19 and § 20). Two columns are
-    assumed only when at least three lines lie entirely left of the middle at the same height as a line entirely
-    right of it; otherwise the page is one column (centred headings included)."""
+    reliable (observed on a German law: "Kapitel 6" comes after § 25 although it is printed between § 19 and § 20).
+    Two columns are assumed only when at least three lines lie entirely left of the middle at the same height as a
+    line entirely right of it; otherwise the page is one column (centred headings included)."""
 
     def geo(line: _Line):
         b = next((s.bbox for s in line.spans if s.bbox is not None), None)
@@ -333,27 +333,3 @@ def normalize_toc(model: DocumentModel, evidence=None) -> dict:
         "body_sections_without_toc_link": [e.id for e in headings if e.id not in linked],
         "notes": notes,
     }
-
-
-def regenerate_after_corrections(model: DocumentModel, corrected_ids: set[str]) -> None:
-    """Review: entries built from a corrected raw TOC element are derived data, so they are rebuilt from the
-    reviewed text (no PDF line evidence any more: the corrected element counts as one line per item/cell), never
-    edited. Linking uses the same rules; entries of other raw elements stay exactly as they were."""
-    affected = [e for e in model.toc_entries if set(e.source_element_ids) & corrected_ids]
-    if not affected:
-        return
-    tmp = model.model_copy(deep=True)
-    tmp.warnings = []
-    normalize_toc(tmp, None)
-    fresh = [e for e in tmp.toc_entries if set(e.source_element_ids) & corrected_ids]
-    keep = [e for e in model.toc_entries if e not in affected]
-    taken = {e.id for e in keep}
-    for e in fresh:
-        if e.id in taken:
-            e.id = f"{e.id}~reviewed"
-        taken.add(e.id)
-        e.evidence = f"regenerated from reviewed text: {e.evidence}"
-    at = model.toc_entries.index(affected[0])
-    before = [e for e in model.toc_entries[:at] if e not in affected]
-    after = [e for e in model.toc_entries[at:] if e not in affected]
-    model.toc_entries = [*before, *fresh, *after]

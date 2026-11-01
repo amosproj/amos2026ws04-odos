@@ -1,34 +1,36 @@
-# ODOS frontend (React + TypeScript + Vite)
+# ODOS frontend (static demonstration)
 
-The web UI has three parts:
+React + TypeScript + Vite. Upload a PDF, press **Process Document**, and see the original PDF next to the full
+recognized legal structure (with highlights), plus one provision as Legal Document JSON and Akoma Ntoso XML with
+downloads.
 
-- **Document library:** upload, classification with a suggested mode, processing, filters and deletion.
-- **Document workspace:** the original PDF next to the extracted structure, with exact highlights, the
-  normalized table of contents, warnings and uncertain elements, and artifact previews and downloads.
-- **Review and exports:** text corrections with revisions and validation, approval, and the AKN4EU
-  export.
+Nothing is processed in the browser. The chosen PDF is matched by its SHA-256 against the prepared documents
+(Musterbauordnung, Regulation (EU) 2023/1230) and their previously generated pipeline results are shown. Any other
+PDF is refused with an explanation.
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173 (proxies /api to http://127.0.0.1:8000)
+npm run demo:fixtures -- --mbo <odos process output dir> --eu <odos process output dir>   # writes public/demo/
+npm run dev          # http://localhost:5173
 npm test             # unit tests (vitest)
-npm run build        # type check + production build
+npm run typecheck
+npm run build:demo   # type check + static site in dist/ (relative paths, any sub-path)
+npm run preview      # http://localhost:4173
 ```
 
-The browser only calls relative `/api/...` URLs:
+The output directories are those of `odos process` (see `../README.md`). The PDFs are never part of the build: the
+presenter opens their own copy.
 
-- **Development:** Vite proxies them to `http://127.0.0.1:8000`. Point the proxy elsewhere with
-  `ODOS_API_TARGET=http://host:port npm run dev`.
-- **API on a different origin:** set `VITE_API_BASE`.
-
-The backend must be running (`odos serve`).
+**Data protection:** `public/demo/` and `dist/` contain the full text of the partner-supplied documents. Both are
+git-ignored and must not be published or deployed until the licensing is clarified.
 
 | Module | Role |
 |---|---|
-| `src/App.tsx`, `src/documentLibrary.ts` | routes and the document library |
-| `src/components/` | the UI components (Workspace, PdfViewer, StructureTree, ReviewPanel, …) |
-| `src/structure.ts` | display tree, labels, filters, highlight geometry |
-| `src/classification.ts`, `src/review.ts`, `src/exports.ts`, `src/format.ts` | feature logic (pure, unit-tested) |
-| `src/api.ts`, `src/types.ts` | API client and the API's types |
+| `src/demo/DemoApp.tsx` | upload screen, result view, JSON/XML previews and downloads |
+| `src/demo/fixtures.ts` | manifest, SHA-256 matching, upload checks, preview helpers |
+| `src/components/` | `PdfViewer` (pdf.js with highlight overlays), `StructureTree`, `Icon` |
+| `src/structure.ts` | display tree, labels, search, highlight geometry |
+| `src/types.ts` | the DocumentModel fields the UI reads |
+| `scripts/build-demo-fixtures.mjs` | builds `public/demo/` from the pipeline outputs |
 
-Architecture and data model: `../Documentation/architecture.md`.
+Architecture: `../Documentation/architecture.md`.

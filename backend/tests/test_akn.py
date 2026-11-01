@@ -9,14 +9,25 @@ from odos.akn.mapping import AKN_NS, ODOS_NS
 from odos.akn.validate import PINNED_SHA256, SCHEMA_DIR, SchemaIntegrityError, validate_xml
 from odos.akn.verify import verify_text
 from odos.akn.german_artifacts import build_artifacts
-from odos.cli import retrieval_date_from_source
 from odos.normalization.docling_reader import SourceItem
 from odos.document_model import ElementType as T, Provenance, SourceInfo, TableData
 from odos.parsing.profiles.german_law.recognizer import parse_items
 from odos.parsing.profiles.german_law.rules import GERMAN_LAW_RULES
 
 NS = {"a": AKN_NS, "odos": ODOS_NS}
-DATE = "2026-10-27"
+DATE = "2099-03-16"  # the synthetic law is dated 2099: it is not a real law and no real date
+
+
+# The German-law excerpt is tested on the synthetic law (tests/synthetic_german.py: original text, freely
+# redistributable, real PDF text layer) so that every run covers it without a partner document.
+@pytest.fixture(scope="session")
+def model(synthetic_german_model):
+    return synthetic_german_model
+
+
+@pytest.fixture(scope="session")
+def raw_json(synthetic_german_raw_json):
+    return synthetic_german_raw_json
 
 
 @pytest.fixture(scope="session")
@@ -66,21 +77,21 @@ def test_modified_schema_is_refused(tmp_path, result):
 
 # ---- hierarchy, numbering, headings ------------------------------------------------------------
 def test_excerpt_hierarchy(root):
-    assert [e.get("name") for e in q(root, "/a:akomaNtoso/a:act")] == ["bdsg"]
+    assert [e.get("name") for e in q(root, "/a:akomaNtoso/a:act")] == ["bspg"]
     arts = q(root, "/a:akomaNtoso/a:act/a:body/a:part/a:chapter/a:article")
     assert [q(a, "string(a:num)") for a in arts] == ["§ 1", "§ 2"]
-    assert [q(a, "string(a:heading)") for a in arts] == ["Anwendungsbereich des Gesetzes", "Begriffsbestimmungen"]  # fmt: skip
+    assert [q(a, "string(a:heading)") for a in arts] == ["Anwendungsbereich", "Begriffsbestimmungen"]  # fmt: skip
     assert q(root, "string(//a:part/a:num)") == "Teil 1"
     assert q(root, "string(//a:chapter/a:num)") == "Kapitel 1"
     # § maps to article, never to AKN <paragraph>; Absatz maps to paragraph
     assert not q(root, "//a:article/a:article") and not q(root, "//a:body/a:paragraph")
-    assert [len(q(a, "a:paragraph")) for a in arts] == [8, 5]
-    assert [q(p, "string(a:num)") for p in q(arts[0], "a:paragraph")] == [f"({i})" for i in range(1, 9)]
-    assert [q(p, "string(a:num)") for p in q(arts[1], "a:paragraph")] == [f"({i})" for i in range(1, 6)]
-    p1 = q(arts[0], "a:paragraph")[0]
-    assert [q(x, "string(a:num)") for x in q(p1, "a:point")] == ["1.", "2."]
-    assert [q(x, "string(a:num)") for x in q(p1, "a:point[2]/a:point")] == ["a)", "b)"]
-    assert q(p1, "string(a:wrapUp/a:p)").startswith("Für nichtöffentliche Stellen")
+    assert [len(q(a, "a:paragraph")) for a in arts] == [2, 2]
+    for a in arts:
+        assert [q(p, "string(a:num)") for p in q(a, "a:paragraph")] == ["(1)", "(2)"]
+    p1 = q(arts[1], "a:paragraph")[0]
+    assert [q(x, "string(a:num)") for x in q(p1, "a:point")] == ["1.", "2.", "3."]
+    assert [q(x, "string(a:num)") for x in q(p1, "a:point[3]/a:point")] == ["a)", "b)"]
+    assert q(p1, "string(a:intro/a:p)").startswith("Im Sinne dieses Gesetzes ist")
     assert [c.tag.split("}")[1] for c in p1][:3] == ["num", "intro", "point"]
 
 
@@ -98,15 +109,21 @@ def test_numbering_and_headings_match_model(model, result, root):
 def test_eids_unique_and_stable(model, result, root):
     eids = [e.get("eId") for e in root.iter() if isinstance(e.tag, str) and e.get("eId")]
     assert len(eids) == len(set(eids))
-    assert "part_1__chp_1__art_1__para_1__point_2__point_a" in eids
-    assert "part_1__chp_1__art_2__para_3__point_1" in eids
+    assert "part_1__chp_1__art_2__para_1__point_3__point_a" in eids
+    assert "part_1__chp_1__art_2__para_1__point_1" in eids
     again = generate_excerpt(model, ["1", "2"], DATE)
     assert [e.eId for e in again.entries] == [e.eId for e in result.entries]
     assert {e.eId for e in result.entries if e.eId} <= set(eids)
 
 
-def test_repeated_numbers_get_distinct_eids(model):
-    r = generate_excerpt(model, ["4"], DATE)  # § 4 (1) contains two separate 1.-2. lists
+def test_repeated_numbers_get_distinct_eids():
+    m = _synthetic_model([
+        _it(0, "section_header", "§ 1 Titel"), _it(1, "text", "(1) Es gilt:"),
+        _it(2, "list_item", "Eins", "1.", True), _it(3, "list_item", "Zwei", "2.", True),
+        _it(4, "text", "Außerdem gilt:"),
+        _it(5, "list_item", "Drei", "1.", True), _it(6, "list_item", "Vier", "2.", True),
+    ])  # fmt: skip  # one Absatz with two separate 1.-2. lists
+    r = generate_excerpt(m, ["1"], DATE)
     eids = [e.get("eId") for e in etree.fromstring(r.xml).iter() if isinstance(e.tag, str) and e.get("eId")]  # fmt: skip
     assert len(eids) == len(set(eids))
     assert validate_xml(r.xml).valid
@@ -117,7 +134,7 @@ def test_text_matches_model_content_and_order(model, result):
     t = verify_text(model, result)
     assert t["same_order_and_text"] and t["text_mismatches"] == []
     assert t["original_text_reconstruction_diffs"] == []
-    assert t["atoms_in_xml"] == t["atoms_expected"] > 50
+    assert t["atoms_in_xml"] == t["atoms_expected"] > 20
 
 
 def test_every_included_element_text_is_verbatim(model, result, root):
@@ -131,10 +148,10 @@ def test_every_included_element_text_is_verbatim(model, result, root):
 
 def test_special_characters_roundtrip(result):
     text = result.xml.decode("utf-8")
-    for ch in "§äöüß":
+    for ch in "§öü":
         assert ch in text
     non_ascii = {c for c in text if ord(c) > 127}
-    assert non_ascii >= set("§äöüß")
+    assert non_ascii >= set("§öü")  # ß and quotes: test_xml_escaping_and_illegal_characters
     assert "&#" not in text  # written as real UTF-8, not character references
 
 
@@ -194,11 +211,18 @@ def test_text_before_enumeration_in_paragraph_without_absatz():
 
 
 # ---- uncertainty ------------------------------------------------------------------------------------
-def test_uncertain_elements_are_kept_flagged_and_in_place(model, result, root):
+def test_uncertain_elements_are_kept_flagged_and_in_place():
+    model = _synthetic_model([
+        _it(0, "section_header", "§ 1 Titel"), _it(1, "text", "(1) Es gilt:"),
+        _it(2, "list_item", "Eins", "1.", True), _it(3, "list_item", "Zwei", "2.", True),
+        _it(4, "text", "Weitere Bestimmungen gelten."),  # uppercase text after a list: placement is a judgement
+    ])  # fmt: skip
+    result = generate_excerpt(model, ["1"], DATE)
+    root = etree.fromstring(result.xml)
     uncertain = [e for e in model.elements if e.uncertain and e.id in set(result.included_ids)]
-    assert len(uncertain) == 3
+    assert len(uncertain) == 1
     flagged = q(root, "//*[@odos:uncertain]")
-    assert len(flagged) == 3
+    assert len(flagged) == 1
     for node in flagged:
         assert node.tag == f"{{{AKN_NS}}}p" and node.getparent().tag == f"{{{AKN_NS}}}wrapUp"
         assert node.get(f"{{{ODOS_NS}}}uncertain") == "text_after_list_attached_to_enclosing_container"
@@ -220,7 +244,7 @@ def test_traceability_to_docling_and_pdf(model, result, root, raw_json):
         assert t.provenance[0]["bbox"]["l"] == node["prov"][0]["bbox"]["l"]
         xml_node = q(root, f"//*[@eId='{t.eId}']")[0]
         assert xml_node.get(f"{{{ODOS_NS}}}src").split() == t.source_refs
-    assert all(p >= 5 for t in result.entries if t.akn_element != "docTitle" for p in t.pages)
+    assert all(p == 2 for t in result.entries if t.akn_element != "docTitle" for p in t.pages)  # §§ 1-2 are on page 2
 
 
 def test_every_body_node_with_content_is_traced(result, root):
@@ -240,7 +264,7 @@ def test_excluded_content_is_accounted_for(model, result, root):
     assert len(result.excluded["front_matter"]) == sum(e.region == "front" for e in model.elements) - 1  # all but the title
     assert q(root, "string(//odos:excerpt/@complete)") == "false"
     assert q(root, "string(//odos:excerpt/@included-paragraphs)") == "1 2"
-    assert result.excerpt["complete"] is False and result.excerpt["paragraphs_in_model"] == 86
+    assert result.excerpt["complete"] is False and result.excerpt["paragraphs_in_model"] == 5
     assert not [n for n in q(root, "//a:article/a:num") if n.text not in ("§ 1", "§ 2")]
     assert "NOT the complete" in result.xml.decode()
     with pytest.raises(ValueError):
@@ -248,9 +272,8 @@ def test_excluded_content_is_accounted_for(model, result, root):
 
 
 def test_work_date_comes_from_source_not_invented(model, result, root):
-    assert q(root, "string(//a:FRBRWork/a:FRBRdate/@date)") == "2017-06-30"
+    assert q(root, "string(//a:FRBRWork/a:FRBRdate/@date)") == "2099-03-15"
     assert q(root, "string(//a:FRBRWork/a:FRBRauthor/@href)") == "#unspecified"
-    assert retrieval_date_from_source() == "2026-10-27"
     no_date = model.model_copy(deep=True)
     no_date.metadata.ausfertigungsdatum = None
     with pytest.raises(ValueError):
@@ -262,7 +285,7 @@ def test_deterministic_output(model, result, tmp_path):
     assert generate_excerpt(model, ["1", "2"], DATE).xml == result.xml
     a = build_artifacts(model, ["1", "2"], DATE, tmp_path / "a")
     b = build_artifacts(model, ["1", "2"], DATE, tmp_path / "b")
-    for name in ("bdsg_excerpt.xml", "akn_validation_report.json", "akn_traceability.json"):
+    for name in ("german_law_excerpt.xml", "akn_validation_report.json", "akn_traceability.json"):
         assert (tmp_path / "a" / name).read_bytes() == (tmp_path / "b" / name).read_bytes(), name
     rep = json.loads((tmp_path / "a" / "akn_validation_report.json").read_text(encoding="utf-8"))
     assert rep["valid"] is True and rep["errors"] == [] and rep["text_preservation"]["same_order_and_text"]
