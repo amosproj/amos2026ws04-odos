@@ -4,8 +4,7 @@ PDF as they are for real laws.
 
 Covered: the shared lifecycle, metadata, Teil / Kapitel / § / Absatz / Nummer / Buchstabe / Anlage, the table of
 contents and its verified links, a page footnote with its superscript reference, printed and punctuation-based
-sentences, document.json 1.1 (schema, nesting, text, the 1.0 downgrade), Akoma Ntoso (XSD, text, order), and the
-whole pipeline run. There is no golden baseline for it: glyph coordinates come from pdfium and may differ in the last
+sentences, document.json 1.1 (schema, nesting, text, the 1.0 downgrade) and the whole pipeline run. There is no golden baseline for it: glyph coordinates come from pdfium and may differ in the last
 decimals between platforms, so structure and validity are asserted instead."""
 
 import json
@@ -13,8 +12,6 @@ import shutil
 
 import synthetic_german
 
-from odos.akn.german_artifacts import build_artifacts
-from odos.artifact_names import AKN_XML
 from odos.document_model import ElementType as T
 from odos.legal_json.artifacts import build_legal_json_artifacts
 from odos.parsing import engine, parse_document
@@ -115,14 +112,6 @@ def test_legal_json_1_1_and_its_1_0_downgrade(synthetic_german_model, synthetic_
     assert lost["sentences"]["values"] == len(doc["sentences"]) and lost["tableOfContentsEntries"]["values"] == 10
 
 
-def test_akoma_ntoso_is_valid_and_complete(synthetic_german_model, tmp_path):
-    pars = [p.number for p in synthetic_german_model.of_type(T.PARAGRAPH)]
-    art = build_artifacts(synthetic_german_model, pars, "2099-03-16", tmp_path)
-    assert pars == ["1", "2", "3", "4", "5"]
-    assert art["validation"].valid, art["validation"].errors
-    assert art["text"]["same_order_and_text"] and not art["result"].unmapped
-
-
 def test_pipeline_run_with_the_german_profile(synthetic_german_raw_json, tmp_path, monkeypatch):
     import odos.pipeline as pl
     from odos.extraction import ExtractionResult
@@ -138,12 +127,12 @@ def test_pipeline_run_with_the_german_profile(synthetic_german_raw_json, tmp_pat
     pdf = tmp_path / "in.pdf"
     pdf.write_bytes((synthetic_german_raw_json.parent / "original.pdf").read_bytes())
     out = tmp_path / "out"
-    res = pl.run_pipeline(pdf, out, pl.ProcessingMode.GERMAN_LAW, "2099-03-16")
+    res = pl.run_pipeline(pdf, out, pl.ProcessingMode.GERMAN_LAW)
     s = res.summary
     assert res.outcome == pl.Outcome.COMPLETED and res.message.startswith("German-law prototype conversion")
     assert (s["paragraphs"], s["parser_warnings"], s["uncertain_elements"], s["toc_found"]) == (5, 0, 0, True)
-    assert s["json_valid"] and s["akn_generated"] and s["akn_xsd_valid"] and s["akn_text_identical"]
-    assert (out / AKN_XML).is_file()
+    assert s["json_valid"] and s["json_schema_valid"] and s["json_text_identical"]
+    assert (out / "document.json").is_file() and not list(out.glob("*.xml"))
     assert json.loads((out / "document_model.json").read_text())["metadata"]["short_title"] == "BspG"
 
 

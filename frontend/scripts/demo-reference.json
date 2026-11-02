@@ -1,9 +1,8 @@
 {
   "comment": "SHA-256 hashes only (no document text). Written by `npm run demo:verify -- --write-reference`; see the README.",
-  "retrievalDate": "2026-10-27",
   "manifest": {
-    "sha256": "e037ce71dafae7d2ea4d25e1213021daa6504998001b488b7ad2286265b2c424",
-    "canonicalSha256": "dc8a518de6255c4a7171b6bd53f610bd07a104e0f98fcdddadf80ea26bb5e350"
+    "sha256": "75b7ae70c194248b7fc90364bbca42903aec92fe46518b5c53a6bb4906d185ae",
+    "canonicalSha256": "3b36453b5962a517a73e455268a99869f7f578d08dc919ebb735f6bb8902c09f"
   },
   "documents": {
     "eu-2023-1230": {
@@ -18,12 +17,9 @@
           "sha256": "e15fea6f6ab1b2a1bb6ce5df9af1ba0dc168311d7d7afb1b148bba9ca7601786",
           "canonicalSha256": "f62dbc9be12534d8571ee825ac2ca312e2cf0d38ce8fbcc20a10ef46a00a50d6"
         },
-        "eu-2023-1230/chp-2_art-10_para-1.akn.xml": {
-          "sha256": "22cc01cdcab41c31a73d69c8db8a4a5d057f7bcb5b8fc47f17b2837de001df0e"
-        },
         "eu-2023-1230/pipeline.json": {
-          "sha256": "e5ca3709098bb1b3bfceca861c8d7c02fc75346bfffa60a41fed8304e8c34f98",
-          "canonicalSha256": "2754f587627214fe976f7ef453d7b7b64a068b90451c9d703d379886777b51dd"
+          "sha256": "5167b4cb8727ccfb8c0e81a05f70bcbb08f3de062b5a2f239b66fabef576cf76",
+          "canonicalSha256": "f2f04dc6c0e3295fafed17c821e769fc8717e6e48a406e2119fc524628cfce0a"
         },
         "eu-2023-1230/chp-2.legal-view.json": {
           "sha256": "287ab180577a100d23841749c1dab6e5fd0a891c78260ad45ce2a64de4eb201a",
@@ -43,12 +39,9 @@
           "sha256": "34b0c1b51a9c77ce6924b86d511ffa7ca0f052ca0541658e2e29baa07a56fd62",
           "canonicalSha256": "02aec5d49dc2e6e90a0104ebfa080f214fe346f3d1837d0f8dbd43d6e20d0c24"
         },
-        "mbo/teil-2_par-6.akn.xml": {
-          "sha256": "150219a8982651f8ecd568108bbed287f8213e2960b4af3ba3c4f9dc5337ea9d"
-        },
         "mbo/pipeline.json": {
-          "sha256": "f03a0f026e20a0fbe817f288d9b482f4e635a02a8da2a1eaf8cbb861d7d2bbb4",
-          "canonicalSha256": "0038092aaeecd360c34ccf56c438842f6f2db76b573b513e7dd65a13c5047b24"
+          "sha256": "591366f27eace5f4a8cbd5df63b62336f99561aadec6a01b3ebeca2430526fcf",
+          "canonicalSha256": "87d191ad96364e2ff9c7683e65020bfd02d94a05dcc0fba840dc016d11c6c9fa"
         },
         "mbo/teil-2.legal-view.json": {
           "sha256": "3ee08847d209dd45def5e4c3c30768744c19b58d6279d1f40c43fe8894b7ba04",

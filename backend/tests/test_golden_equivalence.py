@@ -9,10 +9,11 @@ difference is a regression to investigate, never a value to refresh.
 * the synthetic EU regulation (tests/synthetic_eu.py): tests/golden/synthetic_eu_baseline.json (recorded before
   Phase 4). It needs no external file, so it always runs.
 
-Covered per document: document_model.json, document.json 1.1, its 1.0 downgrade, the JSON validation report, the AKN
-XML (German: full and § 1-2 excerpt; EU: full), XSD validity, the parser validation report (key order ignored), every
-element / sentence / TOC entry, the element id list and the summary counts. Outputs are computed in memory with
-fixed dates (golden_outputs.py)."""
+Covered per document: document_model.json, document.json 1.1, its 1.0 downgrade, the JSON validation report, the
+parser validation report (key order ignored), every element / sentence / TOC entry, the element id list and the
+summary counts. Outputs are computed in memory (golden_outputs.py). The baselines also hold the hashes of the Akoma
+Ntoso XML that ODOS produced when they were recorded; those outputs were removed and are not compared
+(golden_outputs.RETIRED)."""
 
 import hashlib
 import json

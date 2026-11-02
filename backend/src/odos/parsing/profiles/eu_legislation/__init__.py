@@ -50,12 +50,6 @@ def _write_reports(model, docling_json: Path, out_dir: Path):
     return write_eu_outputs(model, docling_json, out_dir)
 
 
-def _build_akn(model, retrieval_date: str, out: Path) -> dict:
-    from odos.akn.eu_artifacts import build_eu_akn_artifacts
-
-    return build_eu_akn_artifacts(model, retrieval_date, out)
-
-
 def _summary(model, docling_json: Path) -> dict:
     from odos.parsing.profiles.eu_legislation.report import build_eu_report
 
@@ -71,24 +65,6 @@ def _summary(model, docling_json: Path) -> dict:
         "uncertain_elements": sum(e.uncertain for e in model.elements),
         "source_accounting_exact": rep.accounting["exact"],
     }
-
-
-def _akn_summary(art: dict) -> dict:
-    v, t = art["validation"], art["text"]
-    return {
-        "akn_generated": True,
-        "akn_xsd_valid": v.valid,
-        "akn_xsd_errors": len(v.errors),
-        "akn_text_identical": t["same_order_and_text"],
-        "akn_document_order_preserved": t["document_order_preserved"],
-        "akn_unmapped": len(t["unmapped"]),
-    }
-
-
-def _completed_message(art: dict) -> str:
-    v = art["validation"]
-    status = "valid against the official OASIS XSD (Akoma Ntoso 3.1)" if v.valid else f"INVALID ({len(v.errors)} XSD errors, see the validation report)"  # fmt: skip
-    return f"EU legislation (prototype): structure extracted and Akoma Ntoso XML generated, {status}."
 
 
 def _document_id_parts(md) -> tuple[str, ...] | None:
@@ -146,13 +122,10 @@ EU_LEGISLATION = LegalProfile(
     json_document_type=lambda md: DOCUMENT_TYPES.get((md.document_type or "").upper(), "eu_legislation"),
     json_id_parts=_document_id_parts,
     write_reports=_write_reports,
-    build_akn=_build_akn,
     has_structure=lambda model: bool(model.of_type(T.ARTICLE)),
     unsupported_summary={"articles": 0},
     unsupported_message=("No EU article structure ('Artikel <n>') was found. ODOS does not produce an EU legal structure "
                          "for this document. The Docling extraction (raw JSON and Markdown) is still available."),  # fmt: skip
     summary=_summary,
-    akn_summary=_akn_summary,
-    completed_message=_completed_message,
-    akn_refused_message=lambda exc: f"EU legislation structure extracted (prototype). Akoma Ntoso XML was not generated: {exc}",
+    completed_message="EU legislation (prototype): structure extracted and Custom Legal JSON generated.",
 )

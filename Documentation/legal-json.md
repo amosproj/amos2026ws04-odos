@@ -144,8 +144,6 @@ moved out of the structure into `furniture`. They keep their ids, and later ids 
    is listed under `unexplained_differences`. Tables, pictures and page furniture are not compared.
    Without a text layer (or without the PDF) the report says the text is not verified.
 
-Akoma Ntoso XSD validation is separate and unchanged.
-
 CLI: `odos legal-json output/mbo/document_model.json`
 
 ## Sentences (1.1)

@@ -5,12 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "odos"
 version = "0.1.0"
-description = "ODOS pipeline: legal PDFs to a canonical document model, Custom Legal JSON 1.1 and Akoma Ntoso 3.1"
+description = "ODOS pipeline: legal PDFs to a canonical document model and Custom Legal JSON 1.1"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "docling>=2.143,<3",
     "pydantic>=2.10,<3",
-    "lxml>=5.3",
     "jsonschema>=4.20",
 ]
 

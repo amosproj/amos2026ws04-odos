@@ -59,14 +59,12 @@ const fileEntry = (path) => ({ sha256: sha256File(path), ...(canonicalSha256(pat
 
 function writeReference(dir) {
   const manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf-8"));
-  const previous = existsSync(REFERENCE) ? JSON.parse(readFileSync(REFERENCE, "utf-8")) : {};
   const documents = {};
   for (const d of manifest.documents) {
     documents[d.id] = { title: d.title, pdfSha256: d.pdfSha256, files: Object.fromEntries(Object.values(d.files).map((f) => [f, fileEntry(join(dir, f))])) };
   }
   const ref = {
     comment: "SHA-256 hashes only (no document text). Written by `npm run demo:verify -- --write-reference`; see the README.",
-    retrievalDate: previous.retrievalDate ?? "2026-10-27",
     manifest: fileEntry(join(dir, "manifest.json")),
     documents,
   };

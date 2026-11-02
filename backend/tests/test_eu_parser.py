@@ -267,10 +267,10 @@ def test_german_models_carry_no_eu_fields(request, fixture):
 def test_pipeline_eu_mode(tmp_path, eu_pdf):
     from odos.pipeline import Outcome, ProcessingMode, run_pipeline
 
-    res = run_pipeline(eu_pdf, tmp_path, ProcessingMode.EU_LEGISLATION, "2026-10-27")
-    assert res.outcome == Outcome.COMPLETED and "Akoma Ntoso XML generated" in res.message
+    res = run_pipeline(eu_pdf, tmp_path, ProcessingMode.EU_LEGISLATION)
+    assert res.outcome == Outcome.COMPLETED and "Custom Legal JSON generated" in res.message
     s = res.summary
     assert (s["recitals"], s["chapters"], s["articles"], s["annexes"]) == (86, 9, 54, 12)
-    assert s["source_accounting_exact"] is True and s["akn_generated"] is True and s["akn_xsd_valid"] is True
-    assert (tmp_path / "document_akn.xml").exists()
+    assert s["source_accounting_exact"] is True and s["json_valid"] is True and s["json_text_identical"] is True
+    assert (tmp_path / "document.json").exists() and not list(tmp_path.glob("*.xml"))
     assert json.loads((tmp_path / "document_model.json").read_text())["profile"] == "eu_legislation"

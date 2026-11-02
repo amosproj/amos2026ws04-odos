@@ -9,9 +9,9 @@ export interface DemoDocument {
   pdfSha256: string;
   pages: number;
   profile: string;
-  files: { structure: string; json: string; xml: string; pipeline?: string; view?: string }; // the demo does not show the XML
-  example: { label: string; modelId: string; eId: string; aknElement: string; legalJsonSchemaVersion: string; previewId?: string };
-  sources: { documentModelSha256: string; legalJsonSha256: string; aknXmlSha256: string };
+  files: { structure: string; json: string; pipeline?: string; view?: string };
+  example: { label: string; modelId: string; legalJsonSchemaVersion: string; previewId?: string };
+  sources: { documentModelSha256: string; legalJsonSha256: string };
 }
 
 export interface DemoResult {
@@ -44,14 +44,12 @@ export interface PipelineDetails {
     pageSizes: Record<string, { width: number; height: number } | null>;
     items: DoclingItem[];
   };
-  placed: { id: string; type: string; region: string; docling_label?: string; source_refs: string[]; hygiene_flags?: string[] }[];
   elements: {
     id: string; type: string; region: string; parent_id: string | null; children_ids: string[]; number: string | null;
     marker: string | null; title: string | null; original_text: string; content_text: string; docling_label?: string;
     source_refs: string[]; pages: number[]; provenance: Provenance[]; source_spans?: SourceSpan[]; hygiene_flags?: string[];
   }[];
   warnings: { code: string; severity: string; message: string; element_id: string | null }[];
-  akn: { model_id: string; akn_element: string; eId: string; text_eId: string | null }[];
 }
 
 export const fixtureUrl = (path: string) => `${import.meta.env.BASE_URL}demo/${path}`;

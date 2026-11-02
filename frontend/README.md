@@ -11,7 +11,7 @@ The JSON preview is a simplified view of `document.json` (`*.legal-view.json`, w
 native type, number, marker, title, full text, pages and children; `omittedChildren` counts the siblings left out.
 Source spans, boxes and character offsets are dropped. It is a presentation, not a Legal JSON 1.1 document: the schema
 and `document.json` are unchanged, and the Legal JSON 1.1 excerpt with full provenance (`*.legal.json`) is still built
-(the demo only displays it in builds without the simplified view). The Akoma Ntoso excerpt (`*.akn.xml`) is still built and verified but not displayed.
+(the demo only displays it in builds without the simplified view).
 
 Nothing is processed in the browser. The chosen PDF is matched by its SHA-256 against the prepared documents
 (Musterbauordnung, Regulation (EU) 2023/1230) and their previously generated pipeline results are shown. Any other
@@ -43,7 +43,7 @@ git-ignored and must not be published or deployed until the licensing is clarifi
 | `src/components/` | `PdfViewer` (pdf.js with highlight overlays), `StructureTree`, `Icon` |
 | `src/structure.ts` | display tree, labels, search, highlight geometry |
 | `src/types.ts` | the DocumentModel fields the UI reads |
-| `scripts/build-demo-fixtures.mjs` | builds `public/demo/` from the pipeline outputs, including `pipeline.json` (Docling items and model elements of the previewed provision) and the simplified Legal JSON view |
+| `scripts/build-demo-fixtures.mjs` | builds `public/demo/` from the pipeline outputs, including `pipeline.json` (Docling items and model elements of the previewed provision) and the simplified Legal JSON view; checks the JSON text against the model |
 | `scripts/demo-setup.mjs` | checks the PDFs, runs `odos process`, builds the fixtures, compares them with the reference |
 | `scripts/demo-verify.mjs`, `scripts/demo-reference.json` | SHA-256 check of PDFs and fixtures against the committed reference (hashes only) |
 

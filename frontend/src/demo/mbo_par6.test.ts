@@ -17,12 +17,9 @@ describe.skipIf(!existsSync(DIR))("MBO § 6 (1) across pages 9 and 10", () => {
   const read = (f: string) => readFileSync(resolve(DIR, f), "utf8");
   let model: DocumentModel;
   let json: Node;
-  let ps: RegExpExecArray[];
   beforeAll(() => {
     model = JSON.parse(read("structure.json")) as DocumentModel;
     json = find(JSON.parse(read("teil-2_par-6.legal.json")) as Node)!;
-    const intro = read("teil-2_par-6.akn.xml").match(/<intro eId="part_2__art_6__para_1__intro">([\s\S]*?)<\/intro>/)![1];
-    ps = [...intro.matchAll(/<p [^>]*odos:src="([^"]*)"[^>]*>([^<]*)<\/p>/g)];
   });
 
   it("is one Absatz text that runs on over the page break, with its Nummern kept apart", () => {
@@ -32,10 +29,10 @@ describe.skipIf(!existsSync(DIR))("MBO § 6 (1) across pages 9 and 10", () => {
     for (const c of json.children!) expect(json.text).not.toContain(c.text!.slice(0, 30));
   });
 
-  it("carries the same text in JSON and XML, attributed to both source items", () => {
-    expect(ps).toHaveLength(1);
-    expect(ps[0][2]).toBe(json.text);
-    expect(ps[0][1]).toBe("#/texts/144 #/texts/146");
+  it("carries the model's text in the JSON, attributed to both source items", () => {
+    const el = model.elements.find((e) => e.id === ID)!;
+    expect(json.text).toBe(el.content_text);
+    expect(el.source_refs).toEqual(["#/texts/144", "#/texts/146"]);
     expect(json.source?.sourceSpans.map((s) => [s.itemRef, s.page])).toEqual([["#/texts/144", 9], ["#/texts/146", 10]]);
   });
 
@@ -89,8 +86,9 @@ describe.skipIf(!existsSync(resolve(DIR, "pipeline.json")))("MBO § 6 (1) proces
       ["#/texts/143", "section_header", [9]], ["#/texts/144", "list_item", [9]], ["#/texts/145", "page_footer", [9]],
       ["#/texts/146", "text", [10]], ["#/texts/147", "list_item", [10]], ["#/texts/148", "list_item", [10]],
     ]);
-    const footer = p.placed.find((e) => e.source_refs.includes("#/texts/145"))!;
-    expect([footer.region, footer.hygiene_flags]).toEqual(["furniture", ["running_footer"]]);
+    // the footer is page furniture: no structure element is built from it
+    expect(p.elements.flatMap((e) => e.source_refs)).not.toContain("#/texts/145");
+    expect(model.elements.flatMap((e) => e.source_refs)).not.toContain("#/texts/145");
   });
 
   it("matches the displayed structure element by element (same ids, links, sources and boxes)", () => {
@@ -110,14 +108,6 @@ describe.skipIf(!existsSync(resolve(DIR, "pipeline.json")))("MBO § 6 (1) proces
     expect(abs.original_text.endsWith(orig("#/texts/146"))).toBe(true);
     expect(p.elements.find((e) => e.id === `${ID}/nr-1`)!.original_text).toBe(orig("#/texts/147"));
     expect(p.elements.find((e) => e.id === `${ID}/nr-2`)!.original_text).toBe(orig("#/texts/148"));
-  });
-
-  it("maps the elements to Akoma Ntoso eIds that exist in the XML excerpt", () => {
-    const xml = read("teil-2_par-6.akn.xml");
-    expect(p.akn.map((a) => [a.model_id, a.akn_element])).toEqual([
-      ["doc/teil-2/par-6", "article"], [ID, "paragraph"], [`${ID}/nr-1`, "point"], [`${ID}/nr-2`, "point"],
-    ]);
-    for (const a of p.akn) expect(xml).toContain(` eId="${a.eId}"`);
   });
 });
 

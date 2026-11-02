@@ -23,26 +23,25 @@ warning.
 ## Command line (`odos`)
 
 ```bash
-odos process <pdf> -o <dir> --mode german_law|eu_legislation --retrieval-date YYYY-MM-DD   # the whole pipeline
+odos process <pdf> -o <dir> --mode german_law|eu_legislation   # the whole pipeline
 odos extract <pdf> -o output/doc                               # Docling: docling_raw.json + extracted.md (--ocr for scans)
 odos normalize output/doc/docling_raw.json --pdf <pdf>         # document_model.json + validation report (--mode eu_legislation)
 odos legal-json output/doc/document_model.json                 # document.json (Custom Legal JSON 1.1) + validation report
-odos akn output/doc/document_model.json --retrieval-date YYYY-MM-DD   # Akoma Ntoso: German § excerpt (--paragraphs 1 2) -> german_law_excerpt.xml, EU whole document -> document_akn.xml
 ```
 
 - **`--mode` for `process`:** required. The profile is never guessed from the document.
 - **`--pdf` for `normalize`:** it writes the PDF text-layer evidence (`pdf_text_lines.json`) first.
   Without it, reading-order repair, character restoration, footnote anchoring and exact highlights are
   skipped.
-- **Retrieval date:** `odos akn` and `odos process` require `--retrieval-date YYYY-MM-DD`, the date the PDF was
-  retrieved. It is recorded in the XML (`Abruf`, `Konvertierung`) and never assumed.
+- **Custom Legal JSON is the only export.** Akoma Ntoso XML (`odos akn`, `--retrieval-date`) was removed from the
+  prototype.
 
 ## Producing the demonstration data
 
 ```bash
 # 1. pipeline output for the two demo documents
-odos process <MBO.pdf>          -o output/mbo --mode german_law    --retrieval-date YYYY-MM-DD
-odos process <eu_2023_1230.pdf> -o output/eu  --mode eu_legislation --retrieval-date YYYY-MM-DD
+odos process <MBO.pdf>          -o output/mbo --mode german_law
+odos process <eu_2023_1230.pdf> -o output/eu  --mode eu_legislation
 
 # 2. demo fixtures (frontend/public/demo/, git-ignored) and the static site
 cd ../frontend
@@ -84,8 +83,8 @@ cd frontend && npm test && npm run typecheck && npm run build:demo
   from superscript marks. It has no golden baseline: glyph coordinates come from pdfium and can differ in the last
   decimals between platforms, so the tests assert structure and validity.
 - **The synthetic EU regulation** (`backend/tests/synthetic_eu.py`) always runs. It is original text in
-  Docling's JSON shape and covers every EU structural unit end to end, including JSON 1.1, the 1.0
-  downgrade and Akoma Ntoso XSD validation.
+  Docling's JSON shape and covers every EU structural unit end to end, including JSON 1.1 and the 1.0
+  downgrade.
 - **Frontend:** `frontend/src/demo/mbo_par6.test.ts` reads the local fixtures (`public/demo/`) and skips without
   them. All other frontend tests use synthetic data.
 - **Never runtime output:** tests write only to temporary directories and `backend/output/`.
@@ -113,11 +112,11 @@ cd frontend && npm test && npm run typecheck && npm run build:demo
 | Test | What it covers |
 |---|---|
 | `test_golden_equivalence.py`, `golden_outputs.py` | byte-identical outputs and coverage reporting |
-| `test_engine_profiles.py` | registry, lifecycle order, profile tables, import isolation, CLI dispatch |
+| `test_engine_profiles.py` | registry, lifecycle order, profile tables, import isolation, CLI |
 | `test_synthetic_eu.py`, `test_synthetic_german.py` | the EU and German profiles end to end without private files |
 | `test_normalization.py`, `test_eu_parser.py`, `test_eu_parser_rules.py` (plus the local-only `tests/private/test_mbo.py`) | German and EU recognition (real and synthetic) |
 | `test_hygiene.py`, `test_reading_order.py`, `test_source_text.py`, `test_highlights.py`, `test_sentences_toc_refs.py` | the source layer and the lifecycle stages |
-| `test_legal_json.py`, `test_akn.py`, `test_eu_akn.py` | exports and their validation |
+| `test_legal_json.py` | the Custom Legal JSON export and its validation |
 | `test_extraction.py`, `test_environment.py` | extraction, dependency drift |
 | `frontend/src/structure.test.ts` | hierarchy, search, highlight geometry, TOC view |
 | `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, Custom Legal JSON preview and downloads, MBO § 6 Absatz 1 and the simplified view |
@@ -129,4 +128,4 @@ cd frontend && npm test && npm run typecheck && npm run build:demo
 - **Nothing is invented.** Uncertain readings are kept and flagged (`uncertain`, `uncertainty_reasons`). Text is
   never silently changed: every restored character is recorded with its evidence.
 - **Output changes are deliberate.** Any change to legal text, IDs, hierarchy, sentences, TOC links,
-  footnote anchors, coordinates, JSON or XML must show up as a golden difference and be explained.
+  footnote anchors, coordinates or JSON must show up as a golden difference and be explained.

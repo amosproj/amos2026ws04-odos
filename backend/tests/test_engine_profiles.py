@@ -46,52 +46,28 @@ def test_processing_modes_use_the_registry():
     assert {m.value for m in ProcessingMode} == set(structured_modes())
 
 
-def test_akn_cli_dispatches_by_capability(tmp_path, synthetic_eu_model, synthetic_german_model, capsys):
-    """`odos akn`: a profile with the § excerpt capability (German) writes the excerpt; any other profile its whole
-    document. The files are exactly the generators' output."""
-    from odos.akn.eu_generator import generate_eu_akn
-    from odos.akn.generator import generate_excerpt
-    from odos.cli import main
+def test_the_cli_offers_no_akoma_ntoso(capsys):
+    """Custom Legal JSON is the only export: there is no `odos akn` and `odos process` takes no retrieval date (it was
+    recorded only in the XML)."""
+    from odos.cli import build_parser, main
 
-    eu_model, model = synthetic_eu_model, synthetic_german_model
-    date = "2099-03-16"
-    (tmp_path / "eu").mkdir()
-    (tmp_path / "eu" / "document_model.json").write_text(eu_model.model_dump_json(indent=2), encoding="utf-8")
-    assert main(["akn", str(tmp_path / "eu" / "document_model.json"), "--retrieval-date", date]) == 0
-    assert (tmp_path / "eu" / "document_akn.xml").read_bytes() == generate_eu_akn(eu_model, date).xml
-    assert (tmp_path / "eu" / "akn_text_preservation.json").is_file()
-    assert "order preserved: True" in capsys.readouterr().out
-    (tmp_path / "de").mkdir()
-    (tmp_path / "de" / "document_model.json").write_text(model.model_dump_json(indent=2), encoding="utf-8")
-    assert main(["akn", str(tmp_path / "de" / "document_model.json"), "--retrieval-date", date, "--paragraphs", "1", "2"]) == 0
-    assert (tmp_path / "de" / "german_law_excerpt.xml").read_bytes() == generate_excerpt(model, ["1", "2"], date).xml
-    assert not (tmp_path / "de" / "document_akn.xml").exists()
-
-
-@pytest.mark.parametrize("argv", [["akn", "document_model.json"], ["process", "in.pdf", "-o", "out", "--mode", "german_law"]])
-def test_the_retrieval_date_is_required_and_validated(argv, capsys):
-    """No default date (there is no recorded download date any more): `odos akn` and `odos process` need it."""
-    from odos.cli import main
-
-    with pytest.raises(SystemExit) as no_date:
-        main(argv)
-    assert no_date.value.code == 2 and "--retrieval-date" in capsys.readouterr().err
-    with pytest.raises(SystemExit) as bad_date:
-        main([*argv, "--retrieval-date", "27.10.2026"])
-    assert bad_date.value.code == 2 and "YYYY-MM-DD" in capsys.readouterr().err
-
-
-def test_the_paragraph_excerpt_is_a_capability_of_the_german_profile():
-    assert "akn_excerpt" in DE.capabilities and "akn_excerpt" not in EU.capabilities
+    with pytest.raises(SystemExit) as akn:
+        main(["akn", "document_model.json"])
+    assert akn.value.code == 2 and "invalid choice: 'akn'" in capsys.readouterr().err
+    with pytest.raises(SystemExit) as date:
+        main(["process", "in.pdf", "-o", "out", "--mode", "german_law", "--retrieval-date", "2026-10-27"])
+    assert date.value.code == 2 and "unrecognized arguments: --retrieval-date" in capsys.readouterr().err
+    args = build_parser().parse_args(["process", "in.pdf", "-o", "out", "--mode", "eu_legislation"])
+    assert (args.command, args.mode) == ("process", "eu_legislation")
 
 
 def test_artifact_names_have_one_source():
-    from odos.artifact_names import AKN_XML
+    import odos.artifact_names as names
 
-    assert AKN_XML == "document_akn.xml"  # every profile's build_akn writes this name; the demo fixture script reads it
-    from odos.artifact_names import AKN_EXCERPT_XML
-
-    assert AKN_EXCERPT_XML == "german_law_excerpt.xml"  # the default name of `odos akn`'s German-law § excerpt
+    # the demo fixture script (frontend/scripts/build-demo-fixtures.mjs) reads these names
+    assert (names.DOCUMENT_MODEL, names.LEGAL_JSON, names.DOCLING_RAW, names.EXTRACTION_META) == (
+        "document_model.json", "document.json", "docling_raw.json", "extraction.json")
+    assert not [n for n in dir(names) if n.startswith("AKN")]
 
 
 def test_profiles_import_no_shared_operation_module():

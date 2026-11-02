@@ -54,12 +54,8 @@ class LegalProfile:
     json_id_parts: Callable[[DocumentMetadata], tuple[str, ...] | None]  # document id from type/number, if any
     # outputs and pipeline integration
     write_reports: Callable[[DocumentModel, Path, Path], Any]
-    build_akn: Callable[[DocumentModel, str, Path], dict]  # (model, retrieval date, out dir) -> {validation, text, result}
     has_structure: Callable[[DocumentModel], bool]  # False: the document is not this kind of legislation
     unsupported_summary: dict  # pipeline summary keys when has_structure is False
     unsupported_message: str
     summary: Callable[[DocumentModel, Path], dict]  # pipeline summary of a parsed document
-    akn_summary: Callable[[dict], dict]  # pipeline summary of the AKN artifacts
-    completed_message: Callable[[dict], str]  # pipeline message, given the AKN artifacts
-    akn_refused_message: Callable[[Exception], str]  # pipeline message when AKN refuses (e.g. a date is not printed)
-    capabilities: frozenset[str] = frozenset()  # optional features: "akn_excerpt" (§ excerpt CLI)
+    completed_message: str  # pipeline message of a completed run

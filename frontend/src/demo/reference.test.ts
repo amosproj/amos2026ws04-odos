@@ -9,22 +9,21 @@ const SOURCE_MD = resolve(__dirname, "../../../backend/data/input/SOURCE.md");
 const MANIFEST = resolve(__dirname, "../../public/demo/manifest.json");
 
 type Entry = { sha256: string; canonicalSha256?: string };
-type Reference = { retrievalDate: string; manifest: Entry; documents: Record<string, { pdfSha256: string; files: Record<string, Entry> }> };
+type Reference = { manifest: Entry; documents: Record<string, { pdfSha256: string; files: Record<string, Entry> }> };
 const reference = JSON.parse(readFileSync(REFERENCE, "utf8")) as Reference;
 const SHA = /^[0-9a-f]{64}$/;
 
 describe("demo reference hashes", () => {
   it("lists the two prepared documents with well-formed SHA-256 values", () => {
     expect(Object.keys(reference.documents).sort()).toEqual(["eu-2023-1230", "mbo"]);
-    expect(reference.retrievalDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(reference.manifest.sha256).toMatch(SHA);
     for (const d of Object.values(reference.documents)) {
       expect(d.pdfSha256).toMatch(SHA);
-      expect(Object.keys(d.files).map((f) => f.split("/").pop()!.replace(/^.*?\.(legal-view\.json|legal\.json|akn\.xml)$/, "$1")).sort())
-        .toEqual(["akn.xml", "legal-view.json", "legal.json", "pipeline.json", "structure.json"]);
-      for (const [file, e] of Object.entries(d.files)) {
+      expect(Object.keys(d.files).map((f) => f.split("/").pop()!.replace(/^.*?\.(legal-view\.json|legal\.json)$/, "$1")).sort())
+        .toEqual(["legal-view.json", "legal.json", "pipeline.json", "structure.json"]);
+      for (const e of Object.values(d.files)) {
         expect(e.sha256).toMatch(SHA);
-        if (file.endsWith(".json")) expect(e.canonicalSha256).toMatch(SHA); // JSON files also carry the float-noise-tolerant hash
+        expect(e.canonicalSha256).toMatch(SHA); // every fixture is JSON and also carries the float-noise-tolerant hash
       }
     }
   });

@@ -4,7 +4,6 @@
 source of truth for a document. Everything else is a one-way serialization of it:
 
 - `document.json` (Custom Legal JSON 1.1)
-- the Akoma Ntoso XML
 - the validation reports
 
 Nothing reads those outputs back as input. The model keeps the internal diagnostics (warnings,

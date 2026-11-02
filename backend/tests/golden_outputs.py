@@ -1,6 +1,6 @@
 """Deterministic outputs of one parsed document, for the golden equivalence checks (tests/test_golden_equivalence.py).
 
-Everything is computed in memory with fixed dates; no paths, timestamps or runtime metadata enter the bytes.
+Everything is computed in memory; no paths, timestamps or runtime metadata enter the bytes.
 `fingerprint` returns SHA-256 per output plus one short hash per element, so a difference can be located.
 """
 
@@ -11,7 +11,9 @@ import json
 import tempfile
 from pathlib import Path
 
-DATE = "2026-10-27"  # fixed retrieval / processing date
+# outputs the baselines were recorded with that ODOS no longer produces (Akoma Ntoso was removed); a baseline is
+# never rewritten, so they are left out of the comparison and every other value must still match
+RETIRED = {"outputs": {"akn_xml", "akn_xml_excerpt", "akn_xsd_valid"}, "summary": {"akn_xsd_valid"}}
 
 
 def _sha(b: bytes | str) -> str:
@@ -19,11 +21,9 @@ def _sha(b: bytes | str) -> str:
 
 
 def outputs(model, raw: Path) -> dict[str, bytes]:
-    from odos.akn.validate import validate_xml
     from odos.legal_json.artifacts import build_legal_json_artifacts, serialize
     from odos.legal_json.exporter import load_source_context, to_legal_json
     from odos.legal_json.legacy import downgrade_to_1_0
-    from odos.document_model import ElementType as T
 
     out: dict[str, bytes] = {"model": model.model_dump_json(indent=2).encode("utf-8")}
     doc11 = serialize(to_legal_json(model, load_source_context(raw)))
@@ -36,21 +36,13 @@ def outputs(model, raw: Path) -> dict[str, bytes]:
     rep.pop("downgrade_to_1_0_information_loss", None)
     out["legal_json_report"] = json.dumps(rep, indent=2, ensure_ascii=False, sort_keys=True).encode("utf-8")
     if model.profile == "eu_legislation":
-        from odos.akn.eu_generator import generate_eu_akn
         from odos.parsing.profiles.eu_legislation.report import build_eu_report
 
-        out["akn_xml"] = generate_eu_akn(model, DATE).xml
         out["validation_report"] = _canonical(build_eu_report(model, raw).model_dump())
     else:
-        from odos.akn.generator import generate_excerpt
         from odos.parsing.profiles.german_law.report import build_report
 
-        pars = [p.number for p in model.of_type(T.PARAGRAPH)]
-        out["akn_xml"] = generate_excerpt(model, pars, DATE, undated_policy="processing_date").xml
-        if model.metadata.ausfertigungsdatum:
-            out["akn_xml_excerpt"] = generate_excerpt(model, pars[:2], DATE).xml
         out["validation_report"] = _canonical(build_report(model, raw).model_dump())
-    out["akn_xsd_valid"] = str(validate_xml(out["akn_xml"]).valid).encode()
     return out
 
 
@@ -74,7 +66,6 @@ def fingerprint(model, raw: Path) -> dict:
             "toc_linked": sum(e.status == "linked" for e in model.toc_entries),
             "footnotes_anchored": sum(bool(e.anchor_ids) for e in model.elements),
             "highlight_elements": sum(bool(e.highlight_boxes) for e in model.elements),
-            "akn_xsd_valid": outs["akn_xsd_valid"].decode(),
         },
         "element_ids": _sha("\n".join(e.id for e in [*model.elements, *model.furniture])),
         "elements": {e.id: _sha(e.model_dump_json())[:16] for e in [*model.elements, *model.furniture]},
@@ -87,7 +78,7 @@ def first_differences(expected: dict, actual: dict, limit: int = 10) -> list[str
     """Human-readable list of what differs (outputs, summary counts, then individual elements)."""
     diff = []
     for section in ("outputs", "summary"):
-        for k in sorted(set(expected[section]) | set(actual[section])):
+        for k in sorted((set(expected[section]) - RETIRED[section]) | set(actual[section])):
             if expected[section].get(k) != actual[section].get(k):
                 diff.append(f"{section}.{k}: {expected[section].get(k)!r} -> {actual[section].get(k)!r}")
     if expected["element_ids"] != actual["element_ids"]:

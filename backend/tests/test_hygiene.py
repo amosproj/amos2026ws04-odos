@@ -235,12 +235,10 @@ def test_full_eu_document_accounting(eu_raw_json):
 # Pinned before the hygiene layer existed (same Docling JSON). New derived fields are excluded from the model hash.
 # Model and full-XML hashes changed with the PDF text-layer restoration (Docling's dropped line-end hyphens and
 # ASCII quotes/dashes restored, page numbers out of the structure, evidenced footnote anchors). Then: sentences, TOC
-# entries and table-cell boxes added to the model (annotations only); the MBO XML changed only where 14 footnotes
-# became proven from their reference marks and lost their odos:uncertain attribute.
+# entries and table-cell boxes added to the model (annotations only).
 PINNED = {
     "mbo": {"raw": "1c5ec2ab2c7b0330d274890b4f2fe654676f8b1ddd99691d369678ee7d585632",
-            "model": "de11c92997010ced4f4ff2ef4afabd6da3fac0752bea5a48d19371c07aa2c296",
-            "xml_full": "072769c285ca385c401f2047f0dc114e8d1fd152cca223c127909a5b642a556c"},
+            "model": "de11c92997010ced4f4ff2ef4afabd6da3fac0752bea5a48d19371c07aa2c296"},
 }  # fmt: skip
 NEW_FIELDS = {"source_spans", "search_text", "hygiene_flags"}
 
@@ -250,16 +248,12 @@ def _sha(b: bytes) -> str:
 
 
 def test_existing_documents_are_unchanged(mbo_raw_json):
-    from odos.akn.generator import generate_excerpt
-
     name = "mbo"
     if _sha(mbo_raw_json.read_bytes()) != PINNED[name]["raw"]:
         pytest.skip("Docling output differs from the pinned extraction on this machine; hashes not comparable")
     m = parse_document(mbo_raw_json, "german_law")
     excl = {"elements": {"__all__": NEW_FIELDS}, "furniture": {"__all__": NEW_FIELDS}}
     assert _sha(m.model_dump_json(exclude=excl).encode()) == PINNED[name]["model"]
-    allp = [e.number for e in m.of_type(T.PARAGRAPH)]
-    assert _sha(generate_excerpt(m, allp, "2026-10-27", undated_policy="processing_date").xml) == PINNED[name]["xml_full"]
     assert not any(e.source_spans for e in m.elements)  # nothing split
 
 

@@ -1,11 +1,10 @@
 """The EU profile end to end on the synthetic regulation (tests/synthetic_eu.py): always runs, needs no private file.
 
 Parsing through the shared lifecycle, metadata, every EU structural unit, footnote anchoring, page furniture,
-sentences, document.json 1.1 (schema, nesting, text) with its 1.0 downgrade, and Akoma Ntoso (XSD, text, order)."""
+sentences and document.json 1.1 (schema, nesting, text) with its 1.0 downgrade."""
 
 import json
 
-from odos.akn.eu_artifacts import build_eu_akn_artifacts
 from odos.legal_json.artifacts import build_legal_json_artifacts
 from odos.parsing import engine
 from odos.document_model import ElementType as T
@@ -65,8 +64,3 @@ def test_legal_json_1_1_and_its_1_0_downgrade(synthetic_eu_model, synthetic_eu_r
     assert (doc["schemaVersion"], doc["legalSystem"], doc["documentType"], doc["id"]) == ("1.1", "eu", "eu_regulation", "verordnung-2099-1")
     assert rep["downgrade_to_1_0_information_loss"]["dropped"]["sentences"]["values"] == 8
 
-
-def test_akoma_ntoso_is_valid_and_complete(synthetic_eu_model, tmp_path):
-    art = build_eu_akn_artifacts(synthetic_eu_model, "2099-01-02", tmp_path)
-    assert art["validation"].valid, art["validation"].errors
-    assert art["text"]["same_order_and_text"] and art["text"]["document_order_preserved"] and not art["text"]["unmapped"]

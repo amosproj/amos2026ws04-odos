@@ -1,4 +1,4 @@
-"""End-to-end pipeline (`odos process`): Docling extraction, parsing, Custom Legal JSON and Akoma Ntoso.
+"""End-to-end pipeline (`odos process`): Docling extraction, parsing and Custom Legal JSON.
 
 It produces the files the static demo is built from (see frontend/scripts/build-demo-fixtures.mjs).
 """
@@ -21,13 +21,13 @@ from odos.normalization.reading_order import write_evidence
 
 
 class ProcessingMode(StrEnum):
-    GERMAN_LAW = "german_law"  # Docling + German legal structure parser + Akoma Ntoso
-    EU_LEGISLATION = "eu_legislation"  # Docling + EU legal structure parser + Akoma Ntoso
+    GERMAN_LAW = "german_law"  # Docling + German legal structure parser
+    EU_LEGISLATION = "eu_legislation"  # Docling + EU legal structure parser
 
 
 class Outcome(StrEnum):
     COMPLETED = "completed"
-    UNSUPPORTED = "unsupported"  # processed, but no structure/XML is offered
+    UNSUPPORTED = "unsupported"  # processed, but no structure/Legal JSON is offered
 
 
 def _sha256(path: Path) -> str:
@@ -64,10 +64,7 @@ class PipelineResult(BaseModel):
     summary: dict = Field(default_factory=dict)
 
 
-def run_pipeline(
-    pdf: Path, out_dir: Path, mode: ProcessingMode, retrieval_date: str,
-    progress: Callable[[str], None] = lambda stage: None,
-) -> PipelineResult:  # fmt: skip
+def run_pipeline(pdf: Path, out_dir: Path, mode: ProcessingMode, progress: Callable[[str], None] = lambda stage: None) -> PipelineResult:
     out_dir.mkdir(parents=True, exist_ok=True)
     progress("extracting")
     summary = extract_or_reuse(pdf, out_dir)
@@ -75,12 +72,12 @@ def run_pipeline(
     # and, where provable, repair the reading order; see odos.normalization.reading_order)
     write_evidence(pdf, out_dir / DOCLING_RAW)
 
-    return _run_structured(get(mode), out_dir, summary, progress, retrieval_date)
+    return _run_structured(get(mode), out_dir, summary, progress)
 
 
-def _run_structured(profile: LegalProfile, out_dir: Path, summary: dict, progress: Callable[[str], None], retrieval_date: str) -> PipelineResult:  # fmt: skip
-    """One run for every legal profile: the shared parsing lifecycle, the profile's reports, document.json and the
-    profile's Akoma Ntoso. The profile supplies the structure check, the summary, the AKN generator and the messages."""
+def _run_structured(profile: LegalProfile, out_dir: Path, summary: dict, progress: Callable[[str], None]) -> PipelineResult:
+    """One run for every legal profile: the shared parsing lifecycle, the profile's reports and document.json. The
+    profile supplies the structure check, the summary and the messages."""
     progress("normalizing")
     raw = out_dir / DOCLING_RAW
     model = parse(raw, profile)
@@ -90,14 +87,7 @@ def _run_structured(profile: LegalProfile, out_dir: Path, summary: dict, progres
     profile.write_reports(model, raw, out_dir)
     summary |= _legal_json(model, out_dir)
     summary |= profile.summary(model, raw)
-    progress("generating_akn")
-    try:
-        art = profile.build_akn(model, retrieval_date, out_dir)
-    except ValueError as exc:  # e.g. a date or number not printed: metadata is never invented
-        return PipelineResult(outcome=Outcome.COMPLETED, summary=summary | {"akn_generated": False},
-                              message=profile.akn_refused_message(exc))  # fmt: skip
-    summary |= profile.akn_summary(art)
-    return PipelineResult(outcome=Outcome.COMPLETED, summary=summary, message=profile.completed_message(art))
+    return PipelineResult(outcome=Outcome.COMPLETED, summary=summary, message=profile.completed_message)
 
 
 def _legal_json(model, out_dir: Path) -> dict:

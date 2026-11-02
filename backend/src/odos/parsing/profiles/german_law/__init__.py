@@ -64,14 +64,6 @@ def _write_reports(model, docling_json: Path, out_dir: Path):
     return write_outputs(model, docling_json, out_dir)
 
 
-def _build_akn(model, retrieval_date: str, out: Path) -> dict:
-    from odos.akn.german_artifacts import build_artifacts
-    from odos.artifact_names import AKN_XML
-
-    pars = [p.number for p in model.of_type(T.PARAGRAPH)]
-    return build_artifacts(model, pars, retrieval_date, out, xml_name=AKN_XML, undated_policy="processing_date")
-
-
 def _summary(model, docling_json: Path) -> dict:
     return {
         "paragraphs": len(model.of_type(T.PARAGRAPH)),
@@ -80,12 +72,6 @@ def _summary(model, docling_json: Path) -> dict:
         "uncertain_elements": sum(e.uncertain for e in model.elements),
         "toc_found": any(e.type == T.TOC for e in model.elements),
     }
-
-
-def _akn_summary(art: dict) -> dict:
-    v = art["validation"]
-    return {"akn_generated": True, "akn_xsd_valid": v.valid, "akn_xsd_errors": len(v.errors),
-            "akn_text_identical": art["text"]["same_order_and_text"]}  # fmt: skip
 
 
 GERMAN_LAW = LegalProfile(
@@ -125,16 +111,12 @@ GERMAN_LAW = LegalProfile(
     json_document_type=lambda md: "de_legislation",
     json_id_parts=lambda md: None,
     write_reports=_write_reports,
-    build_akn=_build_akn,
     has_structure=lambda model: bool(model.of_type(T.PARAGRAPH)),
     unsupported_summary={"paragraphs": 0},
     unsupported_message=("This document does not look like German legislation: no section headings of the form "
                          "'§ <number> <title>' were found after a table of contents or at the start of the text. "
-                         "ODOS does not produce a legal structure or Akoma Ntoso XML for it. The Docling extraction "
+                         "ODOS does not produce a legal structure or Legal JSON for it. The Docling extraction "
                          "(raw JSON and Markdown) is still available."),  # fmt: skip
     summary=_summary,
-    akn_summary=_akn_summary,
-    completed_message=lambda art: "German-law prototype conversion. Structure rules were developed on a limited set of German laws; other documents may be incomplete — check the warnings.",  # fmt: skip
-    akn_refused_message=lambda exc: f"Legal structure extracted, but Akoma Ntoso XML was not generated: {exc}",
-    capabilities=frozenset({"akn_excerpt"}),
+    completed_message="German-law prototype conversion. Structure rules were developed on a limited set of German laws; other documents may be incomplete — check the warnings.",  # fmt: skip
 )

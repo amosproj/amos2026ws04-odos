@@ -3,7 +3,8 @@
 Static research prototype: upload one of two prepared legal PDFs (Musterbauordnung, Regulation (EU) 2023/1230) and see
 the original PDF next to its recognized legal structure (with source highlighting), plus one provision as Custom Legal
 JSON with preview and download. Nothing is processed in the browser: the demo shows results that the offline pipeline
-in `backend/` generated beforehand. The pipeline also writes Akoma Ntoso XML; the demo does not display it.
+in `backend/` generated beforehand. Custom Legal JSON is the only export; Akoma Ntoso XML is no longer part of the
+prototype.
 
 ## Run the demo (you need your own copy of both PDFs)
 
@@ -51,7 +52,7 @@ cd frontend
 npm run demo:verify -- --mbo-pdf /path/to/MusterBauVerordnung.pdf --eu-pdf /path/to/eu_2023_1230.pdf
 ```
 
-The command compares your two PDFs and the ten fixture files plus `manifest.json` in `public/demo/` with
+The command compares your two PDFs and the eight fixture files plus `manifest.json` in `public/demo/` with
 `frontend/scripts/demo-reference.json` (hashes only, no text). For each it prints `identical` (same bytes),
 `equivalent` (see below), `DIFFERENT` or `MISSING`. Exit code 0 means identical or equivalent, 1 a difference, 2 a
 missing file.
@@ -63,23 +64,20 @@ missing file.
 - *Regenerating with Docling:* `demo:setup` runs the real pipeline again. This is **not guaranteed to be byte-for-byte
   deterministic**. We verified it on one machine: of four regenerations of the two documents, three were byte-identical to
   the reference and one differed in a single table box of the EU regulation, by about 2e-5 pt (the other 1749 elements,
-  all text, structure and the Legal JSON/XML excerpts were identical). Such a file is reported as `equivalent` when it
+  all text, structure and the Legal JSON excerpts were identical). Such a file is reported as `equivalent` when it
   is exactly equal after rounding all numbers to 0.01 pt. Other Docling/torch versions segment documents differently
   (`Documentation/development.md`); that shows up as `DIFFERENT`, and the demo may then not show the reference data.
   Regeneration on a second machine has not been verified.
 - `manifest.json` also holds the SHA-256 of the whole pipeline outputs (`sources`); these follow the float noise and are
   left out of the `equivalent` comparison.
 
-The retrieval date recorded in the XML (`2026-10-27`) is pinned in the reference; `--retrieval-date` overrides it, which
-changes the full generated XML (and the `sources` hashes in `manifest.json`), not the displayed excerpts.
-
 ## Repository layout
 
 | Path | Contents |
 |---|---|
-| `backend/` | the offline pipeline (`odos`): Docling extraction, parsing engine, Legal JSON, Akoma Ntoso, tests (`backend/README.md`) |
+| `backend/` | the offline pipeline (`odos`): Docling extraction, parsing engine, Custom Legal JSON, tests (`backend/README.md`) |
 | `frontend/` | the static demo (React, TypeScript, Vite) and the fixture scripts (`frontend/README.md`) |
-| `Documentation/` | architecture, parsing, document model, Legal JSON and Akoma Ntoso mapping, development guide |
+| `Documentation/` | architecture, parsing, document model, Legal JSON, development guide |
 
 The always-running backend tests use synthetic documents and need no partner PDF
 (`Documentation/development.md`).

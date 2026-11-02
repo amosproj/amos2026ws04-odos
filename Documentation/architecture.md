@@ -10,9 +10,8 @@ database and no user interface for corrections.
 
 ```
 PDF ──Docling──▶ docling_raw.json ──parse_document──▶ document_model.json ──┬─▶ document.json (Custom Legal JSON 1.1)
-        (extraction)        + pdf_text_lines.json   (normalization +        ├─▶ document_akn.xml (Akoma Ntoso 3.1, XSD-validated)
-                              (PDF text-layer evidence) parsing)            └─▶ validation reports, akn_traceability.json
-                                                                                          │
+        (extraction)        + pdf_text_lines.json   (normalization +        └─▶ validation reports
+                              (PDF text-layer evidence) parsing)                          │
                                                        frontend/scripts/build-demo-fixtures.mjs
                                                                                           ▼
                                                     frontend/public/demo/  ──▶  static site (dist/)
@@ -28,13 +27,12 @@ PDF ──Docling──▶ docling_raw.json ──parse_document──▶ docume
 | German and EU legal profiles | `backend/src/odos/parsing/profiles/german_law/`, `…/eu_legislation/` | [parsing.md](parsing.md) |
 | The canonical DocumentModel | `backend/src/odos/document_model.py` | [document-model.md](document-model.md) |
 | Custom Legal JSON 1.1 (export and validation) | `backend/src/odos/legal_json/`, `backend/schemas/odos-legal-json/` | [legal-json.md](legal-json.md) |
-| Akoma Ntoso XML (generation and XSD validation) | `backend/src/odos/akn/`, `backend/schemas/akn-3.1-os/` | [akn-mapping.md](akn-mapping.md), [akn-eu-mapping.md](akn-eu-mapping.md) |
 | Pipeline (one processing run) | `backend/src/odos/pipeline.py` | below |
 | CLI | `backend/src/odos/cli.py` | [development.md](development.md) |
 | Names of the files written per document | `backend/src/odos/artifact_names.py` | below |
 | Demonstration | `frontend/src/demo/`, `frontend/scripts/build-demo-fixtures.mjs` | below |
 
-**Dependency direction:** `document_model` ← `normalization` ← `parsing` ← `legal_json`, `akn` ← `pipeline` ← `cli`.
+**Dependency direction:** `document_model` ← `normalization` ← `parsing` ← `legal_json` ← `pipeline` ← `cli`.
 No module imports "upwards".
 
 ## The pipeline (`pipeline.run_pipeline`, `odos process`)
@@ -45,8 +43,8 @@ No module imports "upwards".
    characters, prove footnote anchors and compute exact highlights.
 3. **Parsing:** with the explicitly chosen profile (`german_law` or `eu_legislation`) through the shared lifecycle.
    A document without the profile's structure ends as `unsupported` with a plain explanation.
-4. **Outputs:** `document_model.json`, `document.json`, the Akoma Ntoso XML with its XSD validation, traceability
-   and text checks.
+4. **Outputs:** `document_model.json`, `document.json` (schema-validated, text checked against the model) and the
+   validation reports. Custom Legal JSON is the only export; Akoma Ntoso XML is no longer part of the prototype.
 
 Every artifact name is defined once, in `artifact_names.py`.
 
@@ -55,16 +53,18 @@ Every artifact name is defined once, in `artifact_names.py`.
 React + TypeScript + Vite. Nothing is processed in the browser.
 
 1. `npm run demo:fixtures` reads the pipeline output directories and writes `public/demo/`: per document a
-   `structure.json` (the part of the DocumentModel the UI shows), and one provision cut out of `document.json` and
-   `document_akn.xml`, plus a `manifest.json` with the PDF's SHA-256.
+   `structure.json` (the part of the DocumentModel the UI shows), one provision cut out of `document.json`, its
+   simplified presentation (`*.legal-view.json`) and `pipeline.json` (processing details), plus a `manifest.json`
+   with the PDF's SHA-256.
 2. The user picks a PDF. The browser hashes it and looks the hash up in the manifest (`demo/fixtures.ts`). Unknown
    files are refused with an explanation.
-3. `DemoApp` shows the PDF (`pdfjs-dist`) with highlights, the full structure tree, and the JSON and XML
-   previews with downloads.
+3. `DemoApp` shows the PDF (`pdfjs-dist`) with highlights, the full structure tree, the Custom Legal JSON preview
+   with download, and the processing details (Docling output → legal parser → Custom Legal JSON).
 
 | Module | Role |
 |---|---|
-| `src/demo/DemoApp.tsx` | upload screen, result view, artifact previews and downloads |
+| `src/demo/DemoApp.tsx` | upload screen, result view, Custom Legal JSON preview and download |
+| `src/demo/PipelineView.tsx` | the "Processing details" tab |
 | `src/demo/fixtures.ts` | manifest, SHA-256 matching, upload checks, preview helpers |
 | `src/components/PdfViewer.tsx`, `StructureTree.tsx` | PDF pages with highlight overlays, the structure tree |
 | `src/structure.ts` | display tree, labels, search, highlight geometry |

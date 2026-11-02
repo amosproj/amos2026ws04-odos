@@ -49,9 +49,9 @@ const view = JSON.stringify({
 const result: DemoResult = {
   doc: {
     id: "mbo", title: "Musterbauordnung (MBO)", pdfSha256: "0".repeat(64), pages: 83, profile: "german_law",
-    files: { structure: "mbo/structure.json", json: "mbo/teil-2_par-6.legal.json", xml: "mbo/teil-2_par-6.akn.xml" },
-    example: { label: "§ 6 Beispiel", modelId: "doc/teil-2/par-6", eId: "part_2__art_6", aknElement: "article", legalJsonSchemaVersion: "1.1", previewId: ABS },
-    sources: { documentModelSha256: "", legalJsonSha256: "", aknXmlSha256: "" },
+    files: { structure: "mbo/structure.json", json: "mbo/teil-2_par-6.legal.json" },
+    example: { label: "§ 6 Beispiel", modelId: "doc/teil-2/par-6", legalJsonSchemaVersion: "1.1", previewId: ABS },
+    sources: { documentModelSha256: "", legalJsonSha256: "" },
   },
   model: modelOf([
     el("doc", "document", null, ["doc/teil-2"], { region: "document" }),
@@ -162,16 +162,11 @@ const pipeline: PipelineDetails = {
       { self_ref: "#/texts/146", label: "text", content_layer: "body", prov: [box(10, 65, 776, 531, 696)], orig: "und geht auf der nächsten Seite weiter." },
     ],
   },
-  placed: [
-    { id: ABS, type: "absatz", region: "body", source_refs: ["#/texts/144", "#/texts/146"], hygiene_flags: ["page_break_continuation_merged_confirmed"] },
-    { id: "furniture/p9-footer", type: "page_footer", region: "furniture", source_refs: ["#/texts/145"], hygiene_flags: ["running_footer"] },
-  ],
   elements: [ABS, `${ABS}/nr-1`, `${ABS}/nr-2`].map((id) => {
     const e = result.model.elements.find((x) => x.id === id)!;
     return { ...e, hygiene_flags: id === ABS ? ["page_break_continuation_merged_confirmed"] : [] };
   }),
   warnings: [],
-  akn: [{ model_id: ABS, akn_element: "paragraph", eId: "part_2__art_6__para_1", text_eId: null }],
 };
 
 describe("processing details", () => {

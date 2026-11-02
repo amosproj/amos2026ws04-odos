@@ -67,12 +67,6 @@ export function highlightsOf(e: DocElement | null | undefined): { boxes: Provena
   return { boxes: e.provenance, approximate: hasPartialBox(e) };
 }
 
-/** Closest Akoma Ntoso element, shown as a hint only (see Documentation/akn-mapping.md). */
-export const AKN_HINT: Record<string, string> = {
-  teil: "part", kapitel: "chapter", abschnitt: "section", unterabschnitt: "subsection",
-  anlage: "hcontainer", paragraph: "article", absatz: "paragraph", nummer: "point", buchstabe: "point", doppelbuchstabe: "point",
-};
-
 export function elementLabel(e: DocElement, max = 90): string {
   const head = [e.marker, e.title ?? e.content_text ?? e.original_text].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
   const text = head || e.original_text.replace(/\s+/g, " ").trim() || TYPE_LABELS[e.type] || e.type;

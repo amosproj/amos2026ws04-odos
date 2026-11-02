@@ -1,7 +1,7 @@
 # Parsing: one engine, declarative legal profiles
 
 ODOS turns a PDF into one canonical `DocumentModel` (`document_model.json`, see
-[document-model.md](document-model.md)). The public outputs (`document.json`, Akoma Ntoso XML) are
+[document-model.md](document-model.md)). The public output (`document.json`, Custom Legal JSON) is
 derived from that model.
 
 German law and EU legislation are parsed by the **same lifecycle** (`backend/src/odos/parsing/engine.py`).
@@ -83,9 +83,9 @@ backend/src/odos/
 ### Dependency rules
 
 - The dependency direction is `document_model` ← `normalization` ← `parsing` ← exporters
-  (`legal_json`, `akn`) ← `pipeline` ← `cli`.
+  (`legal_json`) ← `pipeline` ← `cli`.
 - **A profile declaration** imports only the model, `profiles.base` and language data at import time.
-  Its hooks import its recognizer, its report and the AKN generator lazily.
+  Its hooks import its recognizer and its report lazily.
   - So the shared operations and the pipeline can import the registry without an import cycle.
   - A test checks exactly which modules importing the registry loads.
 - **Shared operations never branch on a profile name.** They ask the registry: `for_model(model)`, or
@@ -101,9 +101,8 @@ backend/src/odos/
 | Sentences | `sentence_units`, `units_if_no_subunits`, `list_types` |
 | TOC | `toc`: a `TocVocabulary` with kinds, levels, containers, markers, provisions, inline marker and citation rule, ordinals |
 | Public JSON | `json_types`, `json_native_terms`, `json_nesting`, `json_document_type`, `json_id_parts` |
-| Outputs | `write_reports`, `build_akn` |
-| Pipeline | `has_structure` with `unsupported_summary` / `unsupported_message`, `summary`, `akn_summary`, `completed_message`, `akn_refused_message` |
-| Capabilities | `akn_excerpt` (German `odos akn --paragraphs`) |
+| Outputs | `write_reports` |
+| Pipeline | `has_structure` with `unsupported_summary` / `unsupported_message`, `summary`, `completed_message` |
 
 ## What is shared and what stays profile-specific
 
@@ -129,7 +128,6 @@ backend/src/odos/
 - front matter and metadata
 - the footnote strategy
 - the validation report sections
-- the Akoma Ntoso mapping (German `akn/generator.py`, EU `akn/eu_generator.py`)
 - the furniture ID scheme (`furniture/p3-header` vs `furniture/p3-page_header-1`)
 
 ## Absatz text across a page break (German profile)
@@ -161,7 +159,6 @@ Nothing else is merged. The golden baseline of the MBO records this one delibera
 4. **Give it outputs.**
    - JSON nesting rules for its `legal_system`
    - a validation report (with `parsing/accounting.py`)
-   - an AKN generator, or a `build_akn` that refuses with a clear message
 5. **Verify it on real documents** before routing anything to it (below). Add a synthetic fixture so CI
    covers the profile without private files.
 
@@ -175,10 +172,12 @@ Nothing else is merged. The golden baseline of the MBO records this one delibera
 
 The comparison covers:
 
-- the model, `document.json` 1.1, the 1.0 downgrade, the JSON report, the AKN XML and the validation report
+- the model, `document.json` 1.1, the 1.0 downgrade, the JSON report and the validation report
 - per-element, per-sentence and per-TOC-entry hashes
 
-All values are deterministic: fixed dates, no paths or timestamps, and reports compared by content.
+All values are deterministic: no paths or timestamps, and reports compared by content. The baselines also hold
+hashes of the Akoma Ntoso XML ODOS produced when they were recorded; those outputs were removed and are left out of
+the comparison (`golden_outputs.RETIRED`), the baseline files themselves are never rewritten.
 
 **Coverage is always reported.** Every run ends with a `GOLDEN COVERAGE: MBO ✓ · EU ✓ · synthetic EU ✓` line. A missing or different extraction shows as `✗` with its reason, never as a pass.
 A difference is a regression to investigate, never a value to refresh: `golden_outputs.record_baseline`

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AKN_HINT, TYPE_LABELS, buildTree, clickAction, visibleKeys, type TreeNode } from "../structure";
+import { TYPE_LABELS, buildTree, clickAction, visibleKeys, type TreeNode } from "../structure";
 import type { DocumentModel } from "../types";
 
 interface Props {
@@ -45,7 +45,7 @@ export function StructureTree({ model, selectedId, onSelect }: Props) {
                   onClick={(ev) => { ev.stopPropagation(); toggle(n.key); }}>
             {kids.length ? (expanded ? "▾" : "▸") : ""}
           </button>
-          {e && <span className={`kind kind-${e.type}`} title={AKN_HINT[e.type] ? `Closest Akoma Ntoso element: ${AKN_HINT[e.type]}` : undefined}>{TYPE_LABELS[e.type] ?? e.type}</span>}
+          {e && <span className={`kind kind-${e.type}`}>{TYPE_LABELS[e.type] ?? e.type}</span>}
           {n.toc && <span className="kind kind-toc_entry">TOC</span>}
           <span className="label">{n.label}</span>
           {e?.pages[0] != null && <span className="pg" title="Source page">p.{e.pages[0]}</span>}

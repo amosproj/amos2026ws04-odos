@@ -3,14 +3,14 @@
 //
 //   node scripts/build-demo-fixtures.mjs --eu <output dir of Regulation (EU) 2023/1230> --mbo <output dir of the MBO>
 //
-// Each directory is the output directory of `odos process` (see the root README) with
-// document_model.json, document.json, document_akn.xml, akn_traceability.json and extraction.json (docling_raw.json and
-// validation_report.json are used when present). Nothing is invented: the structure is the part of the document model
-// the demo displays, the two artifact excerpts are the same provision cut out of document.json and document_akn.xml, and
-// pipeline.json ("Processing details") holds, verbatim, the Docling items behind the previewed provision, the model
-// elements and page furniture they became, and the matching Akoma Ntoso trace entries. *.legal-view.json is a
-// simplified presentation of document.json (see `legalView`); it is not a Legal JSON 1.1 document. The PDFs are never copied; the demo matches the PDF the
-// user picks against the SHA-256 recorded in extraction.json. The output (public/demo/) is gitignored because both
+// Each directory is the output directory of `odos process` (see the root README) with document_model.json,
+// document.json and extraction.json (docling_raw.json and validation_report.json are used when present). Nothing is
+// invented: the structure is the part of the document model the demo displays, the Legal JSON excerpt is one provision
+// cut out of document.json (its text checked against the model), and pipeline.json ("Processing details") holds,
+// verbatim, the Docling items behind the previewed provision and the model elements and page furniture they became.
+// *.legal-view.json is a simplified presentation of document.json (see `legalView`); it is not a Legal JSON 1.1
+// document. The PDFs are never copied; the demo matches the PDF the user picks against the SHA-256 recorded in
+// extraction.json. The output (public/demo/) is gitignored because both
 // documents are partner-supplied.
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -70,34 +70,17 @@ function findNode(node, id) {
   return findNode(node.children ?? [], id);
 }
 
-/** The element with this eId, verbatim from the XML text (start tag to its matching end tag), dedented and carrying the
- *  root's namespace declarations so the excerpt parses on its own (as lxml serializes a sub-element). */
-function xmlElement(xml, eId) {
-  const start = xml.search(new RegExp(`<([A-Za-z][\\w.-]*)\\b[^>]*\\beId="${eId}"`));
-  if (start < 0) throw new Error(`eId ${eId} not found in document_akn.xml`);
-  const tag = /^<([A-Za-z][\w.-]*)/.exec(xml.slice(start))[1];
-  const re = new RegExp(`<${tag}\\b[^>]*?(/?)>|</${tag}>`, "g");
-  re.lastIndex = start;
-  let depth = 0;
-  for (let m; (m = re.exec(xml)); ) {
-    if (m[0].startsWith("</")) depth--;
-    else if (m[1] !== "/") depth++;
-    if (depth > 0) continue;
-    const indent = xml.slice(xml.lastIndexOf("\n", start) + 1, start);
-    let text = xml.slice(start, re.lastIndex);
-    if (/^[ \t]+$/.test(indent)) text = text.split(`\n${indent}`).join("\n");
-    const ns = (/<akomaNtoso\b([^>]*)>/.exec(xml)?.[1].match(/\sxmlns(:\w+)?="[^"]*"/g) ?? []).join("");
-    return { tag, text: `<?xml version='1.0' encoding='UTF-8'?>\n` + text.replace(`<${tag}`, `<${tag}${ns}`) };
-  }
-  throw new Error(`no end tag for ${tag} ${eId}`);
-}
-
 const norm = (s) => s.replace(/\u00ad/g, "").replace(/\s+/g, " ").trim();
-const xmlText = (x) => norm(x.replace(/<[^>]+>/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&"));
-function jsonTexts(n, out = []) {
-  for (const k of ["marker", "title", "text"]) if (typeof n[k] === "string" && n[k]) out.push(n[k]);
-  for (const c of n.children ?? []) jsonTexts(c, out);
-  return out;
+
+/** Throws unless every node of the excerpt that is a model element carries the model's marker, title and text. */
+function checkAgainstModel(key, node, byId) {
+  const el = byId.get(node.id);
+  if (el) {
+    for (const [k, v] of [["marker", el.marker], ["title", el.title], ["text", el.content_text]]) {
+      if (node[k] != null && norm(node[k]) !== norm(v ?? "")) throw new Error(`${key}: ${node.id} ${k} differs between document.json and document_model.json`);
+    }
+  }
+  for (const c of node.children ?? []) checkAgainstModel(key, c, byId);
 }
 
 // the Legal JSON node fields the simplified view keeps; source spans, boxes, character offsets and markerStyle are left out
@@ -131,7 +114,7 @@ function legalView(doc, legal) {
 }
 
 /** The pipeline stages behind the previewed provision, cut verbatim from the pipeline outputs (null without docling_raw.json). */
-function pipelineDetails(doc, dir, model, byId, trace) {
+function pipelineDetails(doc, dir, model, byId) {
   if (!existsSync(join(dir, "docling_raw.json"))) return null;
   const raw = readJson(join(dir, "docling_raw.json"));
   const focus = doc.preview ?? doc.example;
@@ -149,13 +132,7 @@ function pipelineDetails(doc, dir, model, byId, trace) {
   const [lo, hi] = [used[0], used[used.length - 1]];
   const range = hi - lo + 1 <= MAX_DOCLING_ITEMS ? Array.from({ length: hi - lo + 1 }, (_, i) => lo + i) : used;
   const items = range.map((i) => raw.texts[i]).filter(Boolean);
-  const refs = new Set(items.map((t) => t.self_ref));
   const pages = [...new Set(items.flatMap((t) => (t.prov ?? []).map((p) => p.page_no)))].sort((a, b) => a - b);
-
-  // where each of those items ended up in the document model (structure element or page furniture)
-  const placed = [...model.elements, ...(model.furniture ?? [])]
-    .filter((e) => e.source_refs?.some((r) => refs.has(r)))
-    .map((e) => pick(e, ["id", "type", "region", "docling_label", "source_refs", "hygiene_flags"]));
 
   const inScope = new Set(elements.map((e) => e.id));
   const report = existsSync(join(dir, "validation_report.json")) ? readJson(join(dir, "validation_report.json")) : null;
@@ -168,22 +145,18 @@ function pipelineDetails(doc, dir, model, byId, trace) {
       pageSizes: Object.fromEntries(pages.map((p) => [p, raw.pages?.[p]?.size ?? null])),
       items,
     },
-    placed,
     elements,
     warnings: (model.warnings ?? []).filter((w) => inScope.has(w.element_id)),
-    akn: trace.nodes.filter((n) => inScope.has(n.model_id)).map((n) => pick(n, ["model_id", "akn_element", "eId", "text_eId"])),
   };
 }
 
 function build(doc, dir) {
-  for (const f of ["document_model.json", "document.json", "document_akn.xml", "akn_traceability.json", "extraction.json"]) {
+  for (const f of ["document_model.json", "document.json", "extraction.json"]) {
     if (!existsSync(join(dir, f))) throw new Error(`${doc.key}: ${join(dir, f)} is missing`);
   }
   const extraction = readJson(join(dir, "extraction.json"));
   const model = readJson(join(dir, "document_model.json"));
   const legal = readJson(join(dir, "document.json"));
-  const xmlRaw = readFileSync(join(dir, "document_akn.xml"), "utf-8");
-  const trace = readJson(join(dir, "akn_traceability.json"));
 
   const byId = new Map(model.elements.map((e) => [e.id, e]));
   const el = byId.get(doc.example);
@@ -194,18 +167,7 @@ function build(doc, dir) {
   const node = findNode(legal.structure, doc.example);
   if (!node) throw new Error(`${doc.key}: ${doc.example} is not in document.json`);
   if (doc.preview && !findNode([node], doc.preview)) throw new Error(`${doc.key}: ${doc.preview} is not below ${doc.example} in document.json`);
-  const traced = trace.nodes.find((n) => n.model_id === doc.example);
-  if (!traced?.eId) throw new Error(`${doc.key}: ${doc.example} has no eId in akn_traceability.json`);
-  const xml = xmlElement(xmlRaw, traced.eId);
-
-  // the two excerpts must carry the same text: every JSON marker/title/text occurs, in order, in the XML element
-  const xt = xmlText(xml.text);
-  let pos = 0;
-  for (const t of jsonTexts(node)) {
-    const at = xt.indexOf(norm(t), pos);
-    if (at < 0) throw new Error(`${doc.key}: JSON text not found in the XML excerpt (in order): ${t.slice(0, 80)}`);
-    pos = at + norm(t).length;
-  }
+  checkAgainstModel(doc.key, node, byId);
 
   const structure = {
     ...(model.profile ? { profile: model.profile } : {}),
@@ -215,18 +177,16 @@ function build(doc, dir) {
     ...(model.toc_entries ? { toc_entries: model.toc_entries.map((t) => pick(t, TOC_FIELDS)) } : {}),
   };
   const base = doc.example.replace(/^doc\//, "").replace(/\//g, "_");
-  const pipeline = pipelineDetails(doc, dir, model, byId, trace);
+  const pipeline = pipelineDetails(doc, dir, model, byId);
   const files = {
     structure: `${doc.id}/structure.json`,
     json: `${doc.id}/${base}.legal.json`,
-    xml: `${doc.id}/${base}.akn.xml`,
     ...(pipeline ? { pipeline: `${doc.id}/pipeline.json` } : {}),
     ...(doc.view ? { view: `${doc.id}/${doc.view.root.replace(/^doc\//, "").replace(/\//g, "_")}.legal-view.json` } : {}),
   };
   mkdirSync(join(OUT, doc.id), { recursive: true });
   writeFileSync(join(OUT, files.structure), JSON.stringify(structure));
   writeFileSync(join(OUT, files.json), JSON.stringify(node, null, 2) + "\n");
-  writeFileSync(join(OUT, files.xml), xml.text + "\n");
   if (pipeline) writeFileSync(join(OUT, files.pipeline), JSON.stringify(pipeline, null, 2) + "\n");
   if (doc.view) {
     // page lists on one line ("pages": [9, 10]), the rest as JSON.stringify writes it
@@ -235,7 +195,7 @@ function build(doc, dir) {
   }
   else console.log(`${doc.key}: no docling_raw.json, so no processing details (pipeline.json)`);
 
-  console.log(`${doc.key}: ${model.elements.length} elements, example ${label} (${doc.example} = <${xml.tag} eId="${traced.eId}">)`);
+  console.log(`${doc.key}: ${model.elements.length} elements, example ${label} (${doc.example})`);
   return {
     id: doc.id,
     title: doc.title,
@@ -246,15 +206,12 @@ function build(doc, dir) {
     example: {
       label,
       modelId: doc.example,
-      eId: traced.eId,
-      aknElement: xml.tag,
       legalJsonSchemaVersion: legal.schemaVersion,
       ...(doc.preview ? { previewId: doc.preview } : {}),
     },
     sources: {
       documentModelSha256: sha256(readFileSync(join(dir, "document_model.json"))),
       legalJsonSha256: sha256(readFileSync(join(dir, "document.json"))),
-      aknXmlSha256: sha256(xmlRaw),
     },
   };
 }

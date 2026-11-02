@@ -4,7 +4,7 @@
 //   npm run demo:setup -- --mbo-pdf <MusterBauVerordnung.pdf> --eu-pdf <eu_2023_1230.pdf> [--odos <odos executable>]
 //
 // 1. checks that both PDFs are the exact files the demo is prepared for (SHA-256, scripts/demo-reference.json);
-// 2. runs `odos process` on both (Docling extraction, parsing, Legal JSON, Akoma Ntoso) into .demo-work/ (git-ignored);
+// 2. runs `odos process` on both (Docling extraction, parsing, Legal JSON) into .demo-work/ (git-ignored);
 // 3. builds public/demo/ from those outputs (scripts/build-demo-fixtures.mjs);
 // 4. compares the fixtures with the reference hashes and says whether they are identical, equivalent (Docling float noise) or different.
 // The odos executable is --odos, else $ODOS_BIN, else ../backend/.venv/bin/odos, else `odos` on the PATH.
@@ -25,7 +25,7 @@ const DOCS = [
 ];
 
 function usage(msg) {
-  console.error(`${msg}\nusage: npm run demo:setup -- --mbo-pdf <MBO PDF> --eu-pdf <EU 2023/1230 PDF> [--odos <odos executable>] [--retrieval-date YYYY-MM-DD]`);
+  console.error(`${msg}\nusage: npm run demo:setup -- --mbo-pdf <MBO PDF> --eu-pdf <EU 2023/1230 PDF> [--odos <odos executable>]`);
   process.exit(2);
 }
 
@@ -38,8 +38,6 @@ for (let i = 0; i < argv.length; i += 2) {
 for (const d of DOCS) if (!opts[d.option]) usage(`missing --${d.option}`);
 
 const ref = JSON.parse(readFileSync(REFERENCE, "utf-8"));
-const retrievalDate = opts["retrieval-date"] ?? ref.retrievalDate;
-if (!/^\d{4}-\d{2}-\d{2}$/.test(retrievalDate)) usage(`not a date in the form YYYY-MM-DD: ${retrievalDate}`);
 
 // 1. the PDFs
 console.log("1/4 checking the PDFs");
@@ -59,12 +57,12 @@ for (const d of DOCS) {
 // 2. the offline pipeline
 const venvOdos = resolve(FRONTEND, "../backend/.venv/bin/odos");
 const odos = opts.odos ?? process.env.ODOS_BIN ?? (existsSync(venvOdos) ? venvOdos : "odos");
-console.log(`2/4 running the offline pipeline with ${odos} (retrieval date ${retrievalDate}; the first run downloads Docling models)`);
+console.log(`2/4 running the offline pipeline with ${odos} (the first run downloads Docling models)`);
 mkdirSync(WORK, { recursive: true });
 for (const d of DOCS) {
   const out = join(WORK, d.key);
   console.log(`  ${d.name} -> ${out}`);
-  const r = spawnSync(odos, ["process", opts[d.option], "-o", out, "--mode", d.mode, "--retrieval-date", retrievalDate], { stdio: "inherit" });
+  const r = spawnSync(odos, ["process", opts[d.option], "-o", out, "--mode", d.mode], { stdio: "inherit" });
   if (r.error) {
     console.error(`cannot run ${odos}: ${r.error.message}\nInstall the backend first (see the README) or pass --odos <path to the odos executable>.`);
     process.exit(2);
@@ -98,7 +96,7 @@ if (result.ok) {
 }
 console.log(
   "\nThe fixtures were built, but they do NOT match the reference: the pipeline output on this machine differs " +
-    "(other Docling/torch versions, other retrieval date, or other content). The demo works, but may not show exactly the same data.\n" +
+    "(other Docling/torch versions or other content). The demo works, but may not show exactly the same data.\n" +
     "To use the reference data, get the exact public/demo/ folder from the person who recorded it (if the documents' licence allows it) " +
     "and check it with: npm run demo:verify",
 );
