@@ -19,8 +19,8 @@ describe("demo reference hashes", () => {
     expect(reference.manifest.sha256).toMatch(SHA);
     for (const d of Object.values(reference.documents)) {
       expect(d.pdfSha256).toMatch(SHA);
-      expect(Object.keys(d.files).map((f) => f.split("/").pop()!.replace(/^.*?\.(legal-view\.json|legal\.json)$/, "$1")).sort())
-        .toEqual(["legal-view.json", "legal.json", "pipeline.json", "structure.json"]);
+      expect(Object.keys(d.files).map((f) => f.split("/").pop()!.replace(/^.*?\.legal\.json$/, "legal.json")).sort())
+        .toEqual(["legal.json", "pipeline.json", "structure.json"]);
       for (const e of Object.values(d.files)) {
         expect(e.sha256).toMatch(SHA);
         expect(e.canonicalSha256).toMatch(SHA); // every fixture is JSON and also carries the float-noise-tolerant hash

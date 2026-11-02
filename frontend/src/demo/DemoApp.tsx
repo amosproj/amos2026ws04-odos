@@ -4,7 +4,7 @@ import { PdfViewer } from "../components/PdfViewer";
 import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
-import { fixtureUrl, jsonSubtree, loadManifest, loadResult, previewLines, resolveUpload, type DemoDocument, type DemoResult } from "./fixtures";
+import { fixtureUrl, loadManifest, loadResult, resolveUpload, type DemoDocument, type DemoResult } from "./fixtures";
 import { PipelineView } from "./PipelineView";
 import "./demo.css";
 
@@ -12,7 +12,6 @@ import "./demo.css";
 // shows their previously generated pipeline results; any other PDF is refused with an explanation.
 
 type Phase = { kind: "idle" } | { kind: "checking" } | { kind: "done"; result: DemoResult; pdfUrl: string };
-const PREVIEW_LINES = 40;
 
 export default function DemoApp() {
   const [docs, setDocs] = useState<DemoDocument[] | null>(null);
@@ -142,40 +141,18 @@ function SourceDetail({ element: e, onGoToPage }: { element: DocElement | null; 
   );
 }
 
-/** The root node of the simplified Legal JSON ("Zweiter Teil") as the file writes it. */
-export function viewRoot(view: string): string | null {
-  try {
-    const root = (JSON.parse(view) as { structure?: unknown[] }).structure?.[0];
-    // page lists on one line, as in the file
-    return root ? JSON.stringify(root, null, 2).replace(/\[\s+(\d+(?:,\s+\d+)*)\s+\]/g, (_m, ns: string) => `[${ns.split(/,\s+/).join(", ")}]`) : null;
-  } catch {
-    return null;
-  }
-}
-
+/** The Legal JSON 2.0 excerpt, shown exactly as the downloaded file. */
 export function Artifacts({ result }: { result: DemoResult }) {
-  const { doc, json, view } = result;
-  const ex = doc.example;
+  const file = result.doc.files.json;
   return (
     <div className="demo-artifacts">
-      {view
-        ? <ArtifactCard title="Custom Legal JSON" text={view} file={doc.files.view!} focus={viewRoot(view)} />
-        : <ArtifactCard title="Custom Legal JSON" text={json} file={doc.files.json} focus={ex.previewId ? jsonSubtree(json, ex.previewId) : null} />}
+      <section className="demo-artifact">
+        <div className="demo-artifact-head">
+          <h3>Custom Legal JSON</h3>
+          <a className="btn small" href={fixtureUrl(file)} download={file.split("/").pop()}>Download</a>
+        </div>
+        <pre className="preview demo-code" tabIndex={0}>{result.json.replace(/\n$/, "")}</pre>
+      </section>
     </div>
-  );
-}
-
-function ArtifactCard({ title, text, file, focus }: { title: string; text: string; file: string; focus: string | null }) {
-  // with a `focus` the preview is that element with all its children (complete, scrollable); otherwise the first lines
-  const p = focus != null ? { text: focus, hidden: 0 } : previewLines(text, PREVIEW_LINES);
-  return (
-    <section className="demo-artifact">
-      <div className="demo-artifact-head">
-        <h3>{title}</h3>
-        <a className="btn small" href={fixtureUrl(file)} download={file.split("/").pop()}>Download</a>
-      </div>
-      <pre className="preview demo-code" tabIndex={0}>{p.text}</pre>
-      {p.hidden > 0 && <p className="muted small demo-more">{p.hidden} more lines in the download.</p>}
-    </section>
   );
 }

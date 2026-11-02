@@ -9,16 +9,15 @@ export interface DemoDocument {
   pdfSha256: string;
   pages: number;
   profile: string;
-  files: { structure: string; json: string; pipeline?: string; view?: string };
-  example: { label: string; modelId: string; legalJsonSchemaVersion: string; previewId?: string };
+  files: { structure: string; json: string; pipeline?: string };
+  example: { label: string; modelId: string; legalJsonSchemaVersion: string };
   sources: { documentModelSha256: string; legalJsonSha256: string };
 }
 
 export interface DemoResult {
   doc: DemoDocument;
   model: DocumentModel;
-  json: string; // the Legal JSON 1.1 excerpt (offered for download)
-  view?: string | null; // the simplified Legal JSON shown in the demo; absent from older builds
+  json: string; // the Legal JSON 2.0 excerpt, shown and offered for download as it is
   pipeline?: PipelineDetails | null; // absent from builds made before pipeline.json existed
 }
 
@@ -72,11 +71,8 @@ export async function loadManifest(): Promise<DemoDocument[]> {
 }
 
 export async function loadResult(doc: DemoDocument): Promise<DemoResult> {
-  const [structure, json, view, pipeline] = await Promise.all([
-    fetchText(doc.files.structure), fetchText(doc.files.json), doc.files.view ? fetchText(doc.files.view).catch(() => null) : null,
-    loadPipeline(doc.files.pipeline),
-  ]);
-  return { doc, model: JSON.parse(structure) as DocumentModel, json, view, pipeline };
+  const [structure, json, pipeline] = await Promise.all([fetchText(doc.files.structure), fetchText(doc.files.json), loadPipeline(doc.files.pipeline)]);
+  return { doc, model: JSON.parse(structure) as DocumentModel, json, pipeline };
 }
 
 /** The optional processing details; null when the build has none or the file cannot be read (the rest still works). */
@@ -116,30 +112,4 @@ export async function resolveUpload(data: ArrayBuffer, fileName: string, availab
     );
   }
   return doc;
-}
-
-/** The complete subtree of the node `id` of a Legal JSON excerpt, printed like the downloaded file (2-space indent,
- *  keys in their original order); null when the node is not in the excerpt. */
-export function jsonSubtree(json: string, id: string): string | null {
-  const find = (n: unknown): unknown => {
-    if (!n || typeof n !== "object") return null;
-    if ((n as { id?: unknown }).id === id) return n;
-    for (const c of (n as { children?: unknown[] }).children ?? []) {
-      const hit = find(c);
-      if (hit) return hit;
-    }
-    return null;
-  };
-  try {
-    const node = find(JSON.parse(json));
-    return node ? JSON.stringify(node, null, 2) : null;
-  } catch {
-    return null;
-  }
-}
-
-/** The first `maxLines` lines of an artifact excerpt and how many lines were left out. */
-export function previewLines(text: string, maxLines: number): { text: string; hidden: number } {
-  const lines = text.replace(/\n$/, "").split("\n");
-  return { text: lines.slice(0, maxLines).join("\n"), hidden: Math.max(0, lines.length - maxLines) };
 }

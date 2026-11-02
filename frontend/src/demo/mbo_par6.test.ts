@@ -3,13 +3,15 @@ import { resolve } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { bboxToRect, highlightsOf } from "../structure";
 import type { DocumentModel } from "../types";
-import { jsonSubtree, type DemoDocument, type PipelineDetails } from "./fixtures";
+import type { PipelineDetails } from "./fixtures";
 
 // Generated from the partner's MBO PDF by `npm run demo:fixtures` and gitignored: skipped when not generated.
 const DIR = resolve(__dirname, "../../public/demo/mbo");
 const ID = "doc/teil-2/par-6/abs-1";
 
-type Node = { id: string; text?: string; children?: Node[]; source?: { pages: number[]; sourceSpans: { itemRef: string; page: number }[] } };
+type Node = {
+  id: string; type: string; nativeType?: string; number?: string; marker?: string; title?: string; text?: string; pages?: number[]; children?: Node[];
+};
 const find = (n: Node): Node | undefined => (n.id === ID ? n : n.children?.map(find).find(Boolean));
 
 describe.skipIf(!existsSync(DIR))("MBO § 6 (1) across pages 9 and 10", () => {
@@ -19,7 +21,7 @@ describe.skipIf(!existsSync(DIR))("MBO § 6 (1) across pages 9 and 10", () => {
   let json: Node;
   beforeAll(() => {
     model = JSON.parse(read("structure.json")) as DocumentModel;
-    json = find(JSON.parse(read("teil-2_par-6.legal.json")) as Node)!;
+    json = find(JSON.parse(read("teil-2.legal.json")) as Node)!;
   });
 
   it("is one Absatz text that runs on over the page break, with its Nummern kept apart", () => {
@@ -29,31 +31,12 @@ describe.skipIf(!existsSync(DIR))("MBO § 6 (1) across pages 9 and 10", () => {
     for (const c of json.children!) expect(json.text).not.toContain(c.text!.slice(0, 30));
   });
 
-  it("carries the model's text in the JSON, attributed to both source items", () => {
+  it("carries the model's text and pages in the JSON; the model element keeps both source items", () => {
     const el = model.elements.find((e) => e.id === ID)!;
     expect(json.text).toBe(el.content_text);
+    expect(json.pages).toEqual([9, 10]);
     expect(el.source_refs).toEqual(["#/texts/144", "#/texts/146"]);
-    expect(json.source?.sourceSpans.map((s) => [s.itemRef, s.page])).toEqual([["#/texts/144", 9], ["#/texts/146", 10]]);
-  });
-
-  it("previews the complete Absatz 1 subtree exactly as it is in the downloaded JSON", () => {
-    const manifest = JSON.parse(readFileSync(resolve(DIR, "../manifest.json"), "utf8")) as { documents: DemoDocument[] };
-    expect(manifest.documents.find((d) => d.id === "mbo")!.example.previewId).toBe(ID);
-    const raw = read("teil-2_par-6.legal.json");
-    const preview = jsonSubtree(raw, ID)!;
-    // the subtree's lines, verbatim, from the file: from its opening line to the matching closing brace
-    const lines = raw.split("\n");
-    const start = lines.findIndex((l) => l === `      "id": "${ID}",`) - 1;
-    const indent = lines[start].length - lines[start].trimStart().length;
-    const end = lines.findIndex((l, i) => i > start && (l === `${" ".repeat(indent)}}` || l === `${" ".repeat(indent)}},`));
-    const verbatim = lines.slice(start, end + 1).map((l) => l.slice(indent)).join("\n").replace(/,$/, "");
-    expect(preview).toBe(verbatim);
-    const node = JSON.parse(preview) as Node & { children: Node[] };
-    expect(node.text).toBe(json.text);
-    expect(node.children.map((c) => c.id)).toEqual([`${ID}/nr-1`, `${ID}/nr-2`]);
-    expect(node.source?.sourceSpans.map((s) => s.itemRef)).toEqual(["#/texts/144", "#/texts/146"]);
-    expect(preview).toContain('"itemRef": "#/texts/147"');
-    expect(preview).toContain('"itemRef": "#/texts/148"');
+    expect(el.provenance.map((p) => p.page_no)).toEqual([9, 10]);
   });
 
   it("highlights the text on both pages", () => {
@@ -111,41 +94,32 @@ describe.skipIf(!existsSync(resolve(DIR, "pipeline.json")))("MBO § 6 (1) proces
   });
 });
 
-describe.skipIf(!existsSync(resolve(DIR, "teil-2.legal-view.json")))("MBO simplified Legal JSON (teil-2.legal-view.json)", () => {
+describe.skipIf(!existsSync(resolve(DIR, "teil-2.legal.json")))("MBO Legal JSON 2.0 excerpt (teil-2.legal.json)", () => {
   const read = (f: string) => readFileSync(resolve(DIR, f), "utf8");
-  type ViewNode = {
-    id: string; type: string; nativeType?: string; number?: string; marker?: string; title?: string; text?: string; pages?: number[];
-    omittedChildren?: number; children?: ViewNode[];
-  };
-  let root: ViewNode;
-  let excerpt: ViewNode;
+  let root: Node;
   beforeAll(() => {
-    root = (JSON.parse(read("teil-2.legal-view.json")) as { structure: ViewNode[] }).structure[0];
-    excerpt = JSON.parse(read("teil-2_par-6.legal.json")) as ViewNode;
+    root = JSON.parse(read("teil-2.legal.json")) as Node;
   });
-  const ids = (n: ViewNode): unknown => [n.id, ...(n.children ?? []).map(ids)];
+  const ids = (n: Node): unknown => [n.id, ...(n.children ?? []).map(ids)];
+  const byId = (n: Node, id: string): Node | undefined => (n.id === id ? n : n.children?.map((c) => byId(c, id)).find(Boolean));
 
   it("starts with Zweiter Teil and holds exactly § 6 with Absatz 1 (Nummer 1 and 2) and Absatz 2", () => {
-    expect([root.marker, root.title]).toEqual(["Zweiter Teil", "Das Grundstück und seine Bebauung"]);
+    expect([root.type, root.nativeType, root.marker, root.title]).toEqual(["part", "Teil", "Zweiter Teil", "Das Grundstück und seine Bebauung"]);
     expect(ids(root)).toEqual(["doc/teil-2", ["doc/teil-2/par-6", [ID, [`${ID}/nr-1`], [`${ID}/nr-2`]], ["doc/teil-2/par-6/abs-2"]]]);
-    expect(root.omittedChildren).toBe(4); // §§ 4, 5, 7, 8
-    expect(root.children![0].omittedChildren).toBe(6); // Absätze 3 to 8
+    const par = byId(root, "doc/teil-2/par-6")!;
+    expect([par.type, par.nativeType, par.number, par.marker]).toEqual(["section", "Paragraph", "6", "§ 6"]);
+    expect([1, 2].map((n) => byId(root, `${ID}/nr-${n}`)!).map((x) => [x.type, x.nativeType, x.number, x.marker])).toEqual([
+      ["number", "Nummer", "1", "1."], ["number", "Nummer", "2", "2."],
+    ]);
   });
 
-  it("copies ids, types, numbering, text and pages unchanged from the Legal JSON 1.1 excerpt", () => {
-    const byId = (n: ViewNode, id: string): ViewNode | undefined => (n.id === id ? n : n.children?.map((c) => byId(c, id)).find(Boolean));
-    for (const id of ["doc/teil-2/par-6", ID, `${ID}/nr-1`, `${ID}/nr-2`, "doc/teil-2/par-6/abs-2"]) {
-      const v = byId(root, id)!;
-      const e = byId(excerpt, id)! as ViewNode & { source: { pages: number[] } };
-      expect([v.type, v.nativeType, v.number, v.marker, v.title, v.text]).toEqual([e.type, e.nativeType, e.number, e.marker, e.title, e.text]);
-      expect(v.pages).toEqual(e.source.pages);
-    }
+  it("keeps the whole Absatz 1 text from page 9 to page 10", () => {
     const abs = byId(root, ID)!;
     expect(abs.pages).toEqual([9, 10]);
     expect(abs.text).toMatch(/^1 Vor den Außenwänden von Gebäuden .* 4 Eine Abstandsfläche ist nicht erforderlich vor Außenwänden,$/);
   });
 
-  it("leaves out the technical provenance", () => {
-    expect(read("teil-2.legal-view.json")).not.toMatch(/sourceSpans|bbox|charStart|charEnd|bboxScope|itemRef/);
+  it("is Legal JSON 2.0 without technical provenance", () => {
+    expect(read("teil-2.legal.json")).not.toMatch(/sourceSpans|bbox|charStart|charEnd|bboxScope|itemRef|markerStyle|omittedChildren/);
   });
 });

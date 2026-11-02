@@ -11,9 +11,13 @@ import json
 import tempfile
 from pathlib import Path
 
-# outputs the baselines were recorded with that ODOS no longer produces (Akoma Ntoso was removed); a baseline is
-# never rewritten, so they are left out of the comparison and every other value must still match
-RETIRED = {"outputs": {"akn_xml", "akn_xml_excerpt", "akn_xsd_valid"}, "summary": {"akn_xsd_valid"}}
+# outputs the baselines were recorded with that ODOS no longer produces (Akoma Ntoso was removed; Legal JSON 1.1 and
+# its 1.0 downgrade were replaced by 2.0, whose hashes are in legal_json_2_0_baseline.json); a baseline is never
+# rewritten, so they are left out of the comparison and every other value must still match
+RETIRED = {
+    "outputs": {"akn_xml", "akn_xml_excerpt", "akn_xsd_valid", "legal_json_1_1", "legal_json_1_0", "legal_json_report"},
+    "summary": {"akn_xsd_valid"},
+}
 
 
 def _sha(b: bytes | str) -> str:
@@ -22,19 +26,13 @@ def _sha(b: bytes | str) -> str:
 
 def outputs(model, raw: Path) -> dict[str, bytes]:
     from odos.legal_json.artifacts import build_legal_json_artifacts, serialize
-    from odos.legal_json.exporter import load_source_context, to_legal_json
-    from odos.legal_json.legacy import downgrade_to_1_0
+    from odos.legal_json.exporter import to_legal_json
 
     out: dict[str, bytes] = {"model": model.model_dump_json(indent=2).encode("utf-8")}
-    doc11 = serialize(to_legal_json(model, load_source_context(raw)))
-    out["legal_json_1_1"] = doc11
-    out["legal_json_1_0"] = json.dumps(downgrade_to_1_0(json.loads(doc11)), indent=2, ensure_ascii=False).encode("utf-8")
+    out["legal_json_2_0"] = serialize(to_legal_json(model))
     with tempfile.TemporaryDirectory() as t:
         rep = build_legal_json_artifacts(model, raw, Path(t))["report"]
-    # the one additive key of Phase 3 (step 7, approved): hashed without it, so every other byte of the report must
-    # still equal the baseline; its content is checked in test_legal_json.test_downgrade_information_loss_is_reported
-    rep.pop("downgrade_to_1_0_information_loss", None)
-    out["legal_json_report"] = json.dumps(rep, indent=2, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    out["legal_json_2_0_report"] = json.dumps(rep, indent=2, ensure_ascii=False, sort_keys=True).encode("utf-8")
     if model.profile == "eu_legislation":
         from odos.parsing.profiles.eu_legislation.report import build_eu_report
 

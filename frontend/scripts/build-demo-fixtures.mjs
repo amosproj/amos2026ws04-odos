@@ -5,11 +5,10 @@
 //
 // Each directory is the output directory of `odos process` (see the root README) with document_model.json,
 // document.json and extraction.json (docling_raw.json and validation_report.json are used when present). Nothing is
-// invented: the structure is the part of the document model the demo displays, the Legal JSON excerpt is one provision
-// cut out of document.json (its text checked against the model), and pipeline.json ("Processing details") holds,
-// verbatim, the Docling items behind the previewed provision and the model elements and page furniture they became.
-// *.legal-view.json is a simplified presentation of document.json (see `legalView`); it is not a Legal JSON 1.1
-// document. The PDFs are never copied; the demo matches the PDF the user picks against the SHA-256 recorded in
+// invented: the structure is the part of the document model the demo displays (with the provenance the PDF highlighting
+// uses), the Legal JSON excerpt is a Legal JSON 2.0 node cut out of document.json (see `legalExcerpt`; its ids, text and
+// pages checked against the model), and pipeline.json ("Processing details") holds, verbatim, the Docling items behind
+// the previewed provision and the model elements and page furniture they became. The PDFs are never copied; the demo matches the PDF the user picks against the SHA-256 recorded in
 // extraction.json. The output (public/demo/) is gitignored because both
 // documents are partner-supplied.
 import { createHash } from "node:crypto";
@@ -18,12 +17,12 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DOCS = [
-  // `preview`: the node of the Legal JSON whose complete subtree the demo shows as its preview (default: the example)
-  // `view`: the simplified Legal JSON shown in the demo: `root` with only the path down to `nodes`, each with its subtree
+  // `preview`: the element whose stages "Processing details" shows (default: the example)
+  // `excerpt`: the Legal JSON shown and offered for download: `root` with only the path down to `nodes`, each with its subtree
   { key: "eu", id: "eu-2023-1230", title: "Regulation (EU) 2023/1230 (Machinery Regulation)", example: "doc/chp-2/art-10/para-1",
-    view: { root: "doc/chp-2", nodes: ["doc/chp-2/art-10/para-1", "doc/chp-2/art-10/para-2"] } },
+    excerpt: { root: "doc/chp-2", nodes: ["doc/chp-2/art-10/para-1", "doc/chp-2/art-10/para-2"] } },
   { key: "mbo", id: "mbo", title: "Musterbauordnung (MBO)", example: "doc/teil-2/par-6", preview: "doc/teil-2/par-6/abs-1",
-    view: { root: "doc/teil-2", nodes: ["doc/teil-2/par-6/abs-1", "doc/teil-2/par-6/abs-2"] } },
+    excerpt: { root: "doc/teil-2", nodes: ["doc/teil-2/par-6/abs-1", "doc/teil-2/par-6/abs-2"] } },
 ];
 // The only fields of the document model the demo reads (src/types.ts); everything else (Docling diagnostics, derived
 // search text, the original file name, ...) stays out of the demo data.
@@ -72,45 +71,33 @@ function findNode(node, id) {
 
 const norm = (s) => s.replace(/\u00ad/g, "").replace(/\s+/g, " ").trim();
 
-/** Throws unless every node of the excerpt that is a model element carries the model's marker, title and text. */
+/** Throws unless every node of the excerpt is a model element (the PDF highlighting finds its source there) with the
+ *  model's marker, title, text and pages. */
 function checkAgainstModel(key, node, byId) {
   const el = byId.get(node.id);
-  if (el) {
-    for (const [k, v] of [["marker", el.marker], ["title", el.title], ["text", el.content_text]]) {
-      if (node[k] != null && norm(node[k]) !== norm(v ?? "")) throw new Error(`${key}: ${node.id} ${k} differs between document.json and document_model.json`);
-    }
+  if (!el) throw new Error(`${key}: ${node.id} of document.json is not an element of document_model.json`);
+  for (const [k, v] of [["marker", el.marker], ["title", el.title], ["text", el.content_text]]) {
+    if (node[k] != null && norm(node[k]) !== norm(v ?? "")) throw new Error(`${key}: ${node.id} ${k} differs between document.json and document_model.json`);
   }
+  if (JSON.stringify(node.pages ?? []) !== JSON.stringify(el.pages)) throw new Error(`${key}: ${node.id} pages differ between document.json and document_model.json`);
   for (const c of node.children ?? []) checkAgainstModel(key, c, byId);
 }
 
-// the Legal JSON node fields the simplified view keeps; source spans, boxes, character offsets and markerStyle are left out
-const VIEW_FIELDS = ["id", "type", "nativeType", "number", "marker", "title", "text"];
-
-/** The simplified Legal JSON of `view`: the root node and the path down to each of `view.nodes`, which come with their
- *  complete subtrees. Every value is copied from document.json; `pages` is the node's `source.pages`. A node whose
- *  other children are left out says how many in `omittedChildren`. */
-function legalView(doc, legal) {
-  const root = findNode(legal.structure, doc.view.root);
-  if (!root) throw new Error(`${doc.key}: ${doc.view.root} is not in document.json`);
-  for (const id of doc.view.nodes) if (!findNode([root], id)) throw new Error(`${doc.key}: ${id} is not below ${doc.view.root} in document.json`);
-  const shown = new Set(doc.view.nodes);
+/** The Legal JSON 2.0 excerpt of `excerpt`: the root node of document.json with only the path down to each of
+ *  `excerpt.nodes`, which keep their complete subtrees. Nodes are copied unchanged (all their fields, in their order);
+ *  only children off that path are left out, so the excerpt is still a valid Legal JSON 2.0 node. */
+function legalExcerpt(doc, legal) {
+  const root = findNode(legal.structure, doc.excerpt.root);
+  if (!root) throw new Error(`${doc.key}: ${doc.excerpt.root} is not in document.json`);
+  for (const id of doc.excerpt.nodes) if (!findNode([root], id)) throw new Error(`${doc.key}: ${id} is not below ${doc.excerpt.root} in document.json`);
+  const shown = new Set(doc.excerpt.nodes);
   const leadsTo = (n) => shown.has(n.id) || (n.children ?? []).some(leadsTo);
-  const project = (n, whole) => {
-    const out = pick(n, VIEW_FIELDS);
-    if (n.source?.pages?.length) out.pages = n.source.pages;
-    if (n.rows) out.rows = n.rows.map((r) => r.map((c) => c.text));
-    const kids = n.children ?? [];
-    const keep = whole ? kids : kids.filter(leadsTo);
-    if (keep.length) out.children = keep.map((c) => project(c, whole || shown.has(c.id)));
-    if (keep.length < kids.length) out.omittedChildren = kids.length - keep.length;
-    return out;
+  const cut = (n) => {
+    if (shown.has(n.id) || !n.children) return n;
+    const { children, ...rest } = n;
+    return { ...rest, children: children.filter(leadsTo).map(cut) };
   };
-  return {
-    view: "odos-legal-json-presentation",
-    derivedFrom: { file: "document.json", schemaVersion: legal.schemaVersion },
-    document: pick(legal, ["id", "title", "shortTitle", "documentType", "legalSystem", "language"]),
-    structure: [project(root, shown.has(root.id))],
-  };
+  return cut(root);
 }
 
 /** The pipeline stages behind the previewed provision, cut verbatim from the pipeline outputs (null without docling_raw.json). */
@@ -157,6 +144,7 @@ function build(doc, dir) {
   const extraction = readJson(join(dir, "extraction.json"));
   const model = readJson(join(dir, "document_model.json"));
   const legal = readJson(join(dir, "document.json"));
+  if (legal.schemaVersion !== "2.0") throw new Error(`${doc.key}: document.json is Legal JSON ${legal.schemaVersion}; the demo shows 2.0 (run the pipeline again)`);
 
   const byId = new Map(model.elements.map((e) => [e.id, e]));
   const el = byId.get(doc.example);
@@ -167,7 +155,9 @@ function build(doc, dir) {
   const node = findNode(legal.structure, doc.example);
   if (!node) throw new Error(`${doc.key}: ${doc.example} is not in document.json`);
   if (doc.preview && !findNode([node], doc.preview)) throw new Error(`${doc.key}: ${doc.preview} is not below ${doc.example} in document.json`);
-  checkAgainstModel(doc.key, node, byId);
+  const excerpt = legalExcerpt(doc, legal);
+  if (!findNode([excerpt], doc.example)) throw new Error(`${doc.key}: ${doc.example} is not in the excerpt below ${doc.excerpt.root}`);
+  checkAgainstModel(doc.key, excerpt, byId);
 
   const structure = {
     ...(model.profile ? { profile: model.profile } : {}),
@@ -176,23 +166,18 @@ function build(doc, dir) {
     elements: model.elements.map((e) => pick(e, ELEMENT_FIELDS)),
     ...(model.toc_entries ? { toc_entries: model.toc_entries.map((t) => pick(t, TOC_FIELDS)) } : {}),
   };
-  const base = doc.example.replace(/^doc\//, "").replace(/\//g, "_");
   const pipeline = pipelineDetails(doc, dir, model, byId);
   const files = {
     structure: `${doc.id}/structure.json`,
-    json: `${doc.id}/${base}.legal.json`,
+    json: `${doc.id}/${doc.excerpt.root.replace(/^doc\//, "").replace(/\//g, "_")}.legal.json`,
     ...(pipeline ? { pipeline: `${doc.id}/pipeline.json` } : {}),
-    ...(doc.view ? { view: `${doc.id}/${doc.view.root.replace(/^doc\//, "").replace(/\//g, "_")}.legal-view.json` } : {}),
   };
   mkdirSync(join(OUT, doc.id), { recursive: true });
   writeFileSync(join(OUT, files.structure), JSON.stringify(structure));
-  writeFileSync(join(OUT, files.json), JSON.stringify(node, null, 2) + "\n");
+  // page lists on one line ("pages": [9, 10]), the rest as JSON.stringify writes it
+  const excerptText = JSON.stringify(excerpt, null, 2).replace(/\[\s+(\d+(?:,\s+\d+)*)\s+\]/g, (_m, ns) => `[${ns.split(/,\s+/).join(", ")}]`);
+  writeFileSync(join(OUT, files.json), excerptText + "\n");
   if (pipeline) writeFileSync(join(OUT, files.pipeline), JSON.stringify(pipeline, null, 2) + "\n");
-  if (doc.view) {
-    // page lists on one line ("pages": [9, 10]), the rest as JSON.stringify writes it
-    const text = JSON.stringify(legalView(doc, legal), null, 2).replace(/\[\s+(\d+(?:,\s+\d+)*)\s+\]/g, (_m, ns) => `[${ns.split(/,\s+/).join(", ")}]`);
-    writeFileSync(join(OUT, files.view), text + "\n");
-  }
   else console.log(`${doc.key}: no docling_raw.json, so no processing details (pipeline.json)`);
 
   console.log(`${doc.key}: ${model.elements.length} elements, example ${label} (${doc.example})`);
@@ -207,7 +192,6 @@ function build(doc, dir) {
       label,
       modelId: doc.example,
       legalJsonSchemaVersion: legal.schemaVersion,
-      ...(doc.preview ? { previewId: doc.preview } : {}),
     },
     sources: {
       documentModelSha256: sha256(readFileSync(join(dir, "document_model.json"))),

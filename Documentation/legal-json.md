@@ -1,40 +1,32 @@
-# document.json – public JSON of a legal document
+# document.json – public JSON of a legal document (Custom Legal JSON 2.0)
 
-Schema: `backend/schemas/odos-legal-json/1.1/legal-document.schema.json` (JSON Schema 2020-12). It is
+Schema: `backend/schemas/odos-legal-json/2.0/legal-document.schema.json` (JSON Schema 2020-12). It is
 generated from the Pydantic classes in `backend/src/odos/legal_json/view.py`; a test fails when the two drift.
 
-The demo's JSON preview (`*.legal-view.json`, `frontend/README.md`) is a simplified presentation derived from this
-file, without source spans, boxes and character offsets. It is not a document of this schema.
+`document.json` carries the legal content only: the hierarchy, numbering, titles, text, the pages each element is
+printed on, tables, footnotes, sentences and the table of contents. Technical provenance (Docling item references,
+boxes, character offsets) stays in the Internal Document Model (`document_model.json`); every JSON `id` is the id of
+its model element, which leads back to the source (see "Traceability").
 
 ## Versions
 
-- **1.0** (`backend/schemas/odos-legal-json/1.0/`) is frozen. The file is never regenerated, and a test pins
-  its hash.
-- **1.1** adds optional fields only. Every 1.0 field keeps its meaning:
-  - `sentences`
-  - `tableOfContentsEntries`
-  - `Footnote.anchorElementIds` and `Footnote.references`
-  - `TableCell.source`
-- **Downgrade:** `downgrade_to_1_0` removes the additions. The validation report checks that the
-  result is valid against the 1.0 schema (`downgrade_to_1_0_valid`).
-- **`anchorElementId` (1.0 meaning, unchanged):** the single anchor, or `null` when there is none or
-  more than one. `anchorElementIds` lists them all.
-- **Information loss (`downgrade_to_1_0_information_loss`):** the report states what a 1.0 consumer
-  does not get. For each 1.1 field, it gives how many values `downgrade_to_1_0` drops and the first
-  JSON paths. It also lists the footnotes whose several anchors 1.0 can only give as
-  `anchorElementId = null`. This is informational and never affects `valid`.
-- **One default:** 1.1 is the only format ODOS writes (`document.json`, for every profile). There is
-  no 1.0 output option. A 1.0 consumer applies `odos.legal_json.view.downgrade_to_1_0`, which every
-  report validates against the frozen 1.0 schema.
-- **Legacy code:** everything 1.0 (the downgrade and the information-loss report) is in
-  `odos/legal_json/legacy.py`. `odos.legal_json.view.downgrade_to_1_0` stays as the documented import
-  path for 1.0 consumers.
-- **Deprecation status:** 1.0 is legacy and frozen.
-  - Every `document.json` the pipeline writes is 1.1.
-  - Nothing in ODOS reads or writes 1.0 except the downgrade check in the report.
-  - Next step: once it is confirmed that no external consumer still needs 1.0 exports, stop computing the
-    downgrade in the report. That changes the report, so it needs its own approval.
-  - The frozen 1.0 schema file stays in the repository, to validate old exports.
+- **2.0** is the only format ODOS writes (`document.json`, for every profile). It is a breaking version: 1.1
+  without the technical provenance. Every legal field keeps its name and value; the cross-check against the last
+  1.1 output of the MBO and Regulation (EU) 2023/1230 found every node, footnote, sentence and TOC entry unchanged
+  apart from the removed fields.
+- **Removed in 2.0:**
+  - nodes and footnotes: `source` (`pages` stays, as a plain list, `sourceSpans` with `itemRef`, `bbox`, `bboxScope`,
+    `charStart`, `charEnd` goes) and `markerStyle` (derivable from `marker`, `odos.legal_json.markers.marker_style`);
+  - table cells: their boxes (`rows` is a list of rows of cell texts);
+  - footnotes: `anchorElementId` (the single-anchor form of 1.0; `anchorElementIds` lists every anchor) and
+    `references[].bbox`;
+  - sentences: `numberSource` (page and box of the printed number) and `textSha256` of each range;
+  - TOC entries: `sourceSpans` becomes `ranges` (`elementId`, `cell`, `start`, `end`) without `page`, `bbox`, `bboxScope`;
+  - top level: `sourceFile` (file name and Docling hash), `coordinateSystem` and `pages` (page sizes).
+- **1.0 and 1.1** (`backend/schemas/odos-legal-json/1.0/`, `1.1/`) are no longer written. Their schema files are
+  frozen (a test pins their hashes) and stay in the repository to validate earlier exports. There is no downgrade
+  from 2.0: the 1.1 export, the 1.0 downgrade (`legacy.py`) and its report entries were removed, since nothing in or
+  outside the repository consumed them.
 
 ## One canonical model
 
@@ -55,18 +47,19 @@ them appear in `document.json`.
 | `language` | `de`, from the parser rule set (both rule sets match German-language legislation only) |
 | `version` | `statement` verbatim, `date` only as printed (e.g. `2002-11`) |
 | `publicationDate`, `adoptionDate`, `enactmentDate` | ISO dates, only when the document prints a complete date |
-| `pages` | page sizes from the Docling output |
 | `frontMatter`, `tableOfContents` | title page and table of contents, outside the legal structure |
 | `structure` | the legal body in document order (preamble, parts … sections, conclusions, annexes) |
-| `footnotes` | all footnotes; `anchorElementId` is `null` unless the source evidence establishes it |
+| `pageCount` | number of pages of the PDF |
+| `footnotes` | all footnotes; `anchorElementIds` is set only when the source evidence establishes the anchors |
 
 Page headers and footers are not exported. The report counts them as excluded source items.
 
 ## Nodes
 
-`id` is the internal element id (stable, unique). `marker` is verbatim, `markerStyle` its numbering
-system, `number` the normalized number. `title` is set for headings; `text` is the element's own
-text without marker, title or children. A parent never repeats its children's text.
+A node has `id`, `type`, `nativeType`, `number`, `marker`, `title`, `text`, `pages` and `children` (tables also
+`numRows`, `numCols`, `rows`). `id` is the internal element id (stable, unique). `marker` is verbatim, `number` the
+normalized number. `title` is set for headings; `text` is the element's own text without marker, title or children,
+whole even when it runs over a page break (`pages` then lists both pages). A parent never repeats its children's text.
 
 | Internal | `de` type | Internal | `eu` type |
 |---|---|---|---|
@@ -82,12 +75,17 @@ A German `section` (§) and an EU `section` (ABSCHNITT) are different units; `le
 `nativeType` and the nesting rules keep them apart. `sentence` is part of the schema and the model
 (`ElementType.SENTENCE`); no parser splits sentences yet, so none are emitted.
 
-## Coordinates
+## Traceability
 
-PDF user space in points, origin bottom-left (`top > bottom`), exactly as Docling reports them. For a
-top-left viewer: `y = pageHeight - top` (as `frontend/src/structure.ts` `bboxToRect` does). A span's box
-covers the whole source item (`bboxScope: "source_item"`); `charStart`/`charEnd` locate the
-element's characters in that item when known. Missing boxes or offsets are omitted, never estimated.
+`document.json` names no source items and no coordinates. Each JSON `id` is the id of an element of
+`document_model.json`, which holds the source: `source_refs` (Docling items), `provenance` (page and box per item),
+`source_spans` (character offsets when an element is a part of an item), `highlight_boxes` and the sentences'
+printed-number boxes. The PDF highlighting of the demo and of the backend reads the model, never `document.json`.
+The validation report checks that every exported element is a model element with the same pages and that it, or
+(for a container like the EU preamble) one of its children, names a Docling item (`elements_without_source`).
+
+Model coordinates are PDF user space in points, origin bottom-left (`top > bottom`), exactly as Docling reports
+them. For a top-left viewer: `y = pageHeight - top` (as `frontend/src/structure.ts` `bboxToRect` does).
 
 ## Source text: what the PDF prints
 
@@ -121,7 +119,7 @@ The anchor is set only when the source evidence supports it:
 - **"Fußnote" block:** printed directly after its anchor's content.
 - **EU page footnote "( n )":** the anchor's text contains "( n )" on a page they share.
 
-Otherwise the anchor is `null`. In the MBO, 21 footnotes are proven. The other 15 stay `null` because
+Otherwise `anchorElementIds` is left out. In the MBO, 21 footnotes are proven. The other 15 stay without anchor because
 their page shows extra candidates, or because one "*)" note is referenced several times.
 
 ## Page furniture
@@ -131,13 +129,14 @@ moved out of the structure into `furniture`. They keep their ids, and later ids 
 
 ## Validation
 
-`legal_json_validation_report.json` holds three checks:
+`legal_json_validation_report.json` holds four checks:
 
 1. JSON Schema.
 2. Structural rules (`backend/src/odos/legal_json/nesting.py`): allowed parents per unit and legal system,
    unique ids, and anchors that resolve.
 3. Text preservation against the model: every element exactly once, in document order, with the
-   model's marker, title and text, and every Docling item accounted for. **This proves equality with
+   model's marker, title, text and pages, every Docling item accounted for through the exported elements'
+   model elements, and every exported element traceable to a source item. **This proves equality with
    the canonical model only, not fidelity to the PDF.**
 4. Source fidelity (`source_fidelity`): each element's text against the PDF text layer inside its
    source boxes. Every difference must be explained by a recorded word-division decision; anything else
@@ -146,7 +145,7 @@ moved out of the structure into `furniture`. They keep their ids, and later ids 
 
 CLI: `odos legal-json output/mbo/document_model.json`
 
-## Sentences (1.1)
+## Sentences
 
 A sentence is a logical object with ordered text ranges. It may span several nodes: an Absatz, its
 list items and the text after the list. Text is never repeated; consumers read it from the referenced
@@ -154,10 +153,8 @@ nodes.
 
 - **Offsets:** `start`/`end` are Python `str` indices (Unicode code points) into the referenced node's
   `text` in the same `document.json`, half-open `[start, end)`.
-- **Hashes:** `textSha256` is the SHA-256 (UTF-8) of that `text`. It detects a range used against
-  another revision.
 - **Printed numbers:** `number` is set only when the PDF prints the Satz number as a superscript;
-  `marker` and `numberSource` locate it. Numbers are never derived from position.
+  `marker` locates it in the text (its box stays in the model). Numbers are never derived from position.
 - **Unnumbered sentences** come from punctuation. A boundary is never accepted after legal
   abbreviations, dates or ordinals. A unit with an undecidable boundary is not split and gets the
   warning `SENTENCE_SEGMENTATION_UNRESOLVED` (internal).
@@ -165,7 +162,7 @@ nodes.
 - **Stability:** numbered IDs follow the printed number; unnumbered IDs are only stable for an unchanged
   text hash.
 
-## Footnote references (1.1)
+## Footnote references
 
 - **Classifying marks:** each superscript is classified once, by
   `backend/src/odos/normalization/source_marks.py`, from PDF geometry:
@@ -176,19 +173,20 @@ nodes.
 - **Anchoring:** a footnote is anchored to every element that holds one of its reference marks. The
   page's references must not compete with an unclear mark, and they must come in footnote order.
 - **Previous page:** a reference may also stand on the previous page, when it is the only unclaimed one.
-- **Coordinates:** `references[].bbox` is the mark's own glyph box.
+- **Published:** `references[]` gives the element, the printed mark and the page; the mark's glyph box stays in
+  the model.
 - **Unresolved:** an unresolved footnote keeps `page_footnote_anchor_unknown` and gets
   `FOOTNOTE_REFERENCE_UNRESOLVED`. A reference with no footnote gets
   `FOOTNOTE_REFERENCE_WITHOUT_FOOTNOTE`.
 
-## Table-of-contents entries (1.1)
+## Table-of-contents entries
 
 `tableOfContents` keeps the raw TOC nodes unchanged. `tableOfContentsEntries` lists one logical entry
 per printed line (`backend/src/odos/parsing/toc.py`):
 
 - **Boundaries:** cells and items are cut at their PDF lines, cells on the same visual line are
   joined, and entries follow the printed order.
-- **Characters** come from the canonical text, and `sourceSpans` points into the raw nodes or cells.
+- **Characters** come from the canonical text, and `ranges` points into the raw nodes or cells.
 - **`targetElementId`** is published only for a confirmed link: kind, number, title (letter spacing,
   whitespace and case ignored) and the enclosing Teil/Kapitel/Abschnitt all agree. A number-only
   match stays an internal candidate for review (`TOC_ENTRY_UNRESOLVED`).

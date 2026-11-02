@@ -1,8 +1,8 @@
 {
   "comment": "SHA-256 hashes only (no document text). Written by `npm run demo:verify -- --write-reference`; see the README.",
   "manifest": {
-    "sha256": "75b7ae70c194248b7fc90364bbca42903aec92fe46518b5c53a6bb4906d185ae",
-    "canonicalSha256": "3b36453b5962a517a73e455268a99869f7f578d08dc919ebb735f6bb8902c09f"
+    "sha256": "4d72b65781a2d0ef5eede4c70dd6359a1206dd682d4d522a9faae650561dede6",
+    "canonicalSha256": "8c8a13067b668b2325a3566c086311571125800f16993839a871ae7451033108"
   },
   "documents": {
     "eu-2023-1230": {
@@ -13,17 +13,13 @@
           "sha256": "b3c31a584a01d0096163b2fdec40fc170faa3888d8b966f963a5ed98c2708ee1",
           "canonicalSha256": "8536349df2f754c806c19e0f98990b83d1aba51854ea9960422d92f4fc992473"
         },
-        "eu-2023-1230/chp-2_art-10_para-1.legal.json": {
-          "sha256": "e15fea6f6ab1b2a1bb6ce5df9af1ba0dc168311d7d7afb1b148bba9ca7601786",
-          "canonicalSha256": "f62dbc9be12534d8571ee825ac2ca312e2cf0d38ce8fbcc20a10ef46a00a50d6"
+        "eu-2023-1230/chp-2.legal.json": {
+          "sha256": "678bf24cc7b39b46a01a04bcb05d5824ab453b794e7b8fcd73b05e7e98eaf5bc",
+          "canonicalSha256": "95d044032a00a5a30d244edd3dccca96270fe7944016e577ac60ae1c8ac335d1"
         },
         "eu-2023-1230/pipeline.json": {
           "sha256": "5167b4cb8727ccfb8c0e81a05f70bcbb08f3de062b5a2f239b66fabef576cf76",
           "canonicalSha256": "f2f04dc6c0e3295fafed17c821e769fc8717e6e48a406e2119fc524628cfce0a"
-        },
-        "eu-2023-1230/chp-2.legal-view.json": {
-          "sha256": "287ab180577a100d23841749c1dab6e5fd0a891c78260ad45ce2a64de4eb201a",
-          "canonicalSha256": "a17175f3cfce77790a0637f4eb589dcf1ffbbec0c6258605c98d1686fe10ba3d"
         }
       }
     },
@@ -35,17 +31,13 @@
           "sha256": "ecca5e261684afbf4b8eb51939e35b84e748943354d2f129ca9ac64eb855121e",
           "canonicalSha256": "1516c83840d81c2d0f56483b80024fc69da45aee4ce7ff5a8c09a4c1fc7aecae"
         },
-        "mbo/teil-2_par-6.legal.json": {
-          "sha256": "34b0c1b51a9c77ce6924b86d511ffa7ca0f052ca0541658e2e29baa07a56fd62",
-          "canonicalSha256": "02aec5d49dc2e6e90a0104ebfa080f214fe346f3d1837d0f8dbd43d6e20d0c24"
+        "mbo/teil-2.legal.json": {
+          "sha256": "2ddef433fcdbf32975fcee7abafacb6c8f4f59ef6189ce06236b27be0b066a18",
+          "canonicalSha256": "dd15bc6d9c48ef89662b145fc4cb42f6d96b898f0c970dffb401559477a9f355"
         },
         "mbo/pipeline.json": {
           "sha256": "591366f27eace5f4a8cbd5df63b62336f99561aadec6a01b3ebeca2430526fcf",
           "canonicalSha256": "87d191ad96364e2ff9c7683e65020bfd02d94a05dcc0fba840dc016d11c6c9fa"
-        },
-        "mbo/teil-2.legal-view.json": {
-          "sha256": "3ee08847d209dd45def5e4c3c30768744c19b58d6279d1f40c43fe8894b7ba04",
-          "canonicalSha256": "878693f38636127303e452d2965fec9fac9a264f53dc652db0db33d16755b2d5"
         }
       }
     }

@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { StructureTree } from "../components/StructureTree";
 import { el, modelOf } from "../testing";
-import { isPdf, jsonSubtree, matchDocument, previewLines, resolveUpload, sha256Hex, type DemoDocument } from "./fixtures";
+import { isPdf, matchDocument, resolveUpload, sha256Hex, type DemoDocument } from "./fixtures";
 
 const doc = (id: string, pdfSha256: string) => ({ id, title: id === "mbo" ? "Musterbauordnung (MBO)" : "EU Regulation", pdfSha256 } as DemoDocument);
 const bytes = (s: string) => new TextEncoder().encode(s).buffer as ArrayBuffer;
@@ -42,20 +42,6 @@ describe("unsupported PDF behaviour", () => {
   });
   it("says so when the build has no prepared documents", async () => {
     await expect(resolveUpload(bytes("%PDF-1.7 x"), "x.pdf", [])).rejects.toThrow("no prepared demonstration documents");
-  });
-});
-
-describe("JSON preview helpers", () => {
-  it("limits the code preview and reports the hidden lines", () => {
-    expect(previewLines("a\nb\nc\n", 2)).toEqual({ text: "a\nb", hidden: 1 });
-    expect(previewLines("a\nb\n", 5)).toEqual({ text: "a\nb", hidden: 0 });
-  });
-  it("extracts the complete subtree of a node of a Legal JSON excerpt", () => {
-    const json = JSON.stringify({ id: "a", children: [{ id: "a/1", text: "x", children: [{ id: "a/1/1" }] }, { id: "a/2" }] }, null, 2);
-    expect(JSON.parse(jsonSubtree(json, "a/1")!)).toEqual({ id: "a/1", text: "x", children: [{ id: "a/1/1" }] });
-    expect(jsonSubtree(json, "a")).toBe(json);
-    expect(jsonSubtree(json, "missing")).toBeNull();
-    expect(jsonSubtree("not json", "a")).toBeNull();
   });
 });
 

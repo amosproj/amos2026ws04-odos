@@ -52,7 +52,7 @@ cd frontend
 npm run demo:verify -- --mbo-pdf /path/to/MusterBauVerordnung.pdf --eu-pdf /path/to/eu_2023_1230.pdf
 ```
 
-The command compares your two PDFs and the eight fixture files plus `manifest.json` in `public/demo/` with
+The command compares your two PDFs and the six fixture files plus `manifest.json` in `public/demo/` with
 `frontend/scripts/demo-reference.json` (hashes only, no text). For each it prints `identical` (same bytes),
 `equivalent` (see below), `DIFFERENT` or `MISSING`. Exit code 0 means identical or equivalent, 1 a difference, 2 a
 missing file.

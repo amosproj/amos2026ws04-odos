@@ -1,22 +1,18 @@
-"""Canonical `DocumentModel` -> public `LegalDocument` (`document.json`).
+"""Canonical `DocumentModel` -> public `LegalDocument` (`document.json`, Custom Legal JSON 2.0).
 
 A one-way, deterministic serialization: the model stays the single source of truth. Nothing is
-invented: text, markers and titles are the model's values, coordinates come from the model's
-provenance, page sizes from the Docling output, and absent values are left out.
+invented: text, markers, titles and pages are the model's values, and absent values are left out. The model's
+technical provenance (Docling items, boxes, character offsets) is not exported; node ids lead back to it.
 """
 
 from __future__ import annotations
 
-import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
-from pathlib import Path
 
-from odos.legal_json.markers import marker_style
 from odos.legal_json.view import (
-    BoundingBox, CellSource, Footnote, FootnoteReference, Identifiers, LegalDocument, LegalSentence, Node, PageSize,
-    SentenceNumberSource, Source, SourceFile, SourceSpan, TableCell, TextRange, TocEntryOut, TocSourceSpan, Version,
+    Footnote, FootnoteReference, Identifiers, LegalDocument, LegalSentence, Node, TextRange, TocEntryOut, TocTextRange, Version,
 )  # fmt: skip
 from odos.document_model import DocumentModel, Element, ElementType as T
 from odos.parsing.profiles import LegalProfile, for_model
@@ -42,24 +38,8 @@ class _Names:
     native: dict[T, str]
 
 
-@dataclass(frozen=True)
-class SourceContext:
-    """What the Docling output adds to the model: page sizes and how many boxes each source item has."""
-
-    page_sizes: dict[int, tuple[float, float]] = field(default_factory=dict)
-    boxes_per_item: dict[str, int] = field(default_factory=dict)
-
-
-def load_source_context(docling_json: Path) -> SourceContext:
-    raw = json.loads(Path(docling_json).read_bytes())
-    sizes = {int(k): (v["size"]["width"], v["size"]["height"]) for k, v in (raw.get("pages") or {}).items()}
-    boxes = {n["self_ref"]: len(n.get("prov") or []) for kind in ("texts", "tables", "pictures") for n in raw.get(kind) or []}
-    return SourceContext(sizes, boxes)
-
-
 # ---- document ---------------------------------------------------------------------------------------------------------
-def to_legal_json(model: DocumentModel, ctx: SourceContext | None = None) -> LegalDocument:
-    ctx = ctx or SourceContext()
+def to_legal_json(model: DocumentModel) -> LegalDocument:
     profile = for_model(model)
     names = _Names(COMMON_TYPES | profile.json_types, profile.json_native_terms)
     index = model.by_id()
@@ -69,7 +49,7 @@ def to_legal_json(model: DocumentModel, ctx: SourceContext | None = None) -> Leg
         el = index[cid]
         if el.type in FOOTNOTE_TYPES:
             continue
-        node = _node(el, index, ctx, names)
+        node = _node(el, index, names)
         (front if el.type in FRONT_TYPES else toc if el.type == T.TOC else structure).append(node)
     md = model.metadata
     return LegalDocument(
@@ -87,13 +67,11 @@ def to_legal_json(model: DocumentModel, ctx: SourceContext | None = None) -> Leg
         subject=md.subject,
         identifiers=Identifiers(documentNumber=md.document_number, publicationJournal=md.publication_journal,
                                 publicationReference=md.publication_reference, citation=md.vollzitat),  # fmt: skip
-        sourceFile=SourceFile(filename=model.source.filename, doclingJsonSha256=model.source.docling_json_sha256),
         pageCount=model.source.num_pages,
-        pages=[PageSize(number=n, width=w, height=h) for n, (w, h) in sorted(ctx.page_sizes.items())] or None,
         frontMatter=front,
         tableOfContents=toc,
         structure=structure,
-        footnotes=[_footnote(e, index, model, ctx, names) for e in _footnote_roots(model, index)],
+        footnotes=[_footnote(e, index, model, names) for e in _footnote_roots(model, index)],
         tableOfContentsEntries=[_toc_entry(t) for t in model.toc_entries],
         sentences=[_sentence(s) for s in model.sentences],
     )
@@ -103,19 +81,17 @@ def _toc_entry(t) -> TocEntryOut:
     return TocEntryOut(
         id=t.id, kind=t.kind, marker=t.marker, number=t.number, title=t.title, level=t.level,
         targetElementId=t.target_id if t.status == "linked" else None,  # only confirmed links are published
-        sourceSpans=[TocSourceSpan(elementId=s.element_id, cell=s.cell, start=s.start, end=s.end, page=s.page, bbox=_bbox(s.bbox),
-                                   bboxScope="source_item" if s.bbox_scope == "docling_item" else s.bbox_scope) for s in t.source_spans],
+        ranges=[TocTextRange(elementId=s.element_id, cell=s.cell, start=s.start, end=s.end) for s in t.source_spans],
     )  # fmt: skip
 
 
 def _range(r) -> TextRange:
-    return TextRange(elementId=r.element_id, start=r.start, end=r.end, textSha256=r.text_sha256)
+    return TextRange(elementId=r.element_id, start=r.start, end=r.end)
 
 
 def _sentence(s) -> LegalSentence:
     return LegalSentence(
         id=s.id, unitId=s.unit_id, number=s.number, marker=_range(s.marker) if s.marker else None,
-        numberSource=SentenceNumberSource(page=s.mark_page, bbox=_bbox(s.mark_box)) if s.mark_box and s.mark_page else None,
         ranges=[_range(r) for r in s.ranges],
     )  # fmt: skip
 
@@ -152,71 +128,22 @@ def own_text(el: Element) -> str | None:
     return el.content_text or None
 
 
-def _node(el: Element, index: dict[str, Element], ctx: SourceContext, names: _Names) -> Node:
-    type_ = names.types[el.type]
+def _node(el: Element, index: dict[str, Element], names: _Names) -> Node:
     table = el.table
     return Node(
         id=el.id,
-        type=type_,
+        type=names.types[el.type],
         nativeType=names.native.get(el.type),
-        marker=el.marker,
-        markerStyle=marker_style(el.marker, type_),
         number=el.number,
+        marker=el.marker,
         title=el.title,
         text=own_text(el),
         numRows=table.num_rows if table else None,
         numCols=table.num_cols if table else None,
-        rows=_rows(table) if table else None,
-        source=source_of(el, ctx),
-        children=[_node(index[c], index, ctx, names) for c in el.children_ids if index[c].type not in FOOTNOTE_TYPES],
+        rows=[list(row) for row in table.rows] if table else None,
+        pages=list(el.pages),
+        children=[_node(index[c], index, names) for c in el.children_ids if index[c].type not in FOOTNOTE_TYPES],
     )
-
-
-def _rows(table) -> list[list[TableCell]]:
-    """The grid as Docling gives it; a cell carries its own box where Docling placed one (spanned positions: none)."""
-    boxes = {(c.row, c.col): c for c in table.cells if c.bbox is not None and c.page_no is not None}
-    out = []
-    for r, row in enumerate(table.rows):
-        cells = []
-        for k, text in enumerate(row):
-            c = boxes.get((r, k))
-            src = CellSource(page=c.page_no, bbox=_bbox(c.bbox)) if c is not None and c.text == text else None
-            cells.append(TableCell(text=text, source=src))
-        out.append(cells)
-    return out
-
-
-def _bbox(b) -> BoundingBox | None:
-    return BoundingBox(left=b.l, top=b.t, right=b.r, bottom=b.b) if b is not None else None
-
-
-def _item_of_each_box(el: Element, ctx: SourceContext) -> list[str | None]:
-    """The source item behind each provenance box. Unknown (None) unless it follows from the data."""
-    n, refs = len(el.provenance), el.source_refs
-    if len(refs) == n:
-        return list(refs)
-    if len(refs) == 1:
-        return refs * n
-    counts = [ctx.boxes_per_item.get(r) for r in refs]
-    if None not in counts and sum(counts) == n:
-        return [r for r, c in zip(refs, counts) for _ in range(c)]
-    return [None] * n
-
-
-def source_of(el: Element, ctx: SourceContext) -> Source:
-    spans: list[SourceSpan] = []
-    if el.source_spans:  # a segment of a Docling item (extraction-hygiene layer): character offsets are known
-        for s in el.source_spans:
-            box = s.bbox
-            if box is None and len(el.source_refs) == 1:  # the item's own box, as the hygiene layer documents
-                box = next((p.bbox for p in el.provenance if p.page_no == s.page_no), None)
-            spans.append(SourceSpan(itemRef=s.ref, page=s.page_no, bbox=_bbox(box), charStart=s.start, charEnd=s.end))
-    else:
-        for p, ref in zip(el.provenance, _item_of_each_box(el, ctx)):
-            cs = p.charspan
-            spans.append(SourceSpan(itemRef=ref, page=p.page_no, bbox=_bbox(p.bbox),
-                                    charStart=cs[0] if cs else None, charEnd=cs[1] if cs else None))  # fmt: skip
-    return Source(pages=list(el.pages), sourceSpans=spans)
 
 
 # ---- footnotes --------------------------------------------------------------------------------------------------------
@@ -227,19 +154,17 @@ def _footnote_roots(model: DocumentModel, index: dict[str, Element]) -> list[Ele
             if e.type == T.FOOTNOTE_HEADING or (e.type == T.FOOTNOTE and index[e.parent_id].type != T.FOOTNOTE_HEADING)]  # fmt: skip
 
 
-def _footnote(el: Element, index: dict[str, Element], model: DocumentModel, ctx: SourceContext, names: _Names) -> Footnote:
+def _footnote(el: Element, index: dict[str, Element], model: DocumentModel, names: _Names) -> Footnote:
     if el.anchor_ids:  # proven from the PDF's reference marks (parsing.footnotes), possibly several
         anchors = [a for a in el.anchor_ids if a in index]
     else:
         single = footnote_anchor(el, index, model)
         anchors = [single] if single else []
     return Footnote(
-        id=el.id, marker=el.marker, number=el.number, title=el.title, text=own_text(el), source=source_of(el, ctx),
-        content=[_node(index[c], index, ctx, names) for c in el.children_ids],
-        anchorElementId=anchors[0] if len(anchors) == 1 else None,  # 1.0 meaning: the single anchor
+        id=el.id, marker=el.marker, number=el.number, title=el.title, text=own_text(el), pages=list(el.pages),
+        content=[_node(index[c], index, names) for c in el.children_ids],
         anchorElementIds=anchors,
-        references=[FootnoteReference(elementId=r.element_id, marker=r.mark, page=r.page, bbox=_bbox(r.bbox))
-                    for r in el.footnote_refs if r.element_id in index],  # fmt: skip
+        references=[FootnoteReference(elementId=r.element_id, marker=r.mark, page=r.page) for r in el.footnote_refs if r.element_id in index],
     )
 
 

@@ -25,7 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     norm.add_argument("--pdf", type=Path, default=None, help="the source PDF: writes pdf_text_lines.json (text-layer evidence used to verify/repair the reading order where layout boxes overlap)")  # fmt: skip
     lj = sub.add_parser("legal-json", help="Serialize a document_model.json to document.json (public JSON) and validate it")
     lj.add_argument("document_model", type=Path)
-    lj.add_argument("--docling-json", type=Path, default=None, help="for page sizes; default: docling_raw.json next to the model")
+    lj.add_argument("--docling-json", type=Path, default=None, help="locates the PDF text-layer evidence for the source-fidelity check; default: docling_raw.json next to the model")
     lj.add_argument("-o", "--output-dir", type=Path, default=None, help="default: directory of the model")
     proc = sub.add_parser("process", help="Run the whole pipeline (extraction, parsing, Legal JSON) on a PDF")
     proc.add_argument("pdf", type=Path)

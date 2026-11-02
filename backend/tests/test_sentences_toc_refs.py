@@ -1,4 +1,4 @@
-"""Legal sentences, table-of-contents normalization, superscript classification, schema 1.1 compatibility."""
+"""Legal sentences, table-of-contents normalization, superscript classification, their Legal JSON 2.0 form."""
 
 import hashlib
 import json
@@ -7,15 +7,13 @@ import re
 import pytest
 from jsonschema import Draft202012Validator
 
-from odos.legal_json.artifacts import SCHEMA_1_0_PATH, build_legal_json_artifacts, published_schema
-from odos.legal_json.exporter import load_source_context, to_legal_json
-from odos.legal_json.legacy import downgrade_to_1_0
+from odos.legal_json.artifacts import build_legal_json_artifacts, published_schema
+from odos.legal_json.exporter import to_legal_json
 from odos.document_model import ElementType as T
 from odos.normalization.reading_order import SmallMark
 from odos.parsing.sentences import _boundary_ok, _own, sequence
 from odos.normalization.source_marks import classify
 
-FROZEN_1_0 = "1b54a158b0f45ef99fd8732c77cd9499a60a3a4fa3872a867803ab9105dc69c2"
 
 
 def _text(model, s):
@@ -161,28 +159,22 @@ def test_toc_entries_never_invent_text(request, fixture):
         assert re.sub(r"\s", "", f"{e.marker}{e.title or ''}") in joined or re.sub(r"\s", "", e.title or "") in joined, e.id
 
 
-# ---- public JSON 1.1 -----------------------------------------------------------------------------------------------
-def test_frozen_1_0_schema_is_unchanged():
-    assert hashlib.sha256(SCHEMA_1_0_PATH.read_bytes()).hexdigest() == FROZEN_1_0
-
-
+# ---- public JSON 2.0 -----------------------------------------------------------------------------------------------
 @pytest.mark.parametrize("fixture,raw", [("mbo_model", "mbo_raw_json"), ("synthetic_german_model", "synthetic_german_raw_json"), ("eu_model", "eu_raw_json")])
-def test_json_1_1_and_its_1_0_downgrade_validate(request, fixture, raw, tmp_path):
+def test_json_2_0_validates_with_sentences_and_toc_entries(request, fixture, raw, tmp_path):
     m, r = request.getfixturevalue(fixture), request.getfixturevalue(raw)
     rep = build_legal_json_artifacts(m, r, tmp_path)["report"]
-    assert rep["valid"] and rep["schema_valid"] and rep["downgrade_to_1_0_valid"] and rep["structure_valid"], rep["structure_errors"][:3]
+    assert rep["valid"] and rep["schema_valid"] and rep["structure_valid"], rep["structure_errors"][:3]
     data = json.loads((tmp_path / "document.json").read_text())
-    assert data["schemaVersion"] == "1.1" and not list(Draft202012Validator(published_schema("1.1")).iter_errors(data))
-    old = downgrade_to_1_0(data)
-    assert old["schemaVersion"] == "1.0" and not list(Draft202012Validator(published_schema("1.0")).iter_errors(old))
-    assert old["structure"] == json.loads(json.dumps(old["structure"]))  # every 1.0 field kept
+    assert data["schemaVersion"] == "2.0" and not list(Draft202012Validator(published_schema()).iter_errors(data))
+    assert len(data.get("sentences", [])) == len(m.sentences) and len(data.get("tableOfContentsEntries", [])) == len(m.toc_entries)
     for t in data.get("tableOfContentsEntries", []):  # only confirmed links are published
         assert ("targetElementId" in t) == (next(e for e in m.toc_entries if e.id == t["id"]).status == "linked")
     assert not {"status", "evidence", "method", "candidate_ids", "candidateIds"} & {k for s in data.get("sentences", []) for k in s}
 
 
-def test_json_sentence_ranges_resolve_against_node_text(mbo_model, mbo_raw_json):
-    doc = to_legal_json(mbo_model, load_source_context(mbo_raw_json))
+def test_json_sentence_ranges_resolve_against_node_text(mbo_model):
+    doc = to_legal_json(mbo_model)
     stack, texts = [*doc.structure], {}
     while stack:
         n = stack.pop()
@@ -191,5 +183,6 @@ def test_json_sentence_ranges_resolve_against_node_text(mbo_model, mbo_raw_json)
     s = next(x for x in doc.sentences if x.id == "doc/teil-2/par-6/abs-5/satz-2")
     (r,) = s.ranges
     assert texts[r.elementId][r.start : r.end].startswith("2 In Gewerbe- und Industriegebieten")
-    assert hashlib.sha256(texts[r.elementId].encode()).hexdigest() == r.textSha256
-    assert texts[s.marker.elementId][s.marker.start : s.marker.end] == "2" and s.numberSource.page == 10
+    assert texts[s.marker.elementId][s.marker.start : s.marker.end] == "2"
+    model_s = next(x for x in mbo_model.sentences if x.id == s.id)  # the printed number's box stays in the model
+    assert model_s.mark_page == 10 and model_s.mark_box and hashlib.sha256(texts[r.elementId].encode()).hexdigest() == model_s.ranges[0].text_sha256

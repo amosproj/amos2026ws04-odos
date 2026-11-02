@@ -1,7 +1,7 @@
 """The EU profile end to end on the synthetic regulation (tests/synthetic_eu.py): always runs, needs no private file.
 
 Parsing through the shared lifecycle, metadata, every EU structural unit, footnote anchoring, page furniture,
-sentences and document.json 1.1 (schema, nesting, text) with its 1.0 downgrade."""
+sentences and document.json 2.0 (schema, nesting, text)."""
 
 import json
 
@@ -56,11 +56,11 @@ def test_sentences(synthetic_eu_model):
     ]  # fmt: skip
 
 
-def test_legal_json_1_1_and_its_1_0_downgrade(synthetic_eu_model, synthetic_eu_raw_json, tmp_path):
+def test_legal_json_2_0(synthetic_eu_model, synthetic_eu_raw_json, tmp_path):
     rep = build_legal_json_artifacts(synthetic_eu_model, synthetic_eu_raw_json, tmp_path)["report"]
-    assert rep["valid"] and rep["schema_valid"] and rep["structure_valid"] and rep["downgrade_to_1_0_valid"]
+    assert rep["valid"] and rep["schema_valid"] and rep["structure_valid"]
     assert rep["text_preservation"]["identical_to_model"]
     doc = json.loads((tmp_path / "document.json").read_text())
-    assert (doc["schemaVersion"], doc["legalSystem"], doc["documentType"], doc["id"]) == ("1.1", "eu", "eu_regulation", "verordnung-2099-1")
-    assert rep["downgrade_to_1_0_information_loss"]["dropped"]["sentences"]["values"] == 8
+    assert (doc["schemaVersion"], doc["legalSystem"], doc["documentType"], doc["id"]) == ("2.0", "eu", "eu_regulation", "verordnung-2099-1")
+    assert len(doc["sentences"]) == 8
 

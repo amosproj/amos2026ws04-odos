@@ -26,7 +26,7 @@ warning.
 odos process <pdf> -o <dir> --mode german_law|eu_legislation   # the whole pipeline
 odos extract <pdf> -o output/doc                               # Docling: docling_raw.json + extracted.md (--ocr for scans)
 odos normalize output/doc/docling_raw.json --pdf <pdf>         # document_model.json + validation report (--mode eu_legislation)
-odos legal-json output/doc/document_model.json                 # document.json (Custom Legal JSON 1.1) + validation report
+odos legal-json output/doc/document_model.json                 # document.json (Custom Legal JSON 2.0) + validation report
 ```
 
 - **`--mode` for `process`:** required. The profile is never guessed from the document.
@@ -83,10 +83,9 @@ cd frontend && npm test && npm run typecheck && npm run build:demo
   from superscript marks. It has no golden baseline: glyph coordinates come from pdfium and can differ in the last
   decimals between platforms, so the tests assert structure and validity.
 - **The synthetic EU regulation** (`backend/tests/synthetic_eu.py`) always runs. It is original text in
-  Docling's JSON shape and covers every EU structural unit end to end, including JSON 1.1 and the 1.0
-  downgrade.
-- **Frontend:** `frontend/src/demo/mbo_par6.test.ts` reads the local fixtures (`public/demo/`) and skips without
-  them. All other frontend tests use synthetic data.
+  Docling's JSON shape and covers every EU structural unit end to end, including Legal JSON 2.0.
+- **Frontend:** `frontend/src/demo/mbo_par6.test.ts` and `legal_json_excerpt.test.ts` read the local fixtures
+  (`public/demo/`, and `.demo-work/` for the comparison with `document.json`) and skip without them. All other frontend tests use synthetic data.
 - **Never runtime output:** tests write only to temporary directories and `backend/output/`.
 
 **Golden equivalence** (`tests/test_golden_equivalence.py`):
@@ -119,7 +118,7 @@ cd frontend && npm test && npm run typecheck && npm run build:demo
 | `test_legal_json.py` | the Custom Legal JSON export and its validation |
 | `test_extraction.py`, `test_environment.py` | extraction, dependency drift |
 | `frontend/src/structure.test.ts` | hierarchy, search, highlight geometry, TOC view |
-| `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, Custom Legal JSON preview and downloads, MBO § 6 Absatz 1 and the simplified view |
+| `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, Custom Legal JSON preview and downloads, MBO § 6 Absatz 1, the Legal JSON 2.0 excerpts and their traceability to the model |
 
 ## Conventions
 

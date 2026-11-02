@@ -15,58 +15,46 @@ vi.mock("../components/PdfViewer", () => ({
 // An invented provision with the shape of § 6 (1): the introduction runs over a page break, two numbered children follow.
 const ABS = "doc/teil-2/par-6/abs-1";
 const INTRO = "1 Erster Satz beginnt am Seitenende und geht auf der nächsten Seite weiter. 2 Zweiter Satz.";
+// Its Legal JSON 2.0 excerpt as scripts/build-demo-fixtures.mjs writes it: Zweiter Teil down to § 6 Absatz 1 and 2.
 const json = JSON.stringify({
-  id: "doc/teil-2/par-6", type: "section", marker: "§ 6", title: "Beispiel",
+  id: "doc/teil-2", type: "part", nativeType: "Teil", number: "2", marker: "Zweiter Teil", title: "Beispielteil", pages: [9],
   children: [{
-    id: ABS, type: "subsection", marker: "(1)", text: INTRO,
-    source: { pages: [9, 10], sourceSpans: [{ itemRef: "#/texts/144", page: 9 }, { itemRef: "#/texts/146", page: 10 }] },
+    id: "doc/teil-2/par-6", type: "section", nativeType: "Paragraph", number: "6", marker: "§ 6", title: "Beispiel", pages: [9],
     children: [
-      { id: `${ABS}/nr-1`, type: "number", marker: "1.", text: "erste Nummer", source: { pages: [10], sourceSpans: [{ itemRef: "#/texts/147", page: 10 }] } },
-      { id: `${ABS}/nr-2`, type: "number", marker: "2.", text: "zweite Nummer", source: { pages: [10], sourceSpans: [{ itemRef: "#/texts/148", page: 10 }] } },
+      { id: ABS, type: "subsection", nativeType: "Absatz", number: "1", marker: "(1)", text: INTRO, pages: [9, 10], children: [
+        { id: `${ABS}/nr-1`, type: "number", nativeType: "Nummer", number: "1", marker: "1.", text: "erste Nummer", pages: [10] },
+        { id: `${ABS}/nr-2`, type: "number", nativeType: "Nummer", number: "2", marker: "2.", text: "zweite Nummer", pages: [10] },
+      ] },
+      { id: "doc/teil-2/par-6/abs-2", type: "subsection", nativeType: "Absatz", number: "2", marker: "(2)", text: "zweiter Absatz", pages: [10] },
     ],
   }],
-}, null, 2) + "\n";
-// The simplified Legal JSON of the same invented provision, as scripts/build-demo-fixtures.mjs writes it.
-const view = JSON.stringify({
-  view: "odos-legal-json-presentation", derivedFrom: { file: "document.json", schemaVersion: "1.1" }, document: { id: "mbo" },
-  structure: [{
-    id: "doc/teil-2", type: "part", nativeType: "Teil", number: "2", marker: "Zweiter Teil", title: "Beispielteil", pages: [9],
-    children: [{
-      id: "doc/teil-2/par-6", type: "section", nativeType: "Paragraph", number: "6", marker: "§ 6", title: "Beispiel", pages: [9],
-      children: [
-        { id: ABS, type: "subsection", nativeType: "Absatz", number: "1", marker: "(1)", text: INTRO, pages: [9, 10], children: [
-          { id: `${ABS}/nr-1`, type: "number", nativeType: "Nummer", number: "1", marker: "1.", text: "erste Nummer", pages: [10] },
-          { id: `${ABS}/nr-2`, type: "number", nativeType: "Nummer", number: "2", marker: "2.", text: "zweite Nummer", pages: [10] },
-        ] },
-        { id: "doc/teil-2/par-6/abs-2", type: "subsection", nativeType: "Absatz", number: "2", marker: "(2)", text: "zweiter Absatz", pages: [10] },
-      ],
-      omittedChildren: 6,
-    }],
-    omittedChildren: 4,
-  }],
-}, null, 2) + "\n";
+}, null, 2).replace(/\[\s+(\d+(?:,\s+\d+)*)\s+\]/g, (_m, ns: string) => `[${ns.split(/,\s+/).join(", ")}]`) + "\n";
 
 const result: DemoResult = {
   doc: {
     id: "mbo", title: "Musterbauordnung (MBO)", pdfSha256: "0".repeat(64), pages: 83, profile: "german_law",
-    files: { structure: "mbo/structure.json", json: "mbo/teil-2_par-6.legal.json" },
-    example: { label: "§ 6 Beispiel", modelId: "doc/teil-2/par-6", legalJsonSchemaVersion: "1.1", previewId: ABS },
+    files: { structure: "mbo/structure.json", json: "mbo/teil-2.legal.json" },
+    example: { label: "§ 6 Beispiel", modelId: "doc/teil-2/par-6", legalJsonSchemaVersion: "2.0" },
     sources: { documentModelSha256: "", legalJsonSha256: "" },
   },
   model: modelOf([
     el("doc", "document", null, ["doc/teil-2"], { region: "document" }),
-    el("doc/teil-2", "teil", "doc", ["doc/teil-2/par-6"], { marker: "Zweiter Teil", pages: [9] }),
-    el("doc/teil-2/par-6", "paragraph", "doc/teil-2", [ABS], { marker: "§ 6", title: "Beispiel", pages: [9] }),
-    el(ABS, "absatz", "doc/teil-2/par-6", [`${ABS}/nr-1`, `${ABS}/nr-2`], {
+    el("doc/teil-2", "teil", "doc", ["doc/teil-2/par-5", "doc/teil-2/par-6", "doc/teil-2/par-7"], { marker: "Zweiter Teil", pages: [9] }),
+    el("doc/teil-2/par-5", "paragraph", "doc/teil-2", [], { marker: "§ 5", pages: [8] }),
+    el("doc/teil-2/par-6", "paragraph", "doc/teil-2", [ABS, "doc/teil-2/par-6/abs-2", "doc/teil-2/par-6/abs-3"], { marker: "§ 6", title: "Beispiel", pages: [9] }),
+    el(ABS, "absatz", "doc/teil-2/par-6", [`${ABS}/nr-1`, `${ABS}/nr-2`, `${ABS}/fn-1`], {
       marker: "(1)", original_text: INTRO, pages: [9, 10], source_refs: ["#/texts/144", "#/texts/146"],
       provenance: [box(9, 65, 63, 531, 52), box(10, 65, 776, 531, 696)],
     }),
     el(`${ABS}/nr-1`, "nummer", ABS, [], { marker: "1.", original_text: "erste Nummer", pages: [10] }),
     el(`${ABS}/nr-2`, "nummer", ABS, [], { marker: "2.", original_text: "zweite Nummer", pages: [10] }),
+    el(`${ABS}/fn-1`, "footnote", ABS, [], { original_text: "eine Fußnote", pages: [10] }),
+    el("doc/teil-2/par-6/abs-2", "absatz", "doc/teil-2/par-6", [], { marker: "(2)", original_text: "zweiter Absatz", pages: [10] }),
+    el("doc/teil-2/par-6/abs-3", "absatz", "doc/teil-2/par-6", [], { marker: "(3)", original_text: "dritter Absatz", pages: [10] }),
+    el("doc/teil-2/par-7", "paragraph", "doc/teil-2", [], { marker: "§ 7", pages: [11] }),
   ]),
   json,
 };
-const withView: DemoResult = { ...result, doc: { ...result.doc, files: { ...result.doc.files, view: "mbo/teil-2.legal-view.json" } }, view };
 
 const preview = (html: string, title: string) => {
   const card = html.split('<section class="demo-artifact">').find((c) => c.includes(`<h3>${title}</h3>`))!;
@@ -108,46 +96,26 @@ describe("result view", () => {
 });
 
 describe("Custom Legal JSON preview and downloads", () => {
-  const html = renderToStaticMarkup(<Artifacts result={withView} />);
+  const html = renderToStaticMarkup(<Artifacts result={result} />);
   it("shows only the heading, the download and the preview", () => {
     expect(html.replace(/<pre[\s\S]*<\/pre>/, "<pre/>").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Custom Legal JSON", "Download"]);
   });
-  it("previews the simplified JSON from Zweiter Teil: § 6, Absatz 1 with both Nummern, Absatz 2", () => {
+  it("previews the Legal JSON 2.0 excerpt exactly as the downloaded file: Zweiter Teil, § 6, Absatz 1 with both Nummern, Absatz 2", () => {
     const { text } = preview(html, "Custom Legal JSON");
+    expect(text + "\n").toBe(json);
     expect(text.startsWith('{\n  "id": "doc/teil-2",')).toBe(true);
     expect(text).toContain('"pages": [9, 10]');
     const teil = JSON.parse(text);
-    expect(teil).toEqual(JSON.parse(view).structure[0]);
     const par = teil.children[0];
     expect([teil.id, par.id, par.children.map((c: { id: string }) => c.id)]).toEqual(["doc/teil-2", "doc/teil-2/par-6", [ABS, "doc/teil-2/par-6/abs-2"]]);
     expect(par.children[0].children.map((c: { id: string }) => c.id)).toEqual([`${ABS}/nr-1`, `${ABS}/nr-2`]);
-    expect(text).not.toMatch(/sourceSpans|bbox|charStart|bboxScope/);
+    expect(text).not.toMatch(/sourceSpans|bbox|charStart|bboxScope|omittedChildren/);
   });
-  it("offers the simplified JSON for download", () => {
-    expect(preview(html, "Custom Legal JSON").card).toContain('href="/demo/mbo/teil-2.legal-view.json" download="teil-2.legal-view.json"');
+  it("offers the excerpt for download", () => {
+    expect(preview(html, "Custom Legal JSON").card).toContain('href="/demo/mbo/teil-2.legal.json" download="teil-2.legal.json"');
   });
   it("shows no Akoma Ntoso XML", () => {
     expect(html).not.toMatch(/Akoma|\.akn\.xml/);
-  });
-});
-
-describe("Custom Legal JSON preview of a build without the simplified view", () => {
-  const html = renderToStaticMarkup(<Artifacts result={result} />);
-  it("previews the complete Absatz subtree of the Legal JSON 1.1 excerpt: full text, sources and both children", () => {
-    const { text } = preview(html, "Custom Legal JSON");
-    const node = JSON.parse(text);
-    expect(node.id).toBe(ABS);
-    expect(node.text).toBe(INTRO);
-    expect(node.source.pages).toEqual([9, 10]);
-    expect(node.children.map((c: { id: string; marker: string }) => [c.id, c.marker])).toEqual([[`${ABS}/nr-1`, "1."], [`${ABS}/nr-2`, "2."]]);
-    expect(text).not.toContain("part_2__art_6"); // not the whole excerpt, just the subtree
-    expect(html).toContain('href="/demo/mbo/teil-2_par-6.legal.json" download="teil-2_par-6.legal.json"');
-    expect(html).not.toMatch(/Akoma|\.akn\.xml/);
-  });
-  it("cuts a long preview without a previewId and reports the hidden lines", () => {
-    const long: DemoResult = { ...result, json: Array.from({ length: 60 }, (_, i) => `"line ${i}"`).join("\n"), doc: { ...result.doc, example: { ...result.doc.example, previewId: undefined } } };
-    const card = preview(renderToStaticMarkup(<Artifacts result={long} />), "Custom Legal JSON").card;
-    expect(card).toContain("20 more lines in the download.");
   });
 });
 
@@ -170,7 +138,7 @@ const pipeline: PipelineDetails = {
 };
 
 describe("processing details", () => {
-  const html = renderToStaticMarkup(<PipelineView result={{ ...withView, pipeline }} onSelect={() => {}} onOpenArtifacts={() => {}} />);
+  const html = renderToStaticMarkup(<PipelineView result={{ ...result, pipeline }} onSelect={() => {}} onOpenArtifacts={() => {}} />);
   it("names every stage and shows neither normalization nor Akoma Ntoso XML", () => {
     for (const s of ["Original PDF", "Docling output", "Legal parser → Document model", "Custom Legal JSON"]) expect(html).toContain(s);
     expect(html).not.toContain("Normalization");
@@ -197,21 +165,15 @@ describe("processing details", () => {
     expect(html).toContain("page_break_continuation_merged_confirmed");
     expect(html).toContain("the text after the page break continues this unfinished Absatz");
   });
-  it("lists the simplified JSON from Zweiter Teil down, with parents from the nesting, omitted siblings and pages", () => {
+  it("lists the Legal JSON excerpt from Zweiter Teil down, with parents from the nesting, omitted siblings and pages", () => {
     const table = html.slice(html.lastIndexOf("<table"));
     expect([...table.matchAll(/<tr><td style="[^"]*"><code>([^<]+)<\/code><\/td>/g)].map((m) => m[1]))
       .toEqual(["doc/teil-2", "doc/teil-2/par-6", ABS, `${ABS}/nr-1`, `${ABS}/nr-2`, "doc/teil-2/par-6/abs-2"]);
     expect(table).toContain(`<td><code>doc/teil-2/par-6</code></td>`); // the parent of both Absätze
-    expect(table).toContain("(+4 not shown)");
-    expect(table).toContain("(+6 not shown)");
+    expect(table).toContain("(+2 not shown)"); // §§ 5 and 7, counted in the document model
+    expect(table).toContain("(+1 not shown)"); // Absatz 3; the footnote of Absatz 1 is not a child in Legal JSON
     expect(table).toContain("<td>9, 10</td>");
     expect(table).toContain("zweite Nummer");
-  });
-  it("falls back to the Legal JSON 1.1 excerpt from the previewed node in a build without the simplified view", () => {
-    const old = renderToStaticMarkup(<PipelineView result={{ ...result, pipeline }} onSelect={() => {}} onOpenArtifacts={() => {}} />);
-    const table = old.slice(old.lastIndexOf("<table"));
-    expect([...table.matchAll(/<tr><td style="[^"]*"><code>([^<]+)<\/code><\/td>/g)].map((m) => m[1])).toEqual([ABS, `${ABS}/nr-1`, `${ABS}/nr-2`]);
-    expect(table).toContain(`<td><code>doc/teil-2/par-6</code></td>`);
   });
   it("explains that a build without processing details has none", () => {
     const none = renderToStaticMarkup(<PipelineView result={result} onSelect={() => {}} onOpenArtifacts={() => {}} />);

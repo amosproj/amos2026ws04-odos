@@ -9,11 +9,12 @@ difference is a regression to investigate, never a value to refresh.
 * the synthetic EU regulation (tests/synthetic_eu.py): tests/golden/synthetic_eu_baseline.json (recorded before
   Phase 4). It needs no external file, so it always runs.
 
-Covered per document: document_model.json, document.json 1.1, its 1.0 downgrade, the JSON validation report, the
-parser validation report (key order ignored), every element / sentence / TOC entry, the element id list and the
-summary counts. Outputs are computed in memory (golden_outputs.py). The baselines also hold the hashes of the Akoma
-Ntoso XML that ODOS produced when they were recorded; those outputs were removed and are not compared
-(golden_outputs.RETIRED)."""
+Covered per document: document_model.json, the parser validation report (key order ignored), every element / sentence
+/ TOC entry, the element id list and the summary counts, and document.json 2.0 with its JSON validation report
+(tests/golden/legal_json_2_0_baseline.json, recorded when 2.0 replaced 1.1, after checking that every 1.1 node, footnote,
+sentence and TOC entry kept its legal fields). Outputs are computed in memory (golden_outputs.py). The older baselines
+also hold the hashes of outputs ODOS no longer produces (Akoma Ntoso XML, Legal JSON 1.1 / 1.0 and their report);
+those are not compared (golden_outputs.RETIRED)."""
 
 import hashlib
 import json
@@ -25,6 +26,7 @@ from golden_outputs import fingerprint, first_differences
 
 GOLDEN = Path(__file__).parent / "golden"
 BASELINE = json.loads((GOLDEN / "phase3_baseline.json").read_text())
+LEGAL_JSON_2_0 = json.loads((GOLDEN / "legal_json_2_0_baseline.json").read_text())
 FIXTURES = {"mbo": ("mbo_model", "mbo_raw_json"), "eu": ("eu_model", "eu_raw_json")}
 # the Docling extractions the baseline was computed from (the model hash pins them too; checked first for a clear reason)
 INPUTS = {
@@ -46,6 +48,7 @@ def _check(request, name: str, expected: dict, model_fixture: str, raw_fixture: 
             reason = f"different Docling extraction (sha256 {sha[:12]}…, baseline built from {INPUTS[name][:12]}…)"
             coverage[name] = f"✗ not covered: {reason}"
             pytest.skip(f"{name}: {reason}")
+    expected = {**expected, "outputs": {**expected["outputs"], **LEGAL_JSON_2_0[name]}}
     actual = fingerprint(request.getfixturevalue(model_fixture), raw)
     diff = first_differences(expected, actual)
     coverage[name] = "✓" if not diff else "✗ DIFFERS"

@@ -9,7 +9,7 @@ There is one canonical data model, the `DocumentModel`. Every output is derived 
 database and no user interface for corrections.
 
 ```
-PDF ──Docling──▶ docling_raw.json ──parse_document──▶ document_model.json ──┬─▶ document.json (Custom Legal JSON 1.1)
+PDF ──Docling──▶ docling_raw.json ──parse_document──▶ document_model.json ──┬─▶ document.json (Custom Legal JSON 2.0)
         (extraction)        + pdf_text_lines.json   (normalization +        └─▶ validation reports
                               (PDF text-layer evidence) parsing)                          │
                                                        frontend/scripts/build-demo-fixtures.mjs
@@ -26,7 +26,7 @@ PDF ──Docling──▶ docling_raw.json ──parse_document──▶ docume
 | The universal parsing engine (lifecycle) | `backend/src/odos/parsing/engine.py` (entry point `odos.parsing.parse_document`) | [parsing.md](parsing.md) |
 | German and EU legal profiles | `backend/src/odos/parsing/profiles/german_law/`, `…/eu_legislation/` | [parsing.md](parsing.md) |
 | The canonical DocumentModel | `backend/src/odos/document_model.py` | [document-model.md](document-model.md) |
-| Custom Legal JSON 1.1 (export and validation) | `backend/src/odos/legal_json/`, `backend/schemas/odos-legal-json/` | [legal-json.md](legal-json.md) |
+| Custom Legal JSON 2.0 (export and validation) | `backend/src/odos/legal_json/`, `backend/schemas/odos-legal-json/` | [legal-json.md](legal-json.md) |
 | Pipeline (one processing run) | `backend/src/odos/pipeline.py` | below |
 | CLI | `backend/src/odos/cli.py` | [development.md](development.md) |
 | Names of the files written per document | `backend/src/odos/artifact_names.py` | below |
@@ -53,9 +53,9 @@ Every artifact name is defined once, in `artifact_names.py`.
 React + TypeScript + Vite. Nothing is processed in the browser.
 
 1. `npm run demo:fixtures` reads the pipeline output directories and writes `public/demo/`: per document a
-   `structure.json` (the part of the DocumentModel the UI shows), one provision cut out of `document.json`, its
-   simplified presentation (`*.legal-view.json`) and `pipeline.json` (processing details), plus a `manifest.json`
-   with the PDF's SHA-256.
+   `structure.json` (the part of the DocumentModel the UI shows, with the provenance the highlighting uses), a
+   Legal JSON 2.0 excerpt cut out of `document.json` (`*.legal.json`: a top-level unit down to the shown provisions,
+   nodes unchanged) and `pipeline.json` (processing details), plus a `manifest.json` with the PDF's SHA-256.
 2. The user picks a PDF. The browser hashes it and looks the hash up in the manifest (`demo/fixtures.ts`). Unknown
    files are refused with an explanation.
 3. `DemoApp` shows the PDF (`pdfjs-dist`) with highlights, the full structure tree, the Custom Legal JSON preview

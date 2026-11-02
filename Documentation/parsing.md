@@ -172,12 +172,13 @@ Nothing else is merged. The golden baseline of the MBO records this one delibera
 
 The comparison covers:
 
-- the model, `document.json` 1.1, the 1.0 downgrade, the JSON report and the validation report
+- the model and the validation report (`phase3_baseline.json`, `synthetic_eu_baseline.json`)
+- `document.json` 2.0 and its JSON report (`legal_json_2_0_baseline.json`, recorded when 2.0 replaced 1.1)
 - per-element, per-sentence and per-TOC-entry hashes
 
 All values are deterministic: no paths or timestamps, and reports compared by content. The baselines also hold
-hashes of the Akoma Ntoso XML ODOS produced when they were recorded; those outputs were removed and are left out of
-the comparison (`golden_outputs.RETIRED`), the baseline files themselves are never rewritten.
+hashes of outputs ODOS produced when they were recorded (Akoma Ntoso XML, Legal JSON 1.1, its 1.0 downgrade and
+their report); those outputs were removed and are left out of the comparison (`golden_outputs.RETIRED`), the baseline files themselves are never rewritten.
 
 **Coverage is always reported.** Every run ends with a `GOLDEN COVERAGE: MBO ✓ · EU ✓ · synthetic EU ✓` line. A missing or different extraction shows as `✗` with its reason, never as a pass.
 A difference is a regression to investigate, never a value to refresh: `golden_outputs.record_baseline`

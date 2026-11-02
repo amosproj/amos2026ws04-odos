@@ -7,6 +7,7 @@ top level of `structure`; the table is the profile's `json_nesting`). The same E
 
 from __future__ import annotations
 
+from odos.legal_json.markers import marker_style
 from odos.legal_json.view import LegalDocument, Node
 from odos.parsing.profiles import for_legal_system
 
@@ -28,7 +29,7 @@ def _walk(n: Node, parent: str, system: str, errors: list[str]) -> None:
             errors.append(f"{n.id}: '{n.type}' is not a structural unit of {system} documents")
         elif parent not in allowed:
             errors.append(f"{n.id}: '{n.type}' not allowed under '{parent}' in {system} documents (allowed: {', '.join(sorted(allowed))})")
-        elif n.type == "letter" and parent == "letter" and n.markerStyle != "alpha_lower_double":
+        elif n.type == "letter" and parent == "letter" and marker_style(n.marker, n.type) != "alpha_lower_double":
             errors.append(f"{n.id}: a letter under a letter must be a double letter like 'aa)'")
     if n.type in LEAVES and n.children:
         errors.append(f"{n.id}: '{n.type}' must not have children")
@@ -71,12 +72,6 @@ def validate_structure(doc: LegalDocument) -> list[str]:
         anchorable.add(n.id)
         stack.extend(n.children)
     for f in doc.footnotes:
-        if f.anchorElementId is not None and f.anchorElementId not in anchorable:
-            errors.append(f"{f.id}: anchorElementId '{f.anchorElementId}' is not an element of the structure or front matter")
-        if f.anchorElementId is not None and f.anchorElementIds and f.anchorElementIds != [f.anchorElementId]:
-            errors.append(f"{f.id}: anchorElementId must be the only entry of anchorElementIds")
-        if f.anchorElementId is None and len(f.anchorElementIds) == 1:
-            errors.append(f"{f.id}: a single anchor must also be given as anchorElementId")
         for a in [*f.anchorElementIds, *(r.elementId for r in f.references)]:
             if a not in anchorable:
                 errors.append(f"{f.id}: anchor '{a}' is not an element of the structure or front matter")
@@ -89,8 +84,6 @@ def _texts(doc: LegalDocument) -> dict[str, str | None]:
 
 
 def _check_sentences(doc: LegalDocument) -> list[str]:
-    import hashlib
-
     errors, texts, nodes_ids = [], _texts(doc), {n.id for n in _all_nodes(doc)}
     seen_ids: set[str] = set()
     taken: dict[str, list[tuple[int, int, str]]] = {}
@@ -109,8 +102,6 @@ def _check_sentences(doc: LegalDocument) -> list[str]:
                 continue
             if not (0 <= r.start < r.end <= len(text)):
                 errors.append(f"{s.id}: range [{r.start}, {r.end}) outside the text of '{r.elementId}' ({len(text)} code points)")
-            if hashlib.sha256(text.encode("utf-8")).hexdigest() != r.textSha256:
-                errors.append(f"{s.id}: textSha256 does not match the text of '{r.elementId}'")
         for r in s.ranges:
             for a, b, other in taken.get(r.elementId, []):
                 if r.start < b and a < r.end:
@@ -135,14 +126,14 @@ def _check_toc_entries(doc: LegalDocument) -> list[str]:
     for t in doc.tableOfContentsEntries:
         if t.targetElementId is not None and t.targetElementId not in structure:
             errors.append(f"{t.id}: targetElementId '{t.targetElementId}' is not an element of the structure")
-        for sp in t.sourceSpans:
+        for sp in t.ranges:
             n = toc.get(sp.elementId)
             if n is None:
-                errors.append(f"{t.id}: source '{sp.elementId}' is not a tableOfContents node")
+                errors.append(f"{t.id}: range on '{sp.elementId}', which is not a tableOfContents node")
                 continue
-            text = (n.rows[sp.cell[0]][sp.cell[1]].text if n.rows and sp.cell and sp.cell[0] < len(n.rows) and sp.cell[1] < len(n.rows[sp.cell[0]]) else None) if sp.cell else n.text  # fmt: skip
+            text = (n.rows[sp.cell[0]][sp.cell[1]] if n.rows and sp.cell and sp.cell[0] < len(n.rows) and sp.cell[1] < len(n.rows[sp.cell[0]]) else None) if sp.cell else n.text  # fmt: skip
             if text is None or not (0 <= sp.start < sp.end <= len(text)):
-                errors.append(f"{t.id}: source span [{sp.start}, {sp.end}) does not fit '{sp.elementId}'{' cell ' + str(sp.cell) if sp.cell else ''}")
+                errors.append(f"{t.id}: range [{sp.start}, {sp.end}) does not fit '{sp.elementId}'{' cell ' + str(sp.cell) if sp.cell else ''}")
     return errors
 
 

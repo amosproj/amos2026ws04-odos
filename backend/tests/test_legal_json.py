@@ -1,5 +1,6 @@
-"""document.json: the public JSON serialization of the canonical DocumentModel (schema odos-legal-json 1.1; legacy 1.0)."""
+"""document.json: the public JSON serialization of the canonical DocumentModel (schema odos-legal-json 2.0)."""
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -7,12 +8,12 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
-from odos.legal_json.artifacts import SCHEMA_PATH, build_legal_json_artifacts, published_schema, serialize
-from odos.legal_json.exporter import load_source_context, to_legal_json
+from odos.legal_json.artifacts import FROZEN_SCHEMA_PATHS, SCHEMA_PATH, build_legal_json_artifacts, published_schema, serialize
+from odos.legal_json.exporter import to_legal_json
 from odos.legal_json.markers import marker_style
 from odos.legal_json.nesting import validate_structure
-from odos.legal_json.view import LegalDocument, Node, Source, json_schema
-from odos.normalization.docling_reader import SourceItem, read_page_sizes
+from odos.legal_json.view import LegalDocument, Node, json_schema
+from odos.normalization.docling_reader import SourceItem
 from odos.document_model import Element, ElementType as T, Provenance, SourceInfo
 from odos.parsing.profiles.german_law.recognizer import parse_items
 from odos.parsing.profiles.german_law.rules import GERMAN_LAW_RULES
@@ -83,35 +84,43 @@ def test_no_internal_or_review_data_and_unique_ids(case):
 
 def test_export_is_deterministic(case):
     _, model, raw, doc, _, _ = case
-    assert serialize(to_legal_json(model, load_source_context(raw))) == serialize(doc)
+    assert serialize(to_legal_json(model)) == serialize(doc)
 
 
-# ---- provenance and coordinates ----------------------------------------------------------------------------------------
-def test_boxes_are_the_models_provenance_in_one_coordinate_system(case):
-    _, model, raw, doc, _, _ = case
-    sizes = read_page_sizes(raw)
-    assert doc.coordinateSystem.origin == "bottom-left" and doc.coordinateSystem.unit == "pt"
-    assert {p.number: (p.width, p.height) for p in doc.pages} == sizes and len(doc.pages) == doc.pageCount
+# ---- 2.0 = legal content only; provenance stays in the DocumentModel ---------------------------------------------------
+# technical fields of 1.1 (and the model's own spellings) that 2.0 no longer carries
+TECHNICAL = {"source", "sourceSpans", "bbox", "bboxScope", "charStart", "charEnd", "itemRef", "numberSource", "textSha256",
+             "markerStyle", "coordinateSystem", "sourceFile", "doclingJsonSha256", "left", "top", "right", "bottom",
+             "source_spans", "highlight_boxes", "page_no", "self_ref"}  # fmt: skip
+
+
+def test_technical_provenance_is_absent_from_legal_json_2_0(case):
+    _, _, _, doc, _, data = case
+    assert data["schemaVersion"] == "2.0" and not TECHNICAL & set(keys(data))
+    assert "pages" not in data  # page sizes belong to the PDF, not to the legal document
+    assert all(isinstance(p, int) for n in nodes(doc) for p in n.pages)
+
+
+def test_every_exported_element_leads_back_to_its_source_through_the_model(case):
+    name, model, _, doc, rep, _ = case
     index = model.by_id()
-    for n in nodes(doc):
-        el = index[n.id]
-        assert n.source.pages == el.pages
-        if el.source_spans:
-            assert [(s.itemRef, s.charStart, s.charEnd) for s in n.source.sourceSpans] == [(s.ref, s.start, s.end) for s in el.source_spans]  # fmt: skip
-        else:
-            assert [(s.page, s.bbox.left, s.bbox.top, s.bbox.right, s.bbox.bottom) for s in n.source.sourceSpans] == \
-                   [(p.page_no, p.bbox.l, p.bbox.t, p.bbox.r, p.bbox.b) for p in el.provenance]  # fmt: skip
-        for s in n.source.sourceSpans:
-            assert s.itemRef in el.source_refs
-            if s.bbox:  # inside the page, top above bottom: what the PDF highlighter (bboxToRect) expects
-                w, h = sizes[s.page]
-                assert 0 <= s.bbox.left <= s.bbox.right <= w + 0.5 and 0 <= s.bbox.bottom <= s.bbox.top <= h + 0.5
+    exported = [*nodes(doc), *doc.footnotes]
+    assert not rep["text_preservation"]["elements_without_source"]
+    for n in exported:
+        el = index[n.id]  # the JSON id is the DocumentModel id
+        assert n.pages == el.pages
+    # the model keeps the provenance the JSON left out: Docling items, boxes, character spans
+    with_boxes = [n.id for n in exported if any(p.bbox for p in index[n.id].provenance)]
+    assert len(with_boxes) >= 0.99 * len(exported), (name, len(with_boxes), len(exported))
+    assert all(index[n.id].source_refs or not n.pages for n in exported if index[n.id].children_ids == [])
 
 
-def test_multi_page_items_map_each_box_to_its_item(mbo_model, mbo_raw_json):  # MBO § 6 (1) runs from page 9 to 10
-    doc = to_legal_json(mbo_model, load_source_context(mbo_raw_json))
-    two = [n for n in nodes(doc) if len(n.source.pages) > 1]
-    assert two and all(s.itemRef for n in two for s in n.source.sourceSpans)
+def test_multi_page_text_stays_whole_and_keeps_both_sources_in_the_model(mbo_model):  # MBO § 6 (1), pages 9 and 10
+    doc = to_legal_json(mbo_model)
+    abs1 = {n.id: n for n in nodes(doc)}["doc/teil-2/par-6/abs-1"]
+    el = mbo_model.by_id()[abs1.id]
+    assert abs1.pages == [9, 10] and abs1.text == el.content_text
+    assert sorted({p.page_no for p in el.provenance}) == [9, 10] and all(p.bbox for p in el.provenance) and len(el.source_refs) >= 2
 
 
 # ---- footnotes -----------------------------------------------------------------------------------------------------
@@ -122,17 +131,17 @@ def test_footnote_anchors_only_with_source_evidence(case):
     if name == "mbo":  # 35 proven by superscript reference marks + the "*" note; 1 stays unresolved, never guessed
         assert len(doc.footnotes) == 37 and len(anchored) == 36
         assert all(f.anchorElementIds == index[f.id].anchor_ids for f in anchored)
-        assert all((f.anchorElementId is not None) == (len(f.anchorElementIds) == 1) for f in doc.footnotes)  # 1.0 meaning kept
         assert sum(len(f.anchorElementIds) > 1 for f in doc.footnotes) == 3  # one "*)" note referenced on several elements
-        assert next(f for f in doc.footnotes if f.marker == "*").anchorElementId == "doc/front-4"
+        assert next(f for f in doc.footnotes if f.marker == "*").anchorElementIds == ["doc/front-4"]
     if name == "synthetic_german":  # the one footnote is proven by its superscript reference mark
         assert len(doc.footnotes) == len(anchored) == 1
-        assert anchored[0].anchorElementId == "doc/teil-1/kapitel-1/par-2/abs-2" and anchored[0].text.startswith("1 siehe")
+        assert anchored[0].anchorElementIds == ["doc/teil-1/kapitel-1/par-2/abs-2"] and anchored[0].text.startswith("1 siehe")
     if name == "eu":
         assert len(doc.footnotes) == len(anchored) == 26
         for f in anchored:
-            a = index[f.anchorElementId]
-            assert re.search(rf"\(\s*{f.number}\s*\)", a.original_text) and set(f.source.pages) & set(a.pages)
+            (anchor,) = f.anchorElementIds
+            a = index[anchor]
+            assert re.search(rf"\(\s*{f.number}\s*\)", a.original_text) and set(f.pages) & set(a.pages)
     assert rep["footnotes"]["anchored"] == len(anchored)
 
 
@@ -149,7 +158,7 @@ def test_footnote_reference_on_another_page_is_not_an_anchor(eu_model):
     m = eu_model.model_copy(deep=True)
     fn = next(e for e in m.elements if e.type == T.FOOTNOTE)
     fn.pages = [max(m.by_id()[fn.parent_id].pages) + 1]
-    assert next(f for f in to_legal_json(m).footnotes if f.id == fn.id).anchorElementId is None
+    assert next(f for f in to_legal_json(m).footnotes if f.id == fn.id).anchorElementIds == []
 
 
 # ---- markers, numbering, tables, examples ------------------------------------------------------------------------------
@@ -166,15 +175,15 @@ def test_marker_style(marker, type_, style):
     assert marker_style(marker, type_) == style
 
 
-def test_german_example_mbo(mbo_model, mbo_raw_json):
-    doc = to_legal_json(mbo_model, load_source_context(mbo_raw_json))
+def test_german_example_mbo(mbo_model):
+    doc = to_legal_json(mbo_model)
     assert (doc.id, doc.documentType, doc.legalSystem, doc.shortTitle) == ("mbo", "de_legislation", "de", "MBO")
     assert doc.version.date == "2002-11" and doc.enactmentDate is None  # the PDF states no Ausfertigungsdatum
     by = {n.id: n for n in nodes(doc)}
     teil = by["doc/teil-1"]
-    assert (teil.type, teil.marker, teil.markerStyle, teil.title, teil.text) == ("part", "Erster Teil", "ordinal_word", "Allgemeine Vorschriften", None)  # fmt: skip
+    assert (teil.type, teil.marker, teil.title, teil.text) == ("part", "Erster Teil", "Allgemeine Vorschriften", None)
     sec = by["doc/teil-1/par-2"]
-    assert (sec.type, sec.nativeType, sec.marker, sec.markerStyle, sec.title) == ("section", "Paragraph", "§ 2", "section_sign", "Begriffe")
+    assert (sec.type, sec.nativeType, sec.marker, sec.title) == ("section", "Paragraph", "§ 2", "Begriffe")
     sub = by["doc/teil-1/par-2/abs-3"]
     assert (sub.type, sub.nativeType, sub.marker, sub.text) == ("subsection", "Absatz", "(3)", "1 Gebäude werden in folgende Gebäudeklassen eingeteilt:")  # fmt: skip
     nr = by["doc/teil-1/par-2/abs-3/nr-2"]
@@ -183,31 +192,31 @@ def test_german_example_mbo(mbo_model, mbo_raw_json):
     assert by["doc/anlage-1"].type == "annex" and by["doc/teil-3/abschnitt-3/par-23"].marker == "23"  # printed without "§": kept
 
 
-def test_eu_example(eu_model, eu_raw_json):
-    doc = to_legal_json(eu_model, load_source_context(eu_raw_json))
+def test_eu_example(eu_model):
+    doc = to_legal_json(eu_model)
     assert (doc.id, doc.documentType, doc.nativeDocumentType, doc.legalSystem) == ("verordnung-2023-1230", "eu_regulation", "VERORDNUNG", "eu")  # fmt: skip
     assert (doc.publicationDate, doc.adoptionDate, doc.identifiers.documentNumber) == ("2023-06-29", "2023-06-14", "2023/1230")
     assert [n.type for n in doc.structure][:2] == ["preamble", "chapter"] and doc.structure[-1].type == "annex"
     by = {n.id: n for n in nodes(doc)}
     p3 = by["doc/chp-2/art-11/para-3"]
     assert (p3.type, p3.nativeType, p3.marker) == ("paragraph", "Absatz", "(3)")
-    assert [(s.itemRef, s.charStart, s.charEnd, s.page) for s in p3.source.sourceSpans] == [("#/texts/373", 659, 1280, 20)]
+    assert p3.pages == [20]  # a part of one Docling item: the character span stays in the model
+    assert [(s.ref, s.start, s.end) for s in eu_model.by_id()[p3.id].source_spans] == [("#/texts/373", 659, 1280)]
     sp = by["doc/chp-1/art-2/para-2/pt-p/sub-i"]
-    assert (sp.type, sp.marker, sp.markerStyle) == ("subpoint", "i)", "roman_lower")
-    assert by["doc/chp-1/art-2/para-2/pt-p"].markerStyle == "alpha_lower"
+    assert (sp.type, sp.marker) == ("subpoint", "i)") and marker_style(sp.marker, sp.type) == "roman_lower"
     assert {by[i].type for i in by if by[i].nativeType == "Erwägungsgrund"} == {"recital"}
 
 
-def test_tables_keep_rows_and_toc_is_separate(eu_model, eu_raw_json, synthetic_german_model, synthetic_german_raw_json):
-    eu = to_legal_json(eu_model, load_source_context(eu_raw_json))
+def test_tables_keep_rows_and_toc_is_separate(eu_model, synthetic_german_model):
+    eu = to_legal_json(eu_model)
     index = eu_model.by_id()
     tables = [n for n in nodes(eu) if n.type == "table"]
     assert len(tables) == 2 and all(n.id.startswith("doc/annex-12/") for n in tables)
     for t in tables:
-        assert [[c.text for c in row] for row in t.rows] == index[t.id].table.rows
+        assert t.rows == index[t.id].table.rows
         assert (t.numRows, t.numCols) == (index[t.id].table.num_rows, index[t.id].table.num_cols)
     assert sorted((t.numRows, t.numCols) for t in tables) == [(25, 2), (27, 4)]
-    de = to_legal_json(synthetic_german_model, load_source_context(synthetic_german_raw_json))
+    de = to_legal_json(synthetic_german_model)
     assert [n.type for n in de.tableOfContents] == ["tableOfContents"]
     assert {c.type for c in de.tableOfContents[0].children} == {"tocEntry"}
     assert not [n for n in de.structure for x in [n] if x.type in ("tableOfContents", "tocEntry")]
@@ -215,7 +224,7 @@ def test_tables_keep_rows_and_toc_is_separate(eu_model, eu_raw_json, synthetic_g
 
 # ---- structural rules, sentences -------------------------------------------------------------------------------------
 def _node(id_, type_, children=(), **kw):
-    return Node(id=id_, type=type_, source=Source(pages=[], sourceSpans=[]), children=list(children), **kw)
+    return Node(id=id_, type=type_, children=list(children), **kw)
 
 
 def _doc(system, structure, footnotes=()):
@@ -227,7 +236,7 @@ def test_invalid_nesting_is_rejected():
     bad = validate_structure(_doc("de", [_node("c", "chapter", [_node("s", "subsection")])]))
     assert any("'subsection' not allowed under 'chapter'" in e for e in bad)
     assert any("not allowed under 'preamble'" in e for e in validate_structure(_doc("eu", [_node("p", "preamble", [_node("x", "paragraph")])])))  # fmt: skip
-    letters = _node("n", "number", [_node("l", "letter", [_node("l2", "letter", marker="b)", markerStyle="alpha_lower")])])
+    letters = _node("n", "number", [_node("l", "letter", [_node("l2", "letter", marker="b)")])])
     assert any("double letter" in e for e in validate_structure(_doc("de", [_node("s", "section", [letters])])))
     assert any("not a structural unit of de" in e for e in validate_structure(_doc("de", [_node("p", "preamble")])))
     assert any("must not have children" in e for e in validate_structure(_doc("de", [_node("s", "section", [_node("t", "text", [_node("u", "text")])])])))  # fmt: skip
@@ -235,8 +244,8 @@ def test_invalid_nesting_is_rejected():
     assert "duplicate id: s" in dup
     from odos.legal_json.view import Footnote
 
-    dangling = Footnote(id="f", source=Source(pages=[], sourceSpans=[]), anchorElementId="nowhere")
-    assert any("anchorElementId 'nowhere'" in e for e in validate_structure(_doc("de", [_node("s", "section")], [dangling])))
+    dangling = Footnote(id="f", anchorElementIds=["nowhere"])
+    assert any("anchor 'nowhere'" in e for e in validate_structure(_doc("de", [_node("s", "section")], [dangling])))
 
 
 def test_sentences_are_supported_by_model_schema_and_rules():
@@ -254,41 +263,24 @@ def test_sentences_are_supported_by_model_schema_and_rules():
     assert any("'sentence' not allowed under 'chapter'" in e for e in validate_structure(_doc("de", [_node("c", "chapter", [_node("x", "sentence")])])))  # fmt: skip
 
 
-# ---- legacy 1.0 -------------------------------------------------------------------------------------------------------
-def test_downgrade_information_loss_is_reported(case):
-    name, _, _, doc, rep, data = case
-    loss = rep["downgrade_to_1_0_information_loss"]
-    dropped = loss["dropped"]
-    count = lambda field_: dropped.get(field_, {}).get("values", 0)  # noqa: E731
-    assert count("sentences") == len(data.get("sentences", [])) and count("tableOfContentsEntries") == len(data.get("tableOfContentsEntries", []))  # fmt: skip
-    assert count("footnote.references") == sum(len(f.references) for f in doc.footnotes)
-    assert count("footnote.anchorElementIds") == sum(len(f.anchorElementIds) for f in doc.footnotes)
-    cells = [c for n in nodes(doc) for row in (n.rows or []) for c in row if c.source is not None]
-    assert count("cell.source") == len(cells)
-    assert loss["footnotes_with_several_anchors"] == [f.id for f in doc.footnotes if len(f.anchorElementIds) > 1]
-    assert all(f.anchorElementId is None for f in doc.footnotes if f.id in loss["footnotes_with_several_anchors"])
-    assert loss["lossless"] is (not dropped) and not loss["lossless"]  # all three documents carry 1.1 annotations
-    assert rep["valid"] and rep["downgrade_to_1_0_valid"]  # information loss is reported, it does not invalidate
-    assert set(dropped) <= {"sentences", "tableOfContentsEntries", "footnote.anchorElementIds", "footnote.references", "cell.source"}  # fmt: skip
-    if name != "eu":
-        assert count("tableOfContentsEntries") > 0 and count("sentences") > 0
+# ---- versions -------------------------------------------------------------------------------------------------------
+# 1.0 and 1.1 are no longer written; their published schemas stay unchanged so earlier exports can still be validated
+FROZEN = {"1.0": "1b54a158b0f45ef99fd8732c77cd9499a60a3a4fa3872a867803ab9105dc69c2",
+          "1.1": "6590804ee4b8968108531c241eff20247655d998d85fbe04edf1e85fb7de9a74"}  # fmt: skip
 
 
-def test_a_1_0_document_loses_nothing(case):
-    from odos.legal_json import view
-    from odos.legal_json.legacy import downgrade_information_loss, downgrade_to_1_0
-
-    assert view.downgrade_to_1_0 is downgrade_to_1_0  # the documented import path for 1.0 consumers keeps working
-
-    data = case[5]
-    assert downgrade_information_loss(downgrade_to_1_0(data)) == {"lossless": True, "dropped": {}, "footnotes_with_several_anchors": []}
+@pytest.mark.parametrize("version", sorted(FROZEN))
+def test_earlier_schemas_are_frozen_and_reject_2_0(version, case):
+    path = FROZEN_SCHEMA_PATHS[version]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == FROZEN[version]
+    assert list(Draft202012Validator(json.loads(path.read_text(encoding="utf-8"))).iter_errors(case[5]))  # a breaking version
 
 
 # ---- one source of truth -------------------------------------------------------------------------------------------
 def test_published_schema_is_generated_from_the_classes():
     assert json.loads(SCHEMA_PATH.read_text(encoding="utf-8")) == json_schema(), (
         "schema drifted: regenerate with  python -c \"import json;from odos.legal_json.view import json_schema;"
-        "print(json.dumps(json_schema(),indent=2,ensure_ascii=False))\" > schemas/odos-legal-json/1.1/legal-document.schema.json"
+        "print(json.dumps(json_schema(),indent=2,ensure_ascii=False))\" > schemas/odos-legal-json/2.0/legal-document.schema.json"
     )
 
 

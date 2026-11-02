@@ -4,7 +4,7 @@ import type { BoundingBox } from "../types";
 import type { DemoResult, DoclingItem, PipelineDetails } from "./fixtures";
 
 // "Processing details": how the previewed provision went through the offline pipeline. Everything shown is read from
-// pipeline.json and the Legal JSON files (cut from the pipeline outputs); the browser computes nothing.
+// pipeline.json, the Legal JSON excerpt and the structure (cut from the pipeline outputs); the browser computes nothing.
 
 const STAGES = ["Original PDF", "Docling output", "Legal parser → Document model", "Custom Legal JSON"];
 
@@ -127,17 +127,14 @@ function Stages({ p, result, onSelect, onOpenArtifacts }: { p: PipelineDetails; 
       </Step>
 
       <Step n={3} title="Custom Legal JSON" summary="the exported hierarchy with numbering, text and pages">
-        <LegalJson p={p} result={result} />
+        <LegalJson result={result} />
         <button className="link small" onClick={onOpenArtifacts}>Open the Custom Legal JSON preview and download</button>
       </Step>
     </>
   );
 }
 
-type JsonNode = {
-  id?: string; type?: string; nativeType?: string; marker?: string; title?: string; text?: string; pages?: number[];
-  source?: { pages?: number[] }; children?: JsonNode[]; omittedChildren?: number;
-};
+type JsonNode = { id?: string; type?: string; nativeType?: string; marker?: string; title?: string; text?: string; pages?: number[]; children?: JsonNode[] };
 type Row = { node: JsonNode; parent: string | null; depth: number };
 
 /** The nodes below `start` in document order, with the parent each one has in the nesting. */
@@ -151,29 +148,30 @@ function rowsOf(start: JsonNode, parent: string | null): Row[] {
   return rows;
 }
 
-/** The simplified view from its root; without one (older builds) the Legal JSON 1.1 excerpt from the previewed node. */
-function legalJsonRows(result: DemoResult, focusId: string): { rows: Row[]; file: string } {
+function legalJsonRows(json: string): Row[] {
   try {
-    if (result.view) {
-      const root = (JSON.parse(result.view) as { structure?: JsonNode[] }).structure?.[0];
-      if (root) return { rows: rowsOf(root, null), file: result.doc.files.view! };
-    }
-    const find = (n: JsonNode, parent: string | null): Row | null =>
-      n.id === focusId ? { node: n, parent, depth: 0 } : (n.children ?? []).map((c) => find(c, n.id ?? null)).find(Boolean) ?? null;
-    const json = JSON.parse(result.json) as JsonNode;
-    const start = find(json, null) ?? { node: json, parent: null, depth: 0 };
-    return { rows: rowsOf(start.node, start.parent), file: result.doc.files.json };
+    return rowsOf(JSON.parse(json) as JsonNode, null);
   } catch {
-    return { rows: [], file: result.doc.files.json };
+    return [];
   }
 }
 
-function LegalJson({ p, result }: { p: PipelineDetails; result: DemoResult }) {
-  const { rows, file } = legalJsonRows(result, p.focusId);
+// footnotes are listed beside the structure in Legal JSON, not as children
+const NOT_CHILDREN = new Set(["footnote", "footnote_heading"]);
+
+function LegalJson({ result }: { result: DemoResult }) {
+  const rows = legalJsonRows(result.json);
+  const byId = new Map(result.model.elements.map((e) => [e.id, e]));
+  // the children the excerpt leaves out: the node's children in the document model that are not in the excerpt
+  const omitted = (n: JsonNode) => {
+    const all = (byId.get(n.id ?? "")?.children_ids ?? []).filter((c) => !NOT_CHILDREN.has(byId.get(c)?.type ?? ""));
+    return all.length - (n.children?.length ?? 0);
+  };
   return (
     <>
       <p className="muted small">
-        The nodes of <code>{file.split("/").pop()}</code> (the parent comes from the nesting; the format has no parent field).
+        The nodes of <code>{result.doc.files.json.split("/").pop()}</code>, an excerpt of <code>document.json</code> (the parent
+        comes from the nesting; the format has no parent field). Each id is the id of the element in the document model.
       </p>
       <table className="demo-table">
         <thead><tr><th>id</th><th>type</th><th>parent</th><th>children</th><th>text</th><th>pages</th></tr></thead>
@@ -185,10 +183,10 @@ function LegalJson({ p, result }: { p: PipelineDetails; result: DemoResult }) {
               <td>{parent ? <code>{parent}</code> : "—"}</td>
               <td>
                 {(node.children ?? []).map((c) => c.id).join(", ") || "—"}
-                {!!node.omittedChildren && <span className="muted"> (+{node.omittedChildren} not shown)</span>}
+                {omitted(node) > 0 && <span className="muted"> (+{omitted(node)} not shown)</span>}
               </td>
               <td>{short([node.marker, node.title, node.text].filter(Boolean).join(" "), 90)}</td>
-              <td>{(node.pages ?? node.source?.pages ?? []).join(", ") || "—"}</td>
+              <td>{(node.pages ?? []).join(", ") || "—"}</td>
             </tr>
           ))}
         </tbody>

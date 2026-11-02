@@ -4,7 +4,7 @@ PDF as they are for real laws.
 
 Covered: the shared lifecycle, metadata, Teil / Kapitel / § / Absatz / Nummer / Buchstabe / Anlage, the table of
 contents and its verified links, a page footnote with its superscript reference, printed and punctuation-based
-sentences, document.json 1.1 (schema, nesting, text, the 1.0 downgrade) and the whole pipeline run. There is no golden baseline for it: glyph coordinates come from pdfium and may differ in the last
+sentences, document.json 2.0 (schema, nesting, text) and the whole pipeline run. There is no golden baseline for it: glyph coordinates come from pdfium and may differ in the last
 decimals between platforms, so structure and validity are asserted instead."""
 
 import json
@@ -87,12 +87,12 @@ def test_sentences_printed_numbers_and_punctuation(synthetic_german_model):
     assert "doc/teil-1/kapitel-1/par-2/abs-1/nr-1" not in {r.element_id for s in synthetic_german_model.sentences for r in s.ranges[:1]}  # a list item starts no sentence
 
 
-def test_legal_json_1_1_and_its_1_0_downgrade(synthetic_german_model, synthetic_german_raw_json, tmp_path):
+def test_legal_json_2_0(synthetic_german_model, synthetic_german_raw_json, tmp_path):
     rep = build_legal_json_artifacts(synthetic_german_model, synthetic_german_raw_json, tmp_path)["report"]
-    assert rep["valid"] and rep["schema_valid"] and rep["structure_valid"] and rep["downgrade_to_1_0_valid"]
+    assert rep["valid"] and rep["schema_valid"] and rep["structure_valid"]
     assert rep["text_preservation"]["identical_to_model"]
     doc = json.loads((tmp_path / "document.json").read_text())
-    assert (doc["schemaVersion"], doc["legalSystem"], doc["documentType"], doc["enactmentDate"]) == ("1.1", "de", "de_legislation", "2099-03-15")
+    assert (doc["schemaVersion"], doc["legalSystem"], doc["documentType"], doc["enactmentDate"]) == ("2.0", "de", "de_legislation", "2099-03-15")
     assert doc["id"] == "bspg" and doc["identifiers"]["citation"].startswith("Beispielgesetz über Prüfverfahren vom")
 
     def walk(nodes):
@@ -105,11 +105,9 @@ def test_legal_json_1_1_and_its_1_0_downgrade(synthetic_german_model, synthetic_
     section = next(n for n in walk(doc["structure"]) if n["id"] == "doc/teil-1/kapitel-1/par-2")
     assert (section["nativeType"], section["number"], section["title"]) == ("Paragraph", "2", "Begriffsbestimmungen")
     fn = doc["footnotes"][0]
-    assert fn["anchorElementId"] == "doc/teil-1/kapitel-1/par-2/abs-2" and fn["references"][0]["marker"] == "1"
+    assert fn["anchorElementIds"] == ["doc/teil-1/kapitel-1/par-2/abs-2"] and fn["references"][0]["marker"] == "1"
     assert len(doc["tableOfContentsEntries"]) == 10 and all(t["targetElementId"] for t in doc["tableOfContentsEntries"])
     assert len(doc["sentences"]) == len(synthetic_german_model.sentences)
-    lost = rep["downgrade_to_1_0_information_loss"]["dropped"]
-    assert lost["sentences"]["values"] == len(doc["sentences"]) and lost["tableOfContentsEntries"]["values"] == 10
 
 
 def test_pipeline_run_with_the_german_profile(synthetic_german_raw_json, tmp_path, monkeypatch):

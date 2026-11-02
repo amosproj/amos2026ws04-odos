@@ -6,7 +6,7 @@ the static demo in `../frontend/`.
 - **Docling extraction** of the PDF
 - **The universal parsing engine** with the German-law and EU-legislation profiles
 - **The canonical DocumentModel**
-- **Export:** Custom Legal JSON 1.1 (schema-validated)
+- **Export:** Custom Legal JSON 2.0 (schema-validated; provenance stays in the document model)
 - **The `odos` command line**
 
 ```bash
@@ -21,7 +21,7 @@ pytest
 |---|---|
 | `src/odos/` | the package (map: `../Documentation/architecture.md`) |
 | `tests/` | pytest suite, golden baselines (`tests/golden/`), the synthetic EU regulation and German law |
-| `schemas/` | Custom Legal JSON schemas (1.1 active, 1.0 frozen) |
+| `schemas/` | Custom Legal JSON schemas (2.0 active; 1.1 and 1.0 frozen) |
 | `data/input/` | `SOURCE.md` (the partner test inputs and their SHA-256); `private/` (gitignored) for documents that may not be redistributed. No public law is stored |
 | `requirements.lock` | the exact dependency set the outputs were verified with |
 
