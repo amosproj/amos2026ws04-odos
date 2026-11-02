@@ -1,0 +1,32 @@
+@prefix ex: <https://example.org/odos/> .
+
+# PASS: ordinary rescue window satisfies all three dimensional constraints.
+ex:Window_OK a ex:RescueWindow ;
+    ex:placement ex:Wall ;
+    ex:clearWidthM 0.95 ;
+    ex:clearHeightM 1.25 ;
+    ex:bottomAboveFloorM 1.10 .
+
+# FAIL: too narrow and positioned too high above the floor.
+ex:Window_TooSmall a ex:RescueWindow ;
+    ex:placement ex:Wall ;
+    ex:clearWidthM 0.80 ;
+    ex:clearHeightM 1.25 ;
+    ex:bottomAboveFloorM 1.30 .
+
+# FAIL: in a roof slope, with neither qualifying distance <= 1.00 m.
+ex:Window_RoofTooFar a ex:RescueWindow ;
+    ex:placement ex:RoofSlope ;
+    ex:clearWidthM 0.95 ;
+    ex:clearHeightM 1.25 ;
+    ex:bottomAboveFloorM 1.10 ;
+    ex:lowerEdgeToEavesM 1.35 .
+
+# PASS: lower edge too far away, but the access platform is within 1.00 m.
+ex:Window_RoofWithPlatform a ex:RescueWindow ;
+    ex:placement ex:RoofStructure ;
+    ex:clearWidthM 0.95 ;
+    ex:clearHeightM 1.25 ;
+    ex:bottomAboveFloorM 1.10 ;
+    ex:lowerEdgeToEavesM 1.50 ;
+    ex:platformToEavesM 0.80 .

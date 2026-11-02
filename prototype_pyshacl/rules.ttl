@@ -1,0 +1,64 @@
+@prefix ex:  <https://example.org/odos/> .
+@prefix sh:  <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Example formalization of MBO § 37(5) for rescue windows under § 33(2) sentence 2.
+# All measurements are in meters. The shape only targets ex:RescueWindow.
+ex:MBO_37_5_RescueWindowShape
+    a sh:NodeShape ;
+    sh:targetClass ex:RescueWindow ;
+
+    sh:property [
+        sh:path ex:clearWidthM ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.90 ;
+        sh:message "MBO §37(5): clear width must be at least 0.90 m." ;
+    ] ;
+    sh:property [
+        sh:path ex:clearHeightM ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 1.20 ;
+        sh:message "MBO §37(5): clear height must be at least 1.20 m." ;
+    ] ;
+    sh:property [
+        sh:path ex:bottomAboveFloorM ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:maxInclusive 1.20 ;
+        sh:message "MBO §37(5): bottom must not exceed 1.20 m above finished floor." ;
+    ] ;
+    # For the demo, classify windows as Wall, RoofSlope, or RoofStructure.
+    sh:property [
+        sh:path ex:placement ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:in (ex:Wall ex:RoofSlope ex:RoofStructure) ;
+    ] ;
+
+    # Ordinary wall windows: no special eaves-distance check.
+    # Roof slope/roof structure: lower edge OR an access platform must be
+    # within 1.00 m horizontally of the eaves.
+    sh:or (
+        [ sh:property [ sh:path ex:placement ; sh:hasValue ex:Wall ] ]
+        [ sh:property [
+              sh:path ex:placement ;
+              sh:in (ex:RoofSlope ex:RoofStructure) ;
+              sh:minCount 1 ;
+          ] ;
+          sh:or (
+              [ sh:property [
+                    sh:path ex:lowerEdgeToEavesM ;
+                    sh:minCount 1 ;
+                    sh:datatype xsd:decimal ;
+                    sh:maxInclusive 1.00 ;
+                ] ]
+              [ sh:property [
+                    sh:path ex:platformToEavesM ;
+                    sh:minCount 1 ;
+                    sh:datatype xsd:decimal ;
+                    sh:maxInclusive 1.00 ;
+                ] ]
+          )
+        ]
+    ) .
