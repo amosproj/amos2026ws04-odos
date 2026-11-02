@@ -2,8 +2,8 @@
   "comment": "SHA-256 hashes only (no document text). Written by `npm run demo:verify -- --write-reference`; see the README.",
   "retrievalDate": "2026-10-27",
   "manifest": {
-    "sha256": "8ad367014ddae15f99155025c6d1db18a79369524792c9f4b373076f4953c626",
-    "canonicalSha256": "7251eb2311ab25424f80382800b53078c9e785e31d2430f9d1a463f830c4c5f7"
+    "sha256": "e037ce71dafae7d2ea4d25e1213021daa6504998001b488b7ad2286265b2c424",
+    "canonicalSha256": "dc8a518de6255c4a7171b6bd53f610bd07a104e0f98fcdddadf80ea26bb5e350"
   },
   "documents": {
     "eu-2023-1230": {
@@ -20,6 +20,14 @@
         },
         "eu-2023-1230/chp-2_art-10_para-1.akn.xml": {
           "sha256": "22cc01cdcab41c31a73d69c8db8a4a5d057f7bcb5b8fc47f17b2837de001df0e"
+        },
+        "eu-2023-1230/pipeline.json": {
+          "sha256": "e5ca3709098bb1b3bfceca861c8d7c02fc75346bfffa60a41fed8304e8c34f98",
+          "canonicalSha256": "2754f587627214fe976f7ef453d7b7b64a068b90451c9d703d379886777b51dd"
+        },
+        "eu-2023-1230/chp-2.legal-view.json": {
+          "sha256": "287ab180577a100d23841749c1dab6e5fd0a891c78260ad45ce2a64de4eb201a",
+          "canonicalSha256": "a17175f3cfce77790a0637f4eb589dcf1ffbbec0c6258605c98d1686fe10ba3d"
         }
       }
     },
@@ -37,6 +45,14 @@
         },
         "mbo/teil-2_par-6.akn.xml": {
           "sha256": "150219a8982651f8ecd568108bbed287f8213e2960b4af3ba3c4f9dc5337ea9d"
+        },
+        "mbo/pipeline.json": {
+          "sha256": "f03a0f026e20a0fbe817f288d9b482f4e635a02a8da2a1eaf8cbb861d7d2bbb4",
+          "canonicalSha256": "0038092aaeecd360c34ccf56c438842f6f2db76b573b513e7dd65a13c5047b24"
+        },
+        "mbo/teil-2.legal-view.json": {
+          "sha256": "3ee08847d209dd45def5e4c3c30768744c19b58d6279d1f40c43fe8894b7ba04",
+          "canonicalSha256": "878693f38636127303e452d2965fec9fac9a264f53dc652db0db33d16755b2d5"
         }
       }
     }

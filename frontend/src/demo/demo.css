@@ -20,3 +20,24 @@
 .demo-artifact-head p { margin: 0; }
 .demo-code { max-height: 300px; min-height: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .demo-more { margin: 0; padding: 6px 12px; border-top: 1px solid var(--border); }
+.demo-pipeline .alert { margin: 0; }
+.demo-stages { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; padding: 0; list-style: none; font-size: 12px; }
+.demo-stages li { position: relative; padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); }
+.demo-stages li + li::before { content: "→"; position: absolute; left: -17px; color: var(--muted); }
+.demo-step { border: 1px solid var(--border); border-radius: var(--r); }
+.demo-step > summary { cursor: pointer; padding: 9px 12px; }
+.demo-step[open] > summary { border-bottom: 1px solid var(--border); }
+.demo-step-n { display: inline-block; min-width: 18px; text-align: center; border-radius: 9px; background: var(--info-bg); color: var(--accent-hover); font-size: 12px; }
+.demo-step-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; overflow-x: auto; }
+.demo-step-body p { margin: 0; }
+.demo-table { border-collapse: collapse; font-size: 12px; width: 100%; }
+.demo-table th, .demo-table td { text-align: left; vertical-align: top; padding: 4px 8px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.demo-table th { color: var(--muted); font-weight: 500; white-space: nowrap; }
+.demo-table code { word-break: normal; overflow-wrap: anywhere; }
+.demo-dim td { color: var(--muted); }
+.demo-flags { margin: 0; padding: 0; list-style: none; }
+.demo-raw > summary { cursor: pointer; color: var(--accent-hover); }
+.demo-raw .demo-code { margin-top: 6px; border: 1px solid var(--border); border-radius: var(--r-sm); }
+.demo-model { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.demo-model li { border-left: 2px solid var(--border); padding-left: 10px; }
+.demo-model-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 2px; }

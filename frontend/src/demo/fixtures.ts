@@ -1,4 +1,4 @@
-import type { DocumentModel } from "../types";
+import type { DocumentModel, Provenance, SourceSpan } from "../types";
 
 // Static demonstration: precomputed pipeline results for prepared documents (public/demo/, written by
 // scripts/build-demo-fixtures.mjs). The PDFs are not part of the build; a PDF the user picks is matched by SHA-256.
@@ -9,7 +9,7 @@ export interface DemoDocument {
   pdfSha256: string;
   pages: number;
   profile: string;
-  files: { structure: string; json: string; xml: string };
+  files: { structure: string; json: string; xml: string; pipeline?: string; view?: string }; // the demo does not show the XML
   example: { label: string; modelId: string; eId: string; aknElement: string; legalJsonSchemaVersion: string; previewId?: string };
   sources: { documentModelSha256: string; legalJsonSha256: string; aknXmlSha256: string };
 }
@@ -17,8 +17,41 @@ export interface DemoDocument {
 export interface DemoResult {
   doc: DemoDocument;
   model: DocumentModel;
-  json: string;
-  xml: string;
+  json: string; // the Legal JSON 1.1 excerpt (offered for download)
+  view?: string | null; // the simplified Legal JSON shown in the demo; absent from older builds
+  pipeline?: PipelineDetails | null; // absent from builds made before pipeline.json existed
+}
+
+/** A Docling text item, verbatim from docling_raw.json. */
+export interface DoclingItem {
+  self_ref: string;
+  label: string;
+  content_layer?: string;
+  prov?: Provenance[];
+  orig?: string;
+  text?: string;
+  marker?: string;
+  [key: string]: unknown;
+}
+
+/** pipeline.json (scripts/build-demo-fixtures.mjs): the stages behind the previewed provision, cut from the outputs. */
+export interface PipelineDetails {
+  focusId: string;
+  docling: {
+    version: string | null;
+    itemsTotal: number | null;
+    itemsInModel: number | null;
+    pageSizes: Record<string, { width: number; height: number } | null>;
+    items: DoclingItem[];
+  };
+  placed: { id: string; type: string; region: string; docling_label?: string; source_refs: string[]; hygiene_flags?: string[] }[];
+  elements: {
+    id: string; type: string; region: string; parent_id: string | null; children_ids: string[]; number: string | null;
+    marker: string | null; title: string | null; original_text: string; content_text: string; docling_label?: string;
+    source_refs: string[]; pages: number[]; provenance: Provenance[]; source_spans?: SourceSpan[]; hygiene_flags?: string[];
+  }[];
+  warnings: { code: string; severity: string; message: string; element_id: string | null }[];
+  akn: { model_id: string; akn_element: string; eId: string; text_eId: string | null }[];
 }
 
 export const fixtureUrl = (path: string) => `${import.meta.env.BASE_URL}demo/${path}`;
@@ -41,8 +74,22 @@ export async function loadManifest(): Promise<DemoDocument[]> {
 }
 
 export async function loadResult(doc: DemoDocument): Promise<DemoResult> {
-  const [structure, json, xml] = await Promise.all([fetchText(doc.files.structure), fetchText(doc.files.json), fetchText(doc.files.xml)]);
-  return { doc, model: JSON.parse(structure) as DocumentModel, json, xml };
+  const [structure, json, view, pipeline] = await Promise.all([
+    fetchText(doc.files.structure), fetchText(doc.files.json), doc.files.view ? fetchText(doc.files.view).catch(() => null) : null,
+    loadPipeline(doc.files.pipeline),
+  ]);
+  return { doc, model: JSON.parse(structure) as DocumentModel, json, view, pipeline };
+}
+
+/** The optional processing details; null when the build has none or the file cannot be read (the rest still works). */
+async function loadPipeline(path: string | undefined): Promise<PipelineDetails | null> {
+  if (!path) return null;
+  try {
+    const p = JSON.parse(await fetchText(path)) as PipelineDetails;
+    return Array.isArray(p.docling?.items) && Array.isArray(p.elements) ? p : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function sha256Hex(data: ArrayBuffer): Promise<string> {

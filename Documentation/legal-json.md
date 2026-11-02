@@ -3,6 +3,9 @@
 Schema: `backend/schemas/odos-legal-json/1.1/legal-document.schema.json` (JSON Schema 2020-12). It is
 generated from the Pydantic classes in `backend/src/odos/legal_json/view.py`; a test fails when the two drift.
 
+The demo's JSON preview (`*.legal-view.json`, `frontend/README.md`) is a simplified presentation derived from this
+file, without source spans, boxes and character offsets. It is not a document of this schema.
+
 ## Versions
 
 - **1.0** (`backend/schemas/odos-legal-json/1.0/`) is frozen. The file is never regenerated, and a test pins

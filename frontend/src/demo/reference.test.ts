@@ -20,7 +20,8 @@ describe("demo reference hashes", () => {
     expect(reference.manifest.sha256).toMatch(SHA);
     for (const d of Object.values(reference.documents)) {
       expect(d.pdfSha256).toMatch(SHA);
-      expect(Object.keys(d.files)).toHaveLength(3); // structure, Legal JSON, Akoma Ntoso XML
+      expect(Object.keys(d.files).map((f) => f.split("/").pop()!.replace(/^.*?\.(legal-view\.json|legal\.json|akn\.xml)$/, "$1")).sort())
+        .toEqual(["akn.xml", "legal-view.json", "legal.json", "pipeline.json", "structure.json"]);
       for (const [file, e] of Object.entries(d.files)) {
         expect(e.sha256).toMatch(SHA);
         if (file.endsWith(".json")) expect(e.canonicalSha256).toMatch(SHA); // JSON files also carry the float-noise-tolerant hash

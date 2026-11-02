@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../components/Icon";
 import { PdfViewer } from "../components/PdfViewer";
 import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import { fixtureUrl, jsonSubtree, loadManifest, loadResult, previewLines, resolveUpload, type DemoDocument, type DemoResult } from "./fixtures";
+import { PipelineView } from "./PipelineView";
 import "./demo.css";
 
 // Static proof of concept: no backend. "Process Document" looks the chosen PDF up among the prepared documents and
@@ -77,7 +78,7 @@ export default function DemoApp() {
 
 export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pdfUrl: string; onReset: () => void }) {
   const { doc, model } = result;
-  const [tab, setTab] = useState<"structure" | "artifacts">("structure");
+  const [tab, setTab] = useState<"structure" | "artifacts" | "pipeline">("structure");
   const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const element = useMemo(() => model.elements.find((e) => e.id === selected) ?? null, [model, selected]);
@@ -106,6 +107,7 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
           <div className="tabs" role="tablist">
             <button role="tab" aria-selected={tab === "structure"} className={tab === "structure" ? "active" : ""} onClick={() => setTab("structure")}>Legal structure</button>
             <button role="tab" aria-selected={tab === "artifacts"} className={tab === "artifacts" ? "active" : ""} onClick={() => setTab("artifacts")}>Artifacts</button>
+            <button role="tab" aria-selected={tab === "pipeline"} className={tab === "pipeline" ? "active" : ""} onClick={() => setTab("pipeline")}>Processing details</button>
           </div>
           <div className="tabbody">
             {tab === "structure" && (
@@ -114,7 +116,8 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
                 <SourceDetail element={element} onGoToPage={setPage} />
               </div>
             )}
-            {tab === "artifacts" && <Artifacts result={result} onShow={() => { select(doc.example.modelId); setTab("structure"); }} />}
+            {tab === "artifacts" && <Artifacts result={result} />}
+            {tab === "pipeline" && <PipelineView result={result} onSelect={(id) => { select(id); setTab("structure"); }} onOpenArtifacts={() => setTab("artifacts")} />}
           </div>
         </section>
       </div>
@@ -139,47 +142,40 @@ function SourceDetail({ element: e, onGoToPage }: { element: DocElement | null; 
   );
 }
 
-export function Artifacts({ result, onShow }: { result: DemoResult; onShow: () => void }) {
-  const { doc, json, xml } = result;
+/** The root node of the simplified Legal JSON ("Zweiter Teil") as the file writes it. */
+export function viewRoot(view: string): string | null {
+  try {
+    const root = (JSON.parse(view) as { structure?: unknown[] }).structure?.[0];
+    // page lists on one line, as in the file
+    return root ? JSON.stringify(root, null, 2).replace(/\[\s+(\d+(?:,\s+\d+)*)\s+\]/g, (_m, ns: string) => `[${ns.split(/,\s+/).join(", ")}]`) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function Artifacts({ result }: { result: DemoResult }) {
+  const { doc, json, view } = result;
   const ex = doc.example;
   return (
     <div className="demo-artifacts">
-      <p className="muted">
-        Both artifacts show the same provision, <strong className="demo-strong">{ex.label}</strong>, cut from this document’s pipeline outputs.{" "}
-        <button className="link" onClick={onShow}>Show it in the PDF</button>
-      </p>
-      <ArtifactCard
-        title="Legal Document JSON"
-        source={<>Excerpt of <code>document.json</code> (Custom Legal JSON {ex.legalJsonSchemaVersion}), element <code>{ex.modelId}</code></>}
-        text={json} file={doc.files.json}
-        subtree={ex.previewId ? { id: ex.previewId } : undefined}
-      />
-      <ArtifactCard
-        title="Akoma Ntoso XML"
-        source={<>Excerpt of <code>document_akn.xml</code>, element <code>&lt;{ex.aknElement} eId="{ex.eId}"&gt;</code></>}
-        text={xml} file={doc.files.xml}
-      />
+      {view
+        ? <ArtifactCard title="Custom Legal JSON" text={view} file={doc.files.view!} focus={viewRoot(view)} />
+        : <ArtifactCard title="Custom Legal JSON" text={json} file={doc.files.json} focus={ex.previewId ? jsonSubtree(json, ex.previewId) : null} />}
     </div>
   );
 }
 
-function ArtifactCard({ title, source, text, file, subtree }: { title: string; source: ReactNode; text: string; file: string; subtree?: { id: string } }) {
-  // with a `subtree` the preview is that node with all its children (complete, scrollable); otherwise the first lines
-  const sub = subtree ? jsonSubtree(text, subtree.id) : null;
-  const p = sub !== null ? { text: sub, hidden: 0 } : previewLines(text, PREVIEW_LINES);
-  const total = text.replace(/\n$/, "").split("\n").length;
+function ArtifactCard({ title, text, file, focus }: { title: string; text: string; file: string; focus: string | null }) {
+  // with a `focus` the preview is that element with all its children (complete, scrollable); otherwise the first lines
+  const p = focus != null ? { text: focus, hidden: 0 } : previewLines(text, PREVIEW_LINES);
   return (
     <section className="demo-artifact">
       <div className="demo-artifact-head">
-        <div>
-          <h3>{title}</h3>
-          <p className="muted small">{source}</p>
-        </div>
+        <h3>{title}</h3>
         <a className="btn small" href={fixtureUrl(file)} download={file.split("/").pop()}>Download</a>
       </div>
       <pre className="preview demo-code" tabIndex={0}>{p.text}</pre>
       {p.hidden > 0 && <p className="muted small demo-more">{p.hidden} more lines in the download.</p>}
-      {sub !== null && <p className="muted small demo-more">Showing <code>{subtree!.id}</code> with all its children; the download holds the whole excerpt ({total} lines).</p>}
     </section>
   );
 }

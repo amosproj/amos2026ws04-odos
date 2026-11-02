@@ -120,7 +120,7 @@ cd frontend && npm test && npm run typecheck && npm run build:demo
 | `test_legal_json.py`, `test_akn.py`, `test_eu_akn.py` | exports and their validation |
 | `test_extraction.py`, `test_environment.py` | extraction, dependency drift |
 | `frontend/src/structure.test.ts` | hierarchy, search, highlight geometry, TOC view |
-| `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, JSON/XML previews and downloads, MBO § 6 Absatz 1 |
+| `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, Custom Legal JSON preview and downloads, MBO § 6 Absatz 1 and the simplified view |
 
 ## Conventions
 

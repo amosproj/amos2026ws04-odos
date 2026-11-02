@@ -2,8 +2,8 @@
 
 Static research prototype: upload one of two prepared legal PDFs (Musterbauordnung, Regulation (EU) 2023/1230) and see
 the original PDF next to its recognized legal structure (with source highlighting), plus one provision as Custom Legal
-JSON and Akoma Ntoso XML with previews and downloads. Nothing is processed in the browser: the demo shows results that
-the offline pipeline in `backend/` generated beforehand.
+JSON with preview and download. Nothing is processed in the browser: the demo shows results that the offline pipeline
+in `backend/` generated beforehand. The pipeline also writes Akoma Ntoso XML; the demo does not display it.
 
 ## Run the demo (you need your own copy of both PDFs)
 
@@ -51,7 +51,7 @@ cd frontend
 npm run demo:verify -- --mbo-pdf /path/to/MusterBauVerordnung.pdf --eu-pdf /path/to/eu_2023_1230.pdf
 ```
 
-The command compares your two PDFs and the six fixture files plus `manifest.json` in `public/demo/` with
+The command compares your two PDFs and the ten fixture files plus `manifest.json` in `public/demo/` with
 `frontend/scripts/demo-reference.json` (hashes only, no text). For each it prints `identical` (same bytes),
 `equivalent` (see below), `DIFFERENT` or `MISSING`. Exit code 0 means identical or equivalent, 1 a difference, 2 a
 missing file.
