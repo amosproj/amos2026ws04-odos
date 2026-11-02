@@ -14,8 +14,8 @@
           "canonicalSha256": "8536349df2f754c806c19e0f98990b83d1aba51854ea9960422d92f4fc992473"
         },
         "eu-2023-1230/chp-2.legal.json": {
-          "sha256": "678bf24cc7b39b46a01a04bcb05d5824ab453b794e7b8fcd73b05e7e98eaf5bc",
-          "canonicalSha256": "95d044032a00a5a30d244edd3dccca96270fe7944016e577ac60ae1c8ac335d1"
+          "sha256": "9bbe7be54fa456d74403c65c118c1ba5774dbdb959a11d513a3717ac3956d063",
+          "canonicalSha256": "b11386692ce9f964101b726259729bdb39c4743d71f95adb2a7634922e69d3ff"
         },
         "eu-2023-1230/pipeline.json": {
           "sha256": "5167b4cb8727ccfb8c0e81a05f70bcbb08f3de062b5a2f239b66fabef576cf76",
@@ -32,8 +32,8 @@
           "canonicalSha256": "1516c83840d81c2d0f56483b80024fc69da45aee4ce7ff5a8c09a4c1fc7aecae"
         },
         "mbo/teil-2.legal.json": {
-          "sha256": "2ddef433fcdbf32975fcee7abafacb6c8f4f59ef6189ce06236b27be0b066a18",
-          "canonicalSha256": "dd15bc6d9c48ef89662b145fc4cb42f6d96b898f0c970dffb401559477a9f355"
+          "sha256": "6ac61b29fb512ba64cc767856271f0fec1d64c4b9c8573f2dd141890353621cb",
+          "canonicalSha256": "57f619f1bd981433277e1e77d5fb1120b962b1edc7708f0ef923d3161f395eb0"
         },
         "mbo/pipeline.json": {
           "sha256": "591366f27eace5f4a8cbd5df63b62336f99561aadec6a01b3ebeca2430526fcf",

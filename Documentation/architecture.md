@@ -55,7 +55,7 @@ React + TypeScript + Vite. Nothing is processed in the browser.
 1. `npm run demo:fixtures` reads the pipeline output directories and writes `public/demo/`: per document a
    `structure.json` (the part of the DocumentModel the UI shows, with the provenance the highlighting uses), a
    Legal JSON 2.0 excerpt cut out of `document.json` (`*.legal.json`: a top-level unit down to the shown provisions,
-   nodes unchanged) and `pipeline.json` (processing details), plus a `manifest.json` with the PDF's SHA-256.
+   nodes unchanged except that the key `nativeType` is shown as `germanType`) and `pipeline.json` (processing details), plus a `manifest.json` with the PDF's SHA-256.
 2. The user picks a PDF. The browser hashes it and looks the hash up in the manifest (`demo/fixtures.ts`). Unknown
    files are refused with an explanation.
 3. `DemoApp` shows the PDF (`pdfjs-dist`) with highlights, the full structure tree, the Custom Legal JSON preview

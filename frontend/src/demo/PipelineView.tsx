@@ -134,7 +134,7 @@ function Stages({ p, result, onSelect, onOpenArtifacts }: { p: PipelineDetails; 
   );
 }
 
-type JsonNode = { id?: string; type?: string; nativeType?: string; marker?: string; title?: string; text?: string; pages?: number[]; children?: JsonNode[] };
+type JsonNode = { id?: string; type?: string; germanType?: string; marker?: string; title?: string; text?: string; pages?: number[]; children?: JsonNode[] };
 type Row = { node: JsonNode; parent: string | null; depth: number };
 
 /** The nodes below `start` in document order, with the parent each one has in the nesting. */
@@ -179,7 +179,7 @@ function LegalJson({ result }: { result: DemoResult }) {
           {rows.map(({ node, parent, depth }) => (
             <tr key={node.id}>
               <td style={{ paddingLeft: 8 + depth * 14 }}><code>{node.id}</code></td>
-              <td>{node.type}{node.nativeType && <span className="muted"> ({node.nativeType})</span>}</td>
+              <td>{node.type}{node.germanType && <span className="muted"> ({node.germanType})</span>}</td>
               <td>{parent ? <code>{parent}</code> : "—"}</td>
               <td>
                 {(node.children ?? []).map((c) => c.id).join(", ") || "—"}

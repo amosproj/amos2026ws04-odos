@@ -29,9 +29,11 @@ describe.skipIf(!docs.length).each(docs)("Legal JSON 2.0 excerpt of $id", (doc) 
   const text = () => read(doc.files.json);
   const model = () => JSON.parse(read(doc.files.structure)) as DocumentModel;
 
-  it("is a Legal JSON 2.0 excerpt without technical provenance", () => {
+  it("is a Legal JSON 2.0 excerpt without technical provenance, with nativeType shown as germanType", () => {
     expect(doc.example.legalJsonSchemaVersion).toBe("2.0");
     expect(text()).not.toMatch(TECHNICAL);
+    expect(text()).not.toContain('"nativeType"');
+    expect((JSON.parse(text()) as { germanType?: string }).germanType).toBeTruthy();
   });
 
   it("names document model elements only, with their text and pages, and each one can be highlighted in the PDF", () => {
@@ -49,14 +51,16 @@ describe.skipIf(!docs.length).each(docs)("Legal JSON 2.0 excerpt of $id", (doc) 
   });
 
   const work = resolve(__dirname, "../../.demo-work", WORK[doc.id] ?? doc.id, "document.json");
-  it.skipIf(!existsSync(work))("copies its nodes unchanged from the pipeline's document.json", () => {
+  it.skipIf(!existsSync(work))("copies its nodes from the pipeline's document.json, only nativeType renamed to germanType", () => {
     const legal = JSON.parse(readFileSync(work, "utf8")) as { schemaVersion: string; structure: Node[] };
     expect(legal.schemaVersion).toBe("2.0");
     const excerpt = JSON.parse(text()) as Node;
     for (const n of walk(excerpt)) {
       const { children: shown, ...fields } = n;
       const { children: all, ...original } = find(legal.structure, n.id)!;
-      expect(fields).toEqual(original);
+      // same keys in the same order with the same values; only the one key is named differently
+      const renamed = Object.entries(original).map(([k, v]) => [k === "nativeType" ? "germanType" : k, v]);
+      expect(Object.entries(fields)).toEqual(renamed);
       // children are left out (off the path to the shown nodes), never reordered
       const kept = new Set((shown ?? []).map((c) => c.id));
       expect((all ?? []).map((c) => c.id).filter((id) => kept.has(id))).toEqual((shown ?? []).map((c) => c.id));

@@ -10,7 +10,7 @@ const DIR = resolve(__dirname, "../../public/demo/mbo");
 const ID = "doc/teil-2/par-6/abs-1";
 
 type Node = {
-  id: string; type: string; nativeType?: string; number?: string; marker?: string; title?: string; text?: string; pages?: number[]; children?: Node[];
+  id: string; type: string; germanType?: string; number?: string; marker?: string; title?: string; text?: string; pages?: number[]; children?: Node[];
 };
 const find = (n: Node): Node | undefined => (n.id === ID ? n : n.children?.map(find).find(Boolean));
 
@@ -104,11 +104,11 @@ describe.skipIf(!existsSync(resolve(DIR, "teil-2.legal.json")))("MBO Legal JSON 
   const byId = (n: Node, id: string): Node | undefined => (n.id === id ? n : n.children?.map((c) => byId(c, id)).find(Boolean));
 
   it("starts with Zweiter Teil and holds exactly § 6 with Absatz 1 (Nummer 1 and 2) and Absatz 2", () => {
-    expect([root.type, root.nativeType, root.marker, root.title]).toEqual(["part", "Teil", "Zweiter Teil", "Das Grundstück und seine Bebauung"]);
+    expect([root.type, root.germanType, root.marker, root.title]).toEqual(["part", "Teil", "Zweiter Teil", "Das Grundstück und seine Bebauung"]);
     expect(ids(root)).toEqual(["doc/teil-2", ["doc/teil-2/par-6", [ID, [`${ID}/nr-1`], [`${ID}/nr-2`]], ["doc/teil-2/par-6/abs-2"]]]);
     const par = byId(root, "doc/teil-2/par-6")!;
-    expect([par.type, par.nativeType, par.number, par.marker]).toEqual(["section", "Paragraph", "6", "§ 6"]);
-    expect([1, 2].map((n) => byId(root, `${ID}/nr-${n}`)!).map((x) => [x.type, x.nativeType, x.number, x.marker])).toEqual([
+    expect([par.type, par.germanType, par.number, par.marker]).toEqual(["section", "Paragraph", "6", "§ 6"]);
+    expect([1, 2].map((n) => byId(root, `${ID}/nr-${n}`)!).map((x) => [x.type, x.germanType, x.number, x.marker])).toEqual([
       ["number", "Nummer", "1", "1."], ["number", "Nummer", "2", "2."],
     ]);
   });
@@ -119,7 +119,7 @@ describe.skipIf(!existsSync(resolve(DIR, "teil-2.legal.json")))("MBO Legal JSON 
     expect(abs.text).toMatch(/^1 Vor den Außenwänden von Gebäuden .* 4 Eine Abstandsfläche ist nicht erforderlich vor Außenwänden,$/);
   });
 
-  it("is Legal JSON 2.0 without technical provenance", () => {
-    expect(read("teil-2.legal.json")).not.toMatch(/sourceSpans|bbox|charStart|charEnd|bboxScope|itemRef|markerStyle|omittedChildren/);
+  it("is Legal JSON 2.0 without technical provenance, with nativeType shown as germanType", () => {
+    expect(read("teil-2.legal.json")).not.toMatch(/sourceSpans|bbox|charStart|charEnd|bboxScope|itemRef|markerStyle|omittedChildren|nativeType/);
   });
 });

@@ -15,17 +15,18 @@ vi.mock("../components/PdfViewer", () => ({
 // An invented provision with the shape of § 6 (1): the introduction runs over a page break, two numbered children follow.
 const ABS = "doc/teil-2/par-6/abs-1";
 const INTRO = "1 Erster Satz beginnt am Seitenende und geht auf der nächsten Seite weiter. 2 Zweiter Satz.";
-// Its Legal JSON 2.0 excerpt as scripts/build-demo-fixtures.mjs writes it: Zweiter Teil down to § 6 Absatz 1 and 2.
+// Its Legal JSON 2.0 excerpt as scripts/build-demo-fixtures.mjs writes it: Zweiter Teil down to § 6 Absatz 1 and 2,
+// with `nativeType` shown as `germanType`.
 const json = JSON.stringify({
-  id: "doc/teil-2", type: "part", nativeType: "Teil", number: "2", marker: "Zweiter Teil", title: "Beispielteil", pages: [9],
+  id: "doc/teil-2", type: "part", germanType: "Teil", number: "2", marker: "Zweiter Teil", title: "Beispielteil", pages: [9],
   children: [{
-    id: "doc/teil-2/par-6", type: "section", nativeType: "Paragraph", number: "6", marker: "§ 6", title: "Beispiel", pages: [9],
+    id: "doc/teil-2/par-6", type: "section", germanType: "Paragraph", number: "6", marker: "§ 6", title: "Beispiel", pages: [9],
     children: [
-      { id: ABS, type: "subsection", nativeType: "Absatz", number: "1", marker: "(1)", text: INTRO, pages: [9, 10], children: [
-        { id: `${ABS}/nr-1`, type: "number", nativeType: "Nummer", number: "1", marker: "1.", text: "erste Nummer", pages: [10] },
-        { id: `${ABS}/nr-2`, type: "number", nativeType: "Nummer", number: "2", marker: "2.", text: "zweite Nummer", pages: [10] },
+      { id: ABS, type: "subsection", germanType: "Absatz", number: "1", marker: "(1)", text: INTRO, pages: [9, 10], children: [
+        { id: `${ABS}/nr-1`, type: "number", germanType: "Nummer", number: "1", marker: "1.", text: "erste Nummer", pages: [10] },
+        { id: `${ABS}/nr-2`, type: "number", germanType: "Nummer", number: "2", marker: "2.", text: "zweite Nummer", pages: [10] },
       ] },
-      { id: "doc/teil-2/par-6/abs-2", type: "subsection", nativeType: "Absatz", number: "2", marker: "(2)", text: "zweiter Absatz", pages: [10] },
+      { id: "doc/teil-2/par-6/abs-2", type: "subsection", germanType: "Absatz", number: "2", marker: "(2)", text: "zweiter Absatz", pages: [10] },
     ],
   }],
 }, null, 2).replace(/\[\s+(\d+(?:,\s+\d+)*)\s+\]/g, (_m, ns: string) => `[${ns.split(/,\s+/).join(", ")}]`) + "\n";
@@ -109,7 +110,8 @@ describe("Custom Legal JSON preview and downloads", () => {
     const par = teil.children[0];
     expect([teil.id, par.id, par.children.map((c: { id: string }) => c.id)]).toEqual(["doc/teil-2", "doc/teil-2/par-6", [ABS, "doc/teil-2/par-6/abs-2"]]);
     expect(par.children[0].children.map((c: { id: string }) => c.id)).toEqual([`${ABS}/nr-1`, `${ABS}/nr-2`]);
-    expect(text).not.toMatch(/sourceSpans|bbox|charStart|bboxScope|omittedChildren/);
+    expect(text).not.toMatch(/sourceSpans|bbox|charStart|bboxScope|omittedChildren|nativeType/);
+    expect(teil.germanType).toBe("Teil");
   });
   it("offers the excerpt for download", () => {
     expect(preview(html, "Custom Legal JSON").card).toContain('href="/demo/mbo/teil-2.legal.json" download="teil-2.legal.json"');

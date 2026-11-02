@@ -8,7 +8,9 @@ legal parser recognized from them, and the resulting Custom Legal JSON nodes.
 The JSON preview shows the actual Custom Legal JSON 2.0 output (`*.legal.json`, written by
 `scripts/build-demo-fixtures.mjs`): the nodes of `document.json` from a top-level unit down to the shown provisions
 (MBO: Zweiter Teil → § 6 → Absatz 1 with Nummer 1 and 2, Absatz 2; EU: Kapitel II → Artikel 10 → Absatz 1 and 2),
-copied unchanged; only children off that path are left out. The download is the same file. The PDF highlighting does
+copied unchanged; only children off that path are left out. For the stakeholder presentation the file shows the key
+`nativeType` as `germanType` (a temporary presentation name: values are unchanged, and the Legal JSON schema and
+`document.json` keep `nativeType`). The download is the same file. The PDF highlighting does
 not use it: it reads the provenance of the document model (`structure.json`), found by the node ids.
 
 Nothing is processed in the browser. The chosen PDF is matched by its SHA-256 against the prepared documents

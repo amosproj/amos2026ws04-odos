@@ -85,7 +85,7 @@ function checkAgainstModel(key, node, byId) {
 
 /** The Legal JSON 2.0 excerpt of `excerpt`: the root node of document.json with only the path down to each of
  *  `excerpt.nodes`, which keep their complete subtrees. Nodes are copied unchanged (all their fields, in their order);
- *  only children off that path are left out, so the excerpt is still a valid Legal JSON 2.0 node. */
+ *  only children off that path are left out. */
 function legalExcerpt(doc, legal) {
   const root = findNode(legal.structure, doc.excerpt.root);
   if (!root) throw new Error(`${doc.key}: ${doc.excerpt.root} is not in document.json`);
@@ -98,6 +98,15 @@ function legalExcerpt(doc, legal) {
     return { ...rest, children: children.filter(leadsTo).map(cut) };
   };
   return cut(root);
+}
+
+// Presentation names of the demo file (temporary, for the stakeholder presentation): only the key is renamed, in place;
+// values, order, ids and hierarchy stay. The Legal JSON schema and document.json keep `nativeType`.
+const PRESENTATION_NAMES = { nativeType: "germanType" };
+
+function forPresentation(node) {
+  return Object.fromEntries(Object.entries(node).map(([k, v]) =>
+    [PRESENTATION_NAMES[k] ?? k, k === "children" ? v.map(forPresentation) : v]));
 }
 
 /** The pipeline stages behind the previewed provision, cut verbatim from the pipeline outputs (null without docling_raw.json). */
@@ -175,7 +184,7 @@ function build(doc, dir) {
   mkdirSync(join(OUT, doc.id), { recursive: true });
   writeFileSync(join(OUT, files.structure), JSON.stringify(structure));
   // page lists on one line ("pages": [9, 10]), the rest as JSON.stringify writes it
-  const excerptText = JSON.stringify(excerpt, null, 2).replace(/\[\s+(\d+(?:,\s+\d+)*)\s+\]/g, (_m, ns) => `[${ns.split(/,\s+/).join(", ")}]`);
+  const excerptText = JSON.stringify(forPresentation(excerpt), null, 2).replace(/\[\s+(\d+(?:,\s+\d+)*)\s+\]/g, (_m, ns) => `[${ns.split(/,\s+/).join(", ")}]`);
   writeFileSync(join(OUT, files.json), excerptText + "\n");
   if (pipeline) writeFileSync(join(OUT, files.pipeline), JSON.stringify(pipeline, null, 2) + "\n");
   else console.log(`${doc.key}: no docling_raw.json, so no processing details (pipeline.json)`);
