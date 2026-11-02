@@ -9,8 +9,9 @@ Nothing is processed in the browser. The chosen PDF is matched by its SHA-256 ag
 PDF is refused with an explanation.
 
 ```bash
-npm install
-npm run demo:fixtures -- --mbo <odos process output dir> --eu <odos process output dir>   # writes public/demo/
+npm ci
+npm run demo:setup -- --mbo-pdf <MBO.pdf> --eu-pdf <eu_2023_1230.pdf>   # checks the PDFs, runs the pipeline, writes public/demo/
+npm run demo:verify -- --mbo-pdf <MBO.pdf> --eu-pdf <eu_2023_1230.pdf>  # SHA-256 comparison with scripts/demo-reference.json
 npm run dev          # http://localhost:5173
 npm test             # unit tests (vitest)
 npm run typecheck
@@ -18,8 +19,9 @@ npm run build:demo   # type check + static site in dist/ (relative paths, any su
 npm run preview      # http://localhost:4173
 ```
 
-The output directories are those of `odos process` (see `../README.md`). The PDFs are never part of the build: the
-presenter opens their own copy.
+`demo:setup` needs the backend installed (`../README.md`, which also explains what `demo:verify` guarantees and what it
+does not). To build the fixtures from existing `odos process` output directories instead, run
+`npm run demo:fixtures -- --mbo <dir> --eu <dir>`. The PDFs are never part of the build: the presenter opens their own copy.
 
 **Data protection:** `public/demo/` and `dist/` contain the full text of the partner-supplied documents. Both are
 git-ignored and must not be published or deployed until the licensing is clarified.
@@ -32,5 +34,7 @@ git-ignored and must not be published or deployed until the licensing is clarifi
 | `src/structure.ts` | display tree, labels, search, highlight geometry |
 | `src/types.ts` | the DocumentModel fields the UI reads |
 | `scripts/build-demo-fixtures.mjs` | builds `public/demo/` from the pipeline outputs |
+| `scripts/demo-setup.mjs` | checks the PDFs, runs `odos process`, builds the fixtures, compares them with the reference |
+| `scripts/demo-verify.mjs`, `scripts/demo-reference.json` | SHA-256 check of PDFs and fixtures against the committed reference (hashes only) |
 
 Architecture: `../Documentation/architecture.md`.

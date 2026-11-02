@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { bboxToRect, highlightsOf } from "../structure";
 import type { DocumentModel } from "../types";
 import { jsonSubtree, type DemoDocument } from "./fixtures";
@@ -13,12 +13,17 @@ type Node = { id: string; text?: string; children?: Node[]; source?: { pages: nu
 const find = (n: Node): Node | undefined => (n.id === ID ? n : n.children?.map(find).find(Boolean));
 
 describe.skipIf(!existsSync(DIR))("MBO § 6 (1) across pages 9 and 10", () => {
+  // loaded in beforeAll, not while collecting: vitest runs a skipped suite's body too, and the files may not exist
   const read = (f: string) => readFileSync(resolve(DIR, f), "utf8");
-  const model = JSON.parse(read("structure.json")) as DocumentModel;
-  const json = find(JSON.parse(read("teil-2_par-6.legal.json")) as Node)!;
-  const xml = read("teil-2_par-6.akn.xml");
-  const intro = xml.match(/<intro eId="part_2__art_6__para_1__intro">([\s\S]*?)<\/intro>/)![1];
-  const ps = [...intro.matchAll(/<p [^>]*odos:src="([^"]*)"[^>]*>([^<]*)<\/p>/g)];
+  let model: DocumentModel;
+  let json: Node;
+  let ps: RegExpExecArray[];
+  beforeAll(() => {
+    model = JSON.parse(read("structure.json")) as DocumentModel;
+    json = find(JSON.parse(read("teil-2_par-6.legal.json")) as Node)!;
+    const intro = read("teil-2_par-6.akn.xml").match(/<intro eId="part_2__art_6__para_1__intro">([\s\S]*?)<\/intro>/)![1];
+    ps = [...intro.matchAll(/<p [^>]*odos:src="([^"]*)"[^>]*>([^<]*)<\/p>/g)];
+  });
 
   it("is one Absatz text that runs on over the page break, with its Nummern kept apart", () => {
     expect(json.text).toMatch(/^1 Vor den Außenwänden von Gebäuden sind Abstandsflächen von oberirdischen Gebäuden freizuhalten\. 2 /);

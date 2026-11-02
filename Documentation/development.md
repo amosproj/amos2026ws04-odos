@@ -46,8 +46,9 @@ odos process <eu_2023_1230.pdf> -o output/eu  --mode eu_legislation --retrieval-
 
 # 2. demo fixtures (frontend/public/demo/, git-ignored) and the static site
 cd ../frontend
-npm install
+npm ci
 npm run demo:fixtures -- --mbo ../backend/output/mbo --eu ../backend/output/eu
+# (or, in one step with PDF and fixture hash checks: npm run demo:setup -- --mbo-pdf <MBO.pdf> --eu-pdf <eu.pdf>)
 npm run dev                # http://localhost:5173
 npm run build:demo         # type check + static site in dist/
 npm run preview            # http://localhost:4173

@@ -1,0 +1,44 @@
+{
+  "comment": "SHA-256 hashes only (no document text). Written by `npm run demo:verify -- --write-reference`; see the README.",
+  "retrievalDate": "2026-10-27",
+  "manifest": {
+    "sha256": "8ad367014ddae15f99155025c6d1db18a79369524792c9f4b373076f4953c626",
+    "canonicalSha256": "7251eb2311ab25424f80382800b53078c9e785e31d2430f9d1a463f830c4c5f7"
+  },
+  "documents": {
+    "eu-2023-1230": {
+      "title": "Regulation (EU) 2023/1230 (Machinery Regulation)",
+      "pdfSha256": "fe36f0d148a84e790ec9a9825017baaea66fb931a5314ad0a614a1cde0ec182c",
+      "files": {
+        "eu-2023-1230/structure.json": {
+          "sha256": "b3c31a584a01d0096163b2fdec40fc170faa3888d8b966f963a5ed98c2708ee1",
+          "canonicalSha256": "8536349df2f754c806c19e0f98990b83d1aba51854ea9960422d92f4fc992473"
+        },
+        "eu-2023-1230/chp-2_art-10_para-1.legal.json": {
+          "sha256": "e15fea6f6ab1b2a1bb6ce5df9af1ba0dc168311d7d7afb1b148bba9ca7601786",
+          "canonicalSha256": "f62dbc9be12534d8571ee825ac2ca312e2cf0d38ce8fbcc20a10ef46a00a50d6"
+        },
+        "eu-2023-1230/chp-2_art-10_para-1.akn.xml": {
+          "sha256": "22cc01cdcab41c31a73d69c8db8a4a5d057f7bcb5b8fc47f17b2837de001df0e"
+        }
+      }
+    },
+    "mbo": {
+      "title": "Musterbauordnung (MBO)",
+      "pdfSha256": "53fd13388013263c3f676a3a8024f6932e38b8d326af6d2d844ecb9be61d340c",
+      "files": {
+        "mbo/structure.json": {
+          "sha256": "ecca5e261684afbf4b8eb51939e35b84e748943354d2f129ca9ac64eb855121e",
+          "canonicalSha256": "1516c83840d81c2d0f56483b80024fc69da45aee4ce7ff5a8c09a4c1fc7aecae"
+        },
+        "mbo/teil-2_par-6.legal.json": {
+          "sha256": "34b0c1b51a9c77ce6924b86d511ffa7ca0f052ca0541658e2e29baa07a56fd62",
+          "canonicalSha256": "02aec5d49dc2e6e90a0104ebfa080f214fe346f3d1837d0f8dbd43d6e20d0c24"
+        },
+        "mbo/teil-2_par-6.akn.xml": {
+          "sha256": "150219a8982651f8ecd568108bbed287f8213e2960b4af3ba3c4f9dc5337ea9d"
+        }
+      }
+    }
+  }
+}

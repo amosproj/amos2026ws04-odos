@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "demo:fixtures": "node scripts/build-demo-fixtures.mjs"
+    "demo:fixtures": "node scripts/build-demo-fixtures.mjs",
+    "demo:setup": "node scripts/demo-setup.mjs",
+    "demo:verify": "node scripts/demo-verify.mjs"
   },
   "dependencies": {
     "pdfjs-dist": "^6.4.299",
