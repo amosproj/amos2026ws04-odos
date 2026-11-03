@@ -164,7 +164,7 @@ Nothing else is merged.
 
 ## Verification
 
-The real documents are checked in two places: `backend/tests/test_api.py` runs the whole pipeline on the Musterbauordnung
+The real documents are checked in two places: the private test suite (`backend/tests/private/test_api.py`, local only) runs the whole pipeline on the Musterbauordnung
 and Regulation (EU) 2023/1230 and validates the result against the JSON schema, and `npm run demo:verify` (frontend)
 compares SHA-256 hashes of the fixtures built from both outputs with the committed reference. The synthetic German law
 and EU regulation (`tests/synthetic_german.py`, `tests/synthetic_eu.py`) cover both profiles without private files.

@@ -27,6 +27,8 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["tests"]  # tests/private/ imports conftest like the tests next to it
+pythonpath = ["tests"]  # the synthetic documents (tests/synthetic_*.py)
+# `pytest` runs the public suite; the private suite (tests/private/, gitignored) runs only with `pytest tests/private`
+norecursedirs = ["private", ".*", "*.egg", "build", "dist", "venv", "node_modules", "__pycache__"]
 addopts = "-rs"  # always show why a test was skipped (missing fixtures are reported, never silent)
 markers = ["slow: runs the real Docling conversion on a PDF"]

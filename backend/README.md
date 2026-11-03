@@ -16,13 +16,14 @@ pip install -r requirements.lock && pip install --no-deps -e ".[dev]"
 odos --help
 odos process <pdf> -o output/<name> --mode german_law|eu_legislation
 uvicorn odos.api:app --port 8000      # the web API for ../frontend
-pytest
+pytest                                # public suite (8 tests, no PDF needed)
+pytest tests/private                  # private suite (local only, gitignored; real PDFs)
 ```
 
 | Path | Contents |
 |---|---|
 | `src/odos/` | the package (map: `../Documentation/architecture.md`) |
-| `tests/` | pytest suite (about 50 tests), the synthetic EU regulation and German law |
+| `tests/` | the public pytest suite (`test_basics.py`), the synthetic EU regulation and German law; `private/` (gitignored) holds the local regression suite |
 | `schemas/` | the Custom Legal JSON 2.0 schema |
 | `data/input/` | `SOURCE.md` (the partner test inputs and their SHA-256); `private/` (gitignored) for documents that may not be redistributed. No public law is stored |
 | `requirements.lock` | the exact dependency set the outputs were verified with |

@@ -48,8 +48,11 @@ backend/storage/
 backend/data/input/private/
 # partner-derived test data (Docling output of partner PDFs); keep local, never commit
 backend/tests/fixtures/private/
-# tests that need the partner PDFs (they contain assertions about the partner documents)
+# the private test suite (real-PDF integration tests with assertions about the partner documents); see Documentation/development.md
 backend/tests/private/
+# no PDF is committed by accident: only the project's own deliverables are versioned
+*.pdf
+!Deliverables/**/*.pdf
 # document-processing results and uploads, wherever ODOS_STORAGE_DIR / -o points inside the repository
 **/storage/documents/
 **/docling_raw.json

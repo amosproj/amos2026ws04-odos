@@ -117,5 +117,5 @@ missing file.
 | `frontend/` | the web app (React, TypeScript, Vite), its live and prepared-example modes, the fixture scripts (`frontend/README.md`) |
 | `Documentation/` | architecture, parsing, document model, Legal JSON, development guide |
 
-The always-running backend tests use synthetic documents and need no partner PDF
-(`Documentation/development.md`).
+The public backend tests (`pytest`) use synthetic documents and need no partner PDF; the real-PDF regression suite
+is kept locally in `backend/tests/private/` (`Documentation/development.md`).

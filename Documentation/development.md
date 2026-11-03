@@ -12,7 +12,7 @@ pip install --no-deps -e ".[dev]"
 
 **Install from the lock, not with a plain `pip install -e .`.** Docling's output depends on
 `docling-parse`, `torch`, `transformers` and `docling-core`, and newer versions segment, label and order
-the same PDF differently. `tests/test_environment.py` reports such drift. Even with the lock, a few
+the same PDF differently. The private test `tests/private/test_extraction.py` reports such drift. Even with the lock, a few
 table and picture box coordinates vary by about 1e-5 between extractions; text, items, labels and order
 do not.
 
@@ -70,29 +70,41 @@ not be published (see the root README).
 ## Tests
 
 ```bash
-cd backend && source .venv/bin/activate && pytest     # about 50 tests, about 1 minute (network needed for Docling models)
+cd backend && source .venv/bin/activate && pytest     # public suite: 8 basic tests, a few seconds, no PDF needed
+pytest tests/private                                   # private suite (local only): 47 tests, about 1 minute
 cd frontend && npm test && npm run typecheck && npm run build
 ```
+
+**Two independent suites:**
+
+- **Public** (`backend/tests/test_basics.py`, committed): API upload and errors, the German and EU parsers, the
+  DocumentModel and Custom Legal JSON 2.0, on the synthetic documents only. Docling's conversion is replaced by their
+  prepared Docling JSON, so the suite runs anywhere in seconds.
+- **Private** (`backend/tests/private/`, gitignored, kept locally): the full regression suite with real Docling
+  runs and the partner PDFs (MBO and Regulation (EU) 2023/1230), with its own `conftest.py` for the partner PDFs.
+  Plain `pytest` never collects it (`norecursedirs` in `pyproject.toml`); run it with `pytest tests/private`.
+  Copy the directory to a new checkout by hand; it is never committed.
+- **Git safety:** `.gitignore` excludes `backend/tests/private/`, `backend/data/input/private/` and every PDF
+  outside `Deliverables/`.
 
 **Test inputs:**
 
 - **No public law is stored in the repository.** Docling extractions of the partner PDFs are written to
   `backend/output/` (gitignored) on the first run, which takes a few minutes.
 - **The Musterbauordnung (MBO)** was supplied by the industry partner and is not in Git. Provide it as
-  `backend/data/input/private/MusterBauVerordnung.pdf` or with `ODOS_MBO_PDF`. The tests that need it are in
-  `backend/tests/private/` (gitignored: they assert on the partner document) and skip with a reason when it is
-  missing.
+  `backend/data/input/private/MusterBauVerordnung.pdf` or with `ODOS_MBO_PDF`. The private tests that need it
+  skip with a reason when it is missing.
 - **The full Regulation (EU) 2023/1230** is not redistributed with the repository. Provide it in one of
   two ways:
   - set `ODOS_EU_PDF=/path/to/the.pdf`
   - copy it to `backend/data/input/private/eu_2023_1230.pdf` (gitignored, so it cannot be committed)
 
   The tests check its SHA-256 (`fe36f0d1…`). Without it, the full-document EU tests skip and say why.
-- **The synthetic German law** (`backend/tests/synthetic_german.py`) always runs. It is original text with a
+- **The synthetic German law** (`backend/tests/synthetic_german.py`) is used by both suites. It is original text with a
   generated PDF, so the PDF text-layer evidence is real: footnote anchors and printed Satz numbers are proven
   from superscript marks. Glyph coordinates come from pdfium and can differ in the last decimals between
   platforms, so the tests assert structure and validity, not hashes.
-- **The synthetic EU regulation** (`backend/tests/synthetic_eu.py`) always runs. It is original text in
+- **The synthetic EU regulation** (`backend/tests/synthetic_eu.py`) is used by both suites. It is original text in
   Docling's JSON shape and covers every EU structural unit end to end, including Legal JSON 2.0.
 - **Frontend:** `frontend/src/demo/mbo_par6.test.ts` and `legal_json_excerpt.test.ts` read the local fixtures
   (`public/demo/`, and `.demo-work/` for the comparison with `document.json`) and skip without them. All other frontend tests use synthetic data.
@@ -102,12 +114,13 @@ cd frontend && npm test && npm run typecheck && npm run build
 
 | Test | What it covers |
 |---|---|
-| `test_api.py` | the web API: upload checks, job lifecycle, result files and download, document type detection, errors, cleanup; the real pipeline on the synthetic PDF and (when available) the MBO and Regulation (EU) 2023/1230 |
-| `test_extraction.py` | Docling extraction (missing PDF, a real conversion) and the locked dependency set |
-| `test_german_law.py`, `test_eu_legislation.py` | the German and EU profiles on the synthetic documents, and the EU profile on the real regulation |
-| `tests/private/test_mbo.py` (local only) | the real Musterbauordnung: paragraph set against the PDF text layer, hierarchy, footnotes, page-break text, no content loss |
-| `test_legal_json.py` | Custom Legal JSON 2.0: schema, text equal to the model and the PDF text layer, no internal data, nesting rules, schema drift, real MBO and EU examples |
-| `test_highlights.py` | exact highlight rectangles from PDF glyphs, and missing or unreadable PDF evidence |
+| `test_basics.py` (public) | API upload and download, rejected requests, German and EU parsing, DocumentModel ids, tree and PDF sources, Legal JSON 2.0 schema validity and schema drift |
+| `private/test_api.py` | the web API: upload checks, job lifecycle, result files and download, document type detection, errors, cleanup; the real pipeline on the synthetic PDF and (when available) the MBO and Regulation (EU) 2023/1230 |
+| `private/test_extraction.py` | Docling extraction (missing PDF, a real conversion) and the locked dependency set |
+| `private/test_german_law.py`, `private/test_eu_legislation.py` | the German and EU profiles on the synthetic documents, and the EU profile on the real regulation |
+| `private/test_mbo.py` | the real Musterbauordnung: paragraph set against the PDF text layer, hierarchy, footnotes, page-break text, no content loss |
+| `private/test_legal_json.py` | Custom Legal JSON 2.0: schema, text equal to the model and the PDF text layer, no internal data, nesting rules, schema drift, real MBO and EU examples |
+| `private/test_highlights.py` | exact highlight rectangles from PDF glyphs, and missing or unreadable PDF evidence |
 | `frontend/src/structure.test.ts` | hierarchy, search, highlight geometry, TOC view |
 | `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, Custom Legal JSON preview and downloads, MBO § 6 Absatz 1, the Legal JSON 2.0 excerpts and their traceability to the model |
 | `frontend/src/demo/live.test.tsx` | live mode against a fake backend (stages, errors, unreachable backend), the result view, preview (selected element and full document) and download; on the real pipeline outputs in `.demo-work/` when present |
