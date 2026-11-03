@@ -17,10 +17,7 @@ from odos.document_model import DocumentModel
 from odos.normalization.reading_order import load_evidence
 from odos.normalization.source_text import source_fidelity
 
-SCHEMAS = Path(__file__).resolve().parents[3] / "schemas" / "odos-legal-json"
-SCHEMA_PATH = SCHEMAS / "2.0" / "legal-document.schema.json"  # generated from the view classes (drift-tested)
-# no longer written; frozen, hash-pinned and kept to read old exports
-FROZEN_SCHEMA_PATHS = {"1.0": SCHEMAS / "1.0" / "legal-document.schema.json", "1.1": SCHEMAS / "1.1" / "legal-document.schema.json"}
+SCHEMA_PATH = Path(__file__).resolve().parents[3] / "schemas" / "odos-legal-json" / "2.0" / "legal-document.schema.json"  # generated from the view classes (drift-tested)
 
 
 @lru_cache(maxsize=1)

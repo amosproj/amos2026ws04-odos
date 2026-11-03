@@ -11,6 +11,7 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "allowJs": true, // src/demo/excerpts.mjs, shared with scripts/build-demo-fixtures.mjs
     "noEmit": true,
     "types": ["vite/client", "node"]
   },

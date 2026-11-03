@@ -20,7 +20,7 @@ describe("demo reference hashes", () => {
     for (const d of Object.values(reference.documents)) {
       expect(d.pdfSha256).toMatch(SHA);
       expect(Object.keys(d.files).map((f) => f.split("/").pop()!.replace(/^.*?\.legal\.json$/, "legal.json")).sort())
-        .toEqual(["legal.json", "pipeline.json", "structure.json"]);
+        .toEqual(["legal.json", "structure.json"]);
       for (const e of Object.values(d.files)) {
         expect(e.sha256).toMatch(SHA);
         expect(e.canonicalSha256).toMatch(SHA); // every fixture is JSON and also carries the float-noise-tolerant hash

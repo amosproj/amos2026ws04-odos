@@ -14,7 +14,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-SCHEMA_VERSION = "2.0"  # 2.0 = 1.1 without technical provenance (breaking: `source` and the boxes are gone)
+SCHEMA_VERSION = "2.0"
 SCHEMA_ID = "https://github.com/amosproj/amos2026ws04-odos/schemas/odos-legal-json/2.0/legal-document.schema.json"
 
 NodeType = Literal[

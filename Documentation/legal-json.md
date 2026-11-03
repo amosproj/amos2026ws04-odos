@@ -8,25 +8,12 @@ printed on, tables, footnotes, sentences and the table of contents. Technical pr
 boxes, character offsets) stays in the Internal Document Model (`document_model.json`); every JSON `id` is the id of
 its model element, which leads back to the source (see "Traceability").
 
-## Versions
+## Version
 
-- **2.0** is the only format ODOS writes (`document.json`, for every profile). It is a breaking version: 1.1
-  without the technical provenance. Every legal field keeps its name and value; the cross-check against the last
-  1.1 output of the MBO and Regulation (EU) 2023/1230 found every node, footnote, sentence and TOC entry unchanged
-  apart from the removed fields.
-- **Removed in 2.0:**
-  - nodes and footnotes: `source` (`pages` stays, as a plain list, `sourceSpans` with `itemRef`, `bbox`, `bboxScope`,
-    `charStart`, `charEnd` goes) and `markerStyle` (derivable from `marker`, `odos.legal_json.markers.marker_style`);
-  - table cells: their boxes (`rows` is a list of rows of cell texts);
-  - footnotes: `anchorElementId` (the single-anchor form of 1.0; `anchorElementIds` lists every anchor) and
-    `references[].bbox`;
-  - sentences: `numberSource` (page and box of the printed number) and `textSha256` of each range;
-  - TOC entries: `sourceSpans` becomes `ranges` (`elementId`, `cell`, `start`, `end`) without `page`, `bbox`, `bboxScope`;
-  - top level: `sourceFile` (file name and Docling hash), `coordinateSystem` and `pages` (page sizes).
-- **1.0 and 1.1** (`backend/schemas/odos-legal-json/1.0/`, `1.1/`) are no longer written. Their schema files are
-  frozen (a test pins their hashes) and stay in the repository to validate earlier exports. There is no downgrade
-  from 2.0: the 1.1 export, the 1.0 downgrade (`legacy.py`) and its report entries were removed, since nothing in or
-  outside the repository consumed them.
+**2.0** is the only format ODOS writes (`document.json`, for every profile) and the only schema in the repository. The
+earlier versions 1.0 and 1.1 (which carried technical provenance: `source`, `sourceSpans`, boxes, character offsets,
+`sourceFile`, page sizes) and their exporters were removed; nothing consumed them. Provenance lives only in the
+`DocumentModel`.
 
 ## One canonical model
 

@@ -1,54 +1,24 @@
-import type { DocumentModel, Provenance, SourceSpan } from "../types";
+import type { DocumentModel } from "../types";
+import type { LiveData } from "./live";
 
-// Static demonstration: precomputed pipeline results for prepared documents (public/demo/, written by
-// scripts/build-demo-fixtures.mjs). The PDFs are not part of the build; a PDF the user picks is matched by SHA-256.
+// Prepared examples: precomputed pipeline results for prepared documents (public/demo/, written by
+// scripts/build-demo-fixtures.mjs), shown only when the user picks the example mode. The PDFs are not part of the
+// build; the PDF the user picks is matched by SHA-256.
 
 export interface DemoDocument {
   id: string;
   title: string;
   pdfSha256: string;
-  pages: number;
-  profile: string;
-  files: { structure: string; json: string; pipeline?: string };
-  example: { label: string; modelId: string; legalJsonSchemaVersion: string };
-  sources: { documentModelSha256: string; legalJsonSha256: string };
+  files: { structure: string; json: string };
 }
 
+/** What the result view shows, from the backend (`live`) or from the prepared fixtures. */
 export interface DemoResult {
-  doc: DemoDocument;
+  title: string;
   model: DocumentModel;
-  json: string; // the Legal JSON 2.0 excerpt, shown and offered for download as it is
-  pipeline?: PipelineDetails | null; // absent from builds made before pipeline.json existed
-}
-
-/** A Docling text item, verbatim from docling_raw.json. */
-export interface DoclingItem {
-  self_ref: string;
-  label: string;
-  content_layer?: string;
-  prov?: Provenance[];
-  orig?: string;
-  text?: string;
-  marker?: string;
-  [key: string]: unknown;
-}
-
-/** pipeline.json (scripts/build-demo-fixtures.mjs): the stages behind the previewed provision, cut from the outputs. */
-export interface PipelineDetails {
-  focusId: string;
-  docling: {
-    version: string | null;
-    itemsTotal: number | null;
-    itemsInModel: number | null;
-    pageSizes: Record<string, { width: number; height: number } | null>;
-    items: DoclingItem[];
-  };
-  elements: {
-    id: string; type: string; region: string; parent_id: string | null; children_ids: string[]; number: string | null;
-    marker: string | null; title: string | null; original_text: string; content_text: string; docling_label?: string;
-    source_refs: string[]; pages: number[]; provenance: Provenance[]; source_spans?: SourceSpan[]; hygiene_flags?: string[];
-  }[];
-  warnings: { code: string; severity: string; message: string; element_id: string | null }[];
+  json: string; // the Legal JSON preview: the prepared excerpt as the downloaded file, or the live document (presentation names)
+  download: { href: string; name: string }; // the complete document (live) or the excerpt (prepared), as generated
+  live?: LiveData; // set when the ODOS backend processed the PDF (src/demo/live.ts)
 }
 
 export const fixtureUrl = (path: string) => `${import.meta.env.BASE_URL}demo/${path}`;
@@ -71,19 +41,8 @@ export async function loadManifest(): Promise<DemoDocument[]> {
 }
 
 export async function loadResult(doc: DemoDocument): Promise<DemoResult> {
-  const [structure, json, pipeline] = await Promise.all([fetchText(doc.files.structure), fetchText(doc.files.json), loadPipeline(doc.files.pipeline)]);
-  return { doc, model: JSON.parse(structure) as DocumentModel, json, pipeline };
-}
-
-/** The optional processing details; null when the build has none or the file cannot be read (the rest still works). */
-async function loadPipeline(path: string | undefined): Promise<PipelineDetails | null> {
-  if (!path) return null;
-  try {
-    const p = JSON.parse(await fetchText(path)) as PipelineDetails;
-    return Array.isArray(p.docling?.items) && Array.isArray(p.elements) ? p : null;
-  } catch {
-    return null;
-  }
+  const [structure, json] = await Promise.all([fetchText(doc.files.structure), fetchText(doc.files.json)]);
+  return { title: doc.title, model: JSON.parse(structure) as DocumentModel, json, download: { href: fixtureUrl(doc.files.json), name: doc.files.json.split("/").pop()! } };
 }
 
 export async function sha256Hex(data: ArrayBuffer): Promise<string> {
@@ -106,9 +65,9 @@ export async function resolveUpload(data: ArrayBuffer, fileName: string, availab
   const doc = matchDocument(available, await sha256Hex(data));
   if (!doc) {
     throw new Error(
-      `“${fileName}” is not one of the prepared demonstration documents. This static prototype does not process PDFs: ` +
+      `“${fileName}” is not one of the prepared demonstration documents. The prepared example mode does not process PDFs: ` +
       `it only shows previously generated ODOS results for ${available.map((d) => d.title).join(" and ")}, and recognises ` +
-      "them by the exact file. Processing other documents needs the ODOS backend.",
+      "them by the exact file. To process this PDF, open ODOS without ?example.",
     );
   }
   return doc;

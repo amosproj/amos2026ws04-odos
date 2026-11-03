@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from odos.artifact_names import DOCLING_MARKDOWN, DOCLING_RAW, EXTRACTION_META
 from odos.extraction import extract_pdf
 from odos.parsing.engine import parse
-from odos.parsing.profiles import LegalProfile, get
+from odos.parsing.profiles import PROFILES, LegalProfile, get
 from odos.normalization.reading_order import write_evidence
 
 
@@ -28,6 +28,12 @@ class ProcessingMode(StrEnum):
 class Outcome(StrEnum):
     COMPLETED = "completed"
     UNSUPPORTED = "unsupported"  # processed, but no structure/Legal JSON is offered
+
+
+UNRECOGNIZED = ("The document type could not be recognized: neither German legislation (sections '§ <number> <title>') "
+                "nor EU legislation (articles 'Artikel <n>') was found. ODOS does not produce a legal structure or Legal JSON for it.")  # fmt: skip
+AMBIGUOUS = ("The document type is ambiguous: both German and EU legislation structures were found. "
+             "ODOS does not produce a legal structure or Legal JSON for it.")  # fmt: skip
 
 
 def _sha256(path: Path) -> str:
@@ -64,7 +70,7 @@ class PipelineResult(BaseModel):
     summary: dict = Field(default_factory=dict)
 
 
-def run_pipeline(pdf: Path, out_dir: Path, mode: ProcessingMode, progress: Callable[[str], None] = lambda stage: None) -> PipelineResult:
+def run_pipeline(pdf: Path, out_dir: Path, mode: ProcessingMode | None = None, progress: Callable[[str], None] = lambda stage: None) -> PipelineResult:
     out_dir.mkdir(parents=True, exist_ok=True)
     progress("extracting")
     summary = extract_or_reuse(pdf, out_dir)
@@ -72,18 +78,22 @@ def run_pipeline(pdf: Path, out_dir: Path, mode: ProcessingMode, progress: Calla
     # and, where provable, repair the reading order; see odos.normalization.reading_order)
     write_evidence(pdf, out_dir / DOCLING_RAW)
 
-    return _run_structured(get(mode), out_dir, summary, progress)
+    return _run_structured([get(mode)] if mode else list(PROFILES.values()), out_dir, summary, progress)
 
 
-def _run_structured(profile: LegalProfile, out_dir: Path, summary: dict, progress: Callable[[str], None]) -> PipelineResult:
+def _run_structured(profiles: list[LegalProfile], out_dir: Path, summary: dict, progress: Callable[[str], None]) -> PipelineResult:
     """One run for every legal profile: the shared parsing lifecycle, the profile's reports and document.json. The
-    profile supplies the structure check, the summary and the messages."""
+    profile supplies the structure check, the summary and the messages. With several profiles (no explicit mode) the
+    document's own structure decides: exactly one profile must find its structure, else the document is refused."""
     progress("normalizing")
     raw = out_dir / DOCLING_RAW
-    model = parse(raw, profile)
-    if not profile.has_structure(model):
-        return PipelineResult(outcome=Outcome.UNSUPPORTED, summary=summary | profile.unsupported_summary,
-                              message=profile.unsupported_message)  # fmt: skip
+    found = [(p, m) for p in profiles if p.has_structure(m := parse(raw, p))]
+    if len(found) != 1:
+        if len(profiles) == 1:
+            return PipelineResult(outcome=Outcome.UNSUPPORTED, summary=summary | profiles[0].unsupported_summary,
+                                  message=profiles[0].unsupported_message)  # fmt: skip
+        return PipelineResult(outcome=Outcome.UNSUPPORTED, summary=summary, message=AMBIGUOUS if found else UNRECOGNIZED)
+    profile, model = found[0]
     profile.write_reports(model, raw, out_dir)
     summary |= _legal_json(model, out_dir)
     summary |= profile.summary(model, raw)
@@ -96,7 +106,3 @@ def _legal_json(model, out_dir: Path) -> dict:
     rep = build_legal_json_artifacts(model, out_dir / DOCLING_RAW, out_dir)["report"]
     return {"json_valid": rep["valid"], "json_schema_valid": rep["schema_valid"],
             "json_text_identical": rep["text_preservation"]["identical_to_model"]}  # fmt: skip
-
-
-def load_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))

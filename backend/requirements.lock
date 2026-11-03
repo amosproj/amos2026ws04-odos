@@ -3,6 +3,7 @@
 # transformers and docling-core, not only on docling itself; unpinned installs drift.
 # Install: pip install -r requirements.lock && pip install --no-deps -e '.[dev]'
 # Source: the environment that produced the pinned fixtures (2026-10-27), recovered 2026-10-29.
+# The thin web API (odos.api) adds fastapi, python-multipart, starlette and uvicorn (2026-11-03).
 accelerate==1.15.0
 annotated-doc==0.0.5
 annotated-types==0.8.0
@@ -23,6 +24,7 @@ docling-slim==2.143.0
 docling==2.143.0
 et_xmlfile==2.0.0
 Faker==40.43.0
+fastapi==0.162.0
 filelock==4.2.4
 filetype==1.2.0
 fsspec==2026.9.0
@@ -72,6 +74,7 @@ pytest==9.1.1
 python-dateutil==3.0.0
 python-docx==1.2.0
 python-dotenv==1.2.4
+python-multipart==0.0.33
 python-oxmsg==0.0.2
 python-pptx==1.0.2
 PyYAML==6.0.3
@@ -89,6 +92,7 @@ shapely==2.2.0
 shellingham==1.5.4
 six==1.17.0
 soupsieve==3.0.4
+starlette==1.10.0
 sympy==1.14.0
 tabulate==0.10.0
 tokenizers==0.23.3
@@ -106,4 +110,5 @@ typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzdata==2026.5
 urllib3==2.8.0
+uvicorn==0.54.0
 xlsxwriter==3.3.0

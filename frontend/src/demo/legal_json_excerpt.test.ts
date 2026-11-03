@@ -30,7 +30,6 @@ describe.skipIf(!docs.length).each(docs)("Legal JSON 2.0 excerpt of $id", (doc) 
   const model = () => JSON.parse(read(doc.files.structure)) as DocumentModel;
 
   it("is a Legal JSON 2.0 excerpt without technical provenance, with nativeType shown as germanType", () => {
-    expect(doc.example.legalJsonSchemaVersion).toBe("2.0");
     expect(text()).not.toMatch(TECHNICAL);
     expect(text()).not.toContain('"nativeType"');
     expect((JSON.parse(text()) as { germanType?: string }).germanType).toBeTruthy();

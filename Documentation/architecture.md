@@ -1,12 +1,14 @@
 # ODOS architecture
 
-ODOS is an offline pipeline plus a static demonstration:
+ODOS is a pipeline with a thin web API plus a web application:
 
-- a Python package (`backend/src/odos/`) with a command line (`odos`) that turns a PDF into structured legal data
-- a React application (`frontend/`) that shows pre-computed results of that pipeline for two prepared documents
+- a Python package (`backend/src/odos/`) with a command line (`odos`) that turns a PDF into structured legal data,
+  and a web API (`odos.api`, FastAPI) that runs that pipeline on uploaded PDFs
+- a React application (`frontend/`) that uploads a PDF to the API and shows the results; a prepared example mode
+  shows pre-computed results for two prepared documents without processing
 
-There is one canonical data model, the `DocumentModel`. Every output is derived from it. There is no server, no
-database and no user interface for corrections.
+There is one canonical data model, the `DocumentModel`. Every output is derived from it. There is no database and no
+user interface for corrections; the API is a single-instance development MVP (jobs in memory, one at a time).
 
 ```
 PDF ──Docling──▶ docling_raw.json ──parse_document──▶ document_model.json ──┬─▶ document.json (Custom Legal JSON 2.0)
@@ -30,9 +32,10 @@ PDF ──Docling──▶ docling_raw.json ──parse_document──▶ docume
 | Pipeline (one processing run) | `backend/src/odos/pipeline.py` | below |
 | CLI | `backend/src/odos/cli.py` | [development.md](development.md) |
 | Names of the files written per document | `backend/src/odos/artifact_names.py` | below |
-| Demonstration | `frontend/src/demo/`, `frontend/scripts/build-demo-fixtures.mjs` | below |
+| Web API (upload, jobs, result files) | `backend/src/odos/api.py` | below |
+| Web application | `frontend/src/demo/`, `frontend/scripts/build-demo-fixtures.mjs` | below |
 
-**Dependency direction:** `document_model` ← `normalization` ← `parsing` ← `legal_json` ← `pipeline` ← `cli`.
+**Dependency direction:** `document_model` ← `normalization` ← `parsing` ← `legal_json` ← `pipeline` ← `cli`, `api`.
 No module imports "upwards".
 
 ## The pipeline (`pipeline.run_pipeline`, `odos process`)
@@ -41,31 +44,51 @@ No module imports "upwards".
    the PDF's SHA-256.
 2. **PDF text-layer evidence:** `pdf_text_lines.json`, used to verify and repair the reading order, restore
    characters, prove footnote anchors and compute exact highlights.
-3. **Parsing:** with the explicitly chosen profile (`german_law` or `eu_legislation`) through the shared lifecycle.
-   A document without the profile's structure ends as `unsupported` with a plain explanation.
+3. **Parsing:** with the explicitly chosen profile (`german_law` or `eu_legislation`, as `odos process --mode` does) or,
+   without one (the web API), with every profile: exactly one must find its structure (`has_structure`), which is the
+   document's type. A document without the structure, or where both are found, ends as `unsupported` with a plain
+   explanation.
 4. **Outputs:** `document_model.json`, `document.json` (schema-validated, text checked against the model) and the
    validation reports. Custom Legal JSON is the only export; Akoma Ntoso XML is no longer part of the prototype.
 
 Every artifact name is defined once, in `artifact_names.py`.
 
-## The static demonstration (`frontend/`)
+## The web API (`odos.api`)
 
-React + TypeScript + Vite. Nothing is processed in the browser.
+A thin layer over `run_pipeline`: `POST /api/jobs` stores the upload (PDF header and size checked) in a fresh job
+directory and queues it; one background thread runs the pipeline per job (stages `extracting`, `normalizing`); `GET
+/api/jobs/{id}` reports `queued`, `processing`, `completed`, `unsupported` or `failed`; `GET
+/api/jobs/{id}/files/{name}` serves the two result files the app reads (`document_model.json`, `document.json`) (`?download=true`: as an attachment);
+`DELETE` removes a job with its files. The uploaded PDF is deleted after processing; the oldest finished jobs beyond
+ten are removed; the storage directory is temporary unless `ODOS_STORAGE_DIR` is set. Failures are logged on the
+server; the client gets a plain message without paths or stack traces.
+
+## The web application (`frontend/`)
+
+React + TypeScript + Vite. Nothing is computed in the browser beyond cutting the selected element's node out of `document.json`.
+
+**Live mode** (`demo/live.ts`): the PDF is uploaded, the job is polled, and the
+document model and `document.json` are loaded. The result view is the one described below; the JSON preview shows the
+selected element's node or the full document (`demo/excerpts.mjs` gives `nativeType` the presentation name
+`germanType`), and the download is the complete `document.json`.
+
+**Prepared example mode:**
 
 1. `npm run demo:fixtures` reads the pipeline output directories and writes `public/demo/`: per document a
    `structure.json` (the part of the DocumentModel the UI shows, with the provenance the highlighting uses), a
    Legal JSON 2.0 excerpt cut out of `document.json` (`*.legal.json`: a top-level unit down to the shown provisions,
-   nodes unchanged except that the key `nativeType` is shown as `germanType`) and `pipeline.json` (processing details), plus a `manifest.json` with the PDF's SHA-256.
+   nodes unchanged except that the key `nativeType` is shown as `germanType`), plus a `manifest.json` with the PDF's SHA-256.
 2. The user picks a PDF. The browser hashes it and looks the hash up in the manifest (`demo/fixtures.ts`). Unknown
    files are refused with an explanation.
 3. `DemoApp` shows the PDF (`pdfjs-dist`) with highlights, the full structure tree, the Custom Legal JSON preview
-   with download, and the processing details (Docling output → legal parser → Custom Legal JSON).
+   with download (two tabs: Legal structure and Artifacts).
 
 | Module | Role |
 |---|---|
 | `src/demo/DemoApp.tsx` | upload screen, result view, Custom Legal JSON preview and download |
-| `src/demo/PipelineView.tsx` | the "Processing details" tab |
-| `src/demo/fixtures.ts` | manifest, SHA-256 matching, upload checks, preview helpers |
+| `src/demo/live.ts` | live mode: API calls, job polling, the selected element's JSON node |
+| `src/demo/excerpts.mjs` | presentation names and JSON formatting, shared with the fixture script |
+| `src/demo/fixtures.ts` | prepared examples: manifest, SHA-256 matching, upload checks |
 | `src/components/PdfViewer.tsx`, `StructureTree.tsx` | PDF pages with highlight overlays, the structure tree |
 | `src/structure.ts` | display tree, labels, search, highlight geometry |
 | `src/types.ts` | the fields of the DocumentModel the UI reads |

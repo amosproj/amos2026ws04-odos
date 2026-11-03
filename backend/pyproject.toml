@@ -5,12 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "odos"
 version = "0.1.0"
-description = "ODOS pipeline: legal PDFs to a canonical document model and Custom Legal JSON 1.1"
+description = "ODOS pipeline: legal PDFs to a canonical document model and Custom Legal JSON 2.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "docling>=2.143,<3",
     "pydantic>=2.10,<3",
     "jsonschema>=4.20",
+    "fastapi>=0.115",  # the thin web API (odos.api)
+    "python-multipart>=0.0.9",  # PDF upload
+    "uvicorn>=0.30",
 ]
 
 [project.optional-dependencies]

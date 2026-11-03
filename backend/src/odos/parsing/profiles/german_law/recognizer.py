@@ -420,9 +420,6 @@ def _open_absatz(b: _Builder, item, m, text: str, reasons: list[str] | None = No
     b.stack.append(el)
 
 
-_TEXT_LIKE = (T.TEXT, T.UNMARKED_LIST_ITEM)
-
-
 def _is_restart(b: _Builder, parent: Element, type_: T, number: str) -> bool:
     """True if this numbered item restarts a list under the same parent: a '1.' that appears after the
     parent already has numbered children. Covers both sentence-interlaced restarts (text between the runs)

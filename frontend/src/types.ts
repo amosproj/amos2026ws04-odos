@@ -59,6 +59,7 @@ export interface TocEntry {
 
 export interface DocumentModel {
   profile?: string | null; // "eu_legislation"; absent for the German-law parser
+  metadata?: { title?: string | null };
   source: { num_pages: number };
   root_id: string;
   elements: DocElement[];

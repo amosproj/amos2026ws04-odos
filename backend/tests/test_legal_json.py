@@ -1,6 +1,5 @@
 """document.json: the public JSON serialization of the canonical DocumentModel (schema odos-legal-json 2.0)."""
 
-import hashlib
 import json
 import re
 from pathlib import Path
@@ -8,7 +7,7 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
-from odos.legal_json.artifacts import FROZEN_SCHEMA_PATHS, SCHEMA_PATH, build_legal_json_artifacts, published_schema, serialize
+from odos.legal_json.artifacts import SCHEMA_PATH, build_legal_json_artifacts, published_schema, serialize
 from odos.legal_json.exporter import to_legal_json
 from odos.legal_json.markers import marker_style
 from odos.legal_json.nesting import validate_structure
@@ -88,7 +87,7 @@ def test_export_is_deterministic(case):
 
 
 # ---- 2.0 = legal content only; provenance stays in the DocumentModel ---------------------------------------------------
-# technical fields of 1.1 (and the model's own spellings) that 2.0 no longer carries
+# technical fields (and the model's own spellings) that 2.0 does not carry
 TECHNICAL = {"source", "sourceSpans", "bbox", "bboxScope", "charStart", "charEnd", "itemRef", "numberSource", "textSha256",
              "markerStyle", "coordinateSystem", "sourceFile", "doclingJsonSha256", "left", "top", "right", "bottom",
              "source_spans", "highlight_boxes", "page_no", "self_ref"}  # fmt: skip
@@ -261,19 +260,6 @@ def test_sentences_are_supported_by_model_schema_and_rules():
     assert not validate_structure(doc)
     assert not list(Draft202012Validator(published_schema()).iter_errors(doc.model_dump(mode="json")))
     assert any("'sentence' not allowed under 'chapter'" in e for e in validate_structure(_doc("de", [_node("c", "chapter", [_node("x", "sentence")])])))  # fmt: skip
-
-
-# ---- versions -------------------------------------------------------------------------------------------------------
-# 1.0 and 1.1 are no longer written; their published schemas stay unchanged so earlier exports can still be validated
-FROZEN = {"1.0": "1b54a158b0f45ef99fd8732c77cd9499a60a3a4fa3872a867803ab9105dc69c2",
-          "1.1": "6590804ee4b8968108531c241eff20247655d998d85fbe04edf1e85fb7de9a74"}  # fmt: skip
-
-
-@pytest.mark.parametrize("version", sorted(FROZEN))
-def test_earlier_schemas_are_frozen_and_reject_2_0(version, case):
-    path = FROZEN_SCHEMA_PATHS[version]
-    assert hashlib.sha256(path.read_bytes()).hexdigest() == FROZEN[version]
-    assert list(Draft202012Validator(json.loads(path.read_text(encoding="utf-8"))).iter_errors(case[5]))  # a breaking version
 
 
 # ---- one source of truth -------------------------------------------------------------------------------------------

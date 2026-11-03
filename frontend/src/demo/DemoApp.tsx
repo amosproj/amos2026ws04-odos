@@ -4,23 +4,24 @@ import { PdfViewer } from "../components/PdfViewer";
 import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
-import { fixtureUrl, loadManifest, loadResult, resolveUpload, type DemoDocument, type DemoResult } from "./fixtures";
-import { PipelineView } from "./PipelineView";
+import { loadManifest, loadResult, resolveUpload, type DemoResult } from "./fixtures";
+import { STAGE_LABELS, deleteJob, nodeJson, processPdf } from "./live";
 import "./demo.css";
 
-// Static proof of concept: no backend. "Process Document" looks the chosen PDF up among the prepared documents and
-// shows their previously generated pipeline results; any other PDF is refused with an explanation.
+// "Process Document" sends the chosen PDF to the ODOS backend, which recognizes its type and runs the whole pipeline on
+// it (src/demo/live.ts). Opening the page with ?example selects the prepared example mode instead: it looks the PDF up
+// among the prepared documents and shows their previously generated results (src/demo/fixtures.ts); any other PDF is
+// refused there with an explanation.
 
-type Phase = { kind: "idle" } | { kind: "checking" } | { kind: "done"; result: DemoResult; pdfUrl: string };
+const EXAMPLE = new URLSearchParams(globalThis.location?.search).has("example");
+type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string };
 
 export default function DemoApp() {
-  const [docs, setDocs] = useState<DemoDocument[] | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [error, setError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { void loadManifest().then(setDocs); }, []);
   const pdfUrl = phase.kind === "done" ? phase.pdfUrl : null;
   useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
 
@@ -32,10 +33,11 @@ export default function DemoApp() {
   const process = async () => {
     if (!file) return;
     setError(null);
-    setPhase({ kind: "checking" });
+    setPhase({ kind: "busy", stage: "checking" });
     try {
-      const doc = await resolveUpload(await file.arrayBuffer(), file.name, docs ?? (await loadManifest()));
-      const result = await loadResult(doc);
+      const result = EXAMPLE
+        ? await loadResult(await resolveUpload(await file.arrayBuffer(), file.name, await loadManifest()))
+        : await processPdf(file, (stage) => setPhase({ kind: "busy", stage }));
       setPhase({ kind: "done", result, pdfUrl: URL.createObjectURL(file) });
     } catch (e) {
       setPhase({ kind: "idle" });
@@ -44,6 +46,7 @@ export default function DemoApp() {
   };
 
   const reset = () => {
+    if (phase.kind === "done" && phase.result.live) void deleteJob(phase.result.live.jobId); // its files are not kept
     setPhase({ kind: "idle" });
     setFile(null);
     setError(null);
@@ -52,7 +55,7 @@ export default function DemoApp() {
 
   if (phase.kind === "done") return <ResultView result={phase.result} pdfUrl={phase.pdfUrl} onReset={reset} />;
 
-  const busy = phase.kind === "checking";
+  const busy = phase.kind === "busy";
   return (
     <main className="demo-upload">
       <div className="demo-card">
@@ -67,8 +70,11 @@ export default function DemoApp() {
           <span>{file ? file.name : "Choose a PDF or drop it here"}</span>
         </label>
         <button className="btn primary demo-process" onClick={() => void process()} disabled={!file || busy}>
-          {busy ? <><span className="spinner" aria-hidden="true" /> Loading result…</> : "Process Document"}
+          {phase.kind === "busy"
+            ? <><span className="spinner" aria-hidden="true" /> {phase.stage === "checking" ? "Loading result…" : STAGE_LABELS[phase.stage] ?? "Processing…"}</>
+            : "Process Document"}
         </button>
+        {busy && !EXAMPLE && <p className="muted small demo-hint">Long documents take a few minutes (Docling extraction).</p>}
         {error && <div className="alert warn" role="alert">{error}</div>}
       </div>
     </main>
@@ -76,10 +82,11 @@ export default function DemoApp() {
 }
 
 export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pdfUrl: string; onReset: () => void }) {
-  const { doc, model } = result;
-  const [tab, setTab] = useState<"structure" | "artifacts" | "pipeline">("structure");
+  const { model } = result;
+  const [tab, setTab] = useState<"structure" | "artifacts">("structure");
   const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [full, setFull] = useState(false); // live Artifacts: the complete document instead of the selected element
   const element = useMemo(() => model.elements.find((e) => e.id === selected) ?? null, [model, selected]);
   const hl = highlightsOf(element);
 
@@ -93,8 +100,8 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
     <main className="workspace demo-result">
       <div className="docbar">
         <span className="demo-brand">ODOS</span>
-        <h2 title={doc.title}>{doc.title}</h2>
-        <span className="chip" title="Loaded from previously generated pipeline output; nothing was processed in the browser">precomputed result</span>
+        <h2 title={result.title}>{result.title}</h2>
+        {!result.live && <span className="chip" title="Loaded from previously generated pipeline output; nothing was processed in the browser">precomputed result</span>}
         <span className="spacer" />
         <button className="btn" onClick={onReset}>Choose another PDF</button>
       </div>
@@ -106,7 +113,6 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
           <div className="tabs" role="tablist">
             <button role="tab" aria-selected={tab === "structure"} className={tab === "structure" ? "active" : ""} onClick={() => setTab("structure")}>Legal structure</button>
             <button role="tab" aria-selected={tab === "artifacts"} className={tab === "artifacts" ? "active" : ""} onClick={() => setTab("artifacts")}>Artifacts</button>
-            <button role="tab" aria-selected={tab === "pipeline"} className={tab === "pipeline" ? "active" : ""} onClick={() => setTab("pipeline")}>Processing details</button>
           </div>
           <div className="tabbody">
             {tab === "structure" && (
@@ -115,8 +121,7 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
                 <SourceDetail element={element} onGoToPage={setPage} />
               </div>
             )}
-            {tab === "artifacts" && <Artifacts result={result} />}
-            {tab === "pipeline" && <PipelineView result={result} onSelect={(id) => { select(id); setTab("structure"); }} onOpenArtifacts={() => setTab("artifacts")} />}
+            {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} />}
           </div>
         </section>
       </div>
@@ -141,17 +146,25 @@ function SourceDetail({ element: e, onGoToPage }: { element: DocElement | null; 
   );
 }
 
-/** The Legal JSON 2.0 excerpt, shown exactly as the downloaded file. */
-export function Artifacts({ result }: { result: DemoResult }) {
-  const file = result.doc.files.json;
+/** Prepared example: the Legal JSON 2.0 excerpt, shown exactly as the downloaded file. Live: a preview of the selected
+ *  element or (`full`, switched with `onFull`) of the whole document, and the download of the complete document.json. */
+export function Artifacts({ result, element = null, full, onFull }: { result: DemoResult; element?: DocElement | null; full?: boolean; onFull?: (full: boolean) => void }) {
+  const json = (!full && result.live && nodeJson(result.live, element)) || result.json;
   return (
     <div className="demo-artifacts">
       <section className="demo-artifact">
         <div className="demo-artifact-head">
           <h3>Custom Legal JSON</h3>
-          <a className="btn small" href={fixtureUrl(file)} download={file.split("/").pop()}>Download</a>
+          {onFull && (
+            <div className="demo-toggle" role="group" aria-label="JSON preview">
+              {[false, true].map((f) => (
+                <button key={String(f)} className="btn small" aria-pressed={!!full === f} onClick={() => onFull(f)}>{f ? "Full document" : "Selected element"}</button>
+              ))}
+            </div>
+          )}
+          <a className="btn small" href={result.download.href} download={result.download.name}>Download</a>
         </div>
-        <pre className="preview demo-code" tabIndex={0}>{result.json.replace(/\n$/, "")}</pre>
+        <pre className="preview demo-code" tabIndex={0}>{json.replace(/\n$/, "")}</pre>
       </section>
     </div>
   );

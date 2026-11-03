@@ -173,7 +173,7 @@ Nothing else is merged. The golden baseline of the MBO records this one delibera
 The comparison covers:
 
 - the model and the validation report (`phase3_baseline.json`, `synthetic_eu_baseline.json`)
-- `document.json` 2.0 and its JSON report (`legal_json_2_0_baseline.json`, recorded when 2.0 replaced 1.1)
+- `document.json` 2.0 and its JSON report (`legal_json_2_0_baseline.json`)
 - per-element, per-sentence and per-TOC-entry hashes
 
 All values are deterministic: no paths or timestamps, and reports compared by content. The baselines also hold

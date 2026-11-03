@@ -36,7 +36,18 @@ odos legal-json output/doc/document_model.json                 # document.json (
 - **Custom Legal JSON is the only export.** Akoma Ntoso XML (`odos akn`, `--retrieval-date`) was removed from the
   prototype.
 
-## Producing the demonstration data
+## Running the web application
+
+```bash
+cd backend && source .venv/bin/activate && uvicorn odos.api:app --port 8000   # terminal 1
+cd frontend && npm run dev                                                     # terminal 2: http://localhost:5173
+```
+
+`ODOS_STORAGE_DIR` keeps the job directories somewhere other than a temporary directory (they are not removed at
+shutdown then; inside the repository use a `storage/documents/` path, which is gitignored). `ODOS_MAX_UPLOAD_MB`
+sets the upload limit (default 50). `ODOS_API_URL` points the frontend's proxy at another backend address.
+
+## Producing the demonstration data (prepared examples)
 
 ```bash
 # 1. pipeline output for the two demo documents
@@ -49,7 +60,7 @@ npm ci
 npm run demo:fixtures -- --mbo ../backend/output/mbo --eu ../backend/output/eu
 # (or, in one step with PDF and fixture hash checks: npm run demo:setup -- --mbo-pdf <MBO.pdf> --eu-pdf <eu.pdf>)
 npm run dev                # http://localhost:5173
-npm run build:demo         # type check + static site in dist/
+npm run build         # type check + static site in dist/
 npm run preview            # http://localhost:4173
 ```
 
@@ -60,7 +71,7 @@ not be published (see the root README).
 
 ```bash
 cd backend && source .venv/bin/activate && pytest     # ~370 tests, about 2 minutes (network needed for Docling models)
-cd frontend && npm test && npm run typecheck && npm run build:demo
+cd frontend && npm test && npm run typecheck && npm run build
 ```
 
 **Test inputs:**
@@ -117,8 +128,10 @@ cd frontend && npm test && npm run typecheck && npm run build:demo
 | `test_hygiene.py`, `test_reading_order.py`, `test_source_text.py`, `test_highlights.py`, `test_sentences_toc_refs.py` | the source layer and the lifecycle stages |
 | `test_legal_json.py` | the Custom Legal JSON export and its validation |
 | `test_extraction.py`, `test_environment.py` | extraction, dependency drift |
+| `test_api.py` | the web API: upload checks, job lifecycle, result files and download, errors, cleanup; the real pipeline on the synthetic PDF and (when available) the MBO and Regulation (EU) 2023/1230 |
 | `frontend/src/structure.test.ts` | hierarchy, search, highlight geometry, TOC view |
 | `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, Custom Legal JSON preview and downloads, MBO § 6 Absatz 1, the Legal JSON 2.0 excerpts and their traceability to the model |
+| `frontend/src/demo/live.test.tsx` | live mode against a fake backend (stages, errors, unreachable backend), the result view, preview (selected element and full document) and download; on the real pipeline outputs in `.demo-work/` when present |
 
 ## Conventions
 

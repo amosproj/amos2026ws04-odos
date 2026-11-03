@@ -38,6 +38,7 @@ describe("unsupported PDF behaviour", () => {
     expect(err).toBeInstanceOf(Error);
     expect((err as Error).message).toContain("“other.pdf” is not one of the prepared demonstration documents");
     expect((err as Error).message).toContain("does not process PDFs");
+    expect((err as Error).message).toContain("open ODOS without ?example");
     expect((err as Error).message).toContain("EU Regulation and Musterbauordnung (MBO)");
   });
   it("says so when the build has no prepared documents", async () => {

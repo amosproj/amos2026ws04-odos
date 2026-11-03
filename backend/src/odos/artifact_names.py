@@ -1,6 +1,7 @@
 """Names of the files ODOS writes for a document: one source for the pipeline and the CLI.
 
-The demo fixture script (frontend/scripts/build-demo-fixtures.mjs) reads them by these names: never rename one.
+The demo fixture script (frontend/scripts/build-demo-fixtures.mjs) and the web API (`odos.api`) read them by these names:
+never rename one.
 """
 
 from __future__ import annotations
