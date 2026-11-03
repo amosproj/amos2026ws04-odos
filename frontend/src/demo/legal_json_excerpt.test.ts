@@ -5,8 +5,7 @@ import { highlightsOf } from "../structure";
 import type { DocElement, DocumentModel } from "../types";
 import type { DemoDocument } from "./fixtures";
 
-// The Legal JSON 2.0 excerpts of the local build (npm run demo:fixtures, gitignored) and, when the pipeline outputs
-// are still in .demo-work/ (npm run demo:setup), the document.json they were cut from.
+
 const DEMO = resolve(__dirname, "../../public/demo");
 const WORK: Record<string, string> = { mbo: "mbo", "eu-2023-1230": "eu" };
 const TECHNICAL = /"(source|sourceSpans|bbox|bboxScope|charStart|charEnd|itemRef|numberSource|textSha256|markerStyle|coordinateSystem|sourceFile)"\s*:/;
@@ -29,7 +28,7 @@ describe.skipIf(!docs.length).each(docs)("Legal JSON 2.0 excerpt of $id", (doc) 
   const text = () => read(doc.files.json);
   const model = () => JSON.parse(read(doc.files.structure)) as DocumentModel;
 
-  it("is a Legal JSON 2.0 excerpt without technical provenance, with nativeType shown as germanType", () => {
+  it("is a Legal JSON 2.0 excerpt without technical provenance", () => {
     expect(text()).not.toMatch(TECHNICAL);
     expect(text()).not.toContain('"nativeType"');
     expect((JSON.parse(text()) as { germanType?: string }).germanType).toBeTruthy();
@@ -50,7 +49,7 @@ describe.skipIf(!docs.length).each(docs)("Legal JSON 2.0 excerpt of $id", (doc) 
   });
 
   const work = resolve(__dirname, "../../.demo-work", WORK[doc.id] ?? doc.id, "document.json");
-  it.skipIf(!existsSync(work))("copies its nodes from the pipeline's document.json, only nativeType renamed to germanType", () => {
+  it.skipIf(!existsSync(work))("copies its nodes from the pipeline's document.json", () => {
     const legal = JSON.parse(readFileSync(work, "utf8")) as { schemaVersion: string; structure: Node[] };
     expect(legal.schemaVersion).toBe("2.0");
     const excerpt = JSON.parse(text()) as Node;

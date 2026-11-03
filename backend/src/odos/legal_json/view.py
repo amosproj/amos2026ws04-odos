@@ -43,7 +43,11 @@ class _Out(BaseModel):
 class Node(_Out):
     id: str = Field(description="the element id of the DocumentModel (stable, unique)")
     type: NodeType
-    nativeType: str | None = Field(default=None, exclude_if=_none, description="term of the source legal tradition")
+    germanType: str | None = Field(
+    default=None,
+    exclude_if=_none,
+    description="German name of the legal structural element",
+)
     number: str | None = Field(default=None, exclude_if=_none)
     marker: str | None = Field(default=None, exclude_if=_none, description="exact marker as printed")
     title: str | None = Field(default=None, exclude_if=_none)

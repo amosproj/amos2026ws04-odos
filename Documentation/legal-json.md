@@ -24,7 +24,7 @@ Top-level fields include schema/document identity, title, legal system, language
 |---|---|
 | `id` | Matching internal element ID |
 | `type` | Public structural category |
-| `nativeType` | Source-language legal term, such as `Absatz` |
+| `germanType` | Source-language legal term, such as `Absatz` |
 | `marker` | Label as printed, such as `(5)` |
 | `number` | Identifier without surrounding label punctuation |
 | `title` | Heading, where present |
@@ -44,15 +44,13 @@ Tables additionally contain dimensions and rows. Parent nodes do not repeat all 
 | Lettered list | `letter` | `point` |
 | Annex | `annex` | `annex` |
 
-An EU `section` denotes an Abschnitt, not a German paragraph sign. Interpret categories with `legalSystem`, `nativeType` and the profile nesting rules. The current profiles process German-language text.
+An EU `section` denotes an Abschnitt, not a German paragraph sign. Interpret categories with `legalSystem`, `germanType` and the profile nesting rules. The current profiles process German-language text.
 
 ## Sentences, footnotes and sources
 
 The `sentences` collection identifies logical sentences using ordered ranges into node text, rather than duplicating text. Offsets are Unicode code points, start inclusive and end exclusive. In JavaScript, ordinary string indices use UTF-16 code units; convert deliberately when applying these ranges.
 
 Footnotes preserve their content and source-supported element anchors. Logical TOC entries can link to confirmed body nodes. The full technical evidence, uncertain cases and PDF coordinates remain in the internal model.
-
-The frontend currently uses `excerpts.mjs` to show `nativeType` as `germanType` in previews. This is a presentation rename; the live download retains the actual schema field `nativeType`.
 
 ## Validation
 

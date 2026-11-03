@@ -44,7 +44,7 @@ The backend uses one processing worker and an in-memory job registry. Default st
 
 ## Frontend
 
-`DemoApp.tsx` contains upload and result views despite its historical name. `live.ts` handles API requests and polling. `excerpts.mjs` formats JSON and currently displays `nativeType` as `germanType`; downloaded `document.json` retains `nativeType`.
+`DemoApp.tsx` contains upload and result views despite its historical name. `live.ts` handles API requests and polling.
 
 The simplified `fixtures.ts` contains only the shared `DemoResult` type; it does not fetch examples. Keep its type imports until they have been moved to another file.
 

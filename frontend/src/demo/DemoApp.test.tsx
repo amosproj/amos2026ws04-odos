@@ -14,8 +14,7 @@ vi.mock("../components/PdfViewer", () => ({
 // An invented provision with the shape of § 6 (1): the introduction runs over a page break, two numbered children follow.
 const ABS = "doc/teil-2/par-6/abs-1";
 const INTRO = "1 Erster Satz beginnt am Seitenende und geht auf der nächsten Seite weiter. 2 Zweiter Satz.";
-// Its Legal JSON 2.0 excerpt as scripts/build-demo-fixtures.mjs writes it: Zweiter Teil down to § 6 Absatz 1 and 2,
-// with `nativeType` shown as `germanType`.
+
 const json = JSON.stringify({
   id: "doc/teil-2", type: "part", germanType: "Teil", number: "2", marker: "Zweiter Teil", title: "Beispielteil", pages: [9],
   children: [{

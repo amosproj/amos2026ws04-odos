@@ -133,7 +133,7 @@ def _node(el: Element, index: dict[str, Element], names: _Names) -> Node:
     return Node(
         id=el.id,
         type=names.types[el.type],
-        nativeType=names.native.get(el.type),
+        germanType=names.native.get(el.type),
         number=el.number,
         marker=el.marker,
         title=el.title,

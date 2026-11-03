@@ -78,7 +78,7 @@ describe.skipIf(!existsSync(resolve(DIR, "teil-2.legal.json")))("MBO Legal JSON 
     expect(abs.text).toMatch(/^1 Vor den Außenwänden von Gebäuden .* 4 Eine Abstandsfläche ist nicht erforderlich vor Außenwänden,$/);
   });
 
-  it("is Legal JSON 2.0 without technical provenance, with nativeType shown as germanType", () => {
+  it("is Legal JSON 2.0 without technical provenance", () => {
     expect(read("teil-2.legal.json")).not.toMatch(/sourceSpans|bbox|charStart|charEnd|bboxScope|itemRef|markerStyle|omittedChildren|nativeType/);
   });
 });

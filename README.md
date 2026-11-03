@@ -1,80 +1,128 @@
-# ODOS – Ontology-Driven Operating System (AMOS WS 2026)
+# ODOS – Ontology-Driven Operating System
 
-Research prototype: upload a legal PDF and the ODOS backend recognizes whether it is German or EU legislation and
-runs the real pipeline on it (Docling extraction, normalization, legal parser, DocumentModel, Custom Legal
-JSON 2.0 with schema validation). The browser shows the original PDF next to the recognized legal structure (with
-source highlighting), a JSON preview of the selected element or of the full document, and the download of the complete
-Custom Legal JSON 2.0 document. Custom Legal JSON is the only export; Akoma Ntoso XML is no longer part of the
-prototype.
+AMOS WS 2026 research prototype for converting legal PDFs into structured legal JSON.
 
-## Run ODOS (live processing)
+Upload a PDF in the web app. The Python backend extracts its content with Docling, recognizes a German-law or German-language EU structure, and exports Custom Legal JSON 2.0. The frontend displays the original PDF, the recognized hierarchy with source highlighting, and JSON results.
 
-Required: Python 3.12, Node.js 22.12 or newer, network access for the first run (Docling downloads its models,
-several minutes), and a few GB of disk space.
+## Current scope
 
-```bash
-# 1. the backend (once)
+- Live PDF processing through a FastAPI backend.
+- German-law and EU-legislation parsing profiles, developed around the Musterbauordnung and Regulation (EU) 2023/1230.
+- Custom Legal JSON for the selected element or the full document, with a full-document download.
+- A collapsible Docling Raw JSON view below Custom Legal JSON, provided the raw-output API and UI extension has been applied.
+- Runtime schema validation and diagnostic reports.
+
+The simplified version has no prepared-example mode or bundled automated test suite. Recognition of a document's structure does not guarantee that every passage is parsed correctly. Review warnings and compare the output with the PDF.
+
+LLM-based rule extraction and digital-twin validation are future steps. Akoma Ntoso XML is not generated in this version.
+
+## Requirements
+
+- Python 3.12
+- Node.js 22.12 or newer, including npm
+- Network access for installation and the first Docling model download
+- A few GB of free disk space
+
+Processing time depends on the computer and PDF. The first extraction may take considerably longer while Docling downloads its models.
+
+## First-time setup on Windows
+
+Extract the ZIP completely, or clone the repository. Open the project folder containing `backend` and `frontend` in VS Code. Execute commands one at a time and stop if a command fails.
+
+### Backend
+
+From the project root, open a PowerShell terminal:
+
+```powershell
 cd backend
-python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.lock
-pip install --no-deps -e ".[dev]"
-
-# 2. start the API (http://127.0.0.1:8000, single instance; jobs and their files are kept in a temporary directory
-#    that is removed at shutdown, or under ODOS_STORAGE_DIR; uploads are limited to ODOS_MAX_UPLOAD_MB, default 50)
-uvicorn odos.api:app --port 8000
-
-# 3. in a second terminal: the frontend (proxies /api to the backend; another address: ODOS_API_URL=...)
-cd frontend
-npm ci
-npm run dev                # http://localhost:5173
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.lock
+.\.venv\Scripts\python.exe -m pip install --no-deps -e .
+.\.venv\Scripts\python.exe -m uvicorn odos.api:app --port 8000
 ```
 
-Pick a PDF and press **Process Document**. Every upload is processed by the pipeline, also a PDF that is one of the
-prepared examples; nothing is looked up by file hash. The document type is recognized from the document's own structure
-(German sections `§ <n>` or EU articles `Artikel <n>`), never from the file name. Processing
-the MBO (83 pages) or Regulation (EU) 2023/1230 (102 pages) takes about 20 seconds on a recent Mac once the Docling
-models are downloaded. A document in which neither or both structures are found is refused with a clear message; a PDF Docling
-cannot read is reported as failed (details only in the server log).
+Leave this terminal running. The backend API documentation is available at `http://127.0.0.1:8000/docs`. A 404 at `/` is expected: the backend does not serve the frontend page there.
 
-API (`backend/src/odos/api.py`): `POST /api/jobs` (multipart `file`), `GET /api/jobs/{id}` (status, stage,
-message, summary), `GET /api/jobs/{id}/files/{name}` (`document_model.json`, `document.json`;
-`?download=true` for an attachment), `DELETE /api/jobs/{id}`.
+### Frontend
 
+Open a second PowerShell terminal at the project root:
 
-```bash
-# 1. the offline pipeline (once)
-cd backend
-python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.lock          # exactly the versions the reference data was produced with
-pip install --no-deps -e ".[dev]"
-cd ..
-
-# 2. the frontend
+```powershell
 cd frontend
 npm ci
-
-# 3. check your PDFs, run the pipeline on both, build the demo data and compare it with the reference (10+ minutes)
-npm run demo:setup -- --mbo-pdf /path/to/MusterBauVerordnung.pdf --eu-pdf /path/to/eu_2023_1230.pdf
-
-# 4. start the demo and upload one of the two PDFs at http://localhost:5173/?example
 npm run dev
 ```
 
+Open the URL printed by Vite, normally `http://localhost:5173`. Select a PDF and press **Process Document**. No demo-data generation is needed. Leave both terminals running.
 
-Other commands (in `frontend/`): `npm test`, `npm run typecheck`, `npm run build` (type check and static site in
-`dist/`), `npm run preview`. `public/demo/` and `dist/` hold the full text of the partner documents: do not publish or
-deploy them until the licensing is clarified.
+The document type is recognized from legal structures such as German section headings or EU articles, not from the filename. Unrecognized or ambiguous documents are reported as unsupported.
 
+## Later starts
+
+Installation is only needed again when dependencies change or a new environment is created.
+
+In a terminal inside `backend`:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn odos.api:app --port 8000
+```
+
+In another terminal inside `frontend`:
+
+```powershell
+npm run dev
+```
+
+Stop a server with **Ctrl+C**. If port 8000 is occupied, stop the previous backend instance before starting another. After a backend restart, process the PDF again: job information is held in memory.
+
+## Results
+
+| File | Purpose |
+|---|---|
+| `docling_raw.json` | Original Docling extraction, including layout and source references |
+| `document_model.json` | Internal legal model with provenance, highlights and diagnostics |
+| `document.json` | Public Custom Legal JSON 2.0 |
+| `legal_json_validation_report.json` | Schema, structure and source-related validation results |
+
+The internal model links the public legal nodes to Docling items and PDF locations. Technical provenance remains in the model, rather than the public 2.0 schema.
+
+The current frontend formatting helpers show `nativeType` as `germanType` in the Legal JSON preview. The full live download retains the schema's `nativeType` field.
+
+If the Docling panel cannot load, check that `DOCLING_RAW` is imported and included in `RESULT_FILES` in `backend/src/odos/api.py`. Restart the backend after changing it and process the PDF again.
+
+## Build and manual verification
+
+From `frontend`:
+
+```powershell
+npm run typecheck
+npm run build
+npm run preview
+```
+
+The build also checks TypeScript and writes the frontend to `dist/`. Preview normally runs at `http://localhost:4173` and still requires the backend. A separate production host needs API routing; the frontend build does not deploy Python.
+
+Before a release, process both a German-law and EU example. Check the hierarchy, selected-element and full-document JSON, downloaded JSON, PDF highlights and collapsible raw output. Also check the error shown for an unsupported document. Runtime validation remains enabled even when development tests have been removed.
+
+## Configuration and storage
+
+| Variable | Purpose |
+|---|---|
+| `ODOS_STORAGE_DIR` | Backend job-file location; temporary storage is used by default |
+| `ODOS_MAX_UPLOAD_MB` | Upload size limit; default 50 MB |
+| `ODOS_API_URL` | Vite proxy's backend address; default `http://127.0.0.1:8000` |
+
+Set variables before starting the corresponding process. Jobs are processed one at a time. Uploaded PDFs are deleted after processing; the browser displays its own local copy. Temporary storage is removed on shutdown, and old completed jobs may be deleted as the job limit is reached.
+
+Setting `ODOS_STORAGE_DIR` retains files but does not restore the in-memory job registry after restart. Do not commit uploaded PDFs, generated document data, virtual environments or `node_modules`.
 
 ## Repository layout
 
-| Path | Contents |
+| Folder | Contents |
 |---|---|
-| `backend/` | the pipeline (`odos`): Docling extraction, parsing engine, Custom Legal JSON, the web API, tests (`backend/README.md`) |
-| `frontend/` | the web app (React, TypeScript, Vite), its live and prepared-example modes, the fixture scripts (`frontend/README.md`) |
-| `Documentation/` | architecture, parsing, document model, Legal JSON, development guide |
+| `backend/` | Python pipeline, API, CLI and Legal JSON schema |
+| `frontend/` | React/TypeScript application and Vite configuration |
+| `Documentation/` | [Architecture and development documentation](Documentation/README.md) |
+| `Deliverables/` | Sprint submission materials |
 
-The always-running backend tests use synthetic documents and need no partner PDF
-(`Documentation/development.md`).
+For command-line processing, parsing details and schema changes, see [Documentation/README.md](Documentation/README.md).
