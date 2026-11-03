@@ -143,7 +143,7 @@ only when **all** of these hold:
 `StructureBuilder.extend` then adds the item's text, source reference, provenance box and page to the Absatz (the element
 keeps both pages and one reference per item) and the flag `page_break_continuation_merged_confirmed` is recorded. Every other continuation
 across a page break stays a separate element, flagged `continuation_across_page_break_attached_to_previous_element`.
-Nothing else is merged. The golden baseline of the MBO records this one deliberate change.
+Nothing else is merged.
 
 ## Adding a profile
 
@@ -162,27 +162,12 @@ Nothing else is merged. The golden baseline of the MBO records this one delibera
 5. **Verify it on real documents** before routing anything to it (below). Add a synthetic fixture so CI
    covers the profile without private files.
 
-## Equivalence and verification
+## Verification
 
-`backend/tests/test_golden_equivalence.py` compares every output against two recorded baselines:
-
-- **MBO and EU 2023/1230:** `tests/golden/phase3_baseline.json`. Each runs only on the exact
-  Docling extraction its baseline was computed from (checked by SHA-256).
-- **The synthetic EU regulation:** `tests/golden/synthetic_eu_baseline.json`. It always runs.
-
-The comparison covers:
-
-- the model and the validation report (`phase3_baseline.json`, `synthetic_eu_baseline.json`)
-- `document.json` 2.0 and its JSON report (`legal_json_2_0_baseline.json`)
-- per-element, per-sentence and per-TOC-entry hashes
-
-All values are deterministic: no paths or timestamps, and reports compared by content. The baselines also hold
-hashes of outputs ODOS produced when they were recorded (Akoma Ntoso XML, Legal JSON 1.1, its 1.0 downgrade and
-their report); those outputs were removed and are left out of the comparison (`golden_outputs.RETIRED`), the baseline files themselves are never rewritten.
-
-**Coverage is always reported.** Every run ends with a `GOLDEN COVERAGE: MBO ✓ · EU ✓ · synthetic EU ✓` line. A missing or different extraction shows as `✗` with its reason, never as a pass.
-A difference is a regression to investigate, never a value to refresh: `golden_outputs.record_baseline`
-refuses to overwrite a baseline.
+The real documents are checked in two places: `backend/tests/test_api.py` runs the whole pipeline on the Musterbauordnung
+and Regulation (EU) 2023/1230 and validates the result against the JSON schema, and `npm run demo:verify` (frontend)
+compares SHA-256 hashes of the fixtures built from both outputs with the committed reference. The synthetic German law
+and EU regulation (`tests/synthetic_german.py`, `tests/synthetic_eu.py`) cover both profiles without private files.
 
 **Documents still needed to judge generality:**
 

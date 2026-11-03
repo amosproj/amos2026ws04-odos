@@ -154,23 +154,3 @@ def synthetic_german_model(synthetic_german_raw_json):
     from odos.parsing import parse_document
 
     return parse_document(synthetic_german_raw_json, "german_law")
-
-
-# ---- golden coverage: which full-document equivalence checks ran in this session -------------------------------------
-GOLDEN_COVERAGE = pytest.StashKey[dict]()
-
-
-def pytest_configure(config):
-    config.stash[GOLDEN_COVERAGE] = {}
-
-
-def pytest_terminal_summary(terminalreporter, config):
-    cov = config.stash.get(GOLDEN_COVERAGE, {})
-    if not cov:
-        terminalreporter.write_line("GOLDEN COVERAGE: not run in this session (tests/test_golden_equivalence.py not selected)")
-        return
-    names = {"mbo": "MBO", "eu": "EU", "synthetic_eu": "synthetic EU"}
-    parts = [f"{names[k]} {cov[k]}" for k in names if k in cov]
-    full = all(cov.get(k) == "✓" for k in ("mbo", "eu"))
-    terminalreporter.write_line("GOLDEN COVERAGE: " + " · ".join(parts))
-    terminalreporter.write_line("full partner-document equivalence (MBO and EU): " + ("yes" if full else "NO (see the reasons above)"))

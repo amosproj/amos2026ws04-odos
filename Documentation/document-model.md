@@ -84,5 +84,4 @@ These never change an element, ID or text.
 
 - New fields are optional and left out when empty (`exclude_if`). Stored models stay valid.
 - Fields are never renamed or given a new meaning. `profile` keeps its stored values.
-- Moving the module (Phase 4: `normalization/model.py` → `document_model.py`) changes no JSON. The
-  golden baselines (`backend/tests/golden/`) pin every output before and after each change.
+- Moving the module (Phase 4: `normalization/model.py` → `document_model.py`) changes no JSON.

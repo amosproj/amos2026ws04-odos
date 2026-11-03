@@ -22,7 +22,7 @@ pytest
 | Path | Contents |
 |---|---|
 | `src/odos/` | the package (map: `../Documentation/architecture.md`) |
-| `tests/` | pytest suite, golden baselines (`tests/golden/`), the synthetic EU regulation and German law |
+| `tests/` | pytest suite (about 50 tests), the synthetic EU regulation and German law |
 | `schemas/` | the Custom Legal JSON 2.0 schema |
 | `data/input/` | `SOURCE.md` (the partner test inputs and their SHA-256); `private/` (gitignored) for documents that may not be redistributed. No public law is stored |
 | `requirements.lock` | the exact dependency set the outputs were verified with |

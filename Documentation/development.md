@@ -70,7 +70,7 @@ not be published (see the root README).
 ## Tests
 
 ```bash
-cd backend && source .venv/bin/activate && pytest     # ~370 tests, about 2 minutes (network needed for Docling models)
+cd backend && source .venv/bin/activate && pytest     # about 50 tests, about 1 minute (network needed for Docling models)
 cd frontend && npm test && npm run typecheck && npm run build
 ```
 
@@ -81,8 +81,7 @@ cd frontend && npm test && npm run typecheck && npm run build
 - **The Musterbauordnung (MBO)** was supplied by the industry partner and is not in Git. Provide it as
   `backend/data/input/private/MusterBauVerordnung.pdf` or with `ODOS_MBO_PDF`. The tests that need it are in
   `backend/tests/private/` (gitignored: they assert on the partner document) and skip with a reason when it is
-  missing. `backend/tests/fixtures/private/` (gitignored) holds partner-derived Docling items for the
-  hygiene tests.
+  missing.
 - **The full Regulation (EU) 2023/1230** is not redistributed with the repository. Provide it in one of
   two ways:
   - set `ODOS_EU_PDF=/path/to/the.pdf`
@@ -91,44 +90,24 @@ cd frontend && npm test && npm run typecheck && npm run build
   The tests check its SHA-256 (`fe36f0d1…`). Without it, the full-document EU tests skip and say why.
 - **The synthetic German law** (`backend/tests/synthetic_german.py`) always runs. It is original text with a
   generated PDF, so the PDF text-layer evidence is real: footnote anchors and printed Satz numbers are proven
-  from superscript marks. It has no golden baseline: glyph coordinates come from pdfium and can differ in the last
-  decimals between platforms, so the tests assert structure and validity.
+  from superscript marks. Glyph coordinates come from pdfium and can differ in the last decimals between
+  platforms, so the tests assert structure and validity, not hashes.
 - **The synthetic EU regulation** (`backend/tests/synthetic_eu.py`) always runs. It is original text in
   Docling's JSON shape and covers every EU structural unit end to end, including Legal JSON 2.0.
 - **Frontend:** `frontend/src/demo/mbo_par6.test.ts` and `legal_json_excerpt.test.ts` read the local fixtures
   (`public/demo/`, and `.demo-work/` for the comparison with `document.json`) and skip without them. All other frontend tests use synthetic data.
 - **Never runtime output:** tests write only to temporary directories and `backend/output/`.
 
-**Golden equivalence** (`tests/test_golden_equivalence.py`):
-
-- **What it checks:** every output against the recorded baselines in `tests/golden/`, on the exact
-  Docling extractions the baselines were built from.
-- **What every run prints:**
-
-  ```
-  GOLDEN COVERAGE: MBO ✓ · EU ✓ · synthetic EU ✓
-  full partner-document equivalence (MBO and EU): yes
-  ```
-
-- **Missing or different input:** shown as `✗ not covered: <reason>`, never as a pass. Skip reasons are
-  always printed (`-rs`).
-- **A difference** is a regression to investigate, never a value to refresh: `record_baseline` refuses
-  to overwrite a baseline.
-- **The MBO § 6 Absatz 1 baseline** records the one deliberate change since the original baselines (the page-break
-  merge, see [parsing.md](parsing.md)).
-
 **Where each kind of test lives:**
 
 | Test | What it covers |
 |---|---|
-| `test_golden_equivalence.py`, `golden_outputs.py` | byte-identical outputs and coverage reporting |
-| `test_engine_profiles.py` | registry, lifecycle order, profile tables, import isolation, CLI |
-| `test_synthetic_eu.py`, `test_synthetic_german.py` | the EU and German profiles end to end without private files |
-| `test_normalization.py`, `test_eu_parser.py`, `test_eu_parser_rules.py` (plus the local-only `tests/private/test_mbo.py`) | German and EU recognition (real and synthetic) |
-| `test_hygiene.py`, `test_reading_order.py`, `test_source_text.py`, `test_highlights.py`, `test_sentences_toc_refs.py` | the source layer and the lifecycle stages |
-| `test_legal_json.py` | the Custom Legal JSON export and its validation |
-| `test_extraction.py`, `test_environment.py` | extraction, dependency drift |
-| `test_api.py` | the web API: upload checks, job lifecycle, result files and download, errors, cleanup; the real pipeline on the synthetic PDF and (when available) the MBO and Regulation (EU) 2023/1230 |
+| `test_api.py` | the web API: upload checks, job lifecycle, result files and download, document type detection, errors, cleanup; the real pipeline on the synthetic PDF and (when available) the MBO and Regulation (EU) 2023/1230 |
+| `test_extraction.py` | Docling extraction (missing PDF, a real conversion) and the locked dependency set |
+| `test_german_law.py`, `test_eu_legislation.py` | the German and EU profiles on the synthetic documents, and the EU profile on the real regulation |
+| `tests/private/test_mbo.py` (local only) | the real Musterbauordnung: paragraph set against the PDF text layer, hierarchy, footnotes, page-break text, no content loss |
+| `test_legal_json.py` | Custom Legal JSON 2.0: schema, text equal to the model and the PDF text layer, no internal data, nesting rules, schema drift, real MBO and EU examples |
+| `test_highlights.py` | exact highlight rectangles from PDF glyphs, and missing or unreadable PDF evidence |
 | `frontend/src/structure.test.ts` | hierarchy, search, highlight geometry, TOC view |
 | `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, Custom Legal JSON preview and downloads, MBO § 6 Absatz 1, the Legal JSON 2.0 excerpts and their traceability to the model |
 | `frontend/src/demo/live.test.tsx` | live mode against a fake backend (stages, errors, unreachable backend), the result view, preview (selected element and full document) and download; on the real pipeline outputs in `.demo-work/` when present |
@@ -140,4 +119,4 @@ cd frontend && npm test && npm run typecheck && npm run build
 - **Nothing is invented.** Uncertain readings are kept and flagged (`uncertain`, `uncertainty_reasons`). Text is
   never silently changed: every restored character is recorded with its evidence.
 - **Output changes are deliberate.** Any change to legal text, IDs, hierarchy, sentences, TOC links,
-  footnote anchors, coordinates or JSON must show up as a golden difference and be explained.
+  footnote anchors, coordinates or JSON must be deliberate: the real-document tests and `npm run demo:verify` show it.

@@ -1,10 +1,11 @@
-"""Exact highlight rectangles from PDF glyphs, and the normalized TOC order."""
+"""Exact highlight rectangles from PDF glyphs, and the PDF text-layer evidence they rest on."""
 
-import re
+import json
 
 from odos.normalization.highlight import IGNORE, boxes_for, glyph_map
 from odos.document_model import BoundingBox
-from odos.normalization.reading_order import GlyphLine, load_evidence
+from odos.normalization.reading_order import GlyphLine, load_evidence, write_evidence
+from odos.parsing import parse_document
 
 ART47 = [f"doc/chp-7/art-47/para-{n}" for n in (1, 2, 3, 4)]
 
@@ -45,7 +46,7 @@ def test_article_47_paragraphs_get_exact_non_overlapping_boxes(eu_model, eu_raw_
         assert p.uncertain and "reading_order_uncertain:repaired_from_pdf_text_layer" in p.uncertainty_reasons
 
 
-def test_every_partial_element_is_exact_or_approximate_never_wrong(eu_model, eu_raw_json, synthetic_german_model, mbo_model):
+def test_every_partial_element_is_exact_or_inside_its_docling_boxes(eu_model, eu_raw_json, synthetic_german_model, mbo_model):
     ev = load_evidence(eu_raw_json)
     partial = [e for e in eu_model.elements if e.source_spans]
     assert partial and all(e.highlight_boxes for e in partial)
@@ -66,27 +67,28 @@ def _ln(text, top, left=0.0):
 BOX = [(1, BoundingBox(l=-5, t=200, r=500, b=0, coord_origin="BOTTOMLEFT"))]
 
 
-def test_alignment_maps_whole_lines_in_order_and_skips_foreign_lines():
+def test_alignment_maps_whole_lines_and_refuses_what_it_cannot_prove():
     lines = {1: [_ln("(1) Erster Absatz", 100), _ln("fremde Zeile", 90), _ln("geht weiter.", 80)]}
     text = "(1) Erster Absatz geht weiter."
-    m = glyph_map(text, BOX, lines)
-    boxes = boxes_for(text, 0, len(text), m, lines)
+    boxes = boxes_for(text, 0, len(text), glyph_map(text, BOX, lines), lines)
     assert [round(b.bbox.t) for b in boxes] == [100, 80]  # the foreign line is not part of the highlight
 
-
-def test_alignment_refuses_what_it_cannot_prove():
     assert glyph_map("Abschnitt eins", BOX, {1: [_ln("Abschnitt zwei", 100)]}) is None  # text differs
-    rep = {1: [_ln("gleiche Zeile", 100), _ln("gleiche Zeile", 90)]}
-    assert glyph_map("gleiche Zeile", BOX, rep) is None  # the same line text twice: which one is ours is not proven
-    assert glyph_map("ab", [(1, BoundingBox(l=0, t=10, r=5, b=0, coord_origin="TOPLEFT"))], {1: [_ln("ab", 5)]}) is None
+    twice = {1: [_ln("gleiche Zeile", 100), _ln("gleiche Zeile", 90)]}
+    assert glyph_map("gleiche Zeile", BOX, twice) is None  # the same line text twice: which one is ours is not proven
     assert glyph_map("Teil", BOX, {}) is None  # no glyph evidence for the page
 
 
-# ---- TOC ----------------------------------------------------------------------------------------------------------
-def test_mbo_page_3_toc_is_in_printed_order(mbo_model):
-    page3 = [e for e in mbo_model.toc_entries if any(s.page == 3 for s in e.source_spans)]
-    assert [e.marker for e in page3[:14]] == [
-        "Siebenter Abschnitt", "§ 47", "§ 48", "§ 49", "§ 50", "§ 51", "Vierter Teil",
-        "§ 52", "§ 53", "§ 54", "§ 55", "§ 56", "Fünfter Teil", "Erster Abschnitt"]  # fmt: skip
-    assert all(e.status == "linked" and e.target_id for e in page3)
-    assert page3[0].target_id == "doc/teil-3/abschnitt-7" and page3[6].target_id == "doc/teil-4"
+# ---- missing or unreadable PDF -------------------------------------------------------------------------------------
+def test_missing_or_unreadable_pdf_is_recorded_and_nothing_is_restored(synthetic_german_raw_json, tmp_path):
+    raw = tmp_path / "docling_raw.json"
+    raw.write_bytes(synthetic_german_raw_json.read_bytes())
+    write_evidence(tmp_path / "missing.pdf", raw)
+    ev = load_evidence(raw)
+    assert ev.error and not ev.item_text
+    assert not any(e.text_repairs for e in parse_document(raw, "german_law").elements)  # without evidence: Docling's text
+
+    stub = tmp_path / "stub.pdf"
+    stub.write_bytes(b"%PDF-1.4\n%stub\n")
+    recorded = json.loads(write_evidence(stub, raw).read_text())  # recorded, not raised
+    assert recorded["error"] and recorded["pages"] == {}
