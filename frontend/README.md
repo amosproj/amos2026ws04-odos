@@ -12,9 +12,6 @@ then loads its document model and `document.json`. The JSON preview shows the se
 `document.json`, unchanged and schema-validated. A PDF whose type is not recognized, or that fails, is shown as an
 error message.
 
-**Prepared example mode** (open the page as `/?example`): the static
-demonstration described below. It never processes a PDF.
-
 The JSON preview shows the actual Custom Legal JSON 2.0 output (`*.legal.json`, written by
 `scripts/build-demo-fixtures.mjs`): the nodes of `document.json` from a top-level unit down to the shown provisions
 (MBO: Zweiter Teil → § 6 → Absatz 1 with Nummer 1 and 2, Absatz 2; EU: Kapitel II → Artikel 10 → Absatz 1 and 2),
@@ -23,9 +20,6 @@ copied unchanged; only children off that path are left out. For the stakeholder 
 `document.json` keep `nativeType`). The download is the same file. The PDF highlighting does
 not use it: it reads the provenance of the document model (`structure.json`), found by the node ids.
 
-In the prepared example mode nothing is processed. The chosen PDF is matched by its SHA-256 against the prepared
-documents (Musterbauordnung, Regulation (EU) 2023/1230) and their previously generated pipeline results are shown. Any
-other PDF is refused with an explanation.
 
 ```bash
 npm ci

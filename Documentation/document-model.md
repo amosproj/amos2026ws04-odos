@@ -1,88 +1,51 @@
-# The canonical DocumentModel
+# Internal DocumentModel
 
-`DocumentModel` (`backend/src/odos/document_model.py`, written as `document_model.json`) is the single
-source of truth for a document. Everything else is a one-way serialization of it:
+`backend/src/odos/document_model.py` defines the canonical internal representation, written as `document_model.json`. The public Legal JSON and validation reports are derived from it. The frontend uses its source information to highlight the PDF.
 
-- `document.json` (Custom Legal JSON 2.0)
-- the validation reports
-
-Nothing reads those outputs back as input. The model keeps the internal diagnostics (warnings,
-uncertainty, hygiene flags) that the public outputs leave out.
-
-## Top level
+## Main fields
 
 | Field | Meaning |
 |---|---|
-| `model_version` | `"0.1"` |
-| `profile` | the parser profile: `"eu_legislation"`; **absent = German law** (as stored historically; never rewritten) |
-| `source` | the Docling file it was parsed from: filename, Docling version, `docling_json_sha256`, page count |
-| `metadata` | values printed in the document, verbatim, plus `metadata_provenance` naming the elements they come from. Dates are ISO only where the text gives a complete date |
-| `root_id` | `"doc"` |
-| `elements` | the legal structure as a flat list in document order; `parent_id` / `children_ids` form the tree |
-| `furniture` | page headers and footers (and repeated page decoration), outside the tree |
-| `warnings` | problems the parser could not resolve: `code`, `severity`, `message`, `element_id` |
-| `structure_notes` | valid exceptions the parser recognised and verified (not problems) |
-| `sentences` | derived: sentences as text ranges over elements |
-| `toc_entries` | derived: logical table-of-contents entries with their verified links |
-| `review` | reserved for an effective (corrected) model; the prototype has no correction step, so it stays empty |
+| `model_version` | Internal representation version |
+| `profile` | Parser profile; historically absent for German law and `eu_legislation` for EU legislation |
+| `source` | File/extraction identity, versions, hash and page count |
+| `metadata` | Recognized title, dates and document identifiers |
+| `root_id` | Root element ID, normally `doc` |
+| `elements` | Flat list of legal elements in document order |
+| `furniture` | Page headers, footers and repeated page decoration outside the legal tree |
+| `warnings` | Parser issues and unresolved cases |
+| `structure_notes` | Recognized structural exceptions |
+| `sentences` | Logical sentences represented by text ranges |
+| `toc_entries` | Logical table-of-contents entries and their links |
 
-## Element IDs
+## Elements and hierarchy
 
-IDs are stable paths built from the printed numbering:
+Each element has `id`, `type`, `region`, `parent_id` and `children_ids`. Parent/child references form the tree used by the frontend. Examples of IDs are `doc/teil-1/par-1/abs-1` and `doc/chp-2/art-10/para-1`.
 
-- German: `doc/teil-1/kapitel-1/par-1/abs-1/nr-2/lit-a`
-- EU: `doc/chp-2/sec-1/art-3/para-2`
+Number-based IDs are useful within a document, but are not global document-revision identifiers. Consumers referencing an element across processing runs should also retain document/revision identity.
 
-Further rules:
-
-- **Repeated or restarted numbering** gets a suffix (`~2`) or a run prefix (`run2-nr-1`).
-- **Only the profile's recognizer assigns IDs**; later lifecycle stages never renumber.
-- **Sentences, TOC links, footnote anchors and the exports' element IDs all refer to these IDs.**
-  Changing an ID scheme is therefore a breaking change.
-
-## Elements
-
-| Group | Fields |
+| Field group | Fields and purpose |
 |---|---|
-| Structure | `id`, `type` (below), `region` (`document`, `front`, `toc`, `preamble`, `body`, `conclusions`, `annex`, `furniture`), `parent_id`, `children_ids` |
-| Printed parts | `number` (as printed, e.g. `"22a"`, `"IX"`), `marker` (`"§ 1"`, `"(2)"`, `"a)"`), `title` (headings) |
-| Text | `original_text` (the source text: Docling's `orig` plus the characters restored from the PDF text layer), `content_text` (without the structural marker), `docling_text` (Docling's own text, when it differs), `text_repairs` (every restored character with its rule and evidence), `search_text` (normalised, for search) |
-| Tables | `table`: rows of cell texts, plus cell boxes where Docling gives them |
-| Provenance | `source_refs` (Docling item refs), `pages`, `provenance` (page, box, character span), `source_spans` (the slice of a Docling item a split element covers), `highlight_boxes` (exact per-line rectangles proven from the PDF glyphs; empty = use `provenance`) |
-| Footnotes | `anchor_id` (the single anchor), `anchor_ids` (all anchors), `footnote_refs` (each reference mark with page, box and evidence) |
-| Diagnostics | `uncertain`, `uncertainty_reasons`, `hygiene_flags`, `docling_label` |
-| Review | `reviewed`: reserved for corrected elements (corrected fields with their original values); empty in this prototype |
+| Printed structure | `marker`, `number`, `title` |
+| Text | `original_text`, `content_text`, optional `docling_text`, `search_text`, `text_repairs` |
+| Tables | `table`, including rows and available cell-source information |
+| Sources | `source_refs`, `pages`, `provenance`, `source_spans` |
+| Highlighting | `highlight_boxes`; approximate source boxes can be used when exact boxes are unavailable |
+| Footnotes | `anchor_id`, `anchor_ids`, `footnote_refs` |
+| Diagnostics | `uncertain`, `uncertainty_reasons`, `hygiene_flags` |
 
-**Coordinates.** Boxes are in PDF points with `coord_origin: "BOTTOMLEFT"`. The frontend converts them
-for display (`frontend/src/structure.ts`, `bboxToRect`).
+`original_text` can contain evidence-based restorations from the PDF text layer. It is not necessarily byte-identical to Docling's extracted text. Differences and repair decisions are retained; `docling_raw.json` remains unchanged.
 
-**Element types:**
+Coordinates are PDF points with a bottom-left origin. Display conversion is implemented in `frontend/src/structure.ts`.
 
-- **German law:** `teil`, `kapitel`, `abschnitt`, `unterabschnitt`, `paragraph` (§), `absatz`, `nummer`,
-  `buchstabe`, `doppelbuchstabe`, `anlage`, `unmarked_list_item`
-- **EU legislation:** `doc_title`, `preamble`, `preamble_formula`, `citation`, `recitals_intro`,
-  `recital`, `enacting_formula`, `chapter`, `section`, `article`, `article_paragraph`, `numbered_point`,
-  `point`, `subpoint`, `annex`, `annex_part`, `annex_heading`, `conclusions`, `final_formula`,
-  `signature`
-- **Shared:** `document`, `front_matter`, `toc`, `toc_entry`, `text`, `table`, `footnote`,
-  `footnote_heading`, `unrecognized`, `picture`, `page_header`, `page_footer`, `sentence`
+## Sentences and table of contents
 
-## Derived annotations
+Sentences reference `[start, end)` ranges in element `content_text`, using Unicode code-point indices. Text hashes help detect stale ranges. A sentence may span several nodes, including list items. Printed sentence numbers and punctuation-based segmentation are distinguished in the model.
 
-These never change an element, ID or text.
+TOC entries contain source ranges, candidate/confirmed targets and status. Unresolved links are retained as diagnostics rather than guessed. These entries are separate from the legal body.
 
-- **`sentences`:** `id` (`<unit>/s<n>`), `unit_id`, and `ranges` of `[start, end)` code-point offsets
-  into the elements' `content_text`. Each range records the SHA-256 of the text it was computed on.
-  `method` is `printed_number` (verified against the PDF's superscript Satz numbers) or `punctuation`.
-- **`toc_entries`:** one entry per printed TOC line, with:
-  - `source_spans` into the raw TOC items
-  - `status`: `linked` only when kind, number, title and enclosing headings agree; otherwise
-    `candidate`, `unmatched` or `ambiguous`
-  - `target_id` for a linked entry
+## Change discipline
 
-## Compatibility rules
+Keep IDs and source relationships consistent when changing the parser. Renaming an internal field requires updating Python consumers and any frontend types that read it. Public JSON field changes are handled separately in `legal_json/view.py`; see [legal-json.md](legal-json.md).
 
-- New fields are optional and left out when empty (`exclude_if`). Stored models stay valid.
-- Fields are never renamed or given a new meaning. `profile` keeps its stored values.
-- Moving the module (Phase 4: `normalization/model.py` → `document_model.py`) changes no JSON. The
-  golden baselines (`backend/tests/golden/`) pin every output before and after each change.
+The prototype has no correction interface. Reserved review fields do not imply an implemented review workflow.

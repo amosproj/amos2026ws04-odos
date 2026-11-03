@@ -1,97 +1,51 @@
 # ODOS architecture
 
-ODOS is a pipeline with a thin web API plus a web application:
+ODOS extracts legal PDFs and converts them into Custom Legal JSON 2.0. A Python backend processes uploaded PDFs; a React frontend displays the PDF, recognized legal structure and JSON outputs.
 
-- a Python package (`backend/src/odos/`) with a command line (`odos`) that turns a PDF into structured legal data,
-  and a web API (`odos.api`, FastAPI) that runs that pipeline on uploaded PDFs
-- a React application (`frontend/`) that uploads a PDF to the API and shows the results; a prepared example mode
-  shows pre-computed results for two prepared documents without processing
+The current prototype does not interpret provisions as executable compliance rules. LLM rule extraction and digital-twin validation are future steps. Akoma Ntoso is not an output of this version.
 
-There is one canonical data model, the `DocumentModel`. Every output is derived from it. There is no database and no
-user interface for corrections; the API is a single-instance development MVP (jobs in memory, one at a time).
+## Components
 
-```
-PDF ──Docling──▶ docling_raw.json ──parse_document──▶ document_model.json ──┬─▶ document.json (Custom Legal JSON 2.0)
-        (extraction)        + pdf_text_lines.json   (normalization +        └─▶ validation reports
-                              (PDF text-layer evidence) parsing)                          │
-                                                       frontend/scripts/build-demo-fixtures.mjs
-                                                                                          ▼
-                                                    frontend/public/demo/  ──▶  static site (dist/)
-```
-
-## Where is what
-
-| Concern | Location | Docs |
+| Component | Location | Responsibility |
 |---|---|---|
-| PDF extraction (Docling) | `backend/src/odos/extraction.py` | [development.md](development.md) |
-| Reading order, text restoration, extraction hygiene, highlight geometry | `backend/src/odos/normalization/` | [parsing.md](parsing.md) |
-| The universal parsing engine (lifecycle) | `backend/src/odos/parsing/engine.py` (entry point `odos.parsing.parse_document`) | [parsing.md](parsing.md) |
-| German and EU legal profiles | `backend/src/odos/parsing/profiles/german_law/`, `…/eu_legislation/` | [parsing.md](parsing.md) |
-| The canonical DocumentModel | `backend/src/odos/document_model.py` | [document-model.md](document-model.md) |
-| Custom Legal JSON 2.0 (export and validation) | `backend/src/odos/legal_json/`, `backend/schemas/odos-legal-json/` | [legal-json.md](legal-json.md) |
-| Pipeline (one processing run) | `backend/src/odos/pipeline.py` | below |
-| CLI | `backend/src/odos/cli.py` | [development.md](development.md) |
-| Names of the files written per document | `backend/src/odos/artifact_names.py` | below |
-| Web API (upload, jobs, result files) | `backend/src/odos/api.py` | below |
-| Web application | `frontend/src/demo/`, `frontend/scripts/build-demo-fixtures.mjs` | below |
+| Web API | `backend/src/odos/api.py` | Uploads, processing jobs, result files and deletion |
+| Pipeline | `backend/src/odos/pipeline.py` | Extraction, profile selection, parsing and export |
+| Extraction | `backend/src/odos/extraction.py` | Docling JSON and Markdown |
+| Normalization | `backend/src/odos/normalization/` | Reading order, text evidence and highlighting |
+| Parser | `backend/src/odos/parsing/` | Legal hierarchy, sentences and footnotes |
+| Internal model | `backend/src/odos/document_model.py` | Content, hierarchy, provenance and diagnostics |
+| Public export | `backend/src/odos/legal_json/` | Custom Legal JSON and validation |
+| Frontend | `frontend/src/` | Upload, progress, PDF and result views |
 
-**Dependency direction:** `document_model` ← `normalization` ← `parsing` ← `legal_json` ← `pipeline` ← `cli`, `api`.
-No module imports "upwards".
+## Live processing
 
-## The pipeline (`pipeline.run_pipeline`, `odos process`)
+1. The browser sends a PDF to `POST /api/jobs`.
+2. The backend creates a job and runs Docling, producing `docling_raw.json` and `extracted.md`.
+3. The pipeline records PDF text-layer evidence and attempts the German and EU profiles. Exactly one must recognize a supported structure; otherwise the document is reported as unsupported.
+4. The parser creates the canonical `DocumentModel` and validation reports.
+5. The exporter creates `document.json` and its validation report.
+6. The browser loads `document_model.json` and `document.json`. It uses model provenance for PDF highlights.
+7. Opening the Docling Raw JSON panel loads the complete `docling_raw.json` on demand, once the raw-preview extension is installed.
 
-1. **Extraction:** Docling converts the PDF once (`docling_raw.json`, `extracted.md`). `extraction.json` records
-   the PDF's SHA-256.
-2. **PDF text-layer evidence:** `pdf_text_lines.json`, used to verify and repair the reading order, restore
-   characters, prove footnote anchors and compute exact highlights.
-3. **Parsing:** with the explicitly chosen profile (`german_law` or `eu_legislation`, as `odos process --mode` does) or,
-   without one (the web API), with every profile: exactly one must find its structure (`has_structure`), which is the
-   document's type. A document without the structure, or where both are found, ends as `unsupported` with a plain
-   explanation.
-4. **Outputs:** `document_model.json`, `document.json` (schema-validated, text checked against the model) and the
-   validation reports. Custom Legal JSON is the only export; Akoma Ntoso XML is no longer part of the prototype.
+The files form different views of one processing run. Raw Docling JSON describes extraction and layout. The internal model adds legal structure and diagnostics. Public Legal JSON contains legal content without technical source coordinates.
 
-Every artifact name is defined once, in `artifact_names.py`.
+## API
 
-## The web API (`odos.api`)
-
-A thin layer over `run_pipeline`: `POST /api/jobs` stores the upload (PDF header and size checked) in a fresh job
-directory and queues it; one background thread runs the pipeline per job (stages `extracting`, `normalizing`); `GET
-/api/jobs/{id}` reports `queued`, `processing`, `completed`, `unsupported` or `failed`; `GET
-/api/jobs/{id}/files/{name}` serves the two result files the app reads (`document_model.json`, `document.json`) (`?download=true`: as an attachment);
-`DELETE` removes a job with its files. The uploaded PDF is deleted after processing; the oldest finished jobs beyond
-ten are removed; the storage directory is temporary unless `ODOS_STORAGE_DIR` is set. Failures are logged on the
-server; the client gets a plain message without paths or stack traces.
-
-## The web application (`frontend/`)
-
-React + TypeScript + Vite. Nothing is computed in the browser beyond cutting the selected element's node out of `document.json`.
-
-**Live mode** (`demo/live.ts`): the PDF is uploaded, the job is polled, and the
-document model and `document.json` are loaded. The result view is the one described below; the JSON preview shows the
-selected element's node or the full document (`demo/excerpts.mjs` gives `nativeType` the presentation name
-`germanType`), and the download is the complete `document.json`.
-
-**Prepared example mode:**
-
-1. `npm run demo:fixtures` reads the pipeline output directories and writes `public/demo/`: per document a
-   `structure.json` (the part of the DocumentModel the UI shows, with the provenance the highlighting uses), a
-   Legal JSON 2.0 excerpt cut out of `document.json` (`*.legal.json`: a top-level unit down to the shown provisions,
-   nodes unchanged except that the key `nativeType` is shown as `germanType`), plus a `manifest.json` with the PDF's SHA-256.
-2. The user picks a PDF. The browser hashes it and looks the hash up in the manifest (`demo/fixtures.ts`). Unknown
-   files are refused with an explanation.
-3. `DemoApp` shows the PDF (`pdfjs-dist`) with highlights, the full structure tree, the Custom Legal JSON preview
-   with download (two tabs: Legal structure and Artifacts).
-
-| Module | Role |
+| Method and route | Purpose |
 |---|---|
-| `src/demo/DemoApp.tsx` | upload screen, result view, Custom Legal JSON preview and download |
-| `src/demo/live.ts` | live mode: API calls, job polling, the selected element's JSON node |
-| `src/demo/excerpts.mjs` | presentation names and JSON formatting, shared with the fixture script |
-| `src/demo/fixtures.ts` | prepared examples: manifest, SHA-256 matching, upload checks |
-| `src/components/PdfViewer.tsx`, `StructureTree.tsx` | PDF pages with highlight overlays, the structure tree |
-| `src/structure.ts` | display tree, labels, search, highlight geometry |
-| `src/types.ts` | the fields of the DocumentModel the UI reads |
+| `POST /api/jobs` | Submit a multipart PDF in field `file` |
+| `GET /api/jobs/{id}` | Read status, stage, message and summary |
+| `GET /api/jobs/{id}/files/{name}` | Read an allowed result file |
+| `DELETE /api/jobs/{id}` | Remove a job and its files |
 
-The demo fixtures hold the full document text, so `public/demo/` and `dist/` must stay local (see the root
-README).
+Statuses are `queued`, `processing`, `completed`, `unsupported` and `failed`. Result files are served only for completed jobs. The original implementation allows `document_model.json` and `document.json`; the raw-preview extension adds `docling_raw.json`.
+
+The backend uses one processing worker and an in-memory job registry. Default storage is temporary and removed at shutdown. `ODOS_STORAGE_DIR` retains files at another location, but does not persist or restore the in-memory job registry. Old completed jobs can be removed as the job limit is reached. The uploaded PDF is deleted after processing; the browser displays its local copy.
+
+## Frontend
+
+`DemoApp.tsx` contains upload and result views despite its historical name. `live.ts` handles API requests and polling. `excerpts.mjs` formats JSON and currently displays `nativeType` as `germanType`; downloaded `document.json` retains `nativeType`.
+
+The simplified `fixtures.ts` contains only the shared `DemoResult` type; it does not fetch examples. Keep its type imports until they have been moved to another file.
+
+Artifacts show Custom Legal JSON for the selected element or full document, plus a collapsible full-document Docling preview. The normal live view requires a running backend. A frontend production build alone does not deploy that backend.

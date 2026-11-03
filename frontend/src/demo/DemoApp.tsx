@@ -4,16 +4,11 @@ import { PdfViewer } from "../components/PdfViewer";
 import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
-import { loadManifest, loadResult, resolveUpload, type DemoResult } from "./fixtures";
+import type { DemoResult } from "./fixtures";
 import { STAGE_LABELS, deleteJob, nodeJson, processPdf } from "./live";
 import "./demo.css";
 
-// "Process Document" sends the chosen PDF to the ODOS backend, which recognizes its type and runs the whole pipeline on
-// it (src/demo/live.ts). Opening the page with ?example selects the prepared example mode instead: it looks the PDF up
-// among the prepared documents and shows their previously generated results (src/demo/fixtures.ts); any other PDF is
-// refused there with an explanation.
 
-const EXAMPLE = new URLSearchParams(globalThis.location?.search).has("example");
 type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string };
 
 export default function DemoApp() {
@@ -35,9 +30,9 @@ export default function DemoApp() {
     setError(null);
     setPhase({ kind: "busy", stage: "checking" });
     try {
-      const result = EXAMPLE
-        ? await loadResult(await resolveUpload(await file.arrayBuffer(), file.name, await loadManifest()))
-        : await processPdf(file, (stage) => setPhase({ kind: "busy", stage }));
+      const result = await processPdf(file, (stage) => {
+        setPhase({ kind: "busy", stage });
+      });
       setPhase({ kind: "done", result, pdfUrl: URL.createObjectURL(file) });
     } catch (e) {
       setPhase({ kind: "idle" });
@@ -74,7 +69,11 @@ export default function DemoApp() {
             ? <><span className="spinner" aria-hidden="true" /> {phase.stage === "checking" ? "Loading result…" : STAGE_LABELS[phase.stage] ?? "Processing…"}</>
             : "Process Document"}
         </button>
-        {busy && !EXAMPLE && <p className="muted small demo-hint">Long documents take a few minutes (Docling extraction).</p>}
+              {busy && (
+        <p className="muted small demo-hint">
+          Long documents take a few minutes (Docling extraction).
+        </p>
+      )}
         {error && <div className="alert warn" role="alert">{error}</div>}
       </div>
     </main>
@@ -101,7 +100,6 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
       <div className="docbar">
         <span className="demo-brand">ODOS</span>
         <h2 title={result.title}>{result.title}</h2>
-        {!result.live && <span className="chip" title="Loaded from previously generated pipeline output; nothing was processed in the browser">precomputed result</span>}
         <span className="spacer" />
         <button className="btn" onClick={onReset}>Choose another PDF</button>
       </div>
@@ -146,8 +144,73 @@ function SourceDetail({ element: e, onGoToPage }: { element: DocElement | null; 
   );
 }
 
-/** Prepared example: the Legal JSON 2.0 excerpt, shown exactly as the downloaded file. Live: a preview of the selected
- *  element or (`full`, switched with `onFull`) of the whole document, and the download of the complete document.json. */
+function DoclingRaw({ jobId }: { jobId: string }) {
+  const [json, setJson] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function load() {
+    if (json || loading) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/jobs/${jobId}/files/docling_raw.json`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      setJson(JSON.stringify(data, null, 2));
+    } catch {
+      setError("Docling-Ausgabe konnte nicht geladen werden.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <details
+      className="demo-artifact"
+      onToggle={(event) => {
+        if (event.currentTarget.open) {
+          void load();
+        }
+      }}
+    >
+      <summary style={{ cursor: "pointer", padding: "12px" }}>
+        Docling Raw JSON anzeigen / ausblenden
+      </summary>
+
+      {loading && <p>Wird geladen …</p>}
+
+      {error && (
+        <p>
+          {error}{" "}
+          <button type="button" onClick={() => void load()}>
+            Erneut versuchen
+          </button>
+        </p>
+      )}
+
+      {json && (
+        <pre
+          className="preview demo-code"
+          tabIndex={0}
+          style={{ maxHeight: "500px", overflow: "auto" }}
+        >
+          {json}
+        </pre>
+      )}
+    </details>
+  );
+}
+
+
 export function Artifacts({ result, element = null, full, onFull }: { result: DemoResult; element?: DocElement | null; full?: boolean; onFull?: (full: boolean) => void }) {
   const json = (!full && result.live && nodeJson(result.live, element)) || result.json;
   return (
@@ -166,6 +229,13 @@ export function Artifacts({ result, element = null, full, onFull }: { result: De
         </div>
         <pre className="preview demo-code" tabIndex={0}>{json.replace(/\n$/, "")}</pre>
       </section>
+      
+      {result.live && (
+        <DoclingRaw
+          key={result.live.jobId}
+          jobId={result.live.jobId}
+        />
+      )}
     </div>
   );
 }

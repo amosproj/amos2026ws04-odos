@@ -24,7 +24,7 @@ from fastapi import FastAPI, File, HTTPException, Response, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON
+from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW
 from odos.pipeline import Outcome, run_pipeline
 
 log = logging.getLogger("odos.api")
@@ -32,7 +32,7 @@ log = logging.getLogger("odos.api")
 MAX_UPLOAD_BYTES = int(os.environ.get("ODOS_MAX_UPLOAD_MB", "50")) * 1024 * 1024
 MAX_JOBS = 10  # when a new job comes in, the oldest finished ones beyond this are deleted with their files
 # the job files the frontend reads; nothing else in a job directory is served
-RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON)
+RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW)
 FAILED_MESSAGE = "The PDF could not be processed. It may be damaged, encrypted or a scanned image without a text layer."
 
 

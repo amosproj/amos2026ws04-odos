@@ -1,143 +1,101 @@
-# Local development and testing
+# Local development
 
-## Backend setup (Python 3.12)
+## Requirements
 
-```bash
+- Python 3.12
+- Node.js 22.12 or newer and npm
+- Network access for dependency installation and the first Docling model download
+- Disk space for Python packages and model files
+
+Run commands from the indicated folder. Stop if a command fails. The examples below use Windows PowerShell.
+
+## Install the backend
+
+From the repository root:
+
+```powershell
 cd backend
-python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.lock          # the exact dependency set the outputs were verified with
-pip install --no-deps -e ".[dev]"
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.lock
+.\.venv\Scripts\python.exe -m pip install --no-deps -e .
 ```
 
-**Install from the lock, not with a plain `pip install -e .`.** Docling's output depends on
-`docling-parse`, `torch`, `transformers` and `docling-core`, and newer versions segment, label and order
-the same PDF differently. `tests/test_environment.py` reports such drift. Even with the lock, a few
-table and picture box coordinates vary by about 1e-5 between extractions; text, items, labels and order
-do not.
+The lockfile supplies the pinned dependency set. Different Docling-related versions can change extraction results. Processing time depends on the machine, PDF and whether models are cached.
 
-The first extraction downloads Docling's layout and table models from Hugging Face (several minutes, network
-needed). Later runs take about 10 s for a 45-page law. Setting `HF_TOKEN` silences the unauthenticated-request
-warning.
+Start the backend from `backend`:
 
-## Command line (`odos`)
-
-```bash
-odos process <pdf> -o <dir> --mode german_law|eu_legislation   # the whole pipeline
-odos extract <pdf> -o output/doc                               # Docling: docling_raw.json + extracted.md (--ocr for scans)
-odos normalize output/doc/docling_raw.json --pdf <pdf>         # document_model.json + validation report (--mode eu_legislation)
-odos legal-json output/doc/document_model.json                 # document.json (Custom Legal JSON 2.0) + validation report
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn odos.api:app --port 8000
 ```
 
-- **`--mode` for `process`:** required. The profile is never guessed from the document.
-- **`--pdf` for `normalize`:** it writes the PDF text-layer evidence (`pdf_text_lines.json`) first.
-  Without it, reading-order repair, character restoration, footnote anchoring and exact highlights are
-  skipped.
-- **Custom Legal JSON is the only export.** Akoma Ntoso XML (`odos akn`, `--retrieval-date`) was removed from the
-  prototype.
+Leave this terminal running. `http://127.0.0.1:8000/docs` shows the API documentation. A 404 at the backend root `/` is expected; the frontend is served separately.
 
-## Running the web application
+## Install and start the frontend
 
-```bash
-cd backend && source .venv/bin/activate && uvicorn odos.api:app --port 8000   # terminal 1
-cd frontend && npm run dev                                                     # terminal 2: http://localhost:5173
-```
+In a second terminal, from the repository root:
 
-`ODOS_STORAGE_DIR` keeps the job directories somewhere other than a temporary directory (they are not removed at
-shutdown then; inside the repository use a `storage/documents/` path, which is gitignored). `ODOS_MAX_UPLOAD_MB`
-sets the upload limit (default 50). `ODOS_API_URL` points the frontend's proxy at another backend address.
-
-## Producing the demonstration data (prepared examples)
-
-```bash
-# 1. pipeline output for the two demo documents
-odos process <MBO.pdf>          -o output/mbo --mode german_law
-odos process <eu_2023_1230.pdf> -o output/eu  --mode eu_legislation
-
-# 2. demo fixtures (frontend/public/demo/, git-ignored) and the static site
-cd ../frontend
+```powershell
+cd frontend
 npm ci
-npm run demo:fixtures -- --mbo ../backend/output/mbo --eu ../backend/output/eu
-# (or, in one step with PDF and fixture hash checks: npm run demo:setup -- --mbo-pdf <MBO.pdf> --eu-pdf <eu.pdf>)
-npm run dev                # http://localhost:5173
-npm run build         # type check + static site in dist/
-npm run preview            # http://localhost:4173
+npm run dev
 ```
 
-The fixtures contain the full text of the partner documents. `public/demo/` and `dist/` are git-ignored and must
-not be published (see the root README).
+Open the URL printed by Vite, normally `http://localhost:5173`. Select a supported legal PDF and press **Process Document**. No demo-data generation is required.
 
-## Tests
+## Build and preview
 
-```bash
-cd backend && source .venv/bin/activate && pytest     # ~370 tests, about 2 minutes (network needed for Docling models)
-cd frontend && npm test && npm run typecheck && npm run build
+From `frontend`:
+
+```powershell
+npm run typecheck
+npm run build
+npm run preview
 ```
 
-**Test inputs:**
+`build` also runs TypeScript checking and writes the website to `dist/`. Preview normally uses port 4173. Both Vite development and preview proxy `/api` to the backend. A separately hosted production site needs its own API routing configuration.
 
-- **No public law is stored in the repository.** Docling extractions of the partner PDFs are written to
-  `backend/output/` (gitignored) on the first run, which takes a few minutes.
-- **The Musterbauordnung (MBO)** was supplied by the industry partner and is not in Git. Provide it as
-  `backend/data/input/private/MusterBauVerordnung.pdf` or with `ODOS_MBO_PDF`. The tests that need it are in
-  `backend/tests/private/` (gitignored: they assert on the partner document) and skip with a reason when it is
-  missing. `backend/tests/fixtures/private/` (gitignored) holds partner-derived Docling items for the
-  hygiene tests.
-- **The full Regulation (EU) 2023/1230** is not redistributed with the repository. Provide it in one of
-  two ways:
-  - set `ODOS_EU_PDF=/path/to/the.pdf`
-  - copy it to `backend/data/input/private/eu_2023_1230.pdf` (gitignored, so it cannot be committed)
+## Configuration
 
-  The tests check its SHA-256 (`fe36f0d1…`). Without it, the full-document EU tests skip and say why.
-- **The synthetic German law** (`backend/tests/synthetic_german.py`) always runs. It is original text with a
-  generated PDF, so the PDF text-layer evidence is real: footnote anchors and printed Satz numbers are proven
-  from superscript marks. It has no golden baseline: glyph coordinates come from pdfium and can differ in the last
-  decimals between platforms, so the tests assert structure and validity.
-- **The synthetic EU regulation** (`backend/tests/synthetic_eu.py`) always runs. It is original text in
-  Docling's JSON shape and covers every EU structural unit end to end, including Legal JSON 2.0.
-- **Frontend:** `frontend/src/demo/mbo_par6.test.ts` and `legal_json_excerpt.test.ts` read the local fixtures
-  (`public/demo/`, and `.demo-work/` for the comparison with `document.json`) and skip without them. All other frontend tests use synthetic data.
-- **Never runtime output:** tests write only to temporary directories and `backend/output/`.
-
-**Golden equivalence** (`tests/test_golden_equivalence.py`):
-
-- **What it checks:** every output against the recorded baselines in `tests/golden/`, on the exact
-  Docling extractions the baselines were built from.
-- **What every run prints:**
-
-  ```
-  GOLDEN COVERAGE: MBO ✓ · EU ✓ · synthetic EU ✓
-  full partner-document equivalence (MBO and EU): yes
-  ```
-
-- **Missing or different input:** shown as `✗ not covered: <reason>`, never as a pass. Skip reasons are
-  always printed (`-rs`).
-- **A difference** is a regression to investigate, never a value to refresh: `record_baseline` refuses
-  to overwrite a baseline.
-- **The MBO § 6 Absatz 1 baseline** records the one deliberate change since the original baselines (the page-break
-  merge, see [parsing.md](parsing.md)).
-
-**Where each kind of test lives:**
-
-| Test | What it covers |
+| Variable | Purpose |
 |---|---|
-| `test_golden_equivalence.py`, `golden_outputs.py` | byte-identical outputs and coverage reporting |
-| `test_engine_profiles.py` | registry, lifecycle order, profile tables, import isolation, CLI |
-| `test_synthetic_eu.py`, `test_synthetic_german.py` | the EU and German profiles end to end without private files |
-| `test_normalization.py`, `test_eu_parser.py`, `test_eu_parser_rules.py` (plus the local-only `tests/private/test_mbo.py`) | German and EU recognition (real and synthetic) |
-| `test_hygiene.py`, `test_reading_order.py`, `test_source_text.py`, `test_highlights.py`, `test_sentences_toc_refs.py` | the source layer and the lifecycle stages |
-| `test_legal_json.py` | the Custom Legal JSON export and its validation |
-| `test_extraction.py`, `test_environment.py` | extraction, dependency drift |
-| `test_api.py` | the web API: upload checks, job lifecycle, result files and download, errors, cleanup; the real pipeline on the synthetic PDF and (when available) the MBO and Regulation (EU) 2023/1230 |
-| `frontend/src/structure.test.ts` | hierarchy, search, highlight geometry, TOC view |
-| `frontend/src/demo/*.test.ts(x)` | upload and matching, unsupported PDFs, result view, Custom Legal JSON preview and downloads, MBO § 6 Absatz 1, the Legal JSON 2.0 excerpts and their traceability to the model |
-| `frontend/src/demo/live.test.tsx` | live mode against a fake backend (stages, errors, unreachable backend), the result view, preview (selected element and full document) and download; on the real pipeline outputs in `.demo-work/` when present |
+| `ODOS_STORAGE_DIR` | Location for backend job files instead of temporary storage |
+| `ODOS_MAX_UPLOAD_MB` | PDF upload limit; default 50 MB |
+| `ODOS_API_URL` | Backend address used by the Vite proxy; default `http://127.0.0.1:8000` |
 
-## Conventions
+Set variables before starting the corresponding process. Retaining files does not make old jobs available after a backend restart: the registry is in memory.
 
-- **The DocumentModel is the single source of truth.** Exports are one-way serializations; nothing reads
-  them back as input.
-- **Nothing is invented.** Uncertain readings are kept and flagged (`uncertain`, `uncertainty_reasons`). Text is
-  never silently changed: every restored character is recorded with its evidence.
-- **Output changes are deliberate.** Any change to legal text, IDs, hierarchy, sentences, TOC links,
-  footnote anchors, coordinates or JSON must show up as a golden difference and be explained.
+## Docling Raw JSON panel
+
+The panel assumes these code changes have been applied:
+
+- In `backend/src/odos/api.py`, import `DOCLING_RAW` and include it in `RESULT_FILES`.
+- In `frontend/src/demo/DemoApp.tsx`, render a collapsible panel below Custom Legal JSON. Fetch `/api/jobs/{id}/files/docling_raw.json` when opened, show loading/errors, and reset its state when the job changes.
+
+It displays the entire extracted document, not just the selected legal node. It does not alter the pipeline or the Legal JSON schema. Restart the backend after changing its allowlist and process the PDF again if the old job is gone.
+
+## Command line
+
+From `backend`, use `.\.venv\Scripts\odos.exe`:
+
+```powershell
+.\.venv\Scripts\odos.exe process "C:\path\law.pdf" -o output/law --mode german_law
+.\.venv\Scripts\odos.exe process "C:\path\eu.pdf" -o output/eu --mode eu_legislation
+.\.venv\Scripts\odos.exe extract "C:\path\law.pdf" -o output/raw
+.\.venv\Scripts\odos.exe normalize output/raw/docling_raw.json --pdf "C:\path\law.pdf" --mode german_law
+.\.venv\Scripts\odos.exe legal-json output/raw/document_model.json
+```
+
+The CLI `process` command requires an explicit profile. The web API calls the pipeline without a profile and selects one by recognized structure. `extract --ocr` enables OCR for the extraction command; the current upload UI does not expose an OCR option.
+
+## Manual verification
+
+This simplified version does not include an automated test suite. Verify changes by building the frontend and processing both an MBO and German-language EU example:
+
+1. Confirm progress ends successfully and both JSON files can be displayed.
+2. Select legal elements and check their text, pages and PDF highlights.
+3. Switch between selected-element and full-document Legal JSON.
+4. Open and close the Docling panel; compare its source items with the legal output.
+5. Download Legal JSON and check that it contains the full document.
+6. Try an unsupported PDF and confirm that an understandable error appears.
+
+Runtime validation reports remain useful, but are not a substitute for a test suite or review of the extracted content. Do not commit virtual environments, installed packages, uploaded PDFs or generated document data.
