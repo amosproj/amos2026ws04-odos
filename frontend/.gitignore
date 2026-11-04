@@ -1,0 +1,4 @@
+# local demonstration fixtures (npm run demo:fixtures): derived from the partner-supplied PDFs, never commit
+public/demo/
+# pipeline outputs of npm run demo:setup (full text of the partner documents)
+.demo-work/
