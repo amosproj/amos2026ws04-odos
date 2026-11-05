@@ -63,3 +63,21 @@ backend/tests/private/
 frontend/node_modules/
 frontend/dist/
 *.tsbuildinfo
+
+# Share environment template, never local secrets
+!.env.example
+
+# Local code backups and temporary files
+*.py.backup
+*.bak
+*.orig
+*.swp
+*.tmp
+*~
+
+# Database dumps and local database data (the PostgreSQL data lives in a Docker volume, not in the repository)
+*.dump
+*.sql.gz
+*.backup
+pgdata/
+postgres_data/

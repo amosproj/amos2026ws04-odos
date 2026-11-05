@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { highlightsOf } from "../structure";
 import { box, el, modelOf } from "../testing";
 import DemoApp, { Artifacts, ResultView } from "./DemoApp";
-import { nodeJson, processPdf, type Job } from "./live";
+import { nodeJson, processPdf, releaseJob, type Job } from "./live";
 
 vi.mock("../components/PdfViewer", () => ({
   PdfViewer: (p: { url: string; page: number; highlights: unknown[] }) => (
@@ -84,6 +84,21 @@ describe("live processing through the backend", () => {
     const { result, calls } = await run([job("unsupported", { message: "The document type could not be recognized." })]);
     await expect(result).rejects.toThrow("The document type could not be recognized.");
     expect(calls).toContain("DELETE /api/jobs/j1");
+  });
+
+  it("leaves jobs the backend keeps in its database", async () => {
+    const { result, calls } = await run([job("unsupported", { message: "Not recognized.", persistent: true })]);
+    await expect(result).rejects.toThrow("Not recognized.");
+    expect(calls).not.toContain("DELETE /api/jobs/j1");
+    expect((await (await run([job("completed", { persistent: true })])).result).live?.persistent).toBe(true);
+    expect((await (await run([done])).result).live?.persistent).toBe(false); // older backends send no flag
+  });
+
+  it("deletes a job it is done with only when the backend does not keep it", () => {
+    const calls = backend([], {});
+    releaseJob("kept", true);
+    releaseJob("temporary");
+    expect(calls).toEqual(["DELETE /api/jobs/temporary"]);
   });
 
   it("reports a failed job and a refused upload with the backend's explanation", async () => {
