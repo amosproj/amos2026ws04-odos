@@ -11,11 +11,15 @@ export interface Job {
   status: "queued" | "processing" | "completed" | "unsupported" | "failed";
   stage: string | null;
   message: string | null;
+  /** The backend keeps the job (database persistence, see Documentation/database-poc.md); absent from older backends. */
+  persistent?: boolean;
 }
 
-/** What live mode keeps beside the DemoResult: the job (to delete it) and the whole Legal JSON 2.0 document. */
+/** What live mode keeps beside the DemoResult: the job (to delete it unless the backend keeps it) and the whole Legal
+ *  JSON 2.0 document. */
 export interface LiveData {
   jobId: string;
+  persistent: boolean;
   legal: { title?: string | null; frontMatter: unknown[]; tableOfContents: unknown[]; structure: unknown[] };
 }
 
@@ -47,6 +51,11 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const deleteJob = (id: string) => fetch(`${API}/jobs/${id}`, { method: "DELETE" }).catch(() => undefined);
 
+/** Frees a job the frontend is done with; a job the backend keeps (database persistence) stays stored. */
+export function releaseJob(id: string, persistent = false): void {
+  if (!persistent) void deleteJob(id);
+}
+
 /** Uploads the PDF, polls its job until it ends and loads the results; `onStage` gets the current stage. The backend
  *  recognizes German or EU legislation itself. Throws an Error with the backend's explanation when the PDF is refused,
  *  its type is not recognised or processing fails. */
@@ -61,7 +70,7 @@ export async function processPdf(file: File, onStage: (stage: string) => void): 
     job = await call<Job>(`${API}/jobs/${job.id}`);
   }
   if (job.status !== "completed") {
-    void deleteJob(job.id);
+    releaseJob(job.id, job.persistent);
     throw new Error(job.message ?? "The PDF could not be processed.");
   }
   return loadLiveResult(job);
@@ -77,7 +86,7 @@ async function loadLiveResult(job: Job): Promise<DemoResult> {
     model,
     json: toJsonText(forPresentation(legal)),
     download: { href: fileUrl(job.id, "document.json", true), name: `${job.filename.replace(/\.pdf$/i, "")}.legal.json` },
-    live: { jobId: job.id, legal },
+    live: { jobId: job.id, persistent: job.persistent ?? false, legal },
   };
 }
 

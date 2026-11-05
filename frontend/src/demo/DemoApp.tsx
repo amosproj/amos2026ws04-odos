@@ -5,7 +5,7 @@ import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
-import { STAGE_LABELS, deleteJob, nodeJson, processPdf } from "./live";
+import { STAGE_LABELS, nodeJson, processPdf, releaseJob } from "./live";
 import "./demo.css";
 
 
@@ -41,7 +41,7 @@ export default function DemoApp() {
   };
 
   const reset = () => {
-    if (phase.kind === "done" && phase.result.live) void deleteJob(phase.result.live.jobId); // its files are not kept
+    if (phase.kind === "done" && phase.result.live) releaseJob(phase.result.live.jobId, phase.result.live.persistent);
     setPhase({ kind: "idle" });
     setFile(null);
     setError(null);

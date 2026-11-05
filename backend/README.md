@@ -103,7 +103,7 @@ To run individual steps:
 | `ODOS_STORAGE_DIR` | Job-file directory; defaults to temporary storage removed at shutdown |
 | `ODOS_MAX_UPLOAD_MB` | Upload size limit; default 50 MB |
 
-Set environment variables before starting Uvicorn. Jobs are registered in memory. Retaining files using `ODOS_STORAGE_DIR` does not restore old jobs after restart. Older completed jobs may be removed as the job limit is reached.
+Set environment variables before starting Uvicorn. Jobs are registered in memory. Retaining files using `ODOS_STORAGE_DIR` does not restore old jobs after restart, unless the optional PostgreSQL persistence (`ODOS_DATABASE_ENABLED=1`) is used; see [database-poc.md](../Documentation/database-poc.md). Older completed jobs may be removed as the job limit is reached.
 
 The uploaded PDF is deleted after processing; the frontend displays its local copy. Keep uploaded PDFs, generated data and virtual environments out of Git.
 

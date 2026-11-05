@@ -5,10 +5,16 @@ slow and memory-hungry). Each job writes the usual `odos process` files into its
 ODOS_STORAGE_DIR (default: a temporary directory, removed at shutdown). Every upload runs the real pipeline
 (`run_pipeline`, which recognizes German or EU legislation from the document's own structure); no precomputed result
 is ever substituted.
+
+With ODOS_DATABASE_ENABLED=1 (PostgreSQL proof of concept, see Documentation/database-poc.md) every job is also
+recorded in the `documents` table (status, summary and Legal JSON as JSONB), the uploaded PDF and the result files
+stay in ODOS_STORAGE_DIR, and the jobs are restored at startup. Run a single API process only: the job registry
+and the worker are per process.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import shutil
@@ -20,12 +26,21 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
+import psycopg
 from fastapi import FastAPI, File, HTTPException, Response, UploadFile
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW
 from odos.pipeline import Outcome, run_pipeline
+from odos.document_repository import (
+    create_document,
+    delete_document,
+    finish_document,
+    list_documents,
+    mark_interrupted_jobs,
+    update_document_status,
+)
 
 log = logging.getLogger("odos.api")
 
@@ -34,6 +49,12 @@ MAX_JOBS = 10  # when a new job comes in, the oldest finished ones beyond this a
 # the job files the frontend reads; nothing else in a job directory is served
 RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW)
 FAILED_MESSAGE = "The PDF could not be processed. It may be damaged, encrypted or a scanned image without a text layer."
+NOT_STORED_MESSAGE = "The PDF was processed, but its result could not be stored in the database."
+DATABASE_UNAVAILABLE = "The ODOS database is not available. Check that PostgreSQL is running and try again."
+
+
+def _persistent() -> bool:
+    return os.environ.get("ODOS_DATABASE_ENABLED") == "1"
 
 
 class Job(BaseModel):
@@ -43,6 +64,12 @@ class Job(BaseModel):
     stage: str | None = None  # while processing: run_pipeline's progress ("extracting", "normalizing")
     message: str | None = None
     summary: dict = Field(default_factory=dict)  # run_pipeline's summary (pages, counts, json_schema_valid, ...)
+
+    @computed_field
+    @property
+    def persistent(self) -> bool:
+        """Kept in the database: the frontend then leaves the job in place instead of deleting it when done."""
+        return _persistent()
 
 
 _jobs: dict[str, Job] = {}
@@ -55,18 +82,38 @@ _executor = ThreadPoolExecutor(max_workers=1)
 async def lifespan(_app: FastAPI):
     global _storage, _executor
     configured = os.environ.get("ODOS_STORAGE_DIR")
-    _storage = Path(configured) if configured else Path(tempfile.mkdtemp(prefix="odos-jobs-"))
+
+    if _persistent() and not configured:
+        raise RuntimeError(
+            "ODOS_STORAGE_DIR is required when database persistence is enabled."
+        )
+
+    _storage = Path(configured) if configured else Path(
+        tempfile.mkdtemp(prefix="odos-jobs-")
+    )
     _storage.mkdir(parents=True, exist_ok=True)
     _executor = ThreadPoolExecutor(max_workers=1)
-    _jobs.clear()
+
+    with _lock:
+        _jobs.clear()
+        if _persistent():
+            mark_interrupted_jobs()
+            for row in list_documents():
+                job = Job(**row)
+                _jobs[job.id] = job
+
     try:
         yield
     finally:
-        _executor.shutdown(wait=False, cancel_futures=True)
-        for job_id in list(_jobs):
-            _remove(job_id)
-        if not configured:
-            shutil.rmtree(_storage, ignore_errors=True)
+        # queued jobs are cancelled (with the database they are marked as interrupted at the next start); with the
+        # database the running job is awaited so that its result is stored
+        _executor.shutdown(wait=_persistent(), cancel_futures=True)
+
+        if not _persistent():
+            for job_id in list(_jobs):
+                _remove(job_id)
+            if not configured:
+                shutil.rmtree(_storage, ignore_errors=True)
 
 
 app = FastAPI(title="ODOS", lifespan=lifespan)
@@ -82,10 +129,22 @@ def create_job(file: UploadFile = File(...)) -> Job:
     except HTTPException:
         shutil.rmtree(pdf.parent, ignore_errors=True)
         raise
+    if _persistent():
+        try:
+            create_document(job.id, job.filename, f"{job.id}/source.pdf")  # relative to ODOS_STORAGE_DIR
+        except psycopg.Error as e:
+            shutil.rmtree(pdf.parent, ignore_errors=True)
+            log.exception("could not register job %s", job.id)
+            raise HTTPException(503, DATABASE_UNAVAILABLE) from e
+        except Exception:
+            shutil.rmtree(pdf.parent, ignore_errors=True)
+            raise
+
     with _lock:
         finished = [j for j in _jobs.values() if j.status in ("completed", "unsupported", "failed")]
-        for old in finished[: max(0, len(_jobs) + 1 - MAX_JOBS)]:
-            _remove(old.id)
+        if not _persistent():
+            for old in finished[: max(0, len(_jobs) + 1 - MAX_JOBS)]:
+                _remove(old.id)
         _jobs[job.id] = job
     queued = job.model_copy()  # as created: the worker may already be changing `job`
     _executor.submit(_process, job, pdf)
@@ -105,14 +164,24 @@ def get_file(job_id: str, name: str, download: bool = False) -> FileResponse:
         raise HTTPException(404, "No such result file.")
     if job.status != "completed":
         raise HTTPException(409, "The job has no results.")
+    path = _storage / job.id / name
+    if not path.is_file():  # e.g. a restored job whose files were removed or live under another ODOS_STORAGE_DIR
+        raise HTTPException(404, "The result file is no longer available.")
     filename = f"{Path(job.filename).stem}.legal.json" if download else None
-    return FileResponse(_storage / job.id / name, media_type="application/json", filename=filename)
+    return FileResponse(path, media_type="application/json", filename=filename)
 
 
 @app.delete("/api/jobs/{job_id}", status_code=204)
 def delete_job(job_id: str) -> Response:
     with _lock:
-        _remove(_job(job_id).id)
+        job = _job(job_id)
+        if _persistent() and job.status in ("queued", "processing"):
+            raise HTTPException(409, "Cannot delete a running job.")
+        try:
+            _remove(job.id)
+        except psycopg.Error as e:  # nothing was removed: the row, the job and its files are kept
+            log.exception("could not delete job %s", job.id)
+            raise HTTPException(503, DATABASE_UNAVAILABLE) from e
     return Response(status_code=204)
 
 
@@ -124,6 +193,8 @@ def _job(job_id: str) -> Job:
 
 
 def _remove(job_id: str) -> None:
+    if _persistent():
+        delete_document(job_id)  # first: if it fails, the job and its files stay
     _jobs.pop(job_id, None)
     shutil.rmtree(_storage / job_id, ignore_errors=True)
 
@@ -145,19 +216,56 @@ def _save_pdf(file: UploadFile, dest: Path) -> None:
 def _process(job: Job, pdf: Path) -> None:
     if job.id not in _jobs:  # deleted while it waited
         return
+
     job.status = "processing"
+    status, message, summary, legal_json = "failed", FAILED_MESSAGE, job.summary, None
+
     try:
-        res = run_pipeline(pdf, pdf.parent, progress=lambda stage: setattr(job, "stage", stage))
+        if _persistent():
+            update_document_status(job.id, "processing")
+
+        def on_progress(stage: str) -> None:
+            job.stage = stage
+            if _persistent():
+                update_document_status(job.id, "processing", stage)
+
+        res = run_pipeline(pdf, pdf.parent, progress=on_progress)
+
+        # Docling's warnings may quote file paths: only their number leaves the server
+        summary = res.summary | {
+            "docling_warnings": len(res.summary.get("docling_warnings", []))
+        }
+
+        if res.outcome == Outcome.COMPLETED and _persistent():
+            legal_json = json.loads(
+                (pdf.parent / LEGAL_JSON).read_text(encoding="utf-8")
+            )
+
+        status = "completed" if res.outcome == Outcome.COMPLETED else "unsupported"
+        message = res.message
+
     except Exception:
         log.exception("job %s failed", job.id)  # the details stay in the server log
-        job.status, job.message = "failed", FAILED_MESSAGE
-    else:
-        # Docling's warnings may quote file paths: only their number leaves the server
-        summary = res.summary | {"docling_warnings": len(res.summary.get("docling_warnings", []))}
-        job.status = "completed" if res.outcome == Outcome.COMPLETED else "unsupported"
-        job.message, job.summary = res.message, summary
+        status, message = "failed", FAILED_MESSAGE
+
     finally:
-        job.stage = None
-        pdf.unlink(missing_ok=True)  # the browser shows its own copy; the upload is not kept
+        if _persistent():
+            try:
+                finish_document(job.id, status, summary, legal_json, message)
+            except Exception:
+                log.exception("could not persist job %s", job.id)
+                # the API must not report a result the database does not have (it would be gone after a restart)
+                status, message = "failed", NOT_STORED_MESSAGE
+                try:
+                    finish_document(job.id, status, summary, None, message)
+                except Exception:  # the row stays queued/processing and is marked as interrupted at the next start
+                    log.exception("could not mark job %s as failed", job.id)
+        else:
+            pdf.unlink(missing_ok=True)  # the browser shows its own copy; the upload is not kept
+
+        # published only now, after the database has the result; the status last, as clients poll for it
+        job.stage, job.message, job.summary = None, message, summary
+        job.status = status
+
         if job.id not in _jobs:  # deleted while it ran
             shutil.rmtree(pdf.parent, ignore_errors=True)

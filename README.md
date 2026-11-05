@@ -116,6 +116,8 @@ Set variables before starting the corresponding process. Jobs are processed one 
 
 Setting `ODOS_STORAGE_DIR` retains files but does not restore the in-memory job registry after restart. Do not commit uploaded PDFs, generated document data, virtual environments or `node_modules`.
 
+Optional persistence: with a local PostgreSQL 17 database (Docker Compose) and `ODOS_DATABASE_ENABLED=1`, jobs and their Legal JSON are stored as JSONB and restored after a backend restart. See the [PostgreSQL proof of concept](Documentation/database-poc.md).
+
 ## Repository layout
 
 | Folder | Contents |
