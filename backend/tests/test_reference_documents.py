@@ -14,11 +14,13 @@ from pathlib import Path
 
 import pytest
 
-from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON
+from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON, LEGAL_JSON_REPORT
 from odos.pipeline import Outcome, run_pipeline
 
 PRIVATE_INPUT = Path(__file__).resolve().parents[1] / "data" / "input" / "private"
 BARE_MARKER = re.compile(r"\s*(\d+\.|[a-z]\)|\(\d+\))\s*")  # a list or Absatz marker without its text
+LEGAL_UNITS = {"part", "division", "chapter", "section", "article", "subsection", "paragraph", "number", "letter",
+               "point", "subpoint", "recital", "annex"}  # numbered units; text blocks and formulas have no germanType
 
 pytestmark = pytest.mark.slow
 
@@ -30,12 +32,11 @@ def reference_pdf(variable: str, filename: str) -> Path:
     return pdf
 
 
-def process(pdf: Path, out_dir: Path) -> tuple[dict, dict]:
-    """run_pipeline as the web API calls it (profile recognized from the document); Legal JSON and model."""
+def process(pdf: Path, out_dir: Path) -> tuple[dict, dict, dict]:
+    """run_pipeline as the web API calls it (profile recognized from the document); Legal JSON, model, validation report."""
     result = run_pipeline(pdf, out_dir)
     assert result.outcome == Outcome.COMPLETED, result.message
-    return (json.loads((out_dir / LEGAL_JSON).read_text(encoding="utf-8")),
-            json.loads((out_dir / DOCUMENT_MODEL).read_text(encoding="utf-8")))
+    return tuple(json.loads((out_dir / name).read_text(encoding="utf-8")) for name in (LEGAL_JSON, DOCUMENT_MODEL, LEGAL_JSON_REPORT))
 
 
 def nodes(legal: dict) -> list[dict]:
@@ -74,7 +75,7 @@ def eu(tmp_path_factory):
 
 
 def test_mbo_document_outline(mbo):
-    legal, _ = mbo
+    legal, *_ = mbo
     assert (legal["documentType"], legal["title"]) == ("de_legislation", "MUSTERBAUORDNUNG")
     assert [(n["type"], n["number"]) for n in legal["structure"]] == [("part", str(i)) for i in range(1, 7)] + [("annex", "1")]
     sections = [n["number"] for n in nodes(legal) if n["type"] == "section"]
@@ -83,7 +84,7 @@ def test_mbo_document_outline(mbo):
 
 
 def test_mbo_section_1_and_2_hierarchy(mbo):
-    legal, _ = mbo
+    legal, *_ = mbo
     assert numbers(find(legal, "section", "1"), "subsection") == ["1", "2"]
 
     section_2 = find(legal, "section", "2")
@@ -100,19 +101,19 @@ def test_mbo_section_1_and_2_hierarchy(mbo):
 
 
 def test_mbo_has_no_fragmented_markers(mbo):
-    legal, _ = mbo
+    legal, *_ = mbo
     assert [n["id"] for n in nodes(legal) if n["type"] == "text" and BARE_MARKER.fullmatch(n.get("text") or "")] == []
 
 
 def test_mbo_source_references(mbo):
-    legal, model = mbo
+    legal, model, _ = mbo
     assert all(n.get("pages") for n in nodes(legal))
     absatz = next(e for e in model["elements"] if e["id"] == find(legal, "section", "2")["children"][0]["id"])
     assert absatz["source_refs"] and absatz["provenance"][0]["page_no"] == 5
 
 
 def test_eu_articles_and_annexes(eu):
-    legal, _ = eu
+    legal, *_ = eu
     assert legal["documentType"] == "eu_regulation"
     assert "2023/1230" in legal["title"]
     found = nodes(legal)
@@ -122,3 +123,11 @@ def test_eu_articles_and_annexes(eu):
         "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
     assert sum(n["type"] == "recital" for n in found) == 86
     assert [n["id"] for n in found if n["type"] == "text" and BARE_MARKER.fullmatch(n.get("text") or "")] == []
+
+
+@pytest.mark.parametrize("document", ["mbo", "eu"])
+def test_legal_json_is_schema_valid(document, request):
+    legal, _, report = request.getfixturevalue(document)
+    assert (report["schema_valid"], report["schema_errors"]) == (True, [])
+    units = [n for n in nodes(legal) if n["type"] in LEGAL_UNITS]
+    assert units and all(n.get("germanType") for n in units)  # the source-language term is kept, not dropped
