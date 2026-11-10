@@ -12,7 +12,7 @@ Upload a PDF in the web app. The Python backend extracts its content with Doclin
 - A collapsible Docling Raw JSON view below Custom Legal JSON, provided the raw-output API and UI extension has been applied.
 - Runtime schema validation and diagnostic reports.
 
-The simplified version has no prepared-example mode or bundled automated test suite. Recognition of a document's structure does not guarantee that every passage is parsed correctly. Review warnings and compare the output with the PDF.
+The simplified version has no prepared-example mode. Automated backend and frontend tests are described in [development](Documentation/development.md#manual-verification). Recognition of a document's structure does not guarantee that every passage is parsed correctly. Review warnings and compare the output with the PDF.
 
 LLM-based rule extraction and digital-twin validation are future steps. Akoma Ntoso XML is not generated in this version.
 
@@ -73,7 +73,7 @@ In another terminal inside `frontend`:
 npm run dev
 ```
 
-Stop a server with **Ctrl+C**. If port 8000 is occupied, stop the previous backend instance before starting another. After a backend restart, process the PDF again: job information is held in memory.
+Stop a server with **Ctrl+C**. If port 8000 is occupied, stop the previous backend instance before starting another. After a backend restart, process the PDF again: in this local setup job information is held in memory. Docker Compose stores jobs in PostgreSQL instead, see [DOCKER.md](DOCKER.md).
 
 ## Results
 
@@ -86,7 +86,7 @@ Stop a server with **Ctrl+C**. If port 8000 is occupied, stop the previous backe
 
 The internal model links the public legal nodes to Docling items and PDF locations. Technical provenance remains in the model, rather than the public 2.0 schema.
 
-The current frontend formatting helpers show `nativeType` as `germanType` in the Legal JSON preview. The full live download retains the schema's `nativeType` field.
+Legal JSON nodes give the source-language legal term in `germanType`, for example `Absatz`. The schema also accepts the earlier name `nativeType`, so documents written before the rename stay valid; the frontend preview shows either as `germanType`.
 
 If the Docling panel cannot load, check that `DOCLING_RAW` is imported and included in `RESULT_FILES` in `backend/src/odos/api.py`. Restart the backend after changing it and process the PDF again.
 
@@ -102,7 +102,7 @@ npm run preview
 
 The build also checks TypeScript and writes the frontend to `dist/`. Preview normally runs at `http://localhost:4173` and still requires the backend. A separate production host needs API routing; the frontend build does not deploy Python.
 
-Before a release, process both a German-law and EU example. Check the hierarchy, selected-element and full-document JSON, downloaded JSON, PDF highlights and collapsible raw output. Also check the error shown for an unsupported document. Runtime validation remains enabled even when development tests have been removed.
+Before a release, process both a German-law and EU example. Check the hierarchy, selected-element and full-document JSON, downloaded JSON, PDF highlights and collapsible raw output. Also check the error shown for an unsupported document. Runtime validation remains enabled in every run; the automated tests do not replace this check.
 
 ## Configuration and storage
 
@@ -115,6 +115,8 @@ Before a release, process both a German-law and EU example. Check the hierarchy,
 Set variables before starting the corresponding process. Jobs are processed one at a time. Uploaded PDFs are deleted after processing; the browser displays its own local copy. Temporary storage is removed on shutdown, and old completed jobs may be deleted as the job limit is reached.
 
 Setting `ODOS_STORAGE_DIR` retains files but does not restore the in-memory job registry after restart. Do not commit uploaded PDFs, generated document data, virtual environments or `node_modules`.
+
+Optional persistence: with a local PostgreSQL 17 database (Docker Compose) and `ODOS_DATABASE_ENABLED=1`, jobs and their Legal JSON are stored as JSONB and restored after a backend restart; the uploaded PDF and result files are kept, and old jobs are not removed automatically. See the [PostgreSQL proof of concept](Documentation/database-poc.md). [DOCKER.md](DOCKER.md) runs PostgreSQL, backend and frontend with Docker Compose, with this persistence enabled.
 
 ## Repository layout
 

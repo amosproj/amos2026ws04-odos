@@ -74,9 +74,9 @@ describe("result view", () => {
     expect(html).toContain('aria-label="Original PDF"');
     expect(html).toContain('data-url="blob:pdf"');
     expect(html).toContain('aria-label="Recognized legal structure"');
-    expect(html).toContain("Musterbauordnung (MBO)");
-    expect(html).toContain("precomputed result");
-    expect(html).toContain("Choose another PDF");
+    // the docbar: no "precomputed result" chip since the prepared example mode was removed, every result is live
+    const docbar = /<div class="docbar">([\s\S]*?)<\/div>/.exec(html)![1];
+    expect(docbar.replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["ODOS", "Musterbauordnung (MBO)", "Choose another PDF"]);
     expect(html).toContain("Legal structure");
     expect(html).toContain("Artifacts");
     expect(html.match(/role="tab"/g)).toHaveLength(2); // Legal structure and Artifacts only
