@@ -62,7 +62,7 @@ npm run preview
 | `ODOS_MAX_UPLOAD_MB` | PDF upload limit; default 50 MB |
 | `ODOS_API_URL` | Backend address used by the Vite proxy; default `http://127.0.0.1:8000` |
 
-Set variables before starting the corresponding process. Retaining files does not make old jobs available after a backend restart: the registry is in memory.
+Set variables before starting the corresponding process. Retaining files does not make old jobs available after a backend restart: the registry is in memory, unless PostgreSQL persistence is enabled (`ODOS_DATABASE_ENABLED=1`, as in Docker Compose; see [database-poc.md](database-poc.md) and [DOCKER.md](../DOCKER.md)).
 
 ## Docling Raw JSON panel
 
@@ -89,7 +89,15 @@ The CLI `process` command requires an explicit profile. The web API calls the pi
 
 ## Manual verification
 
-This simplified version does not include an automated test suite. Verify changes by building the frontend and processing both an MBO and German-language EU example:
+Run the automated tests first. Backend, from `backend` (the PostgreSQL tests and the MBO/EU reference tests are skipped with the reason when the `odos_test` database or the partner PDFs are missing; see [database-poc.md](database-poc.md#run-the-tests-safely) and `backend/data/input/SOURCE.md`):
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests
+```
+
+Frontend, from `frontend`: `npm run typecheck` and `npm test`.
+
+The tests do not cover every document or UI path. Also verify changes by building the frontend and processing both an MBO and German-language EU example:
 
 1. Confirm progress ends successfully and both JSON files can be displayed.
 2. Select legal elements and check their text, pages and PDF highlights.

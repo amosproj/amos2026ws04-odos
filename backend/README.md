@@ -10,7 +10,7 @@ The Python package `odos` converts legal PDFs into structured legal data. The fr
 - Custom Legal JSON 2.0 export with runtime validation.
 - A web API for uploads, processing status, result files and job deletion.
 
-This simplified version does not include an automated test suite. Runtime validation remains part of processing. LLM rule extraction and digital-twin validation are not implemented, and Akoma Ntoso XML is not generated.
+Automated tests are in `tests/` (`python -m pytest tests` from `backend`): the API with and without PostgreSQL persistence, Legal JSON schema compatibility, page rendering and, when the partner PDFs are available, the MBO and EU 2023/1230 reference structures. Tests whose database or PDFs are missing are skipped with the reason; see [database-poc.md](../Documentation/database-poc.md#run-the-tests-safely). Runtime validation remains part of processing. LLM rule extraction and digital-twin validation are not implemented, and Akoma Ntoso XML is not generated.
 
 ## Requirements and installation
 
@@ -103,9 +103,9 @@ To run individual steps:
 | `ODOS_STORAGE_DIR` | Job-file directory; defaults to temporary storage removed at shutdown |
 | `ODOS_MAX_UPLOAD_MB` | Upload size limit; default 50 MB |
 
-Set environment variables before starting Uvicorn. Jobs are registered in memory. Retaining files using `ODOS_STORAGE_DIR` does not restore old jobs after restart, unless the optional PostgreSQL persistence (`ODOS_DATABASE_ENABLED=1`) is used; see [database-poc.md](../Documentation/database-poc.md). Older completed jobs may be removed as the job limit is reached.
+Set environment variables before starting Uvicorn. Jobs are registered in memory. Retaining files using `ODOS_STORAGE_DIR` does not restore old jobs after restart, unless the optional PostgreSQL persistence (`ODOS_DATABASE_ENABLED=1`) is used; see [database-poc.md](../Documentation/database-poc.md). Without it, older completed jobs may be removed as the job limit is reached.
 
-The uploaded PDF is deleted after processing; the frontend displays its local copy. Keep uploaded PDFs, generated data and virtual environments out of Git.
+Without database persistence the uploaded PDF is deleted after processing (the frontend displays its local copy); with it, the PDF and the result files stay in `ODOS_STORAGE_DIR` until the job is deleted. Docker Compose enables the persistence, see [DOCKER.md](../DOCKER.md). Keep uploaded PDFs, generated data and virtual environments out of Git.
 
 ## Source layout
 
