@@ -1,0 +1,4 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+
+ex:UnclassifiedWindow a ex:Window .
+
