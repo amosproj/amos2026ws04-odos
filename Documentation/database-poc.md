@@ -251,6 +251,8 @@ set -a; source ../.env; set +a
 |---|---|
 | `tests/test_database_api.py` | Safety guard, connection, create/read, JSONB round trip, status updates, constraints, SQL parameters, listing, deletion, interrupted jobs, API restart, unsupported and failed documents, missing files, storage failure |
 | `tests/test_api_without_database.py` | In-memory mode without any database call, upload validation, configuration errors, database outage on upload, delete and startup |
+| `tests/test_page_rendering.py` | Docling renders non-embedded PDF fonts as real glyphs (needs a substitute font such as fonts-liberation; see DOCKER.md) |
+| `tests/test_reference_documents.py` | Real pipeline on the MBO and EU 2023/1230 (slow, minutes; skipped without the partner PDFs, see `backend/data/input/SOURCE.md`) |
 | `frontend/src/demo/live.test.tsx` | The frontend deletes a finished job only when the backend does not keep it (`npx vitest run src/demo/live.test.tsx` in `frontend`) |
 
 ## Troubleshooting

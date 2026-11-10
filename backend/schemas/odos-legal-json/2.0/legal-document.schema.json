@@ -287,6 +287,19 @@
           "description": "term of the source legal tradition",
           "title": "Nativetype"
         },
+        "germanType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "German name of the legal structural element",
+          "title": "Germantype"
+        },
         "number": {
           "anyOf": [
             {

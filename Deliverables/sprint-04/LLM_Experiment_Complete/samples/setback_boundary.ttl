@@ -1,0 +1,7 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:setback_boundary a ex:GeneralSetbackCase ;
+    ex:effectiveHeightHM 10.0 ;
+    ex:setbackDepthM 4.0 .
+

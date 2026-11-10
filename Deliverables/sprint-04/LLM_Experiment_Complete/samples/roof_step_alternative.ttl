@@ -1,0 +1,11 @@
+@prefix ex: <https://example.org/amos/mbo#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:roof_step_alternative a ex:EscapeWindow ;
+    ex:clearHeightM 1.20 ;
+    ex:clearWidthM 0.90 ;
+    ex:heightAboveFloorM 1.20 ;
+    ex:inRoofSlopeOrRoofStructure true ;
+    ex:lowerEdgeHorizontalDistanceToEavesM 1.50 ;
+    ex:stepHorizontalDistanceToEavesM 0.80 .
+
