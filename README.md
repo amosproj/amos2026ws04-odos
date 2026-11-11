@@ -2,6 +2,8 @@
 
 AMOS WS 2026 research prototype for converting legal PDFs into structured legal JSON.
 
+Project mission: In this project we turn laws and standards into rules that a computer can check. We start with two documents, the EU Machinery Regulation and the German Musterbauordnung. We read their PDFs into a structured JSON, extract the rules from it, and check digital twins against those rules, so that only designs that follow the law pass. For Wisdom Bridge AI, we deliver a clear recommendation and a working prototype.
+
 Upload a PDF in the web app. The Python backend extracts its content with Docling, recognizes a German-law or German-language EU structure, and exports Custom Legal JSON 2.0. The frontend displays the original PDF, the recognized hierarchy with source highlighting, and JSON results.
 
 ## Current scope
