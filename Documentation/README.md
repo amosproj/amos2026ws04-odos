@@ -10,6 +10,7 @@ Documentation for the simplified live PDF-processing prototype. Start with the a
 | [legal-json.md](legal-json.md) | Custom Legal JSON 2.0, schema and traceability |
 | [parsing.md](parsing.md) | Parsing stages and German/EU profiles |
 | [database-poc.md](database-poc.md) | Optional PostgreSQL 17 + JSONB persistence (proof of concept, macOS setup, tests) |
+| [docker-postgresql-guide.md](docker-postgresql-guide.md) | Docker Compose workflow, `psql` inspection of persisted Legal JSON, JSONPath queries, volumes and troubleshooting |
 
 ## Scope of this documentation
 
