@@ -1,34 +1,67 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AppHeader } from "../components/AppHeader";
 import { Icon } from "../components/Icon";
+import { Logo } from "../components/Logo";
 import { PdfViewer } from "../components/PdfViewer";
+import { ProcessingStatus } from "../components/ProcessingStatus";
+import { RecentDocuments, type DocumentProblem } from "../components/RecentDocuments";
+import { DEFAULT_SPLIT, SplitDivider, splitVars } from "../components/SplitDivider";
 import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
-import { STAGE_LABELS, nodeJson, processPdf, releaseJob } from "./live";
+import { ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, type StoredDocument } from "./live";
 import "./demo.css";
 
 
 type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string };
+/** What went wrong: the file cannot be used ("invalid"), its structure was not recognized, or the upload/processing failed. */
+type Problem = { kind: "invalid" | "unsupported" | "failed"; message: string };
+
+const PROBLEM_TITLES: Record<Problem["kind"], string> = {
+  invalid: "This file can't be processed",
+  unsupported: "Document type not recognized",
+  failed: "Processing failed",
+};
+
+const formatSize = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
 
 export default function DemoApp() {
   const [file, setFile] = useState<File | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
-  const [error, setError] = useState<string | null>(null);
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // reloads the recent documents after a run ended without a result
+  const [opening, setOpening] = useState<string | null>(null); // the stored document being opened
+  const [openProblem, setOpenProblem] = useState<DocumentProblem | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const running = useRef(false); // processing or opening; set synchronously: the disabled state only follows after the next render
 
   const pdfUrl = phase.kind === "done" ? phase.pdfUrl : null;
   useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
 
   const choose = (f: File | undefined) => {
-    setFile(f ?? null);
-    setError(null);
+    if (running.current) return;
+    setProblem(null);
+    if (!f) {
+      setFile(null);
+      return;
+    }
+    const invalid = pdfProblem(f);
+    if (invalid) {
+      setFile(null);
+      setProblem({ kind: "invalid", message: invalid });
+      if (input.current) input.current.value = "";
+      return;
+    }
+    setFile(f);
   };
 
   const process = async () => {
-    if (!file) return;
-    setError(null);
-    setPhase({ kind: "busy", stage: "checking" });
+    if (!file || running.current) return;
+    running.current = true;
+    setProblem(null);
+    setPhase({ kind: "busy", stage: "uploading" });
     try {
       const result = await processPdf(file, (stage) => {
         setPhase({ kind: "busy", stage });
@@ -36,7 +69,27 @@ export default function DemoApp() {
       setPhase({ kind: "done", result, pdfUrl: URL.createObjectURL(file) });
     } catch (e) {
       setPhase({ kind: "idle" });
-      setError(e instanceof Error ? e.message : String(e));
+      setProblem({ kind: e instanceof ProcessingError ? e.kind : "failed", message: e instanceof Error ? e.message : String(e) });
+      setRefreshKey((k) => k + 1);
+    } finally {
+      running.current = false;
+    }
+  };
+
+  /** Opens a stored document in the result view. Nothing is uploaded or processed: the backend serves what it stored. */
+  const open = async (doc: StoredDocument) => {
+    if (running.current) return;
+    running.current = true;
+    setOpenProblem(null);
+    setOpening(doc.id);
+    try {
+      const { result, pdf } = await openStoredDocument(doc.id);
+      setPhase({ kind: "done", result, pdfUrl: URL.createObjectURL(pdf) });
+    } catch (e) {
+      setOpenProblem({ id: doc.id, message: `${doc.filename} could not be opened. ${e instanceof Error ? e.message : String(e)}` });
+    } finally {
+      running.current = false;
+      setOpening(null);
     }
   };
 
@@ -44,37 +97,56 @@ export default function DemoApp() {
     if (phase.kind === "done" && phase.result.live) releaseJob(phase.result.live.jobId, phase.result.live.persistent);
     setPhase({ kind: "idle" });
     setFile(null);
-    setError(null);
+    setProblem(null);
+    setOpenProblem(null);
     if (input.current) input.current.value = "";
   };
 
   if (phase.kind === "done") return <ResultView result={phase.result} pdfUrl={phase.pdfUrl} onReset={reset} />;
 
   const busy = phase.kind === "busy";
+  const locked = busy || opening !== null; // one thing at a time: a run or opening a stored document
   return (
-    <main className="demo-upload">
-      <div className="demo-card">
-        <h1 className="demo-title">ODOS</h1>
-        <label
-          className={`demo-drop${file ? " has-file" : ""}`}
-          onDragOver={(e) => { if (e.dataTransfer.types.includes("Files")) e.preventDefault(); }}
-          onDrop={(e) => { e.preventDefault(); choose(e.dataTransfer.files[0]); }}
-        >
-          <input ref={input} type="file" accept="application/pdf,.pdf" className="sr-only" onChange={(e) => choose(e.target.files?.[0])} disabled={busy} />
-          <Icon name="upload" size={20} />
-          <span>{file ? file.name : "Choose a PDF or drop it here"}</span>
-        </label>
-        <button className="btn primary demo-process" onClick={() => void process()} disabled={!file || busy}>
-          {phase.kind === "busy"
-            ? <><span className="spinner" aria-hidden="true" /> {phase.stage === "checking" ? "Loading result…" : STAGE_LABELS[phase.stage] ?? "Processing…"}</>
-            : "Process Document"}
-        </button>
-              {busy && (
-        <p className="muted small demo-hint">
-          Long documents take a few minutes (Docling extraction).
-        </p>
-      )}
-        {error && <div className="alert warn" role="alert">{error}</div>}
+    <main className="home" id="top">
+      <AppHeader />
+      <div className="shell">
+        <section id="upload" className="home-upload" aria-labelledby="upload-heading">
+          <div className="home-intro">
+            <p className="eyebrow"><i aria-hidden="true" />Document workspace</p>
+            <h1 id="upload-heading" className="home-title">Your documents</h1>
+            <p className="muted home-lead">Upload, process and review German and EU legal documents.</p>
+          </div>
+          <div className="home-uploadpanel">
+            <label
+              className={`demo-drop${file ? " has-file" : ""}${dragging ? " dragging" : ""}${locked ? " disabled" : ""}`}
+              onDragOver={(e) => { if (e.dataTransfer.types.includes("Files")) { e.preventDefault(); if (!locked) setDragging(true); } }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                const dropped = e.dataTransfer.files[0];
+                if (dropped) choose(dropped);
+              }}
+            >
+              <input ref={input} type="file" accept="application/pdf,.pdf" className="sr-only" onChange={(e) => choose(e.target.files?.[0])} disabled={locked} />
+              <Icon name="upload" size={22} />
+              <span className="demo-drop-title">{file ? file.name : "Choose a PDF or drop it here"}</span>
+              <span className="demo-drop-hint">{file ? `${formatSize(file.size)} · Select a different file` : "PDF files only"}</span>
+            </label>
+            {problem && (
+              <div className="alert error" role="alert">
+                <strong>{PROBLEM_TITLES[problem.kind]}</strong>
+                <p>{problem.message}</p>
+                {problem.kind === "failed" && file && <button type="button" className="btn small" onClick={() => void process()}>Try again</button>}
+              </div>
+            )}
+            <button type="button" className="btn primary demo-process" onClick={() => void process()} disabled={!file || locked} aria-busy={busy}>
+              {busy ? <><span className="spinner" aria-hidden="true" /> Processing…</> : "Process document"}
+            </button>
+            {phase.kind === "busy" && <ProcessingStatus stage={phase.stage} />}
+          </div>
+        </section>
+        <RecentDocuments refreshKey={refreshKey} onOpen={(doc) => void open(doc)} openingId={opening} openError={openProblem} openDisabled={busy} />
       </div>
     </main>
   );
@@ -86,6 +158,8 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
   const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [full, setFull] = useState(false); // live Artifacts: the complete document instead of the selected element
+  const [split, setSplit] = useState(DEFAULT_SPLIT); // the PDF panel's share of the width
+  const splitRef = useRef<HTMLDivElement>(null);
   const element = useMemo(() => model.elements.find((e) => e.id === selected) ?? null, [model, selected]);
   const hl = highlightsOf(element);
 
@@ -98,15 +172,18 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
   return (
     <main className="workspace demo-result">
       <div className="docbar">
-        <span className="demo-brand">ODOS</span>
-        <h2 title={result.title}>{result.title}</h2>
+        <Logo compact />
+        <span className="docbar-sep" aria-hidden="true" />
+        <h2 title={result.filename ? `${result.filename} · ${result.title}` : result.title}>{result.filename ?? result.title}</h2>
+        <span className="demo-status ok">Completed</span>{/* a result is only ever shown for a completed document */}
         <span className="spacer" />
-        <button className="btn" onClick={onReset}>Choose another PDF</button>
+        <button className="btn" onClick={onReset}><Icon name="back" size={16} />Back to documents</button>
       </div>
-      <div className="split">
+      <div className="split" ref={splitRef} style={splitVars(split)}>
         <section className="pane left" aria-label="Original PDF">
           <PdfViewer url={pdfUrl} page={page} onPageChange={setPage} highlights={hl.boxes} approximate={hl.approximate} />
         </section>
+        <SplitDivider containerRef={splitRef} value={split} onCommit={setSplit} />
         <section className="pane right" aria-label="Recognized legal structure">
           <div className="tabs" role="tablist">
             <button role="tab" aria-selected={tab === "structure"} className={tab === "structure" ? "active" : ""} onClick={() => setTab("structure")}>Legal structure</button>
@@ -128,7 +205,7 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
 }
 
 function SourceDetail({ element: e, onGoToPage }: { element: DocElement | null; onGoToPage: (page: number) => void }) {
-  if (!e) return <div className="detail muted pad">Select an element to highlight its source text in the PDF.</div>;
+  if (!e) return <div className="detail empty"><Icon name="info" size={20} /><span>Select an element to highlight its source text in the PDF.</span></div>;
   return (
     <div className="detail">
       <h3>{TYPE_LABELS[e.type] ?? e.type} {e.marker ?? ""}</h3>

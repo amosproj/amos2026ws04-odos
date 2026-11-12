@@ -3,6 +3,8 @@ import type { LiveData } from "./live";
 
 export interface DemoResult {
   title: string;
+  /** The uploaded file's name, for the result view's header. */
+  filename?: string;
   model: DocumentModel;
   json: string;
   download: {

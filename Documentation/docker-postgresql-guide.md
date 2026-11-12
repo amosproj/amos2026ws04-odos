@@ -491,5 +491,5 @@ Persistence rules:
 
 - PostgreSQL is a **local** instance per developer. There is no shared database, no hosted service and no backup.
 - Possible later steps, **not implemented**: a hosted PostgreSQL service such as Neon for a shared team database, and a database client such as pgAdmin or Adminer. Until then, `psql` inside the container is the supported way to inspect data. ([database-poc.md](database-poc.md) mentions DBeaver as an optional local client; it is not part of ODOS either.)
-- There is no document list in the frontend and no `GET /api/jobs` endpoint; use SQL to find document IDs.
+- The start page lists the newest 20 stored documents (`GET /api/documents`) and can reopen or delete them; for older documents, use SQL to find the IDs.
 - Stored Legal JSON reflects the parser's current quality. `json_schema_valid` and `parser_warnings` in `summary` tell you how much to trust a document; a value of `false` is a parser topic, not a database error.

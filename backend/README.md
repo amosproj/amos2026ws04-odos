@@ -46,6 +46,8 @@ The API calls the pipeline without an explicit legal profile. The pipeline attem
 | `POST /api/jobs` | Upload a PDF as multipart field `file`; returns a queued job |
 | `GET /api/jobs/{id}` | Read job status and progress |
 | `GET /api/jobs/{id}/files/{name}` | Read an allowed result file for a completed job |
+| `GET /api/documents` | Metadata of the newest stored documents (`id`, `filename`, `status`, `created_at`); `[]` without database persistence |
+| `GET /api/jobs/{id}/pdf` | The original PDF of a completed, stored document (database persistence only; looked up through the document's stored key inside `ODOS_STORAGE_DIR`) |
 | `DELETE /api/jobs/{id}` | Remove a job and its files |
 
 Statuses are `queued`, `processing`, `completed`, `unsupported` and `failed`. Processing uses one worker. Detailed exceptions are logged in the backend terminal.

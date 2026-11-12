@@ -57,14 +57,40 @@ const preview = (html: string, title: string) => {
   return { card, text: pre.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&") };
 };
 
-describe("upload screen", () => {
+describe("workspace page", () => {
   const html = renderToStaticMarkup(<DemoApp />);
-  it("shows only the title, the PDF upload and the Process Document button", () => {
-    expect(html).toContain(">ODOS</h1>");
+  it("has the ODOS header: the logo with its subtitle and a minimal navigation", () => {
+    const header = /<header class="site-nav">([\s\S]*?)<\/header>/.exec(html)![1];
+    expect(header).toContain('aria-label="ODOS, ontology-driven operating system"');
+    expect(header).toMatch(/<span class="logo-mark"[^>]*><span><b>O<\/b>D<\/span><span><b>O<\/b>S<\/span><\/span>/); // the stacked O D / O S
+    expect(header).toContain("ONTOLOGY-DRIVEN<br/>OPERATING SYSTEM");
+    expect(header.match(/<a /g)).toHaveLength(3); // logo, Documents, Processing: internal links only
+    expect(header).toMatch(/<a [^>]*href="#library"[^>]*aria-current="page"[^>]*>Documents<\/a>/);
+    expect(header).toMatch(/<a [^>]*href="#upload"[^>]*>Processing<\/a>/);
+    expect(header).toContain('href="#top"'); // the logo stays on this page
+  });
+  it("links nowhere outside the application: no external website link anywhere on the page", () => {
+    expect(html).not.toMatch(/href="(https?:)?\/\//);
+    expect(html).not.toMatch(/odos-chi|vercel|ODOS website|target="_blank"/i);
+    for (const href of html.matchAll(/href="([^"]*)"/g)) expect(href[1]).toMatch(/^#/);
+  });
+  it("is a workspace, not a landing page: heading, description, upload, then the library", () => {
+    expect(html).toMatch(/<h1[^>]*>Your documents<\/h1>/);
+    expect(html).toContain("Upload, process and review German and EU legal documents.");
     expect(html).toContain('type="file"');
+    expect(html).toContain('accept="application/pdf,.pdf"');
     expect(html).toContain("Choose a PDF or drop it here");
-    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Process Document<\/button>/); // nothing chosen yet
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Process document<\/button>/); // nothing chosen yet
     expect(html).not.toContain('role="alert"');
+    expect(html).toContain('id="upload"');
+    expect(html).toContain('id="library"');
+    expect(html.indexOf("Your documents")).toBeLessThan(html.indexOf("Document library"));
+    expect(html).not.toMatch(/hero|pricing|testimonial|statistics/i);
+  });
+  it("shows the document library below, loading its data from the backend", () => {
+    expect(html).toContain(">Document library</h2>");
+    expect(html).toContain("Loading documents…"); // the first render, before the list request has answered
+    expect(html).not.toContain("demo-docitem"); // no example records
   });
 });
 
@@ -76,7 +102,9 @@ describe("result view", () => {
     expect(html).toContain('aria-label="Recognized legal structure"');
     // the docbar: no "precomputed result" chip since the prepared example mode was removed, every result is live
     const docbar = /<div class="docbar">([\s\S]*?)<\/div>/.exec(html)![1];
-    expect(docbar.replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["ODOS", "Musterbauordnung (MBO)", "Choose another PDF"]);
+    expect(docbar).toContain('aria-label="ODOS, ontology-driven operating system"'); // the compact logo, without the subtitle
+    expect(docbar).not.toContain("ONTOLOGY-DRIVEN");
+    expect(docbar.replace(/<span class="logo-mark"[\s\S]*?<\/span><\/span>/, "").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Musterbauordnung (MBO)", "Completed", "Back to documents"]);
     expect(html).toContain("Legal structure");
     expect(html).toContain("Artifacts");
     expect(html.match(/role="tab"/g)).toHaveLength(2); // Legal structure and Artifacts only

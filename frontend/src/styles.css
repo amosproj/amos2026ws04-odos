@@ -1,29 +1,33 @@
-/* ODOS design system: one dark enterprise theme. Palette and scale are tokens; components only use tokens. */
+/* ODOS design system: one dark theme. Deep navy-black surfaces, thin teal-grey lines and one teal accent; Audiowide for the
+   logo and display headings, Geist for text. Palette and scale are tokens; components only use tokens. */
 :root {
   /* palette */
-  --bg: #0B1220;            /* application background */
-  --bar: #111C2D;           /* sidebar / header */
-  --panel: #172335;         /* cards and panels */
-  --border: #293548;        /* subtle borders */
-  --accent: #4B83C3;        /* primary accent */
-  --accent-hover: #6099D8;  /* primary hover; also the link colour (5.3:1 on --panel) */
+  --bg: #04101A;            /* application background */
+  --bar: #061620;           /* header, toolbars and tab bars */
+  --panel: #071A26;         /* panels and cards */
+  --border: #14374A;        /* thin lines */
+  --accent: #2DD4BF;        /* teal accent: icons, lines, marks */
+  --accent-hover: #5EEAD4;  /* links, chips and focus rings on dark (11:1 on --bg) */
+  --btn: #0F8176;           /* filled primary button: white label 4.8:1 */
   --text: #F1F5F9;
-  --muted: #94A3B8;
-  --warn: #D6A25A;
-  --danger: #D16C6C;
+  --muted: #9DB2BD;         /* 9:1 on --bg */
+  --warn: #E0B15E;
+  --danger: #F08A8A;
   /* derived: translucent tints of the palette, never new hues */
-  --warn-bg: rgba(214, 162, 90, .13); --warn-line: rgba(214, 162, 90, .38);
-  --danger-bg: rgba(209, 108, 108, .13); --danger-line: rgba(209, 108, 108, .4);
-  --info-bg: rgba(75, 131, 195, .13); --info-line: rgba(75, 131, 195, .38);
-  --sel: rgba(75, 131, 195, .18);
-  --hover: rgba(148, 163, 184, .07);
-  --on-accent: #0B1220;     /* label on filled accent/danger buttons: 4.7:1 on --accent, 6:1 on --accent-hover */
-  --viewer: #0E1727;        /* surface behind PDF pages */
-  --hl: rgba(214, 162, 90, .32); --hl-b: var(--warn);
+  --warn-bg: rgba(224, 177, 94, .12); --warn-line: rgba(224, 177, 94, .38);
+  --danger-bg: rgba(240, 138, 138, .1); --danger-line: rgba(240, 138, 138, .4);
+  --info-bg: rgba(45, 212, 191, .1); --info-line: rgba(45, 212, 191, .35);
+  --sel: rgba(45, 212, 191, .14);
+  --hover: rgba(148, 163, 184, .08);
+  --on-accent: #FFFFFF;     /* label on the filled primary and danger buttons */
+  --viewer: #030B12;        /* surface behind PDF pages */
+  --hl: rgba(224, 177, 94, .32); --hl-b: #E0B15E;
   /* scale */
-  --r: 8px; --r-sm: 6px;
+  --r: 14px; --r-sm: 10px;
+  --font-display: Audiowide, "Arial Black", Arial, sans-serif;
+  --font-mono: monospace;
   color-scheme: dark;
-  font-family: Inter, -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-family: "Geist Variable", Geist, -apple-system, "Segoe UI", system-ui, sans-serif;
   font-size: 14px; line-height: 1.5; color: var(--text); background: var(--bg);
 }
 * { box-sizing: border-box; }
@@ -45,8 +49,10 @@ blockquote { margin: 0; }
 /* ---- controls --------------------------------------------------------------------------------------------- */
 .btn, .tabs button, .pdf-toolbar button, .tree-tools button { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: var(--r-sm); padding: 6px 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; line-height: 1.3; }
 .btn:hover:not(:disabled), .pdf-toolbar button:hover:not(:disabled), .tree-tools button:hover:not(:disabled) { border-color: var(--accent-hover); background: var(--hover); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
-.btn.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn.primary { background: var(--btn); border-color: var(--btn); color: var(--on-accent); font-weight: 600; }
+.btn.primary:hover:not(:disabled) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.btn.danger { background: #B83C3C; border-color: #B83C3C; color: var(--on-accent); font-weight: 600; }
+.btn.danger:hover:not(:disabled) { background: #9E3030; border-color: #9E3030; }
 .btn.small { padding: 3px 10px; font-size: 12.5px; }
 button:disabled, .btn:disabled { opacity: .5; cursor: not-allowed; }
 .link { background: none; border: 0; color: var(--accent-hover); cursor: pointer; padding: 0 4px; text-decoration: underline; text-underline-offset: 2px; }
@@ -66,47 +72,73 @@ select { cursor: pointer; }
 .alert.warn { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); }
 .alert .icon { margin-right: 2px; }
 /* ---- document workspace ------------------------------------------------------------------------------------- */
-.workspace { padding: 14px 20px 20px; display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
-.docbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
-.docbar h2 { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 44vw; }
-.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 4px; flex: 1; height: calc(100vh - 168px); min-height: 520px; }
-.pane { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
-@media (max-width: 1000px) {
-  .split { grid-template-columns: 1fr; height: auto; }
+.workspace { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
+/* ---- review header ------------------------------------------------------------------------------------------- */
+.docbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 12px clamp(16px, 2vw, 32px); background: rgba(4, 16, 26, .88); border-bottom: 1px solid var(--border); }
+.docbar-sep { align-self: stretch; width: 1px; margin: 6px 2px; background: var(--border); }
+.docbar h2 { min-width: 0; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(18px, 1.7vw, 26px); font-weight: 500; letter-spacing: 0; }
+.docbar .btn { padding: 9px 18px; border-radius: 12px; border-color: rgba(45, 212, 191, .45); font-size: clamp(14px, 1.15vw, 17px); }
+.docbar .btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(45, 212, 191, .08); }
+/* ---- two panels with a draggable divider --------------------------------------------------------------------- */
+.split { display: grid; grid-template-columns: minmax(var(--min-panel, 320px), var(--left, 1fr)) 14px minmax(var(--min-panel, 320px), var(--right, 1fr)); padding: clamp(12px, 1.4vw, 20px) clamp(16px, 2vw, 32px) clamp(14px, 1.6vw, 24px); flex: 1; min-height: 520px; }
+.pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; background: var(--panel); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, .35); }
+.splitter { position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; cursor: col-resize; touch-action: none; border-radius: 8px; }
+.splitter::before { content: ""; width: 4px; height: 56px; border-radius: 2px; background: var(--border); transition: background-color .15s, height .15s; }
+.splitter:hover::before, .splitter.active::before { background: var(--accent); height: 80px; }
+.splitter:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: -2px; }
+@media (max-width: 1000px) { /* stacked: nothing to drag */
+  .split { grid-template-columns: minmax(0, 1fr); row-gap: 16px; min-height: 0; }
+  .splitter { display: none; }
   .pane { height: 80vh; }
   .docbar h2 { max-width: 100%; }
-  .workspace { padding: 12px 14px 16px; }
 }
+/* ---- PDF viewer ---------------------------------------------------------------------------------------------- */
 .pdf { display: flex; flex-direction: column; height: 100%; min-height: 0; }
-.pdf-toolbar { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--border); background: var(--bar); }
-.pageinput { display: flex; gap: 6px; align-items: center; }
-.pageinput input { width: 60px; padding: 3px 6px; }
-.pdf-scroll { flex: 1; overflow: auto; background: var(--viewer); padding: 14px; }
+.pdf-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bar); font-size: clamp(14px, 1.15vw, 17px); }
+.pdf-toolbar button { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 12px; }
+.pdf-toolbar button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-hover); }
+.pageinput { display: flex; gap: 10px; align-items: center; }
+.pageinput input { width: 76px; height: 44px; padding: 0 10px; border-radius: 12px; }
+.pdf-scroll { flex: 1; overflow: auto; background: var(--viewer); padding: 20px; }
 .pdf-page { position: relative; margin: 0 auto; background: #fff; box-shadow: 0 2px 12px rgba(0, 0, 0, .5); }
 .pdf-page canvas { display: block; }
 .hl { position: absolute; background: var(--hl); border: 2px solid var(--hl-b); border-radius: 3px; pointer-events: none; }
-.hl.approx { background: rgba(214, 162, 90, .14); border-style: dashed; }
-.tabs { display: flex; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--border); background: var(--bar); overflow-x: auto; flex: none; }
-.tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 10px 12px; color: var(--muted); white-space: nowrap; }
+.hl.approx { background: rgba(224, 177, 94, .14); border-style: dashed; }
+/* ---- structure panel ----------------------------------------------------------------------------------------- */
+.tabs { display: flex; gap: 8px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--bar); overflow-x: auto; flex: none; }
+.tabs button { margin-bottom: -1px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 16px 12px 14px; color: var(--muted); font-size: clamp(15px, 1.3vw, 20px); white-space: nowrap; }
 .tabs button:hover { color: var(--text); background: none; }
-.tabs button.active, .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.tabs button.active, .tabs button[aria-selected="true"] { color: var(--accent-hover); border-bottom-color: var(--accent); }
 .tabbody { flex: 1; min-height: 0; overflow: auto; }
-.structure { display: grid; grid-template-rows: minmax(120px, 1fr) minmax(120px, auto); height: 100%; min-height: 0; }
-.tree { overflow: auto; border-bottom: 1px solid var(--border); min-height: 0; }
-.tree-tools { display: flex; gap: 8px; padding: 8px 10px; position: sticky; top: 0; background: var(--panel); z-index: 1; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--border); }
-.tree-tools input[type=search] { flex: 1; min-width: 120px; }
+.structure { display: grid; grid-template-rows: minmax(120px, 1fr) auto; height: 100%; min-height: 0; }
+.tree { overflow: auto; min-height: 0; }
+.tree-tools { display: flex; gap: 10px; padding: 14px 20px; position: sticky; top: 0; background: var(--panel); z-index: 1; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--border); }
+.tree-search { display: flex; flex: 1; min-width: 160px; align-items: center; gap: 10px; height: 46px; padding: 0 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bar); color: var(--muted); }
+.tree-search:focus-within { border-color: var(--accent); }
+.tree-search input[type=search] { flex: 1; min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; color: var(--text); font-size: clamp(14px, 1.1vw, 16px); outline: none; }
+.tree-tools button { height: 46px; padding: 0 16px; border-radius: 12px; font-size: clamp(14px, 1.1vw, 16px); }
+.tree-tools button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-hover); }
 .tree-list, .tree ul[role=group] { list-style: none; margin: 0; padding: 0; }
-.node { display: flex; align-items: baseline; gap: 6px; padding: 3px 10px; cursor: pointer; border-left: 2px solid transparent; }
+.tree-list { padding: 4px 14px 14px; }
+.tree-list > li { padding: 3px 0; border-bottom: 1px solid var(--border); }
+.tree-list > li:last-child { border-bottom: 0; }
+.node { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; border: 1px solid transparent; border-radius: 10px; font-size: clamp(14px, 1.15vw, 17px); }
 .node:hover { background: var(--hover); }
-.node.selected { background: var(--sel); border-left-color: var(--accent); }
-.twisty { width: 18px; border: 0; background: none; cursor: pointer; padding: 0; color: var(--muted); }
-.kind { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--accent-hover); background: var(--info-bg); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+.node.selected { background: rgba(45, 212, 191, .16); border-color: rgba(45, 212, 191, .55); } /* the selected element, and it stays while the tree is used */
+.twisty { display: inline-grid; place-items: center; width: 22px; height: 22px; border: 0; background: none; cursor: pointer; padding: 0; color: var(--text); }
+.twisty:disabled { cursor: default; }
+.twisty .icon { transition: transform .12s; }
+.twisty.open .icon { transform: rotate(90deg); }
+.kind { font-size: .72em; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--accent-hover); background: rgba(45, 212, 191, .16); border-radius: 8px; padding: 3px 10px; white-space: nowrap; }
 .label { flex: 1; overflow-wrap: anywhere; }
-.pg { color: var(--muted); font-size: 12px; }
-.detail { padding: 12px 14px; overflow: auto; }
-.detail h3 { margin: 0 0 4px; }
+.pg { color: var(--muted); font-size: .85em; white-space: nowrap; }
+/* ---- the selected element's details ------------------------------------------------------------------------- */
+.detail { max-height: min(42vh, 380px); padding: 16px 22px 18px; overflow: auto; border-top: 1px solid var(--border); font-size: clamp(13px, 1.05vw, 16px); }
+.detail.empty { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: clamp(14px, 1.1vw, 16px); }
+.detail.empty .icon { color: var(--muted); }
+.detail h3 { margin: 0 0 4px; font-size: clamp(15px, 1.2vw, 18px); }
 .detail .title { font-weight: 600; margin: 0 0 6px; }
-.origtext { margin: 6px 0; padding: 8px 12px; border-left: 2px solid var(--accent); background: var(--bg); border-radius: 0 var(--r-sm) var(--r-sm) 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.origtext { margin: 8px 0; padding: 10px 14px; border-left: 2px solid var(--accent); background: var(--bg); border-radius: 0 var(--r-sm) var(--r-sm) 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 0; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; }

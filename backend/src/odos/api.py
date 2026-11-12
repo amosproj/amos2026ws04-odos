@@ -23,6 +23,7 @@ import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
@@ -37,7 +38,9 @@ from odos.document_repository import (
     create_document,
     delete_document,
     finish_document,
+    get_pdf_storage_key,
     list_documents,
+    list_recent_documents,
     mark_interrupted_jobs,
     update_document_status,
 )
@@ -48,6 +51,7 @@ MAX_UPLOAD_BYTES = int(os.environ.get("ODOS_MAX_UPLOAD_MB", "50")) * 1024 * 1024
 MAX_JOBS = 10  # when a new job comes in, the oldest finished ones beyond this are deleted with their files
 # the job files the frontend reads; nothing else in a job directory is served
 RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW)
+SOURCE_PDF = "source.pdf"  # the uploaded PDF inside a job directory; kept only with database persistence
 FAILED_MESSAGE = "The PDF could not be processed. It may be damaged, encrypted or a scanned image without a text layer."
 NOT_STORED_MESSAGE = "The PDF was processed, but its result could not be stored in the database."
 DATABASE_UNAVAILABLE = "The ODOS database is not available. Check that PostgreSQL is running and try again."
@@ -70,6 +74,15 @@ class Job(BaseModel):
     def persistent(self) -> bool:
         """Kept in the database: the frontend then leaves the job in place instead of deleting it when done."""
         return _persistent()
+
+
+class StoredDocument(BaseModel):
+    """A document of the database as listed on the upload page: metadata only."""
+
+    id: str
+    filename: str
+    status: Literal["queued", "processing", "completed", "unsupported", "failed"]
+    created_at: datetime
 
 
 _jobs: dict[str, Job] = {}
@@ -122,7 +135,7 @@ app = FastAPI(title="ODOS", lifespan=lifespan)
 @app.post("/api/jobs", status_code=202)
 def create_job(file: UploadFile = File(...)) -> Job:
     job = Job(id=uuid.uuid4().hex, filename=Path(file.filename or "document.pdf").name[:200])
-    pdf = _storage / job.id / "source.pdf"
+    pdf = _storage / job.id / SOURCE_PDF
     pdf.parent.mkdir(parents=True)
     try:
         _save_pdf(file, pdf)
@@ -131,7 +144,7 @@ def create_job(file: UploadFile = File(...)) -> Job:
         raise
     if _persistent():
         try:
-            create_document(job.id, job.filename, f"{job.id}/source.pdf")  # relative to ODOS_STORAGE_DIR
+            create_document(job.id, job.filename, f"{job.id}/{SOURCE_PDF}")  # relative to ODOS_STORAGE_DIR
         except psycopg.Error as e:
             shutil.rmtree(pdf.parent, ignore_errors=True)
             log.exception("could not register job %s", job.id)
@@ -149,6 +162,18 @@ def create_job(file: UploadFile = File(...)) -> Job:
     queued = job.model_copy()  # as created: the worker may already be changing `job`
     _executor.submit(_process, job, pdf)
     return queued
+
+
+@app.get("/api/documents")
+def list_stored_documents() -> list[StoredDocument]:
+    """The most recently stored documents (newest first); empty without database persistence."""
+    if not _persistent():
+        return []
+    try:
+        return [StoredDocument(**row) for row in list_recent_documents()]
+    except psycopg.Error as e:
+        log.exception("could not list documents")
+        raise HTTPException(503, DATABASE_UNAVAILABLE) from e
 
 
 @app.get("/api/jobs/{job_id}")
@@ -171,6 +196,18 @@ def get_file(job_id: str, name: str, download: bool = False) -> FileResponse:
     return FileResponse(path, media_type="application/json", filename=filename)
 
 
+@app.get("/api/jobs/{job_id}/pdf")
+def get_pdf(job_id: str) -> FileResponse:
+    """The original PDF of a completed, stored document (what the viewer shows beside the recognized structure)."""
+    job = _job(job_id)
+    if job.status != "completed":
+        raise HTTPException(409, "The job has no results.")
+    path = _stored_pdf(job.id)
+    if path is None:  # without persistence the upload is deleted after processing
+        raise HTTPException(404, "The original PDF is no longer available.")
+    return FileResponse(path, media_type="application/pdf", filename=job.filename, content_disposition_type="inline")
+
+
 @app.delete("/api/jobs/{job_id}", status_code=204)
 def delete_job(job_id: str) -> Response:
     with _lock:
@@ -190,6 +227,23 @@ def _job(job_id: str) -> Job:
     if job is None:
         raise HTTPException(404, "Unknown job.")
     return job
+
+
+def _stored_pdf(job_id: str) -> Path | None:
+    """The PDF file of a stored document, found through its database record; None when there is no such file inside
+    ODOS_STORAGE_DIR. Only the stored key is followed, never a path from the request."""
+    if not _persistent():
+        return None
+    try:
+        key = get_pdf_storage_key(job_id)
+    except psycopg.Error as e:
+        log.exception("could not look up the PDF of job %s", job_id)
+        raise HTTPException(503, DATABASE_UNAVAILABLE) from e
+    if not key:
+        return None
+    root = _storage.resolve()
+    path = (root / key).resolve()  # resolved: a symlink or ".." in the key must not lead out of the storage folder
+    return path if path.is_relative_to(root) and path.is_file() else None
 
 
 def _remove(job_id: str) -> None:

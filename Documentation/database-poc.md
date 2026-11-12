@@ -44,8 +44,9 @@ Browser (Vite, :5173) ──/api──▶ FastAPI odos.api (:8000) ──▶ run
 1. **Upload** (`POST /api/jobs`): the PDF is written to `ODOS_STORAGE_DIR/<id>/source.pdf`, then a row with status `queued` and `pdf_storage_key = "<id>/source.pdf"` is inserted. If the database is unavailable, the PDF is removed again and the API answers `503`.
 2. **Processing**: the worker updates `status`/`stage` (`processing`, `extracting`, `normalizing`). At the end it stores the final status, the summary and, for completed documents, the content of `document.json` as JSONB (`legal_json`) and its `documentType` (`document_type`). The status becomes visible through the API only after the row has been written; if the result cannot be stored, the job is reported and stored as `failed`.
 3. **Restart**: at startup, rows still `queued` or `processing` (their worker died with the old process) are marked `failed` with the message *Processing was interrupted by a server restart.*; then all rows are loaded into the API's job registry. `GET /api/jobs/{id}` and the result files work again.
-4. **Delete** (`DELETE /api/jobs/{id}`): removes the row first, then the job folder. Queued or running jobs cannot be deleted (`409`). Every job in the API carries `"persistent": true` in this mode; the frontend then does not delete it when the user presses **Choose another PDF** or a document is refused. Deleting a stored document is an explicit API call.
-5. **Shutdown**: queued jobs are cancelled (they are marked as interrupted at the next start); the running job is completed and stored before the process exits.
+4. **Delete** (`DELETE /api/jobs/{id}`): removes the row first, then the job folder. Queued or running jobs cannot be deleted (`409`). Every job in the API carries `"persistent": true` in this mode; the frontend then does not delete it when the user presses **Back to documents** or a document is refused. Deleting a stored document is an explicit action in the document list (Recent documents, with a confirmation) or an API call; it removes the row and that document's folder only.
+5. **Reopen**: `GET /api/documents` lists the newest stored documents (metadata only). Opening a completed one reads `GET /api/jobs/{id}`, its result files and `GET /api/jobs/{id}/pdf`; the PDF path comes from the stored `pdf_storage_key` and must resolve inside `ODOS_STORAGE_DIR`. Nothing is processed again. A missing file answers `404` with a message; a job that is not completed answers `409`. Without persistence the upload is deleted after processing, so there is nothing to reopen.
+6. **Shutdown**: queued jobs are cancelled (they are marked as interrupted at the next start); the running job is completed and stored before the process exits.
 
 Without `ODOS_DATABASE_ENABLED=1`, none of this happens: jobs live in memory, the uploaded PDF is deleted after processing, old jobs are pruned, and temporary storage is removed at shutdown.
 
@@ -276,7 +277,7 @@ set -a; source ../.env; set +a
 
 ## Known limitations and possible next steps
 
-- No document list or history: there is no `GET /api/jobs` endpoint and no UI for earlier documents or for deleting them; stored documents are deleted with `curl -X DELETE http://127.0.0.1:8000/api/jobs/<document-id>`.
+- The document list shows only the newest 20 stored documents; there is no search, paging or user separation (every stored document is visible to everyone who can reach the API).
 - Files live outside the database, on one machine, without backup; `pdf_storage_key` depends on `ODOS_STORAGE_DIR`. Object storage (or `bytea`/large objects) would be the next step for a shared setup.
 - One local database per developer; no shared or hosted instance, no synchronization.
 - No migrations tool: `001_documents.sql` is applied by hand or on the first start of an empty volume. Later schema changes need a migration approach (e.g. Alembic or numbered SQL files with a version table).

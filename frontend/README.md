@@ -69,7 +69,7 @@ $env:ODOS_API_URL = "http://127.0.0.1:8001"
 npm run dev
 ```
 
-The frontend submits `POST /api/jobs`, polls `GET /api/jobs/{id}`, and retrieves allowed result files from `/api/jobs/{id}/files/{name}`. Choosing another PDF removes the previous job through the API.
+The frontend submits `POST /api/jobs`, polls `GET /api/jobs/{id}`, and retrieves allowed result files from `/api/jobs/{id}/files/{name}`. With database persistence the start page lists the stored documents (`GET /api/documents`); a completed one is reopened from what the backend stored (job, result files and `GET /api/jobs/{id}/pdf`) without processing it again, and a finished one can be deleted after a confirmation (`DELETE /api/jobs/{id}`). Without persistence, going back to the start page removes the job through the API.
 
 ## Main files
 

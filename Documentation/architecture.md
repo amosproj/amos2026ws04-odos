@@ -36,6 +36,8 @@ The files form different views of one processing run. Raw Docling JSON describes
 | `POST /api/jobs` | Submit a multipart PDF in field `file` |
 | `GET /api/jobs/{id}` | Read status, stage, message and summary |
 | `GET /api/jobs/{id}/files/{name}` | Read an allowed result file |
+| `GET /api/documents` | Metadata of the newest stored documents (`id`, `filename`, `status`, `created_at`); `[]` without database persistence |
+| `GET /api/jobs/{id}/pdf` | The original PDF of a completed, stored document (database persistence only; looked up through the document's stored key inside `ODOS_STORAGE_DIR`) |
 | `DELETE /api/jobs/{id}` | Remove a job and its files |
 
 Statuses are `queued`, `processing`, `completed`, `unsupported` and `failed`. Result files are served only for completed jobs. The original implementation allows `document_model.json` and `document.json`; the raw-preview extension adds `docling_raw.json`.

@@ -39,6 +39,13 @@ def get_document(document_id: str) -> dict | None:
             return cur.fetchone()
 
 
+def get_pdf_storage_key(document_id: str) -> str | None:
+    """The stored path of the document's original PDF, relative to ODOS_STORAGE_DIR; None for an unknown document."""
+    with connect() as conn:
+        row = conn.execute("SELECT pdf_storage_key FROM documents WHERE id = %s", (document_id,)).fetchone()
+    return row[0] if row else None
+
+
 def list_documents():
     """Load stored jobs for API startup."""
     with connect() as conn:
@@ -48,6 +55,22 @@ def list_documents():
                 FROM documents
                 ORDER BY created_at
             """)
+            return cur.fetchall()
+
+
+def list_recent_documents(limit: int = 20):
+    """The newest stored documents, for display only: no storage keys, summaries or Legal JSON."""
+    with connect() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                """
+                SELECT id, filename, status, created_at
+                FROM documents
+                ORDER BY created_at DESC, id
+                LIMIT %s
+                """,
+                (limit,),
+            )
             return cur.fetchall()
 
 
