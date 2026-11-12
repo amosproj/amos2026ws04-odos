@@ -51,6 +51,7 @@ blockquote { margin: 0; }
 button:disabled, .btn:disabled { opacity: .5; cursor: not-allowed; }
 .link { background: none; border: 0; color: var(--accent-hover); cursor: pointer; padding: 0 4px; text-decoration: underline; text-underline-offset: 2px; }
 .link:hover { color: var(--text); }
+.link[aria-current="page"] { color: var(--text); font-weight: 600; text-decoration-thickness: 2px; }
 input[type=search], input[type=text], select, textarea, .pageinput input { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 6px 10px; }
 input::placeholder { color: var(--muted); }
 select { cursor: pointer; }

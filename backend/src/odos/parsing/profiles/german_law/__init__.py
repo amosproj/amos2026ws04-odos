@@ -48,7 +48,7 @@ def _recognize(info, items, page_sizes) -> DocumentModel:
     from odos.parsing.profiles.german_law.recognizer import parse_items
     from odos.parsing.profiles.german_law.rules import GERMAN_LAW_RULES
 
-    return parse_items(info, items, GERMAN_LAW_RULES)
+    return parse_items(info, items, GERMAN_LAW_RULES, page_sizes)
 
 
 def _resolve_footnotes(model: DocumentModel, evidence) -> None:

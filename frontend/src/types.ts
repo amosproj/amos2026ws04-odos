@@ -41,6 +41,7 @@ export interface DocElement {
   source_refs: string[]; // the Docling items the text comes from (several when it runs over a page break)
   pages: number[];
   provenance: Provenance[];
+  hygiene_flags?: string[]; // e.g. "page_break_continuation_merged_confirmed": the text runs over a page break
   uncertain: boolean; // parser metadata kept in the data; the demo does not display it
   uncertainty_reasons: string[];
   source_spans?: SourceSpan[]; // present only for segments of a split Docling item

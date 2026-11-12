@@ -19,6 +19,7 @@ from datetime import date
 
 from odos.normalization.docling_reader import SourceItem
 from odos.document_model import DocumentMetadata, DocumentModel, Element, ElementType as T, ParserWarning
+from odos.parsing import continuation
 from odos.parsing.builder import ROOT_ID, StructureBuilder, furniture_element
 from odos.normalization.lang_de import MONTHS
 from odos.normalization.numbering import roman_value
@@ -80,6 +81,7 @@ class _EuBuilder(StructureBuilder):
         self.margin: dict[int, float] = {}  # page -> left margin of the body text
         self.intro_roman: set[str] = set()  # containers holding a roman list introduced by a text line
         self.notes: list[ParserWarning] = []
+        self.page_sizes: dict[int, tuple[float, float]] = {}
 
     def warn(self, code, message, el=None, item=None, severity="warning"):
         super().warn(code, message, el=el, item=item, severity=severity)
@@ -108,7 +110,7 @@ def _is_structural(t: str) -> bool:
 
 
 def _is_furniture(it: SourceItem, deco: set[str]) -> bool:
-    return it.is_furniture or "furniture_labelled_as_body_by_docling" in it.hygiene_flags or it.ref in deco
+    return it.is_page_furniture or it.ref in deco
 
 
 def _decorative_pictures(items: list[SourceItem], n_pages: int) -> set[str]:
@@ -202,7 +204,7 @@ def parse_eu_items(info, items: list[SourceItem], page_sizes: dict[int, tuple[fl
     recitals_started = False
     consumed: set[int] = set()
     furn_counter: dict[tuple[int, str], int] = defaultdict(int)
-    b.items, b.deco, b.margin = items, deco, _margins(items, deco)
+    b.items, b.deco, b.margin, b.page_sizes = items, deco, _margins(items, deco), page_sizes or {}
 
     def note(field_: str, el: Element) -> None:
         prov.setdefault(field_, []).append(el.id)
@@ -260,6 +262,8 @@ def parse_eu_items(info, items: list[SourceItem], page_sizes: dict[int, tuple[fl
                 zone = "body"
                 b.stack = []
             elif not recitals_started:
+                if _continues_open_text(b, item, "preamble"):
+                    continue
                 b.add(item, T.CITATION, preamble, "preamble", local=b.seq_local(preamble, "citation"))
             elif m := PARA_RX.match(t):
                 _numbered(b, item, T.RECITAL, m.group(1), f"({m.group(1)})", m.group(2), "preamble", preamble)
@@ -307,14 +311,14 @@ def parse_eu_items(info, items: list[SourceItem], page_sizes: dict[int, tuple[fl
                 continue
             if m := DOTTED_RX.match(t):
                 mk = t[: m.start(2)].strip()  # verbatim, with or without the trailing dot
-                if _heading_like(item, m.group(2)):
+                if _heading_like(item, m.group(2)) and not _cut_by_page_break(b, item):
                     _annex_heading(b, item, m.group(1), m.group(2), marker=mk)
                 else:  # "1.1. Sägemaschinen ...;" is a sub-item of point 1, not a heading
                     _dotted_point(b, item, m.group(1), m.group(2), marker=mk)
                 continue
             if m := NUM_RX.match(t):
                 upper = _heading_like(item, m.group(2), require_upper=True)  # "3. ZUSÄTZLICHE ..." of any length
-                if upper or _heading_like(item, m.group(2)):
+                if upper or (_heading_like(item, m.group(2)) and not _cut_by_page_break(b, item)):
                     _annex_heading(b, item, m.group(1), m.group(2), [] if upper else ["numbered_line_read_as_heading"], marker=t[: m.start(2)].strip())
                     continue
 
@@ -465,6 +469,14 @@ def _heading_like(item: SourceItem, title: str, require_upper: bool = False) -> 
         letters = [c for c in title if c.isalpha()]
         return bool(letters) and all(c.isupper() for c in letters)
     return len(title) <= 160 and not title.endswith((".", ";", ",", ":"))
+
+
+def _cut_by_page_break(b: _EuBuilder, item: SourceItem) -> bool:
+    """A short numbered line at the foot of a page whose sentence goes on, unmarked, at the top of the next page is a
+    paragraph cut by the page break, not a heading (headings are short lines that end without punctuation)."""
+    nxt = next((it for it in b.items[b.pos + 1 : b.pos + 12] if not _is_furniture(it, b.deco) and it.label != "footnote"), None)
+    return (nxt is not None and bool(nxt.pages) and bool(item.pages) and nxt.pages[0] > item.pages[-1]
+            and not _is_structural(nxt.orig.strip()) and continuation.starts_lowercase(nxt.orig))  # fmt: skip
 
 
 def _annex_heading(b: _EuBuilder, item: SourceItem, number: str, title: str, reasons: list[str] | None = None,
@@ -639,7 +651,36 @@ def _point(b: _EuBuilder, item: SourceItem, marker_value: str, content: str, reg
 
 
 # ---- unnumbered text and footnotes ------------------------------------------------------------------------------------------
+CONTINUABLE = (T.RECITAL, T.ARTICLE_PARAGRAPH, T.NUMBERED_POINT, T.POINT, T.SUBPOINT, T.TEXT, T.CITATION)
+
+
+def _continues_open_text(b: _EuBuilder, item: SourceItem, region: str) -> bool:
+    """Unmarked text that runs on over a page break is the rest of the element that was open when the page ended
+    (a recital, paragraph, point, sub-point, or text block); see parsing.continuation for the evidence required."""
+    notes, prev = continuation.trailing_notes((e for e in reversed(b.elements) if e.region != "furniture" and e.type != T.FOOTNOTE), b.page_sizes)  # fmt: skip
+    if prev is None or prev.type not in CONTINUABLE or prev.region != region or "unnumbered_heading_in_annex" in prev.uncertainty_reasons:  # fmt: skip
+        return False
+    top = b.top()
+    if prev.type != T.TEXT and prev.type != T.CITATION:
+        if prev is not top:  # a unit is open only while it is the innermost container
+            return False
+    elif prev.parent_id != top.id:
+        return False
+    if not continuation.assess(prev, item, b.page_sizes, lambda t: _is_structural(t) or bool(DOTTED_RX.match(t)), {n.id for n in notes}).merge:  # fmt: skip
+        return False
+    hyphen = continuation.ends_with_hyphen(prev)
+    b.extend(prev, item)
+    prev.hygiene_flags.append(continuation.FLAG)
+    if hyphen:
+        prev.hygiene_flags.append(continuation.HYPHEN_FLAG)
+    for note in notes:
+        note.hygiene_flags.append(continuation.NOTE_FLAG)
+    return True
+
+
 def _content(b: _EuBuilder, item: SourceItem, t: str, region: str) -> None:
+    if _continues_open_text(b, item, region):
+        return
     if _place_text_by_indentation(b, item, region):
         return
     _content_without_layout(b, item, t, region)

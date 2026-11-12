@@ -48,6 +48,13 @@ class SourceItem(BaseModel):
         return self.layer == "furniture" or self.label in FURNITURE_LABELS
 
     @property
+    def is_page_furniture(self) -> bool:
+        """Furniture as Docling labelled it, or running header/footer/page number that Docling labelled as body text
+        (flagged by the hygiene layer): neither belongs to the legal text, and neither may stand between a text and
+        its continuation on the next page."""
+        return self.is_furniture or "furniture_labelled_as_body_by_docling" in self.hygiene_flags
+
+    @property
     def pages(self) -> list[int]:
         return sorted({p.page_no for p in self.provenance})
 
