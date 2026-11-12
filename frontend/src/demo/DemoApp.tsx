@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../components/Icon";
 import { PdfViewer } from "../components/PdfViewer";
 import { StructureTree } from "../components/StructureTree";
-import { TYPE_LABELS, firstPage, highlightsOf } from "../structure";
+import { TYPE_LABELS, firstPage, fullText, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
 import { STAGE_LABELS, nodeJson, processPdf, releaseJob } from "./live";
@@ -116,7 +116,7 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
             {tab === "structure" && (
               <div className="structure">
                 <StructureTree model={model} selectedId={selected} onSelect={select} />
-                <SourceDetail element={element} onGoToPage={setPage} />
+                <SourceDetail element={element} page={page} onGoToPage={setPage} />
               </div>
             )}
             {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} />}
@@ -127,16 +127,19 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
   );
 }
 
-function SourceDetail({ element: e, onGoToPage }: { element: DocElement | null; onGoToPage: (page: number) => void }) {
+export function SourceDetail({ element: e, page, onGoToPage }: { element: DocElement | null; page: number; onGoToPage: (page: number) => void }) {
   if (!e) return <div className="detail muted pad">Select an element to highlight its source text in the PDF.</div>;
   return (
     <div className="detail">
       <h3>{TYPE_LABELS[e.type] ?? e.type} {e.marker ?? ""}</h3>
       {e.title && <p className="title">{e.title}</p>}
-      <blockquote className="origtext">{e.original_text || <em>(no text)</em>}</blockquote>
+      <blockquote className="origtext">{fullText(e) || <em>(no text)</em>}</blockquote>
       <dl className="kv">
         <dt>Pages</dt>
-        <dd>{e.pages.length ? e.pages.map((p) => <button key={p} className="link" onClick={() => onGoToPage(p)}>p. {p}</button>) : "—"}</dd>
+        <dd>{e.pages.length ? e.pages.map((p) => (
+          <button key={p} className="link" onClick={() => onGoToPage(p)} aria-current={p === page ? "page" : undefined}
+                  title={`Show page ${p} with the highlighted source text`}>p. {p}</button>
+        )) : "—"}</dd>
         <dt>Source</dt><dd><code>{e.source_refs.join(", ") || "—"}</code></dd>
         <dt>Element id</dt><dd><code>{e.id}</code></dd>
       </dl>

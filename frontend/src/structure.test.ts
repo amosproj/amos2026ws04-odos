@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TYPE_LABELS, bboxToRect, buildTree, clickAction, firstPage, hasPartialBox, highlightsOf, rectsOnPage, visibleKeys } from "./structure";
+import { PAGE_BREAK_MERGED, TYPE_LABELS, bboxToRect, buildTree, clickAction, firstPage, fullText, hasPartialBox, highlightsOf, rectsOnPage, visibleKeys } from "./structure";
 import { box, el, modelOf } from "./testing";
 import type { TocEntry } from "./types";
 
@@ -123,3 +123,32 @@ describe("PDF highlights and navigation", () => {
     expect(firstPage(null)).toBeNull();
   });
 });
+
+describe("an element whose text runs over a page break", () => {
+  const merged = el("a", "absatz", null, [], {
+    pages: [9, 10], source_refs: ["#/texts/144", "#/texts/146"], hygiene_flags: [PAGE_BREAK_MERGED],
+    original_text: "(1) 1 Vor den Außenwänden sind Abstandsflächen von\noberirdischen Gebäuden freizuhalten.",
+    provenance: [box(9, 65, 63, 531, 52), box(10, 65, 776, 531, 696)],
+  });
+
+  it("reads as one running text; line breaks of other elements stay", () => {
+    expect(fullText(merged)).toBe("(1) 1 Vor den Außenwänden sind Abstandsflächen von oberirdischen Gebäuden freizuhalten.");
+    const heading = el("h", "paragraph", null, [], { original_text: "§ 6\nAbstandsflächen" });
+    expect(fullText(heading)).toBe("§ 6\nAbstandsflächen");
+  });
+
+  it("draws exact line rectangles on each of its pages, and only that page's rectangles", () => {
+    const exact = { ...merged, highlight_boxes: [box(9, 65, 63, 531, 52), box(9, 65, 52, 200, 41), box(10, 65, 776, 531, 764)] };
+    const { boxes, approximate } = highlightsOf(exact);
+    expect(approximate).toBe(false);
+    expect(rectsOnPage(boxes, 9, 842, 1)).toHaveLength(2);
+    expect(rectsOnPage(boxes, 10, 842, 1)).toHaveLength(1);
+    expect(firstPage(exact)).toBe(9);
+  });
+
+  it("falls back to the item boxes, marked approximate, when a piece has only the box of a larger item", () => {
+    const partial = { ...merged, source_spans: [{ ref: "#/texts/146", start: 0, end: 40, page_no: 10, bbox: null, bbox_scope: "docling_item" as const }] };
+    expect(highlightsOf(partial)).toEqual({ boxes: merged.provenance, approximate: true });
+  });
+});
+

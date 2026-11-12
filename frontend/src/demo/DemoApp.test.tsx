@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { PAGE_BREAK_MERGED } from "../structure";
 import { box, el, modelOf } from "../testing";
-import DemoApp, { Artifacts, ResultView } from "./DemoApp";
+import type { ReactElement, ReactNode } from "react";
+import DemoApp, { Artifacts, ResultView, SourceDetail } from "./DemoApp";
 import type { DemoResult } from "./fixtures";
 
 // the PDF viewer needs a browser (pdf.js, canvas): replaced by a stub that shows what the demo hands to it
@@ -112,5 +114,44 @@ describe("Custom Legal JSON preview and downloads", () => {
   });
   it("shows no Akoma Ntoso XML", () => {
     expect(html).not.toMatch(/Akoma|\.akn\.xml/);
+  });
+});
+
+
+// The detail of a selected element is a plain function component: its element tree is searched for the page buttons.
+const allElements = (node: ReactNode, found: ReactElement<{ [key: string]: unknown }>[] = []) => {
+  if (Array.isArray(node)) node.forEach((n) => allElements(n, found));
+  else if (node && typeof node === "object" && "props" in node) {
+    found.push(node as ReactElement<{ [key: string]: unknown }>);
+    allElements((node as ReactElement<{ children?: ReactNode }>).props.children, found);
+  }
+  return found;
+};
+
+describe("Legal structure detail of an element that runs over a page break (MBO § 6 (1), pages 9 and 10)", () => {
+  const absatz = result.model.elements.find((e) => e.id === ABS)!;
+  const merged = { ...absatz, hygiene_flags: [PAGE_BREAK_MERGED], original_text: "(1) 1 Vor den Außenwänden sind Abstandsflächen von\noberirdischen Gebäuden freizuhalten." };
+
+  it("shows the complete reconstructed text and every page it is on", () => {
+    const html = renderToStaticMarkup(<SourceDetail element={merged} page={9} onGoToPage={() => {}} />);
+    expect(html).toContain("(1) 1 Vor den Außenwänden sind Abstandsflächen von oberirdischen Gebäuden freizuhalten.");
+    expect(html).not.toContain("von\noberirdischen");
+    expect(html.match(/>p\. \d+</g)).toEqual([">p. 9<", ">p. 10<"]);
+    expect(html).toMatch(/aria-current="page"[^>]*>p\. 9</); // the page the viewer shows
+  });
+
+  it("navigates the PDF to the clicked page", () => {
+    const visited: number[] = [];
+    const tree = SourceDetail({ element: merged, page: 9, onGoToPage: (p) => visited.push(p) });
+    const buttons = allElements(tree).filter((n) => n.type === "button");
+    expect(buttons.map((b) => b.props.children)).toEqual([["p. ", 9], ["p. ", 10]]);
+    (buttons[1].props.onClick as () => void)();
+    (buttons[0].props.onClick as () => void)();
+    expect(visited).toEqual([10, 9]);
+  });
+
+  it("keeps the text of an element that does not run over a page break as it is", () => {
+    const html = renderToStaticMarkup(<SourceDetail element={{ ...absatz, original_text: "zeile eins\nzeile zwei", pages: [3] }} page={3} onGoToPage={() => {}} />);
+    expect(html).toContain("zeile eins\nzeile zwei");
   });
 });
