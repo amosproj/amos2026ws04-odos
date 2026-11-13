@@ -21,6 +21,8 @@ export interface LiveData {
   jobId: string;
   persistent: boolean;
   legal: { title?: string | null; frontMatter: unknown[]; tableOfContents: unknown[]; structure: unknown[] };
+  ruleJson: unknown | null;
+  ruleDownload: { href: string; name: string };
 }
 
 export const STAGE_LABELS: Record<string, string> = {
@@ -42,6 +44,21 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new Error(UNREACHABLE);
   }
+  if (!res.ok) {
+    const detail = await res.json().then((b: { detail?: unknown }) => (typeof b.detail === "string" ? b.detail : null), () => null);
+    throw new Error(detail ?? (res.status >= 500 ? UNREACHABLE : `The request failed (HTTP ${res.status}).`));
+  }
+  return res.json() as Promise<T>;
+}
+
+async function callOptional<T>(url: string): Promise<T | null> {
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch {
+    throw new Error(UNREACHABLE);
+  }
+  if (res.status === 404) return null;
   if (!res.ok) {
     const detail = await res.json().then((b: { detail?: unknown }) => (typeof b.detail === "string" ? b.detail : null), () => null);
     throw new Error(detail ?? (res.status >= 500 ? UNREACHABLE : `The request failed (HTTP ${res.status}).`));
@@ -77,17 +94,51 @@ export async function processPdf(file: File, onStage: (stage: string) => void): 
 }
 
 async function loadLiveResult(job: Job): Promise<DemoResult> {
-  const [model, legal] = await Promise.all([
+  const [model, legal, ruleJson] = await Promise.all([
     call<DocumentModel>(fileUrl(job.id, "document_model.json")),
     call<LiveData["legal"]>(fileUrl(job.id, "document.json")),
+    callOptional<unknown>(fileUrl(job.id, "rules.json")),
   ]);
+  const stem = job.filename.replace(/\.pdf$/i, "");
   return {
     title: legal.title || model.metadata?.title || job.filename,
     model,
     json: toJsonText(forPresentation(legal)),
-    download: { href: fileUrl(job.id, "document.json", true), name: `${job.filename.replace(/\.pdf$/i, "")}.legal.json` },
-    live: { jobId: job.id, persistent: job.persistent ?? false, legal },
+    download: { href: fileUrl(job.id, "document.json", true), name: `${stem}.legal.json` },
+    live: {
+      jobId: job.id,
+      persistent: job.persistent ?? false,
+      legal,
+      ruleJson,
+      ruleDownload: { href: fileUrl(job.id, "rules.json", true), name: `${stem}.rules.json` },
+    },
   };
+}
+
+/** Accept an array of individual Rule JSON records, a `{ rules }` collection, or a single record. */
+export function ruleEntries(data: unknown): Record<string, unknown>[] {
+  if (Array.isArray(data)) return data.filter(isRuleRecord);
+  if (!data || typeof data !== "object") return [];
+  const record = data as Record<string, unknown>;
+  if (Array.isArray(record.rules)) return record.rules.filter(isRuleRecord);
+  return isRuleRecord(record) ? [record] : [];
+}
+
+function isRuleRecord(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  return typeof record.id === "string" && typeof record.type === "string" && Array.isArray(record.source);
+}
+
+/** Rule records map to any Legal JSON element through their stable source element IDs. */
+export function rulesForElement(data: unknown, elementId: string | null): Record<string, unknown>[] {
+  if (!elementId) return [];
+  return ruleEntries(data).filter((rule) => {
+    const sources = rule.source;
+    return Array.isArray(sources) && sources.some((source) =>
+      !!source && typeof source === "object" && (source as Record<string, unknown>).elementId === elementId,
+    );
+  });
 }
 
 /** The selected element's Legal JSON node with `nativeType` shown as `germanType`; null when the element is not a node

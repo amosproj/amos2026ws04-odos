@@ -1,0 +1,604 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/amosproj/amos2026ws04-odos/schemas/rule-json/2.0/rule.schema.json",
+  "title": "ODOS Rule JSON 2.0",
+  "description": "A source-traceable, technology-independent representation of an extracted normative rule, organized around source provenance, classification, applicability, requirements, exceptions and review status.",
+  "$ref": "#/$defs/Rule",
+  "$defs": {
+    "SourceElement": {
+      "type": "object",
+      "description": "A pointer to a specific element within a Legal JSON 2.0 document.",
+      "additionalProperties": false,
+      "properties": {
+        "elementId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable Legal JSON element ID (e.g. doc/teil-2/par-6/abs-5)."
+        },
+        "sentenceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Legal JSON sentence ID when the rule originates from a specific sentence."
+        },
+        "pdfPages": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "minItems": 1,
+          "description": "PDF page number(s) where this element appears, from Legal JSON pages field."
+        },
+        "role": {
+          "enum": ["primary", "definition", "context", "cross_reference"],
+          "description": "How this source element relates to the rule."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional human-readable description of this source element's role."
+        }
+      },
+      "required": ["elementId"]
+    },
+
+    "Source": {
+      "type": "object",
+      "description": "Provenance: where the rule comes from in the normative document.",
+      "additionalProperties": false,
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Legal JSON document ID (e.g. mbo, verordnung-2023-1230)."
+        },
+        "documentTitle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable document title."
+        },
+        "documentVersion": {
+          "type": "string",
+          "description": "Version or date of the document."
+        },
+        "language": {
+          "type": "string",
+          "minLength": 2,
+          "description": "ISO 639 language code of the source document."
+        },
+        "citation": {
+          "type": "string",
+          "description": "Human-readable citation (e.g. § 6 Abs. 5 Satz 1)."
+        },
+        "elements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/SourceElement" },
+          "description": "Exact Legal JSON elements this rule is derived from."
+        }
+      },
+      "required": ["documentId", "elements"]
+    },
+
+    "Classification": {
+      "type": "object",
+      "description": "What kind of rule this is and its normative category.",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "definition",
+            "obligation",
+            "prohibition",
+            "permission",
+            "conditional_requirement",
+            "procedural_requirement"
+          ],
+          "description": "Primary rule type."
+        },
+        "normativeCategory": {
+          "enum": [
+            "substantive",
+            "procedural",
+            "definitional",
+            "transitional",
+            "organizational",
+            "informational"
+          ],
+          "description": "Broader legal category to aid classification beyond simple modality."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One or two sentence summary in the source document's language."
+        }
+      },
+      "required": ["type", "summary"]
+    },
+
+    "TargetEntity": {
+      "type": "object",
+      "description": "An entity or object the rule applies to (e.g. building, machine, exit door).",
+      "additionalProperties": false,
+      "properties": {
+        "entity": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the target entity."
+        },
+        "entityType": {
+          "type": "string",
+          "description": "A more specific type or class (e.g. escape_route_window, IfcDoor)."
+        },
+        "description": {
+          "type": "string",
+          "description": "How the entity is scoped or defined."
+        }
+      },
+      "required": ["entity"]
+    },
+
+    "ActorReference": {
+      "type": "object",
+      "description": "A person, role or organization involved in the rule.",
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "enum": ["duty_holder", "recipient", "authority", "assessor", "beneficiary", "other"],
+          "description": "Role in relation to the rule."
+        },
+        "entity": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name or description of the actor."
+        },
+        "definedIn": {
+          "$ref": "#/$defs/CrossReference",
+          "description": "Where this actor is legally defined."
+        }
+      },
+      "required": ["role", "entity"]
+    },
+
+    "Predicate": {
+      "oneOf": [
+        { "$ref": "#/$defs/ComparisonPredicate" },
+        { "$ref": "#/$defs/LogicalPredicate" },
+        { "$ref": "#/$defs/NotPredicate" },
+        { "$ref": "#/$defs/UnresolvedPredicate" }
+      ]
+    },
+
+    "ComparisonPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "comparison" },
+        "fact": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The property or fact being compared (e.g. clear_width, building.height)."
+        },
+        "operator": {
+          "enum": ["==", "!=", ">", ">=", "<", "<=", "in", "not_in", "contains"]
+        },
+        "value": {},
+        "valueType": {
+          "enum": ["string", "integer", "number", "boolean", "string_array", "integer_array", "number_array", "boolean_array"]
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unit of measurement when applicable."
+        }
+      },
+      "required": ["kind", "fact", "operator", "value"],
+      "allOf": [
+        { "if": { "properties": { "valueType": { "const": "string" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "string" } } } },
+        { "if": { "properties": { "valueType": { "const": "integer" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "integer" } } } },
+        { "if": { "properties": { "valueType": { "const": "number" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "number" } } } },
+        { "if": { "properties": { "valueType": { "const": "boolean" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "boolean" } } } },
+        { "if": { "properties": { "valueType": { "const": "string_array" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "array", "minItems": 1, "items": { "type": "string" } } } } },
+        { "if": { "properties": { "valueType": { "const": "integer_array" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "array", "minItems": 1, "items": { "type": "integer" } } } } },
+        { "if": { "properties": { "valueType": { "const": "number_array" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "array", "minItems": 1, "items": { "type": "number" } } } } },
+        { "if": { "properties": { "valueType": { "const": "boolean_array" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "array", "minItems": 1, "items": { "type": "boolean" } } } } },
+        { "if": { "properties": { "operator": { "enum": ["in", "not_in"] }, "valueType": { "enum": ["string", "integer", "number", "boolean"] } }, "required": ["operator", "valueType"] }, "then": false },
+        { "if": { "properties": { "operator": { "enum": ["==", "!=", ">", ">=", "<", "<=", "contains"] }, "valueType": { "enum": ["string_array", "integer_array", "number_array", "boolean_array"] } }, "required": ["operator", "valueType"] }, "then": false },
+        { "if": { "properties": { "unit": { "type": "string" }, "valueType": { "enum": ["string", "boolean", "string_array", "boolean_array"] } }, "required": ["unit", "valueType"] }, "then": false }
+      ]
+    },
+
+    "LogicalPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["all", "any"] },
+        "conditions": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/Predicate" }
+        }
+      },
+      "required": ["kind", "conditions"]
+    },
+
+    "NotPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "not" },
+        "condition": { "$ref": "#/$defs/Predicate" }
+      },
+      "required": ["kind", "condition"]
+    },
+
+    "UnresolvedPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "unresolved" },
+        "text": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "required": ["kind", "text", "reason"]
+    },
+
+    "Applicability": {
+      "type": "object",
+      "description": "Who or what the rule applies to, and under what triggering conditions.",
+      "additionalProperties": false,
+      "properties": {
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/TargetEntity" },
+          "description": "Objects, building elements or systems the rule applies to."
+        },
+        "actors": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ActorReference" },
+          "description": "Persons or organizations involved."
+        },
+        "conditions": {
+          "$ref": "#/$defs/Predicate",
+          "description": "When the rule applies (triggering conditions)."
+        },
+        "scopeExclusions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Predicate" },
+          "description": "Conditions under which the rule explicitly does not apply."
+        }
+      }
+    },
+
+    "Requirement": {
+      "oneOf": [
+        { "$ref": "#/$defs/BooleanRequirement" },
+        { "$ref": "#/$defs/NumericRequirement" },
+        { "$ref": "#/$defs/TextRequirement" },
+        { "$ref": "#/$defs/FormulaRequirement" },
+        { "$ref": "#/$defs/TemporalRequirement" },
+        { "$ref": "#/$defs/UnresolvedRequirement" }
+      ]
+    },
+
+    "BooleanRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "boolean" },
+        "fact": { "type": "string", "minLength": 1 },
+        "value": { "type": "boolean" },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "fact", "value"]
+    },
+
+    "NumericRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "numeric" },
+        "fact": { "type": "string", "minLength": 1 },
+        "operator": { "enum": ["==", "!=", ">", ">=", "<", "<="] },
+        "value": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "fact", "operator", "value", "unit"]
+    },
+
+    "TextRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "text" },
+        "fact": { "type": "string", "minLength": 1 },
+        "operator": { "enum": ["equals", "one_of", "contains"] },
+        "value": { "type": ["string", "array"] },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "fact", "operator", "value"]
+    },
+
+    "FormulaRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "formula" },
+        "fact": { "type": "string", "minLength": 1 },
+        "expression": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "fact", "expression"]
+    },
+
+    "Duration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "number", "exclusiveMinimum": 0 },
+        "unit": { "enum": ["second", "minute", "hour", "day", "week", "month", "year"] }
+      },
+      "required": ["value", "unit"]
+    },
+
+    "TemporalRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "temporal" },
+        "action": { "type": "string", "minLength": 1 },
+        "startEvent": { "type": "string", "minLength": 1 },
+        "endEvent": { "type": "string", "minLength": 1 },
+        "relation": { "enum": ["within", "no_later_than", "for_at_least", "before", "after", "until", "by"] },
+        "duration": { "$ref": "#/$defs/Duration" },
+        "deadline": { "type": "string", "format": "date" },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "action", "relation"],
+      "anyOf": [
+        { "required": ["startEvent", "duration"] },
+        { "required": ["deadline"] },
+        { "required": ["startEvent", "endEvent"] }
+      ],
+      "allOf": [
+        { "if": { "properties": { "relation": { "enum": ["within", "for_at_least"] } }, "required": ["relation"] }, "then": { "required": ["startEvent", "duration"] } },
+        { "if": { "required": ["duration"] }, "then": { "not": { "required": ["deadline"] } } }
+      ]
+    },
+
+    "UnresolvedRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "unresolved" },
+        "text": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "required": ["kind", "text", "reason"]
+    },
+
+    "RequirementExpression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "requirement" },
+            "requirement": { "$ref": "#/$defs/Requirement" }
+          },
+          "required": ["kind", "requirement"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "enum": ["all", "any"] },
+            "requirements": {
+              "type": "array",
+              "minItems": 2,
+              "items": { "$ref": "#/$defs/RequirementExpression" }
+            }
+          },
+          "required": ["kind", "requirements"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "not" },
+            "requirement": { "$ref": "#/$defs/RequirementExpression" }
+          },
+          "required": ["kind", "requirement"]
+        }
+      ]
+    },
+
+    "Definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "term": { "type": "string", "minLength": 1 },
+        "text": { "type": "string", "minLength": 1 },
+        "meaning": { "$ref": "#/$defs/Requirement" },
+        "condition": { "$ref": "#/$defs/Predicate" },
+        "references": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CrossReference" }
+        }
+      },
+      "required": ["term"],
+      "oneOf": [
+        { "required": ["text"], "not": { "required": ["meaning"] } },
+        { "required": ["meaning"], "not": { "required": ["text"] } }
+      ]
+    },
+
+    "CrossReference": {
+      "type": "object",
+      "description": "A reference to another provision, document or external standard.",
+      "additionalProperties": false,
+      "properties": {
+        "documentId": { "type": "string", "minLength": 1 },
+        "citation": { "type": "string", "minLength": 1 },
+        "elementId": { "type": "string", "minLength": 1 },
+        "resolution": { "enum": ["resolved", "unresolved"] },
+        "relationship": {
+          "enum": [
+            "related_to", "defined_by", "depends_on", "implements",
+            "subject_to", "overrides", "supersedes", "derogates", "clarifies"
+          ]
+        }
+      },
+      "required": ["citation", "resolution"]
+    },
+
+    "Exception": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["exception", "exemption", "alternative", "override", "unresolved"] },
+        "description": { "type": "string", "minLength": 1 },
+        "condition": { "$ref": "#/$defs/Predicate" },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/Requirement" }
+        },
+        "references": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CrossReference" }
+        },
+        "effect": {
+          "enum": ["disapplies_rule", "modifies_rule", "adds_alternative", "requires_review", "unspecified"]
+        }
+      },
+      "required": ["kind", "description"]
+    },
+
+    "Review": {
+      "type": "object",
+      "description": "Human review status, ambiguity notes and machine-checkability assessment.",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": ["draft", "reviewed", "approved"],
+          "description": "Current review status of this rule."
+        },
+        "machineCheckable": {
+          "type": "boolean",
+          "description": "Whether this rule can be checked automatically against evidence."
+        },
+        "checkMethods": {
+          "type": "array",
+          "items": {
+            "enum": ["ids", "shacl", "sparql", "llm_comparison", "manual"]
+          },
+          "description": "Potential validation methods for this rule."
+        },
+        "ambiguities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Specific ambiguities or unclear aspects."
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Reviewer notes."
+        }
+      },
+      "required": ["status"]
+    },
+
+    "ExternalMapping": {
+      "type": "object",
+      "description": "Optional mapping to an external data model (IFC, RDF, etc). Not part of the core normative representation.",
+      "additionalProperties": false,
+      "properties": {
+        "standard": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Target standard (e.g. IFC4, IFC4.3, BOT, custom)."
+        },
+        "entityClass": {
+          "type": "string",
+          "description": "Target entity class in the external model (e.g. IfcDoor, IfcWall)."
+        },
+        "propertyPath": {
+          "type": "string",
+          "description": "Path to the property in the external model."
+        },
+        "propertySet": {
+          "type": "string",
+          "description": "Property set name (e.g. Pset_DoorCommon)."
+        },
+        "notes": { "type": "string" }
+      },
+      "required": ["standard"]
+    },
+
+    "Rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": { "const": "2.0" },
+        "id": { "type": "string", "minLength": 1 },
+
+        "source": { "$ref": "#/$defs/Source" },
+
+        "classification": { "$ref": "#/$defs/Classification" },
+
+        "applicability": { "$ref": "#/$defs/Applicability" },
+
+        "definition": { "$ref": "#/$defs/Definition" },
+
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/Requirement" }
+        },
+        "requirementExpression": { "$ref": "#/$defs/RequirementExpression" },
+
+        "exceptions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Exception" }
+        },
+        "references": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CrossReference" }
+        },
+
+        "review": { "$ref": "#/$defs/Review" },
+
+        "externalMappings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ExternalMapping" },
+          "description": "Optional mappings to IFC, RDF or other external data models."
+        }
+      },
+      "required": ["schemaVersion", "id", "source", "classification", "review"],
+      "allOf": [
+        {
+          "if": {
+            "properties": { "classification": { "properties": { "type": { "const": "definition" } } } }
+          },
+          "then": {
+            "required": ["definition"],
+            "not": {
+              "anyOf": [
+                { "required": ["requirements"] },
+                { "required": ["requirementExpression"] }
+              ]
+            }
+          },
+          "else": {
+            "not": { "required": ["definition"] },
+            "oneOf": [
+              { "required": ["requirements"], "not": { "required": ["requirementExpression"] } },
+              { "required": ["requirementExpression"], "not": { "required": ["requirements"] } }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

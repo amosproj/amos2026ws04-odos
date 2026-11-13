@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/amosproj/amos2026ws04-odos/schemas/rule-json/1.0/rule.schema.json",
+  "title": "ODOS Rule JSON 1.0",
+  "description": "A source-traceable, technology-independent representation of an extracted normative rule or legal definition.",
+  "$ref": "#/$defs/Rule",
+  "$defs": {
+    "DocumentReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "documentId": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "citation": { "type": "string" },
+        "version": { "type": "string" },
+        "language": { "type": "string", "minLength": 2 }
+      },
+      "required": ["documentId"]
+    },
+    "SourceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "elementId": { "type": "string", "minLength": 1 },
+        "sentenceNumber": { "type": "integer", "minimum": 1 },
+        "description": { "type": "string" },
+        "role": { "enum": ["primary_normative_text", "definition", "context", "cross_reference"] }
+      },
+      "required": ["elementId"]
+    },
+    "ProvisionReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "documentId": { "type": "string", "minLength": 1 },
+        "citation": { "type": "string", "minLength": 1 },
+        "elementId": { "type": "string", "minLength": 1 },
+        "resolution": { "enum": ["resolved", "unresolved"] },
+        "relationship": { "enum": ["related_to", "defined_by", "depends_on", "implements", "subject_to", "overrides", "supersedes", "derogates", "clarifies"] }
+      },
+      "required": ["citation", "resolution"]
+    },
+    "ActorReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "role": { "enum": ["duty_holder", "recipient", "authority", "assessor", "beneficiary", "other"] },
+        "entity": { "type": "string", "minLength": 1 },
+        "reference": { "$ref": "#/$defs/ProvisionReference" }
+      },
+      "required": ["role", "entity"]
+    },
+    "Predicate": {
+      "oneOf": [
+        { "$ref": "#/$defs/ComparisonPredicate" },
+        { "$ref": "#/$defs/LogicalPredicate" },
+        { "$ref": "#/$defs/NotPredicate" },
+        { "$ref": "#/$defs/UnresolvedPredicate" }
+      ]
+    },
+    "ComparisonPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "comparison" },
+        "property": { "type": "string", "minLength": 1 },
+        "operator": { "enum": ["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "contains"] },
+        "value": {},
+        "valueType": { "enum": ["string", "integer", "number", "boolean", "string_array", "integer_array", "number_array", "boolean_array"] },
+        "unit": { "type": "string", "minLength": 1 },
+        "conceptReference": { "$ref": "#/$defs/ProvisionReference" }
+      },
+      "required": ["kind", "property", "operator", "value"],
+      "allOf": [
+        { "if": { "properties": { "valueType": { "const": "string" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "string" } } } },
+        { "if": { "properties": { "valueType": { "const": "integer" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "integer" } } } },
+        { "if": { "properties": { "valueType": { "const": "number" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "number" } } } },
+        { "if": { "properties": { "valueType": { "const": "boolean" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "boolean" } } } },
+        { "if": { "properties": { "valueType": { "const": "string_array" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "array", "minItems": 1, "items": { "type": "string" } } } } },
+        { "if": { "properties": { "valueType": { "const": "integer_array" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "array", "minItems": 1, "items": { "type": "integer" } } } } },
+        { "if": { "properties": { "valueType": { "const": "number_array" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "array", "minItems": 1, "items": { "type": "number" } } } } },
+        { "if": { "properties": { "valueType": { "const": "boolean_array" } }, "required": ["valueType"] }, "then": { "properties": { "value": { "type": "array", "minItems": 1, "items": { "type": "boolean" } } } } },
+        { "if": { "properties": { "operator": { "enum": ["in", "not_in"] }, "valueType": { "enum": ["string", "integer", "number", "boolean"] } }, "required": ["operator", "valueType"] }, "then": false },
+        { "if": { "properties": { "operator": { "enum": ["eq", "ne", "gt", "gte", "lt", "lte", "contains"] }, "valueType": { "enum": ["string_array", "integer_array", "number_array", "boolean_array"] } }, "required": ["operator", "valueType"] }, "then": false },
+        { "if": { "properties": { "unit": { "type": "string" }, "valueType": { "enum": ["string", "boolean", "string_array", "boolean_array"] } }, "required": ["unit", "valueType"] }, "then": false }
+      ]
+    },
+    "LogicalPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["all", "any"] },
+        "conditions": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/Predicate" } }
+      },
+      "required": ["kind", "conditions"]
+    },
+    "NotPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "not" },
+        "condition": { "$ref": "#/$defs/Predicate" }
+      },
+      "required": ["kind", "condition"]
+    },
+    "UnresolvedPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "unresolved" },
+        "text": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "required": ["kind", "text", "reason"]
+    },
+    "Requirement": {
+      "oneOf": [
+        { "$ref": "#/$defs/BooleanRequirement" },
+        { "$ref": "#/$defs/NumericRequirement" },
+        { "$ref": "#/$defs/TextRequirement" },
+        { "$ref": "#/$defs/FormulaRequirement" },
+        { "$ref": "#/$defs/TemporalRequirement" },
+        { "$ref": "#/$defs/UnresolvedRequirement" }
+      ]
+    },
+    "RequirementExpression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "requirement" },
+            "requirement": { "$ref": "#/$defs/Requirement" }
+          },
+          "required": ["kind", "requirement"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "enum": ["all", "any"] },
+            "requirements": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/RequirementExpression" } }
+          },
+          "required": ["kind", "requirements"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "not" },
+            "requirement": { "$ref": "#/$defs/RequirementExpression" }
+          },
+          "required": ["kind", "requirement"]
+        }
+      ]
+    },
+    "Duration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "number", "exclusiveMinimum": 0 },
+        "unit": { "enum": ["second", "minute", "hour", "day", "week", "month", "year"] }
+      },
+      "required": ["value", "unit"]
+    },
+    "TemporalRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "temporal" },
+        "action": { "type": "string", "minLength": 1 },
+        "startEvent": { "type": "string", "minLength": 1 },
+        "endEvent": { "type": "string", "minLength": 1 },
+        "relation": { "enum": ["within", "no_later_than", "for_at_least", "before", "after", "until", "by"] },
+        "duration": { "$ref": "#/$defs/Duration" },
+        "deadline": { "type": "string", "format": "date" },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "action", "relation"],
+      "anyOf": [
+        { "required": ["startEvent", "duration"] },
+        { "required": ["deadline"] },
+        { "required": ["startEvent", "endEvent"] }
+      ],
+      "allOf": [
+        { "if": { "properties": { "relation": { "enum": ["within", "for_at_least"] } }, "required": ["relation"] }, "then": { "required": ["startEvent", "duration"] } },
+        { "if": { "required": ["duration"] }, "then": { "not": { "required": ["deadline"] } } }
+      ]
+    },
+    "BooleanRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "boolean" },
+        "property": { "type": "string", "minLength": 1 },
+        "value": { "type": "boolean" },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "property", "value"]
+    },
+    "NumericRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "numeric" },
+        "property": { "type": "string", "minLength": 1 },
+        "operator": { "enum": ["eq", "ne", "gt", "gte", "lt", "lte"] },
+        "value": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "property", "operator", "value", "unit"]
+    },
+    "TextRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "text" },
+        "property": { "type": "string", "minLength": 1 },
+        "operator": { "enum": ["equals", "one_of", "contains"] },
+        "value": { "type": ["string", "array"] },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "property", "operator", "value"]
+    },
+    "FormulaRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "formula" },
+        "property": { "type": "string", "minLength": 1 },
+        "expression": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" }
+      },
+      "required": ["kind", "property", "expression"]
+    },
+    "UnresolvedRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "unresolved" },
+        "text": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "required": ["kind", "text", "reason"]
+    },
+    "Exception": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["exception", "exemption", "alternative", "override", "unresolved"] },
+        "description": { "type": "string", "minLength": 1 },
+        "condition": { "$ref": "#/$defs/Predicate" },
+        "requirements": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Requirement" } },
+        "references": { "type": "array", "items": { "$ref": "#/$defs/ProvisionReference" } },
+        "effect": { "enum": ["disapplies_rule", "modifies_rule", "adds_alternative", "requires_review", "unspecified"] }
+      },
+      "required": ["kind", "description"]
+    },
+    "Definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "term": { "type": "string", "minLength": 1 },
+        "text": { "type": "string", "minLength": 1 },
+        "meaning": { "$ref": "#/$defs/Requirement" },
+        "condition": { "$ref": "#/$defs/Predicate" },
+        "references": { "type": "array", "items": { "$ref": "#/$defs/ProvisionReference" } }
+      },
+      "required": ["term"],
+      "oneOf": [
+        { "required": ["text"], "not": { "required": ["meaning"] } },
+        { "required": ["meaning"], "not": { "required": ["text"] } }
+      ]
+    },
+    "Rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": { "const": "1.0" },
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["definition", "obligation", "prohibition", "permission", "conditional_requirement"] },
+        "documentReference": { "$ref": "#/$defs/DocumentReference" },
+        "source": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/SourceReference" } },
+        "status": { "enum": ["draft", "reviewed", "approved"] },
+        "summary": { "type": "string", "minLength": 1 },
+        "definition": { "$ref": "#/$defs/Definition" },
+        "applicability": { "$ref": "#/$defs/Predicate" },
+        "requirements": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Requirement" } },
+        "requirementExpression": { "$ref": "#/$defs/RequirementExpression" },
+        "actors": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/ActorReference" } },
+        "scopeExclusions": { "type": "array", "items": { "$ref": "#/$defs/Predicate" } },
+        "exceptions": { "type": "array", "items": { "$ref": "#/$defs/Exception" } },
+        "references": { "type": "array", "items": { "$ref": "#/$defs/ProvisionReference" } },
+        "reviewNotes": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["schemaVersion", "id", "type", "documentReference", "source", "status", "summary"],
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "definition" } }, "required": ["type"] },
+          "then": { "required": ["definition"], "not": { "anyOf": [{ "required": ["requirements"] }, { "required": ["applicability"] }, { "required": ["exceptions"] }] } },
+          "else": {
+            "not": { "required": ["definition"] },
+            "oneOf": [
+              { "required": ["requirements"], "not": { "required": ["requirementExpression"] } },
+              { "required": ["requirementExpression"], "not": { "required": ["requirements"] } }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
