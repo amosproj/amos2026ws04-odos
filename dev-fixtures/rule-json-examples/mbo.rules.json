@@ -12,13 +12,13 @@
         "citation": "§ 37 Abs. 5 Satz 1",
         "elements": [
           { "elementId": "doc/teil-3/abschnitt-5/par-37/abs-5", "pdfPages": [34], "role": "primary" },
-          { "elementId": "doc/teil-3/abschnitt-5/par-33/abs-2", "pdfPages": [29], "role": "cross_reference" }
+          { "elementId": "doc/teil-3/abschnitt-5/par-33/abs-2", "sentenceId": "doc/teil-3/abschnitt-5/par-33/abs-2/satz-2", "pdfPages": [29], "role": "cross_reference" }
         ]
       },
       "classification": {
         "type": "obligation",
         "normativeCategory": "substantive",
-        "summary": "Fenster, die als Rettungswege nach § 33 Abs. 2 Satz 2 dienen, müssen im Lichten mindestens 0,90 m x 1,20 m groß sein."
+        "summary": "Fenster, die als Rettungswege nach § 33 Abs. 2 Satz 2 dienen, müssen im Lichten mindestens 0,90 m x 1,20 m groß und nicht höher als 1,20 m über der Fußbodenoberkante angeordnet sein."
       },
       "applicability": {
         "targets": [
@@ -35,6 +35,10 @@
           {
             "kind": "requirement",
             "requirement": { "kind": "numeric", "fact": "clear_height", "operator": ">=", "value": 1.20, "unit": "m" }
+          },
+          {
+            "kind": "requirement",
+            "requirement": { "kind": "numeric", "fact": "parapet_height_above_floor", "operator": "<=", "value": 1.20, "unit": "m" }
           }
         ]
       },
@@ -50,15 +54,15 @@
         "status": "draft",
         "machineCheckable": true,
         "checkMethods": ["ids", "shacl"],
+        "ambiguities": ["\"nicht höher als 1,20 m über der Fußbodenoberkante angeordnet\" is read as the height of the lower edge of the clear opening above the floor; the source does not name the reference point."],
         "notes": ["Dimensions interpreted as width x height. The demo reads 0.90 x 1.20 m."]
       },
       "externalMappings": [
         {
           "standard": "IFC4",
           "entityClass": "IfcWindow",
-          "propertySet": "Pset_WindowCommon",
           "propertyPath": "OverallWidth",
-          "notes": "Requires confirmed escape-route classification."
+          "notes": "OverallWidth is an attribute of IfcWindow, not a property of Pset_WindowCommon, and gives the overall width, not the clear opening (\"im Lichten\") the source requires; the clear width needs a project-specific property. Requires confirmed escape-route classification."
         }
       ]
     },
@@ -77,7 +81,7 @@
       "classification": {
         "type": "conditional_requirement",
         "normativeCategory": "substantive",
-        "summary": "Liegen die Fenster in einer Dachschräge oder im Dachraum, so darf ihre Unterkante oder ein davor liegender Austritt nicht mehr als 1,00 m von der Traufkante entfernt sein."
+        "summary": "Liegen diese Fenster in Dachschrägen oder Dachaufbauten, so darf ihre Unterkante oder ein davor liegender Austritt von der Traufkante horizontal gemessen nicht mehr als 1 m entfernt sein."
       },
       "applicability": {
         "targets": [
@@ -113,20 +117,24 @@
     },
     {
       "schemaVersion": "2.0",
-      "id": "mbo-6-5-building-height-limit",
+      "id": "mbo-6-5-setback-depth",
       "source": {
         "documentId": "mbo",
         "documentTitle": "Musterbauordnung",
         "language": "de",
-        "citation": "§ 6 Abs. 5 Satz 1",
+        "citation": "§ 6 Abs. 5 Sätze 1 bis 4",
         "elements": [
-          { "elementId": "doc/teil-2/par-6/abs-5", "pdfPages": [10], "role": "primary" }
+          { "elementId": "doc/teil-2/par-6/abs-5", "sentenceId": "doc/teil-2/par-6/abs-5/satz-1", "pdfPages": [10], "role": "primary" },
+          { "elementId": "doc/teil-2/par-6/abs-5", "sentenceId": "doc/teil-2/par-6/abs-5/satz-2", "pdfPages": [10], "role": "primary", "description": "Satz 2: 0,2 H, mindestens 3 m in Gewerbe- und Industriegebieten (alternative)." },
+          { "elementId": "doc/teil-2/par-6/abs-5", "sentenceId": "doc/teil-2/par-6/abs-5/satz-3", "pdfPages": [10], "role": "primary", "description": "Satz 3: 3 m before residential buildings of Gebäudeklassen 1 and 2 (alternative)." },
+          { "elementId": "doc/teil-2/par-6/abs-5", "sentenceId": "doc/teil-2/par-6/abs-5/satz-4", "pdfPages": [10], "role": "primary", "description": "Satz 4: Sätze 1 bis 3 do not apply under a statute (override)." },
+          { "elementId": "doc/teil-2/par-6/abs-4", "pdfPages": [10], "role": "definition", "description": "Defines the measure H: the wall height (Satz 2) plus the roof additions (Sätze 3 to 5) is H (Satz 6)." }
         ]
       },
       "classification": {
         "type": "obligation",
         "normativeCategory": "substantive",
-        "summary": "Die Tiefe der Abstandsfläche bemisst sich nach der Wandhöhe; sie wird senkrecht zur Wand gemessen."
+        "summary": "Die Tiefe der Abstandsflächen beträgt 0,4 H, mindestens 3 m."
       },
       "applicability": {
         "targets": [
@@ -137,22 +145,30 @@
         {
           "kind": "formula",
           "fact": "setback_depth",
+          "operator": "==",
           "expression": {
             "kind": "operation",
-            "operator": "multiply",
+            "operator": "max",
             "operands": [
-              { "kind": "literal", "value": 0.4 },
-              { "kind": "fact", "name": "wall_height", "unit": "m" }
+              {
+                "kind": "operation",
+                "operator": "multiply",
+                "operands": [
+                  { "kind": "literal", "value": 0.4 },
+                  { "kind": "fact", "name": "measure_h", "unit": "m" }
+                ]
+              },
+              { "kind": "literal", "value": 3, "unit": "m" }
             ]
           },
           "unit": "m",
-          "description": "Setback depth is 0.4 times wall height, measured perpendicular to the wall."
+          "description": "Calculated value: the setback depth is 0.4 H, but at least 3 m."
         }
       ],
       "exceptions": [
         {
           "kind": "alternative",
-          "description": "In Gewerbe- und Industriegebieten genügt eine Tiefe von 0,2 H.",
+          "description": "In Gewerbe- und Industriegebieten genügt eine Tiefe von 0,2 H, mindestens 3 m.",
           "condition": {
             "kind": "comparison",
             "fact": "zone_type",
@@ -164,12 +180,20 @@
             {
               "kind": "formula",
               "fact": "setback_depth",
+              "operator": "==",
               "expression": {
                 "kind": "operation",
-                "operator": "multiply",
+                "operator": "max",
                 "operands": [
-                  { "kind": "literal", "value": 0.2 },
-                  { "kind": "fact", "name": "wall_height", "unit": "m" }
+                  {
+                    "kind": "operation",
+                    "operator": "multiply",
+                    "operands": [
+                      { "kind": "literal", "value": 0.2 },
+                      { "kind": "fact", "name": "measure_h", "unit": "m" }
+                    ]
+                  },
+                  { "kind": "literal", "value": 3, "unit": "m" }
                 ]
               },
               "unit": "m"
@@ -179,67 +203,105 @@
         },
         {
           "kind": "alternative",
-          "description": "In Kern-, Dorf- und Mischgebieten genügt eine Tiefe von 0,25 H.",
+          "description": "Vor den Außenwänden von Wohngebäuden der Gebäudeklassen 1 und 2 mit nicht mehr als drei oberirdischen Geschossen genügt als Tiefe der Abstandsfläche 3 m.",
           "condition": {
-            "kind": "comparison",
-            "fact": "zone_type",
-            "operator": "in",
-            "value": ["core", "village", "mixed"],
-            "valueType": "string_array"
+            "kind": "all",
+            "conditions": [
+              { "kind": "comparison", "fact": "is_residential_building", "operator": "==", "value": true, "valueType": "boolean" },
+              { "kind": "comparison", "fact": "building_class", "operator": "in", "value": [1, 2], "valueType": "integer_array" },
+              { "kind": "comparison", "fact": "above_ground_storeys", "operator": "<=", "value": 3, "valueType": "integer" }
+            ]
           },
           "requirements": [
-            {
-              "kind": "formula",
-              "fact": "setback_depth",
-              "expression": {
-                "kind": "operation",
-                "operator": "multiply",
-                "operands": [
-                  { "kind": "literal", "value": 0.25 },
-                  { "kind": "fact", "name": "wall_height", "unit": "m" }
-                ]
-              },
-              "unit": "m"
-            }
+            { "kind": "numeric", "fact": "setback_depth", "operator": "==", "value": 3, "unit": "m" }
           ],
           "effect": "modifies_rule"
+        },
+        {
+          "kind": "override",
+          "description": "Werden von einer städtebaulichen Satzung oder einer Satzung nach § 86 Außenwände zugelassen oder vorgeschrieben, vor denen Abstandsflächen größerer oder geringerer Tiefe als nach den Sätzen 1 bis 3 liegen müssten, finden die Sätze 1 bis 3 keine Anwendung, es sei denn, die Satzung ordnet die Geltung dieser Vorschriften an.",
+          "condition": {
+            "kind": "unresolved",
+            "text": "Eine städtebauliche Satzung oder eine Satzung nach § 86 lässt solche Außenwände zu oder schreibt sie vor und ordnet die Geltung der Sätze 1 bis 3 nicht an.",
+            "reason": "Depends on the content of a local statute, which is not part of the source document."
+          },
+          "references": [
+            {
+              "citation": "§ 86",
+              "elementId": "doc/teil-6/par-86",
+              "resolution": "resolved",
+              "relationship": "related_to"
+            }
+          ],
+          "effect": "disapplies_rule"
+        },
+        {
+          "kind": "exemption",
+          "description": "Werden Nutzungseinheiten mit Aufenthaltsräumen in rechtmäßig bestehenden Gebäuden in Wohnraum umgenutzt, sind auf bestehende Gebäude und Bauteile die §§ 6, 27, 28, 30, 31 und 32 nicht anzuwenden.",
+          "condition": {
+            "kind": "all",
+            "conditions": [
+              { "kind": "comparison", "fact": "is_lawfully_existing_building", "operator": "==", "value": true, "valueType": "boolean" },
+              { "kind": "comparison", "fact": "habitable_use_units_converted_to_residential", "operator": "==", "value": true, "valueType": "boolean" },
+              { "kind": "comparison", "fact": "concerns_existing_building_or_parts", "operator": "==", "value": true, "valueType": "boolean" }
+            ]
+          },
+          "references": [
+            {
+              "citation": "§ 48 Abs. 5",
+              "elementId": "doc/teil-3/abschnitt-7/par-48/abs-5",
+              "resolution": "resolved",
+              "relationship": "subject_to"
+            }
+          ],
+          "effect": "disapplies_rule"
         }
       ],
       "references": [
         {
-          "citation": "§ 67 Abs. 1",
-          "elementId": "doc/teil-5/abschnitt-3/par-67/abs-1",
+          "citation": "§ 6 Abs. 2 Satz 1",
+          "elementId": "doc/teil-2/par-6/abs-2",
           "resolution": "resolved",
-          "relationship": "subject_to"
+          "relationship": "related_to"
         }
       ],
       "review": {
         "status": "draft",
         "machineCheckable": true,
         "checkMethods": ["ids", "shacl", "llm_comparison"],
-        "ambiguities": ["The formula applies to regular facades. Stepped and angled facades need separate interpretation."]
+        "ambiguities": [
+          "The formula applies to regular facades. Stepped and angled facades need separate interpretation.",
+          "Whether a statute under Satz 4 applies cannot be decided from the source document.",
+          "The § 48 Abs. 5 exemption covers only the existing building and its existing parts; new parts added in the conversion remain subject to § 6."
+        ],
+        "notes": [
+          "measure_h is the measure H of § 6 Abs. 4 Satz 6: the wall height of Satz 2 plus the roof additions of Sätze 3 to 5. It is not the wall height alone.",
+          "§ 48 Abs. 5 is a separate provision that disapplies all of § 6; § 6 Abs. 5 does not cite it, so it is recorded as an exemption with its own reference, not as a source element.",
+          "operator == records the depth as a calculated value, not a minimum. Compliance is a separate rule: the setback areas must lie on the plot itself (§ 6 Abs. 2 Satz 1)."
+        ]
       }
     },
     {
       "schemaVersion": "2.0",
-      "id": "mbo-62-3-procedural-deadline",
+      "id": "mbo-62-3-construction-start-permission",
       "source": {
         "documentId": "mbo",
         "documentTitle": "Musterbauordnung",
         "language": "de",
-        "citation": "§ 62 Abs. 3 Satz 2",
+        "citation": "§ 62 Abs. 3 Sätze 2 und 3",
         "elements": [
-          { "elementId": "doc/teil-5/abschnitt-2/par-62/abs-3", "pdfPages": [52], "role": "primary" }
+          { "elementId": "doc/teil-5/abschnitt-2/par-62/abs-3", "sentenceId": "doc/teil-5/abschnitt-2/par-62/abs-3/satz-2", "pdfPages": [52], "role": "primary" },
+          { "elementId": "doc/teil-5/abschnitt-2/par-62/abs-3", "sentenceId": "doc/teil-5/abschnitt-2/par-62/abs-3/satz-3", "pdfPages": [52], "role": "primary", "description": "Satz 3: earlier start after notice by the Gemeinde (alternative)." }
         ]
       },
       "classification": {
-        "type": "procedural_requirement",
+        "type": "permission",
         "normativeCategory": "procedural",
-        "summary": "Mit dem Vorhaben darf einen Monat nach Eingang der erforderlichen Unterlagen bei der Gemeinde begonnen werden."
+        "summary": "Mit dem Bauvorhaben darf einen Monat nach Eingang der erforderlichen Unterlagen bei der Gemeinde begonnen werden."
       },
       "applicability": {
         "actors": [
-          { "role": "duty_holder", "entity": "Bauherr" },
+          { "role": "beneficiary", "entity": "Bauherr" },
           { "role": "authority", "entity": "Gemeinde" }
         ]
       },
@@ -247,17 +309,60 @@
         "kind": "requirement",
         "requirement": {
           "kind": "temporal",
-          "action": "mit dem Vorhaben beginnen",
+          "action": "mit dem Bauvorhaben beginnen",
           "startEvent": "Eingang der erforderlichen Unterlagen bei der Gemeinde",
-          "relation": "within",
-          "duration": { "value": 1, "unit": "month" }
+          "relation": "after",
+          "duration": { "value": 1, "unit": "month" },
+          "description": "Earliest permitted start: one month after receipt of the documents."
         }
       },
+      "exceptions": [
+        {
+          "kind": "alternative",
+          "description": "Teilt die Gemeinde dem Bauherrn vor Ablauf der Frist mit, dass kein Genehmigungsverfahren durchgeführt werden soll und sie eine Untersagung nach § 15 Abs. 1 Satz 2 BauGB nicht beantragen wird, darf der Bauherr mit der Ausführung des Bauvorhabens beginnen.",
+          "condition": {
+            "kind": "all",
+            "conditions": [
+              { "kind": "comparison", "fact": "municipality_declared_no_permit_procedure", "operator": "==", "value": true, "valueType": "boolean" },
+              { "kind": "comparison", "fact": "municipality_declared_no_prohibition_application", "operator": "==", "value": true, "valueType": "boolean" }
+            ]
+          },
+          "requirements": [
+            {
+              "kind": "temporal",
+              "action": "mit der Ausführung des Bauvorhabens beginnen",
+              "startEvent": "Mitteilung der Gemeinde nach § 62 Abs. 3 Satz 3",
+              "relation": "after"
+            }
+          ],
+          "references": [
+            {
+              "citation": "§ 15 Abs. 1 Satz 2 BauGB",
+              "resolution": "unresolved",
+              "relationship": "depends_on"
+            }
+          ],
+          "effect": "adds_alternative"
+        }
+      ],
+      "references": [
+        {
+          "citation": "§ 62 Abs. 2 Nr. 4",
+          "elementId": "doc/teil-5/abschnitt-2/par-62/abs-2/nr-4",
+          "resolution": "resolved",
+          "relationship": "depends_on"
+        }
+      ],
       "review": {
         "status": "draft",
         "machineCheckable": false,
         "checkMethods": ["manual"],
-        "notes": ["Calendar month calculation depends on jurisdiction."]
+        "ambiguities": ["The exemption also requires that the Gemeinde does not, within the period of Satz 2, declare that the simplified permit procedure is to be carried out or apply for a provisional prohibition under § 15 Abs. 1 Satz 2 BauGB (§ 62 Abs. 2 Nr. 4); this condition is not modelled here."],
+        "notes": [
+          "Calendar month calculation depends on jurisdiction.",
+          "A permission: the period sets the earliest start, not a deadline. The expiry of the right after three years (Satz 4) is a separate rule.",
+          "Satz 3 Halbsatz 2 (the Gemeinde informs the Bauaufsichtsbehörde of its notice) is a separate obligation of the Gemeinde and not part of this rule."
+        ]
       }
     },
     {
@@ -269,17 +374,17 @@
         "language": "de",
         "citation": "§ 2 Abs. 2",
         "elements": [
-          { "elementId": "doc/teil-1/par-2/abs-2", "pdfPages": [6], "role": "definition" }
+          { "elementId": "doc/teil-1/par-2/abs-2", "sentenceId": "doc/teil-1/par-2/abs-2/s1", "pdfPages": [6], "role": "definition" }
         ]
       },
       "classification": {
         "type": "definition",
         "normativeCategory": "definitional",
-        "summary": "Gebäude sind selbständig benutzbare, überdeckte bauliche Anlagen, die von Menschen betreten werden können und geeignet oder bestimmt sind, dem Schutz von Menschen, Tieren oder Sachen zu dienen."
+        "summary": "Gebäude sind selbstständig benutzbare, überdeckte bauliche Anlagen, die von Menschen betreten werden können und geeignet oder bestimmt sind, dem Schutz von Menschen, Tieren oder Sachen zu dienen."
       },
       "definition": {
         "term": "Gebäude",
-        "text": "Gebäude sind selbständig benutzbare, überdeckte bauliche Anlagen, die von Menschen betreten werden können und geeignet oder bestimmt sind, dem Schutz von Menschen, Tieren oder Sachen zu dienen."
+        "text": "Gebäude sind selbstständig benutzbare, überdeckte bauliche Anlagen, die von Menschen betreten werden können und geeignet oder bestimmt sind, dem Schutz von Menschen, Tieren oder Sachen zu dienen."
       },
       "review": {
         "status": "draft",
@@ -294,21 +399,45 @@
         "documentId": "mbo",
         "documentTitle": "Musterbauordnung",
         "language": "de",
-        "citation": "§ 3 Abs. 1",
+        "citation": "§ 3 Sätze 1 und 2",
         "elements": [
-          { "elementId": "doc/teil-1/par-3/txt-1", "pdfPages": [9], "role": "primary" }
+          { "elementId": "doc/teil-1/par-3/txt-1", "sentenceId": "doc/teil-1/par-3/satz-1", "pdfPages": [9], "role": "primary" },
+          { "elementId": "doc/teil-1/par-3/txt-1", "sentenceId": "doc/teil-1/par-3/satz-2", "pdfPages": [9], "role": "primary", "description": "Satz 2 extends the requirement to removal and change of use." }
         ]
       },
       "classification": {
         "type": "obligation",
         "normativeCategory": "substantive",
-        "summary": "Anlagen sind so anzuordnen, zu errichten, zu ändern und instand zu halten, dass die öffentliche Sicherheit und Ordnung, insbesondere Leben, Gesundheit und die natürlichen Lebensgrundlagen, nicht gefährdet werden."
+        "summary": "Anlagen sind so anzuordnen, zu errichten, zu ändern und instand zu halten, dass die öffentliche Sicherheit und Ordnung, insbesondere Leben, Gesundheit und die natürlichen Lebensgrundlagen, nicht gefährdet werden; dabei sind die Grundanforderungen an Bauwerke gemäß Anhang I der Verordnung (EU) Nr. 305/2011 zu berücksichtigen. Dies gilt auch für die Beseitigung von Anlagen und bei der Änderung ihrer Nutzung."
+      },
+      "applicability": {
+        "targets": [
+          { "entity": "Anlagen", "description": "Anordnung, Errichtung, Änderung und Instandhaltung (Satz 1), Beseitigung und Nutzungsänderung (Satz 2)" }
+        ]
       },
       "requirements": [
         {
           "kind": "unresolved",
           "text": "Keine Gefährdung der öffentlichen Sicherheit und Ordnung, insbesondere Leben, Gesundheit und die natürlichen Lebensgrundlagen.",
           "reason": "Purpose-oriented general clause requiring contextual legal and technical evaluation."
+        },
+        {
+          "kind": "unresolved",
+          "text": "Die Grundanforderungen an Bauwerke gemäß Anhang I der Verordnung (EU) Nr. 305/2011 berücksichtigen.",
+          "reason": "Refers to an external regulation that is not part of the source document."
+        }
+      ],
+      "references": [
+        {
+          "citation": "§ 2 Abs. 1 Satz 3",
+          "elementId": "doc/teil-1/par-2/abs-1/txt-1",
+          "resolution": "resolved",
+          "relationship": "defined_by"
+        },
+        {
+          "citation": "Anhang I der Verordnung (EU) Nr. 305/2011",
+          "resolution": "unresolved",
+          "relationship": "depends_on"
         }
       ],
       "review": {

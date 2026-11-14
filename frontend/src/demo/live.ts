@@ -124,21 +124,26 @@ export function ruleEntries(data: unknown): Record<string, unknown>[] {
   return isRuleRecord(record) ? [record] : [];
 }
 
+/** A Rule JSON record (backend/schemas/rule-json/rule.schema.json) declares schemaVersion 2.0 and lists its source
+ *  elements in `source.elements`. */
 function isRuleRecord(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const record = value as Record<string, unknown>;
-  return typeof record.id === "string" && typeof record.type === "string" && Array.isArray(record.source);
+  return record.schemaVersion === "2.0" && typeof record.id === "string" && !!sourceElements(record);
 }
 
-/** Rule records map to any Legal JSON element through their stable source element IDs. */
+function sourceElements(rule: Record<string, unknown>): unknown[] | undefined {
+  const source = rule.source;
+  const elements = source && typeof source === "object" ? (source as Record<string, unknown>).elements : undefined;
+  return Array.isArray(elements) ? elements : undefined;
+}
+
+/** Rule records map to any Legal JSON element through the stable element IDs in their `source.elements`. */
 export function rulesForElement(data: unknown, elementId: string | null): Record<string, unknown>[] {
   if (!elementId) return [];
-  return ruleEntries(data).filter((rule) => {
-    const sources = rule.source;
-    return Array.isArray(sources) && sources.some((source) =>
-      !!source && typeof source === "object" && (source as Record<string, unknown>).elementId === elementId,
-    );
-  });
+  return ruleEntries(data).filter((rule) => (sourceElements(rule) ?? []).some((element) =>
+    !!element && typeof element === "object" && (element as Record<string, unknown>).elementId === elementId,
+  ));
 }
 
 /** The selected element's Legal JSON node with `nativeType` shown as `germanType`; null when the element is not a node

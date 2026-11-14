@@ -65,10 +65,18 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+// Minimal records that validate against backend/schemas/rule-json/rule.schema.json.
+const ruleRecord = (id: string, type: string, summary: string, elementIds: string[]) => ({
+  schemaVersion: "2.0", id,
+  source: { documentId: "beispielgesetz", elements: elementIds.map((elementId) => ({ elementId })) },
+  classification: { type, summary },
+  requirements: [{ kind: "unresolved", text: "Dieses Gesetz gilt.", reason: "Fixture only." }],
+  review: { status: "draft" },
+});
 const ruleSet = [
-  { schemaVersion: "1.0", id: "rule-a", type: "obligation", source: [{ elementId: ABS }], summary: "First fixture rule." },
-  { schemaVersion: "1.0", id: "rule-b", type: "prohibition", source: [{ elementId: ABS }, { elementId: "doc/par-1" }], summary: "Second fixture rule." },
-  { schemaVersion: "1.0", id: "rule-c", type: "permission", source: [{ elementId: "doc/par-1" }], summary: "Other element rule." },
+  ruleRecord("rule-a", "obligation", "First fixture rule.", [ABS]),
+  ruleRecord("rule-b", "prohibition", "Second fixture rule.", [ABS, "doc/par-1"]),
+  ruleRecord("rule-c", "permission", "Other element rule.", ["doc/par-1"]),
 ];
 
 describe("Rule JSON source mapping", () => {
@@ -89,6 +97,12 @@ describe("Rule JSON source mapping", () => {
     expect(ruleEntries({ rules: ruleSet })).toEqual(ruleSet);
     expect(rulesForElement(null, ABS)).toEqual([]);
     expect(rulesForElement(ruleSet, "doc/missing")).toEqual([]);
+  });
+
+  it("ignores records that are not Rule JSON 2.0, such as the removed 1.0 shape", () => {
+    const legacy = { schemaVersion: "1.0", id: "rule-old", type: "obligation", source: [{ elementId: ABS }], summary: "Legacy rule." };
+    expect(ruleEntries([legacy, ruleSet[0]]).map((rule) => rule.id)).toEqual(["rule-a"]);
+    expect(rulesForElement({ rules: [legacy] }, ABS)).toEqual([]);
   });
 });
 
