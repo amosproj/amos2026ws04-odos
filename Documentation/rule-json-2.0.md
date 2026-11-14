@@ -90,6 +90,98 @@ Rule JSON 2.0
 
 Comparison and numeric requirement operators use mathematical symbols: `==`, `!=`, `>`, `>=`, `<`, `<=`. The set operators `in`, `not_in` and `contains` are unchanged. Rule JSON 1.0 keeps `eq`, `ne`, `gt`, `gte`, `lt`, `lte`.
 
+
+### 4c. Structured Arithmetic Expressions (new in 2.0)
+
+Formula requirements now use structured calculation objects instead of free-text expressions. This allows formulas to be parsed and processed programmatically without interpreting mathematical strings.
+
+#### Arithmetic Node Types
+
+`FormulaRequirement.expression` supports three recursively defined node types:
+
+| Kind | Purpose | Required fields |
+|---|---|---|
+| `literal` | Numeric constant | `kind`, `value` |
+| `fact` | Reference to an input fact | `kind`, `name` |
+| `operation` | Mathematical operation | `kind`, `operator`, `operands` |
+
+Both `literal` and `fact` may include an optional `unit` field.
+
+#### Supported Operators
+
+| Operator | Meaning | Operand count |
+|---|---|---|
+| `add` | Addition | 2 or more |
+| `subtract` | Subtraction | Exactly 2 |
+| `multiply` | Multiplication | 2 or more |
+| `divide` | Division | Exactly 2 |
+| `min` | Minimum value | 2 or more |
+| `max` | Maximum value | 2 or more |
+
+Operations can be nested to represent complex calculations.
+
+#### Example: MBO §6(5) — Setback Depth
+
+The existing MBO example uses the formula `0.4 × wall_height`.
+
+```json
+{
+  "kind": "formula",
+  "fact": "setback_depth",
+  "expression": {
+    "kind": "operation",
+    "operator": "multiply",
+    "operands": [
+      { "kind": "literal", "value": 0.4 },
+      { "kind": "fact", "name": "wall_height", "unit": "m" }
+    ]
+  },
+  "unit": "m"
+}
+```
+
+The two alternative formulas (`0.2 × wall_height` and `0.25 × wall_height`) use the same structure with different numeric literals.
+
+#### Nested Expressions
+
+A more complex expression such as `max(0.4 × wall_height, 3 m)` can be represented by nesting operations:
+
+```json
+{
+  "kind": "operation",
+  "operator": "max",
+  "operands": [
+    {
+      "kind": "operation",
+      "operator": "multiply",
+      "operands": [
+        { "kind": "literal", "value": 0.4 },
+        { "kind": "fact", "name": "wall_height", "unit": "m" }
+      ]
+    },
+    { "kind": "literal", "value": 3, "unit": "m" }
+  ]
+}
+```
+
+This is an illustrative calculation structure, not a complete interpretation of MBO §6(5), including its exceptions.
+
+#### Validation Scope
+
+JSON Schema validation ensures:
+
+- Expressions use valid node types and operators.
+- Numeric literals contain numbers rather than strings.
+- Operations contain the required number of operands.
+- Nested expressions follow the defined recursive structure.
+- Free-text formula expressions are rejected.
+
+JSON Schema validation does **not** execute calculations, resolve input facts, convert units, check dimensional consistency, or determine legal applicability.
+
+The `unit` field of `FormulaRequirement` describes the output unit. Actual calculation and comparison against Digital Twin values require a separate evaluator.
+
+Rule JSON 1.0 remains unchanged.
+
 ### 5. Explicit Review and Machine-Checkability (was: status + reviewNotes[])
 
 **Problem in 1.0:** `status` and `reviewNotes` were minimal. No way to indicate whether a rule could be checked automatically.
@@ -117,7 +209,8 @@ All existing 1.0 capabilities remain representable:
 - Nested AND/OR/NOT predicate trees
 - Typed comparison values with validation
 - Temporal requirements (duration, deadline, event-based)
-- Boolean, numeric, text, formula requirements
+- Boolean, numeric and text requirements
+- Formula requirements with structured, recursively nested arithmetic expressions (replacing free-text formulas)
 - Unresolved predicates and requirements
 - Exceptions with effects (disapplies, modifies, alternatives)
 - Cross-references with relationship labels
@@ -154,3 +247,5 @@ python3 -m pytest tests/test_rule_json_v2_schema.py tests/test_rule_json_schema.
 | [backend/tests/test_rule_json_v2_schema.py](../backend/tests/test_rule_json_v2_schema.py) | 2.0 schema tests |
 | [dev-fixtures/rule-json-examples/](../dev-fixtures/rule-json-examples/README.md) | Simulated, labeled EU and MBO Rule JSON 2.0 examples (also used by the schema tests) |
 | [rule-json-1.0-to-2.0-comparison.md](rule-json-1.0-to-2.0-comparison.md) | Field-by-field 1.0 vs 2.0 comparison |
+
+

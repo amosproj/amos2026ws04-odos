@@ -352,3 +352,31 @@ def test_logical_expression_needs_at_least_two_items():
     )
     rule.pop("requirements", None)
     assert list(VALIDATOR.iter_errors(rule))
+
+# ── Structured formula validation ──────────────────────────
+
+def test_structured_formula_validates():
+    rule = make_rule(requirements=[{
+        "kind": "formula",
+        "fact": "setback_depth",
+        "unit": "m",
+        "expression": {
+            "kind": "operation",
+            "operator": "multiply",
+            "operands": [
+                {"kind": "literal", "value": 0.4},
+                {"kind": "fact", "name": "wall_height", "unit": "m"}
+            ]
+        }
+    }])
+    assert list(VALIDATOR.iter_errors(rule)) == []
+
+
+def test_string_formula_is_rejected():
+    rule = make_rule(requirements=[{
+        "kind": "formula",
+        "fact": "setback_depth",
+        "unit": "m",
+        "expression": "0.4 * wall_height"
+    }])
+    assert list(VALIDATOR.iter_errors(rule))

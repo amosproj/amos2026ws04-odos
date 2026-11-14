@@ -317,6 +317,68 @@
       },
       "required": ["kind", "fact", "operator", "value"]
     },
+    
+    "ArithmeticExpression": {
+      "oneOf": [
+        { "$ref": "#/$defs/ArithmeticLiteral" },
+        { "$ref": "#/$defs/ArithmeticFact" },
+        { "$ref": "#/$defs/ArithmeticOperation" }
+      ]
+    },
+
+    "ArithmeticLiteral": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "literal" },
+        "value": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 }
+      },
+      "required": ["kind", "value"]
+    },
+
+    "ArithmeticFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "fact" },
+        "name": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1 }
+      },
+      "required": ["kind", "name"]
+    },
+
+    "ArithmeticOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "operation" },
+        "operator": {
+          "enum": ["add", "subtract", "multiply", "divide", "min", "max"]
+        },
+        "operands": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/ArithmeticExpression" }
+        }
+      },
+      "required": ["kind", "operator", "operands"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operator": { "enum": ["subtract", "divide"] }
+            },
+            "required": ["operator"]
+          },
+          "then": {
+            "properties": {
+              "operands": { "maxItems": 2 }
+            }
+          }
+        }
+      ]
+    },
 
     "FormulaRequirement": {
       "type": "object",
@@ -324,7 +386,7 @@
       "properties": {
         "kind": { "const": "formula" },
         "fact": { "type": "string", "minLength": 1 },
-        "expression": { "type": "string", "minLength": 1 },
+        "expression": { "$ref": "#/$defs/ArithmeticExpression" },        
         "unit": { "type": "string", "minLength": 1 },
         "description": { "type": "string" }
       },

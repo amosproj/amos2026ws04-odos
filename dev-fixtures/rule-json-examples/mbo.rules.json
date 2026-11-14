@@ -137,7 +137,14 @@
         {
           "kind": "formula",
           "fact": "setback_depth",
-          "expression": "0.4 * wall_height",
+          "expression": {
+            "kind": "operation",
+            "operator": "multiply",
+            "operands": [
+              { "kind": "literal", "value": 0.4 },
+              { "kind": "fact", "name": "wall_height", "unit": "m" }
+            ]
+          },
           "unit": "m",
           "description": "Setback depth is 0.4 times wall height, measured perpendicular to the wall."
         }
@@ -157,7 +164,14 @@
             {
               "kind": "formula",
               "fact": "setback_depth",
-              "expression": "0.2 * wall_height",
+              "expression": {
+                "kind": "operation",
+                "operator": "multiply",
+                "operands": [
+                  { "kind": "literal", "value": 0.2 },
+                  { "kind": "fact", "name": "wall_height", "unit": "m" }
+                ]
+              },
               "unit": "m"
             }
           ],
@@ -177,7 +191,14 @@
             {
               "kind": "formula",
               "fact": "setback_depth",
-              "expression": "0.25 * wall_height",
+              "expression": {
+                "kind": "operation",
+                "operator": "multiply",
+                "operands": [
+                  { "kind": "literal", "value": 0.25 },
+                  { "kind": "fact", "name": "wall_height", "unit": "m" }
+                ]
+              },
               "unit": "m"
             }
           ],
