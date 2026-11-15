@@ -95,7 +95,7 @@ describe("result view", () => {
 describe("Custom Legal JSON preview and downloads", () => {
   const html = renderToStaticMarkup(<Artifacts result={result} />);
   it("shows only the heading, the download and the preview", () => {
-    expect(html.replace(/<pre[\s\S]*<\/pre>/, "<pre/>").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Custom Legal JSON", "Download"]);
+    expect(html.replace(/<pre[\s\S]*<\/pre>/, "<pre/>").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Custom Legal JSON", "Rule JSON", "Custom Legal JSON", "Download"]);
   });
   it("previews the Legal JSON 2.0 excerpt exactly as the downloaded file: Zweiter Teil, § 6, Absatz 1 with both Nummern, Absatz 2", () => {
     const { text } = preview(html, "Custom Legal JSON");

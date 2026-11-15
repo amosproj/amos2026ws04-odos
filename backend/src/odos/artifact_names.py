@@ -14,4 +14,5 @@ DOCUMENT_MODEL = "document_model.json"  # canonical model incl. internal diagnos
 VALIDATION_REPORT = "validation_report.json"
 VALIDATION_REPORT_MD = "validation_report.md"
 LEGAL_JSON = "document.json"  # public JSON serialization of the canonical model
+RULE_JSON = "rules.json"  # optional extracted Rule JSON collection; no extractor writes it yet
 LEGAL_JSON_REPORT = "legal_json_validation_report.json"
