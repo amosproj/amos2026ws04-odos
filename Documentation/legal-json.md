@@ -32,7 +32,7 @@ Top-level fields include schema/document identity, title, legal system, language
 | `pages` | PDF page numbers |
 | `children` | Nested legal nodes |
 
-Tables additionally contain dimensions and rows. Parent nodes do not repeat all descendant text. An element's text may span several pages.
+Tables additionally contain dimensions and rows. Parent nodes do not repeat all descendant text. An element's text may span several pages: `text` is then the complete own text and `pages` lists every page that carries it, e.g. `[9, 10]` for MBO § 6 (1) (a page break is never a structural boundary, see [parsing.md](parsing.md)). A parent's `pages` covers only its own text, not its children's.
 
 ## German and EU conventions
 

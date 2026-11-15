@@ -7,10 +7,10 @@ import { ProcessingStatus } from "../components/ProcessingStatus";
 import { RecentDocuments, type DocumentProblem } from "../components/RecentDocuments";
 import { DEFAULT_SPLIT, SplitDivider, splitVars } from "../components/SplitDivider";
 import { StructureTree } from "../components/StructureTree";
-import { TYPE_LABELS, firstPage, highlightsOf } from "../structure";
+import { TYPE_LABELS, firstPage, fullText, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
-import { ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, type StoredDocument } from "./live";
+import { ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
 import "./demo.css";
 
 
@@ -158,6 +158,7 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
   const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [full, setFull] = useState(false); // live Artifacts: the complete document instead of the selected element
+  const [artifactView, setArtifactView] = useState<"legal" | "rule">("legal");
   const [split, setSplit] = useState(DEFAULT_SPLIT); // the PDF panel's share of the width
   const splitRef = useRef<HTMLDivElement>(null);
   const element = useMemo(() => model.elements.find((e) => e.id === selected) ?? null, [model, selected]);
@@ -193,10 +194,10 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
             {tab === "structure" && (
               <div className="structure">
                 <StructureTree model={model} selectedId={selected} onSelect={select} />
-                <SourceDetail element={element} onGoToPage={setPage} />
+                <SourceDetail element={element} page={page} onGoToPage={setPage} />
               </div>
             )}
-            {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} />}
+            {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} artifactView={artifactView} onArtifactViewChange={setArtifactView} />}
           </div>
         </section>
       </div>
@@ -204,16 +205,19 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
   );
 }
 
-function SourceDetail({ element: e, onGoToPage }: { element: DocElement | null; onGoToPage: (page: number) => void }) {
+export function SourceDetail({ element: e, page, onGoToPage }: { element: DocElement | null; page: number; onGoToPage: (page: number) => void }) {
   if (!e) return <div className="detail empty"><Icon name="info" size={20} /><span>Select an element to highlight its source text in the PDF.</span></div>;
   return (
     <div className="detail">
       <h3>{TYPE_LABELS[e.type] ?? e.type} {e.marker ?? ""}</h3>
       {e.title && <p className="title">{e.title}</p>}
-      <blockquote className="origtext">{e.original_text || <em>(no text)</em>}</blockquote>
+      <blockquote className="origtext">{fullText(e) || <em>(no text)</em>}</blockquote>
       <dl className="kv">
         <dt>Pages</dt>
-        <dd>{e.pages.length ? e.pages.map((p) => <button key={p} className="link" onClick={() => onGoToPage(p)}>p. {p}</button>) : "—"}</dd>
+        <dd>{e.pages.length ? e.pages.map((p) => (
+          <button key={p} className="link" onClick={() => onGoToPage(p)} aria-current={p === page ? "page" : undefined}
+                  title={`Show page ${p} with the highlighted source text`}>p. {p}</button>
+        )) : "—"}</dd>
         <dt>Source</dt><dd><code>{e.source_refs.join(", ") || "—"}</code></dd>
         <dt>Element id</dt><dd><code>{e.id}</code></dd>
       </dl>
@@ -288,23 +292,43 @@ function DoclingRaw({ jobId }: { jobId: string }) {
 }
 
 
-export function Artifacts({ result, element = null, full, onFull }: { result: DemoResult; element?: DocElement | null; full?: boolean; onFull?: (full: boolean) => void }) {
+export function Artifacts({ result, element = null, full, onFull, artifactView, onArtifactViewChange }: {
+  result: DemoResult;
+  element?: DocElement | null;
+  full?: boolean;
+  onFull?: (full: boolean) => void;
+  artifactView?: "legal" | "rule";
+  onArtifactViewChange?: (artifact: "legal" | "rule") => void;
+}) {
+  const [internalArtifact, setInternalArtifact] = useState<"legal" | "rule">("legal");
+  const artifact = artifactView ?? internalArtifact;
+  const selectArtifact = (next: "legal" | "rule") => {
+    setInternalArtifact(next);
+    onArtifactViewChange?.(next);
+  };
   const json = (!full && result.live && nodeJson(result.live, element)) || result.json;
+  const availableRules = result.live ? ruleEntries(result.live.ruleJson) : [];
   return (
     <div className="demo-artifacts">
+      <ArtifactSwitch selected={artifact} onChange={selectArtifact} />
       <section className="demo-artifact">
         <div className="demo-artifact-head">
-          <h3>Custom Legal JSON</h3>
+          <h3>{artifact === "legal" ? "Custom Legal JSON" : "Rule JSON"}</h3>
           {onFull && (
-            <div className="demo-toggle" role="group" aria-label="JSON preview">
+            <div className="demo-toggle" role="group" aria-label={`${artifact === "legal" ? "Custom Legal JSON" : "Rule JSON"} preview`}>
               {[false, true].map((f) => (
                 <button key={String(f)} className="btn small" aria-pressed={!!full === f} onClick={() => onFull(f)}>{f ? "Full document" : "Selected element"}</button>
               ))}
             </div>
           )}
-          <a className="btn small" href={result.download.href} download={result.download.name}>Download</a>
+          {artifact === "legal" && <a className="btn small" href={result.download.href} download={result.download.name}>Download</a>}
+          {artifact === "rule" && availableRules.length > 0 && result.live && (
+            <a className="btn small" href={result.live.ruleDownload.href} download={result.live.ruleDownload.name}>Download</a>
+          )}
         </div>
-        <pre className="preview demo-code" tabIndex={0}>{json.replace(/\n$/, "")}</pre>
+        {artifact === "legal"
+          ? <pre className="preview demo-code" tabIndex={0}>{json.replace(/\n$/, "")}</pre>
+          : <RuleJsonPreview result={result} element={element} full={!!full} />}
       </section>
       
       {result.live && (
@@ -315,4 +339,27 @@ export function Artifacts({ result, element = null, full, onFull }: { result: De
       )}
     </div>
   );
+}
+
+export function ArtifactSwitch({ selected, onChange }: { selected: "legal" | "rule"; onChange: (artifact: "legal" | "rule") => void }) {
+  return (
+    <div className="demo-artifact-tabs" role="group" aria-label="Artifact type">
+      <button type="button" className="btn small" aria-pressed={selected === "legal"} onClick={() => onChange("legal")}>Custom Legal JSON</button>
+      <button type="button" className="btn small" aria-pressed={selected === "rule"} onClick={() => onChange("rule")}>Rule JSON</button>
+    </div>
+  );
+}
+
+export function RuleJsonPreview({ result, element, full }: { result: DemoResult; element: DocElement | null; full: boolean }) {
+  const availableRules = ruleEntries(result.live?.ruleJson);
+  const visibleRules = full ? availableRules : rulesForElement(result.live?.ruleJson, element?.id ?? null);
+  if (!visibleRules.length) {
+    const message = !availableRules.length || full
+      ? "No Rule JSON available for this document."
+      : element
+        ? "No Rule JSON available for this element."
+        : "Select an element to view associated Rule JSON.";
+    return <p className="demo-artifact-empty" role="status">{message}</p>;
+  }
+  return <pre className="preview demo-code" tabIndex={0}>{JSON.stringify(visibleRules, null, 2)}</pre>;
 }

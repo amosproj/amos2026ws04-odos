@@ -17,7 +17,8 @@ import pytest
 from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON, LEGAL_JSON_REPORT
 from odos.pipeline import Outcome, run_pipeline
 
-PRIVATE_INPUT = Path(__file__).resolve().parents[1] / "data" / "input" / "private"
+INPUT = Path(__file__).resolve().parents[1] / "data" / "input"
+PRIVATE_INPUT = INPUT / "private"
 BARE_MARKER = re.compile(r"\s*(\d+\.|[a-z]\)|\(\d+\))\s*")  # a list or Absatz marker without its text
 LEGAL_UNITS = {"part", "division", "chapter", "section", "article", "subsection", "paragraph", "number", "letter",
                "point", "subpoint", "recital", "annex"}  # numbered units; text blocks and formulas have no germanType
@@ -67,6 +68,14 @@ def numbers(node: dict, node_type: str) -> list[str]:
 @pytest.fixture(scope="module")
 def mbo(tmp_path_factory):
     return process(reference_pdf("ODOS_MBO_PDF", "MusterBauVerordnung.pdf"), tmp_path_factory.mktemp("mbo"))
+
+
+@pytest.fixture(scope="module")
+def bdsg(tmp_path_factory):
+    pdf = Path(os.environ.get("ODOS_BDSG_PDF") or INPUT / "BDSG.pdf")
+    if not pdf.is_file():
+        pytest.skip(f"{pdf} not found: set ODOS_BDSG_PDF or place the BDSG PDF there (data/input/SOURCE.md)")
+    return process(pdf, tmp_path_factory.mktemp("bdsg"))
 
 
 @pytest.fixture(scope="module")
@@ -131,3 +140,91 @@ def test_legal_json_is_schema_valid(document, request):
     assert (report["schema_valid"], report["schema_errors"]) == (True, [])
     units = [n for n in nodes(legal) if n["type"] in LEGAL_UNITS]
     assert units and all(n.get("germanType") for n in units)  # the source-language term is kept, not dropped
+
+
+# ---- text that runs on over a page break: one element with every page that carries it (test_page_break_continuation.py) ----
+MBO_PAR6_START = "1 Vor den Außenwänden von Gebäuden sind Abstandsflächen von oberirdischen Gebäuden freizuhalten. 2 Satz 1 gilt entsprechend"
+
+
+def continuation_children(legal: dict) -> list[str]:
+    """Ids of unnumbered text nodes that start in lowercase on a later page than the text before them: fragments of a
+    text that a page break cut, left behind as separate children."""
+    found = []
+
+    def walk(node, previous_pages=None):
+        pages = None
+        for child in node.get("children", []):
+            text = (child.get("text") or "").lstrip()
+            earlier = pages or ([node["pages"][-1]] if node.get("pages") else None)
+            if (child["type"] in ("text", "item") and text[:1].islower() and earlier and child["pages"][0] > earlier[-1]
+                    and not (node.get("text") or "").rstrip().endswith((".", ":", ";", "!", "?"))):  # fmt: skip
+                found.append(child["id"])
+            pages = child["pages"]
+            walk(child)
+
+    for top in legal["structure"]:
+        walk(top)
+    return found
+
+
+def test_mbo_par6_abs1_runs_over_pages_9_and_10(mbo):
+    legal, model, _ = mbo
+    absatz = find(legal, "section", "6")["children"][0]
+    assert absatz["id"].endswith("par-6/abs-1")
+    assert absatz["pages"] == [9, 10]
+    assert absatz["text"].startswith(MBO_PAR6_START) and absatz["text"].endswith("nicht erforderlich vor Außenwänden,")
+    assert [c["number"] for c in absatz["children"]] == ["1", "2"] and {c["type"] for c in absatz["children"]} == {"number"}
+    assert all(c["text"] not in absatz["text"] for c in absatz["children"])
+    element = next(e for e in model["elements"] if e["id"] == absatz["id"])
+    assert [p["page_no"] for p in element["provenance"]] == [9, 10] and len(element["source_refs"]) == 2
+    assert not [e for e in model["elements"] if e["id"].startswith(absatz["id"] + "/txt-")]
+    assert not [e for e in model["elements"] if e["region"] == "body" and e.get("content_text", "").strip().isdigit()]  # page numbers
+
+
+def test_mbo_has_no_page_break_fragments(mbo):
+    legal, *_ = mbo
+    assert continuation_children(legal) == []
+    multi = [n for n in nodes(legal) if len(n.get("pages", [])) > 1 and n["type"] in ("subsection", "number", "letter", "text")]
+    assert len(multi) >= 20  # the MBO has dozens of units that run over a page break
+
+
+def test_bdsg_numbered_item_runs_over_a_page_break(bdsg):
+    legal, *_ = bdsg
+    assert continuation_children(legal) == []
+    nummer = next(n for n in nodes(legal) if n["id"].endswith("par-46/nr-12"))
+    assert nummer["pages"] == [28, 29] and not nummer.get("children")
+    assert nummer["text"].count("die eindeutige Identifizierung") == 1
+
+
+def test_eu_has_no_page_break_fragments_and_no_page_number_text(eu):
+    legal, *_ = eu
+    assert continuation_children(legal) == []
+    assert [n["id"] for n in nodes(legal) if (n.get("text") or "").strip().isdigit()] == []
+
+
+def test_mbo_par67_abs1_runs_over_pages_60_and_61_and_keeps_its_page_foot_notes_apart(mbo):
+    """§ 67 (1): four notes "n nach Landesrecht" stand at the foot of page 60, between the text and its continuation.
+    macOS labels them `footnote`; Docker labels them as body text (two of them also as page furniture): in both the
+    notes stay separate source content and the Absatz is one text over both pages."""
+    legal, model, _ = mbo
+    absatz = next(n for n in nodes(legal) if n["id"].endswith("par-67/abs-1"))
+    assert absatz["pages"] == [60, 61]
+    assert "Belangen, insbesondere den Anforderungen des § 3 Satz 1 vereinbar ist." in absatz["text"]
+    assert "nach Landesrecht" not in absatz["text"]
+    notes = [e["original_text"] for e in [*model["elements"], *model["furniture"]]
+             if 60 in e["pages"] and e["original_text"].endswith("nach Landesrecht") and len(e["original_text"]) < 25]  # fmt: skip
+    assert sorted(notes) == [f"{n} nach Landesrecht" for n in range(1, 5)]  # every note exactly once, none lost or merged
+
+
+def test_merged_elements_keep_their_pages_sources_and_highlight_pages(mbo, eu):
+    for _, model, _ in (mbo, eu):
+        for element in model["elements"]:
+            if "page_break_continuation_merged_confirmed" not in element.get("hygiene_flags", []):
+                continue
+            pages = sorted({p["page_no"] for p in element["provenance"]})
+            assert element["pages"] == pages and len(pages) >= 2, element["id"]
+            assert len(set(element["source_refs"])) == len(element["source_refs"]) >= 2, element["id"]
+            if element.get("highlight_boxes"):
+                assert {h["page_no"] for h in element["highlight_boxes"]} == set(pages), element["id"]
+            if element.get("source_spans"):
+                assert {s["ref"] for s in element["source_spans"]} == set(element["source_refs"]), element["id"]

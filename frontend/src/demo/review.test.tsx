@@ -54,7 +54,10 @@ const result: DemoResult = {
   model,
   json: '{\n  "schemaVersion": "2.0"\n}\n',
   download: { href: "/api/jobs/j1/files/document.json?download=true", name: "MusterBauVerordnung.legal.json" },
-  live: { jobId: "j1", persistent: true, legal },
+  live: {
+    jobId: "j1", persistent: true, legal, ruleJson: null,
+    ruleDownload: { href: "/api/jobs/j1/files/rules.json?download=true", name: "MusterBauVerordnung.rules.json" },
+  },
 };
 
 let host: HTMLElement;
