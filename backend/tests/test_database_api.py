@@ -16,7 +16,9 @@ from odos.document_repository import (
     delete_document,
     finish_document,
     get_document,
+    get_pdf_storage_key,
     list_documents,
+    list_recent_documents,
     mark_interrupted_jobs,
     update_document_status,
 )
@@ -119,6 +121,16 @@ def test_list_and_delete(db):
     assert get_document("b") is None
 
 
+def test_list_recent_documents_newest_first_and_limited(db):
+    for n, doc in enumerate(("a", "b", "c")):
+        create_document(doc, f"{doc}.pdf", f"{doc}/source.pdf")
+        with connect() as conn:  # distinct, known creation times
+            conn.execute("UPDATE documents SET created_at = NOW() + make_interval(mins => %s) WHERE id = %s", (n, doc))
+    assert [row["id"] for row in list_recent_documents()] == ["c", "b", "a"]
+    assert [row["id"] for row in list_recent_documents(limit=2)] == ["c", "b"]
+    assert set(list_recent_documents()[0]) == {"id", "filename", "status", "created_at"}
+
+
 def test_mark_interrupted_jobs(db):
     for doc, status in (("q", "queued"), ("p", "processing"), ("c", "completed"), ("u", "unsupported")):
         create_document(doc, f"{doc}.pdf", f"{doc}/source.pdf")
@@ -193,6 +205,16 @@ def test_interrupted_job_is_restored_as_failed(persistent):
     assert "interrupted" in job["message"]
 
 
+def test_document_list_exposes_metadata_only(persistent):
+    with patch("odos.api.run_pipeline", side_effect=fake_pipeline()):
+        with TestClient(app) as client:
+            job = wait_for(client, upload(client, name="Muster.pdf").json()["id"])
+            documents = client.get("/api/documents").json()
+    assert [(d["id"], d["filename"], d["status"]) for d in documents] == [(job["id"], "Muster.pdf", "completed")]
+    assert set(documents[0]) == {"id", "filename", "status", "created_at"}  # no storage key, summary or Legal JSON
+    assert "source.pdf" not in str(documents) and str(persistent) not in str(documents)
+
+
 def test_running_job_cannot_be_deleted(persistent):
     create_document("waiting", "a.pdf", "waiting/source.pdf")
     with patch("odos.api.mark_interrupted_jobs"):  # keep it queued across the startup
@@ -229,3 +251,135 @@ def test_result_that_cannot_be_stored_is_reported_as_failed(persistent):
     assert (job["status"], job["message"]) == ("failed", NOT_STORED_MESSAGE)
     stored = get_document(job["id"])  # the API and the database agree, also after a restart
     assert (stored["status"], stored["legal_json"]) == ("failed", None)
+
+
+# --- reopening stored documents: the original PDF and the result files, without processing again ---
+
+
+def _process_one(client, name="Muster.pdf", pdf=MINIMAL_PDF):
+    with patch("odos.api.run_pipeline", side_effect=fake_pipeline()):
+        return wait_for(client, upload(client, pdf, name).json()["id"])["id"]
+
+
+def test_stored_pdf_is_served_after_a_restart_without_processing_again(persistent):
+    with TestClient(app) as client:
+        job_id = _process_one(client, "Gesetz mit Ümlaut.pdf")
+    with patch("odos.api.run_pipeline", side_effect=AssertionError("must not process again")):
+        with TestClient(app) as client:  # a restarted backend
+            response = client.get(f"/api/jobs/{job_id}/pdf")
+            assert response.status_code == 200
+            assert response.content == MINIMAL_PDF
+            assert response.headers["content-type"] == "application/pdf"
+            assert response.headers["content-disposition"].startswith("inline")
+            assert client.get(f"/api/jobs/{job_id}/files/{LEGAL_JSON}").json() == LEGAL_DOCUMENT
+            assert client.get(f"/api/jobs/{job_id}").json()["status"] == "completed"
+            assert [d["id"] for d in client.get("/api/documents").json()] == [job_id]  # no second record
+    assert len(list_documents()) == 1
+
+
+def test_stored_pdf_of_unknown_or_malformed_ids_is_404(persistent):
+    with TestClient(app) as client:
+        for bad in ("missing", "..", "%2e%2e", "a b", "x" * 500):
+            assert client.get(f"/api/jobs/{bad}/pdf").status_code in (404, 405), bad
+
+
+def test_stored_pdf_requires_a_completed_job(persistent):
+    create_document("waiting", "a.pdf", "waiting/source.pdf")
+    create_document("broken", "b.pdf", "broken/source.pdf")
+    finish_document("broken", "failed", {}, None, "failed")
+    create_document("odd", "c.pdf", "odd/source.pdf")
+    finish_document("odd", "unsupported", {}, None, "unsupported")
+    for doc in ("waiting", "broken", "odd"):
+        (persistent / doc).mkdir()
+        (persistent / doc / "source.pdf").write_bytes(MINIMAL_PDF)
+    with patch("odos.api.mark_interrupted_jobs"):  # keep "waiting" queued across the startup
+        with TestClient(app) as client:
+            for doc in ("waiting", "broken", "odd"):
+                assert client.get(f"/api/jobs/{doc}/pdf").status_code == 409, doc
+
+
+def test_missing_stored_pdf_answers_404_with_a_message(persistent):
+    with TestClient(app) as client:
+        job_id = _process_one(client)
+        (persistent / job_id / "source.pdf").unlink()
+        response = client.get(f"/api/jobs/{job_id}/pdf")
+    assert response.status_code == 404
+    assert "no longer available" in response.json()["detail"]
+
+
+def test_stored_pdf_key_cannot_lead_out_of_the_storage_folder(persistent, tmp_path_factory):
+    outside = tmp_path_factory.mktemp("outside") / "secret.pdf"
+    outside.write_bytes(b"%PDF-1.4 secret")
+    with TestClient(app) as client:
+        job_id = _process_one(client)
+        for key in (str(outside), f"../{outside.parent.name}/secret.pdf", "../../etc/passwd"):
+            with connect() as conn:
+                conn.execute("UPDATE documents SET pdf_storage_key = %s WHERE id = %s", (key, job_id))
+            assert client.get(f"/api/jobs/{job_id}/pdf").status_code == 404, key
+        link = persistent / job_id / "link.pdf"  # a symlink inside the folder that points outside
+        link.symlink_to(outside)
+        with connect() as conn:
+            conn.execute("UPDATE documents SET pdf_storage_key = %s WHERE id = %s", (f"{job_id}/link.pdf", job_id))
+        assert client.get(f"/api/jobs/{job_id}/pdf").status_code == 404
+
+
+def test_pdf_storage_key_lookup(db):
+    create_document("doc1", "a.pdf", "doc1/source.pdf")
+    assert get_pdf_storage_key("doc1") == "doc1/source.pdf"
+    assert get_pdf_storage_key("missing") is None
+
+
+# --- deleting one stored document ---
+
+
+def test_delete_removes_only_the_selected_document_and_its_files(persistent):
+    with TestClient(app) as client:
+        keep, drop = _process_one(client, "keep.pdf"), _process_one(client, "drop.pdf")
+        assert client.delete(f"/api/jobs/{drop}").status_code == 204
+        assert get_document(drop) is None and not (persistent / drop).exists()
+        assert client.get(f"/api/jobs/{drop}").status_code == 404
+        assert client.get(f"/api/jobs/{drop}/pdf").status_code == 404
+        assert client.get(f"/api/jobs/{drop}/files/{LEGAL_JSON}").status_code == 404
+        assert client.delete(f"/api/jobs/{drop}").status_code == 404  # a second delete finds nothing
+        assert get_document(keep)["status"] == "completed"  # the other document is untouched, with its files
+        assert (persistent / keep / "source.pdf").read_bytes() == MINIMAL_PDF
+        assert client.get(f"/api/jobs/{keep}/pdf").status_code == 200
+        assert [d["id"] for d in client.get("/api/documents").json()] == [keep]
+    with TestClient(app) as client:  # still gone after a restart
+        assert [d["id"] for d in client.get("/api/documents").json()] == [keep]
+
+
+def test_delete_with_missing_files_still_removes_the_record(persistent):
+    with TestClient(app) as client:
+        job_id = _process_one(client)
+        shutil.rmtree(persistent / job_id)
+        assert client.delete(f"/api/jobs/{job_id}").status_code == 204
+    assert get_document(job_id) is None
+
+
+def test_failed_and_unsupported_documents_can_be_deleted(persistent):
+    with patch("odos.api.run_pipeline", side_effect=ValueError("broken")):
+        with TestClient(app) as client:
+            failed = wait_for(client, upload(client).json()["id"])["id"]
+            assert client.delete(f"/api/jobs/{failed}").status_code == 204
+    with patch("odos.api.run_pipeline", side_effect=fake_pipeline(Outcome.UNSUPPORTED)):
+        with TestClient(app) as client:
+            unsupported = wait_for(client, upload(client).json()["id"])["id"]
+            assert client.delete(f"/api/jobs/{unsupported}").status_code == 204
+    assert list_documents() == []
+
+
+def test_unknown_document_cannot_be_deleted(persistent):
+    with TestClient(app) as client:
+        assert client.delete("/api/jobs/does-not-exist").status_code == 404
+        assert client.delete("/api/jobs/..").status_code in (404, 405)
+    assert persistent.is_dir()  # the storage folder itself is never removed
+
+
+def test_delete_when_the_database_fails_keeps_record_and_files(persistent):
+    with TestClient(app) as client:
+        job_id = _process_one(client)
+        with patch("odos.api.delete_document", side_effect=psycopg.OperationalError("connection lost")):
+            assert client.delete(f"/api/jobs/{job_id}").status_code == 503
+        assert get_document(job_id) is not None and (persistent / job_id / "source.pdf").is_file()
+        assert client.get(f"/api/jobs/{job_id}/pdf").status_code == 200  # still fully reopenable

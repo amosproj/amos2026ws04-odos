@@ -2,6 +2,7 @@ import * as pdfjs from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { rectsOnPage, type Rect } from "../structure";
+import { Icon } from "./Icon";
 import type { Provenance } from "../types";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -33,9 +34,18 @@ export function PdfViewer({ url, page, onPageChange, highlights, approximate = f
 
   useEffect(() => {
     if (!wrap.current) return;
-    const ro = new ResizeObserver((entries) => setWidth(entries[0].contentRect.width));
+    // the first measurement at once; later ones (a panel being dragged wider or narrower) once they settle, so that the
+    // page is not rendered again for every pixel
+    let timer: number | undefined;
+    let first = true;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0].contentRect.width;
+      if (first) { first = false; setWidth(w); return; }
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setWidth(w), 90);
+    });
     ro.observe(wrap.current);
-    return () => ro.disconnect();
+    return () => { window.clearTimeout(timer); ro.disconnect(); };
   }, []);
 
   const pages = pdf?.numPages ?? 0;
@@ -83,17 +93,18 @@ export function PdfViewer({ url, page, onPageChange, highlights, approximate = f
   return (
     <div className="pdf">
       <div className="pdf-toolbar">
-        <button onClick={() => onPageChange(pageNo - 1)} disabled={pageNo <= 1} aria-label="Previous page">‹</button>
+        <button onClick={() => onPageChange(pageNo - 1)} disabled={pageNo <= 1} aria-label="Previous page"><Icon name="chevron-left" size={20} /></button>
         <label className="pageinput">
           Page
           <input type="number" min={1} max={pages || 1} value={pageNo} onChange={(e) => onPageChange(Number(e.target.value) || 1)} />
           <span>/ {pages || "…"}</span>
         </label>
-        <button onClick={() => onPageChange(pageNo + 1)} disabled={pageNo >= pages} aria-label="Next page">›</button>
+        <button onClick={() => onPageChange(pageNo + 1)} disabled={pageNo >= pages} aria-label="Next page"><Icon name="chevron-right" size={20} /></button>
         <span className="spacer" />
-        <button onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))} aria-label="Zoom out">−</button>
+        <button onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))} aria-label="Zoom out"><Icon name="minus" size={20} /></button>
         <span className="muted">{Math.round(zoom * 100)}%</span>
-        <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))} aria-label="Zoom in">+</button>
+        <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))} aria-label="Zoom in"><Icon name="plus" size={20} /></button>
+        <button onClick={() => setZoom(1)} disabled={zoom === 1} aria-label="Reset zoom to 100%" title="Fit the page to the panel width"><Icon name="fit" size={18} /></button>
       </div>
       <div className="pdf-scroll" ref={wrap}>
         {!pdf && <p className="muted pad">Loading PDF…</p>}

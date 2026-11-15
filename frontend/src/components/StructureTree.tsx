@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Icon } from "./Icon";
 import { TYPE_LABELS, buildTree, clickAction, visibleKeys, type TreeNode } from "../structure";
 import type { DocumentModel } from "../types";
 
@@ -36,14 +37,14 @@ export function StructureTree({ model, selectedId, onSelect }: Props) {
         <div
           id={`node-${n.key}`}
           className={`node${selectedId === n.key ? " selected" : ""}`}
-          style={{ paddingLeft: 8 + depth * 16 }}
+          style={{ paddingLeft: 10 + depth * 22 }}
           onClick={() => { const a = clickAction(n); if (a && "select" in a) onSelect(a.select); else if (a) toggle(a.toggle); }}
           data-toc-entry={n.toc ? n.toc.id : undefined}
           title={n.toc ? (n.toc.target_id ? `Open ${n.toc.target_id}` : `Not linked (${n.toc.status}): ${n.toc.evidence}`) : undefined}
         >
-          <button className="twisty" aria-label={expanded ? "Collapse" : "Expand"} disabled={!kids.length}
+          <button className={`twisty${kids.length && expanded ? " open" : ""}`} aria-label={expanded ? "Collapse" : "Expand"} disabled={!kids.length}
                   onClick={(ev) => { ev.stopPropagation(); toggle(n.key); }}>
-            {kids.length ? (expanded ? "▾" : "▸") : ""}
+            {kids.length ? <Icon name="chevron-right" size={16} /> : null}
           </button>
           {e && <span className={`kind kind-${e.type}`}>{TYPE_LABELS[e.type] ?? e.type}</span>}
           {n.toc && <span className="kind kind-toc_entry">TOC</span>}
@@ -58,9 +59,12 @@ export function StructureTree({ model, selectedId, onSelect }: Props) {
   return (
     <div className="tree">
       <div className="tree-tools">
-        <input type="search" placeholder="Search text…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search structure" />
+        <label className="tree-search">
+          <Icon name="search" size={18} />
+          <input type="search" placeholder="Search text…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search structure" />
+        </label>
         <button onClick={() => setOpen(new Set(byKey.keys()))}>Expand all</button>
-        <button onClick={() => setOpen(new Set())}>Collapse</button>
+        <button onClick={() => setOpen(new Set())}>Collapse all</button>
       </div>
       <ul className="tree-list" role="tree">{roots.map((r) => row(r, 0))}</ul>
       {visible && visible.size === 0 && <p className="muted pad">No matching elements.</p>}
