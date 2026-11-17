@@ -1,5 +1,5 @@
-// The slice of the ODOS DocumentModel the demonstration reads (backend/src/odos/document_model.py). The demo fixture
-// script (scripts/build-demo-fixtures.mjs) writes it as structure.json; fields the demo never shows are left out.
+// The slice of the ODOS DocumentModel the demonstration reads (backend/src/odos/document_model.py), loaded from a
+// job's document_model.json; fields the demo never shows are left out.
 
 /** A Docling bounding box in PDF points. */
 export interface BoundingBox {
@@ -41,6 +41,7 @@ export interface DocElement {
   source_refs: string[]; // the Docling items the text comes from (several when it runs over a page break)
   pages: number[];
   provenance: Provenance[];
+  hygiene_flags?: string[]; // e.g. "page_break_continuation_merged_confirmed": the text runs over a page break
   uncertain: boolean; // parser metadata kept in the data; the demo does not display it
   uncertainty_reasons: string[];
   source_spans?: SourceSpan[]; // present only for segments of a split Docling item

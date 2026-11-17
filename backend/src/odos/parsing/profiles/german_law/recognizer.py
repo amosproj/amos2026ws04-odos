@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 from typing import NamedTuple
 
+from odos.parsing import continuation
 from odos.parsing.builder import ROOT_ID, StructureBuilder, furniture_element
 from odos.normalization.docling_reader import SourceItem
 from odos.normalization.lang_de import MONTHS_UPPER, ORDINAL_STEMS
@@ -32,9 +33,10 @@ def _norm(s: str) -> str:
 class _Builder(StructureBuilder):
     """The shared builder plus German list state: Nummer runs restarted by an interlaced sentence."""
 
-    def __init__(self, rules: LegalStructureRules):
+    def __init__(self, rules: LegalStructureRules, page_sizes: dict[int, tuple[float, float]] | None = None):
         super().__init__(rules.levels)
         self.rules = rules
+        self.page_sizes = page_sizes or {}
         self.list_open = False  # the previous body item was (part of) an enumerated list
         self._nr_run: dict[str, int] = {}  # parent_id → current Nummer run (1 = first, 2+ = restarted)
 
@@ -84,7 +86,7 @@ def _structural_line(text: str, rules: LegalStructureRules) -> bool:
 def _next_index(items: list[SourceItem], i: int) -> int:
     """Index of the next non-furniture item after i."""
     j = i + 1
-    while j < len(items) and items[j].is_furniture:
+    while j < len(items) and items[j].is_page_furniture:
         j += 1
     return j
 
@@ -126,7 +128,7 @@ def _find_toc_range(items: list[SourceItem], rules: LegalStructureRules):
     for i in range(toc_start + 1, len(items)):
         it = items[i]
         text = it.orig.strip()
-        if (it.label == "section_header" and not it.is_furniture
+        if (it.label == "section_header" and not it.is_page_furniture
                 and rules.paragraph_heading_any.match(text) and text.count("§") == 1
                 and content_follows(i)):  # fmt: skip
             body_start = i
@@ -138,7 +140,7 @@ def _find_toc_range(items: list[SourceItem], rules: LegalStructureRules):
     k = body_start - 1
     while k > toc_start:
         it = items[k]
-        if it.is_furniture:
+        if it.is_page_furniture:
             k -= 1
             continue
         text = it.orig.strip()
@@ -149,7 +151,7 @@ def _find_toc_range(items: list[SourceItem], rules: LegalStructureRules):
             continue
         if it.label == "section_header" and not _structural_line(text, rules):
             p = k - 1  # a title line: keep it only if the heading above it has no title
-            while p > toc_start and items[p].is_furniture:
+            while p > toc_start and items[p].is_page_furniture:
                 p -= 1
             above = _match_heading(items[p].orig.strip(), rules) if items[p].label == "section_header" else None
             if above is not None and not above.title:
@@ -160,8 +162,9 @@ def _find_toc_range(items: list[SourceItem], rules: LegalStructureRules):
     return toc_start, j
 
 
-def parse_items(info, items: list[SourceItem], rules: LegalStructureRules) -> DocumentModel:
-    b = _Builder(rules)
+def parse_items(info, items: list[SourceItem], rules: LegalStructureRules,
+                page_sizes: dict[int, tuple[float, float]] | None = None) -> DocumentModel:
+    b = _Builder(rules, page_sizes)
     root = b.root
     meta = DocumentMetadata()
 
@@ -184,11 +187,15 @@ def parse_items(info, items: list[SourceItem], rules: LegalStructureRules) -> Do
         if i in consumed:
             continue
         # -- page furniture: kept outside the tree --------------------------------
-        if item.is_furniture:
-            ptype = T.PAGE_HEADER if item.label == "page_header" else T.PAGE_FOOTER
+        if item.is_page_furniture:  # Docling's furniture and running headers/footers/page numbers it labelled as text
+            ptype = T.PAGE_HEADER if item.label == "page_header" or "running_header" in item.hygiene_flags else T.PAGE_FOOTER  # fmt: skip
             page = item.pages[0] if item.pages else 0
             eid = f"furniture/p{page}-{'header' if ptype == T.PAGE_HEADER else 'footer'}"
-            b.furniture.append(furniture_element(item, eid, ptype))
+            n = sum(1 for f in b.furniture if f.id == eid or f.id.startswith(f"{eid}~"))
+            fel = furniture_element(item, eid if n == 0 else f"{eid}~{n + 1}", ptype)
+            if not item.is_furniture:
+                fel.hygiene_flags.append("moved_out_of_structure_as_page_furniture")
+            b.furniture.append(fel)
             continue
 
         in_front = toc_start is not None and i < toc_start
@@ -486,10 +493,18 @@ def _add_text(b: _Builder, item, type_: T, reasons: list[str], after_list: bool)
     page_break = (prev is not None and prev.type in UNIT_TYPES and b.stack and b.stack[-1] is prev
                   and prev.pages and item.pages and item.pages[0] > prev.pages[-1]
                   and not prev.original_text.rstrip().endswith((".", ":", ";", "!", "?")))  # fmt: skip
-    if page_break and _continues_absatz_intro(prev, item, type_, reasons):
-        b.extend(prev, item)
-        prev.hygiene_flags.append("page_break_continuation_merged_confirmed")
-        return
+    notes, host = continuation.trailing_notes((e for e in reversed(b.elements) if e.region == "body" and e.type not in (T.FOOTNOTE, T.FOOTNOTE_HEADING)), b.page_sizes)  # fmt: skip
+    if host is not None and _hosts_continuation(b, host):
+        verdict = continuation.assess(host, item, b.page_sizes, lambda t: _is_marker(b.rules, t), {n.id for n in notes})
+        if verdict.merge:
+            hyphen = continuation.ends_with_hyphen(host)
+            b.extend(host, item)
+            host.hygiene_flags.append(continuation.FLAG)
+            if hyphen:
+                host.hygiene_flags.append(continuation.HYPHEN_FLAG)
+            for note in notes:  # the page-foot notes stay separate elements, between the text and its continuation
+                note.hygiene_flags.append(continuation.NOTE_FLAG)
+            return
     if page_break:
         reasons.append("continuation_across_page_break_attached_to_previous_element")
     elif after_list and b.stack and b.stack[-1].type == T.NUMMER and not b.stack[-1].children_ids \
@@ -529,13 +544,20 @@ def _add_text(b: _Builder, item, type_: T, reasons: list[str], after_list: bool)
     _continuation_check(b, el, item)
 
 
-def _continues_absatz_intro(prev: Element, item, type_: T, reasons: list[str]) -> bool:
-    """The text of an Absatz runs on over a page break: the Absatz has no child yet, its text stops without
-    sentence-end punctuation (checked by the caller) and the next page goes on lowercase with a plain, unsplit item.
-    Only then is the item the same text; every other page-break continuation stays a flagged element of its own."""
-    return (type_ == T.TEXT and not reasons and prev.type == T.ABSATZ and not prev.children_ids
-            and item.orig.lstrip()[:1].islower() and item.span is None and not item.parts
-            and not item.boundary_flags and not item.order_flags and not prev.source_spans)  # fmt: skip
+def _hosts_continuation(b: _Builder, prev: Element) -> bool:
+    """`prev` is the text that is still open: a unit that is the innermost open container, or a text block directly
+    inside it (no structural element between `prev` and the item that follows)."""
+    if prev.region != "body" or prev.type not in (*UNIT_TYPES, T.TEXT, T.UNMARKED_LIST_ITEM):
+        return False
+    top = b.stack[-1] if b.stack else b.index[ROOT_ID]
+    return prev is top if prev.type in UNIT_TYPES else prev.parent_id == top.id
+
+
+def _is_marker(rules: LegalStructureRules, text: str) -> bool:
+    """The text starts a legal unit, heading or numbered sentence of its own: never a continuation."""
+    t = text.strip()
+    return bool(rules.absatz.match(t) or rules.nummer_text.match(t) or rules.buchstabe_text.match(t)
+                or _match_heading(t, rules) or re.match(r"[2-9]\d?\s+[A-ZÄÖÜ§(]", t) or t.startswith("§"))  # fmt: skip
 
 
 _SPECIFIC_PLACEMENT_REASONS = frozenset({

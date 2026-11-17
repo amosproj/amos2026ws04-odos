@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { PAGE_BREAK_MERGED } from "../structure";
 import { box, el, modelOf } from "../testing";
-import DemoApp, { Artifacts, ResultView } from "./DemoApp";
+import type { ReactElement, ReactNode } from "react";
+import DemoApp, { Artifacts, ResultView, SourceDetail } from "./DemoApp";
 import type { DemoResult } from "./fixtures";
 
 // the PDF viewer needs a browser (pdf.js, canvas): replaced by a stub that shows what the demo hands to it
@@ -57,14 +59,40 @@ const preview = (html: string, title: string) => {
   return { card, text: pre.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&") };
 };
 
-describe("upload screen", () => {
+describe("workspace page", () => {
   const html = renderToStaticMarkup(<DemoApp />);
-  it("shows only the title, the PDF upload and the Process Document button", () => {
-    expect(html).toContain(">ODOS</h1>");
+  it("has the ODOS header: the logo with its subtitle and a minimal navigation", () => {
+    const header = /<header class="site-nav">([\s\S]*?)<\/header>/.exec(html)![1];
+    expect(header).toContain('aria-label="ODOS, ontology-driven operating system"');
+    expect(header).toMatch(/<span class="logo-mark"[^>]*><span><b>O<\/b>D<\/span><span><b>O<\/b>S<\/span><\/span>/); // the stacked O D / O S
+    expect(header).toContain("ONTOLOGY-DRIVEN<br/>OPERATING SYSTEM");
+    expect(header.match(/<a /g)).toHaveLength(3); // logo, Documents, Processing: internal links only
+    expect(header).toMatch(/<a [^>]*href="#library"[^>]*aria-current="page"[^>]*>Documents<\/a>/);
+    expect(header).toMatch(/<a [^>]*href="#upload"[^>]*>Processing<\/a>/);
+    expect(header).toContain('href="#top"'); // the logo stays on this page
+  });
+  it("links nowhere outside the application: no external website link anywhere on the page", () => {
+    expect(html).not.toMatch(/href="(https?:)?\/\//);
+    expect(html).not.toMatch(/odos-chi|vercel|ODOS website|target="_blank"/i);
+    for (const href of html.matchAll(/href="([^"]*)"/g)) expect(href[1]).toMatch(/^#/);
+  });
+  it("is a workspace, not a landing page: heading, description, upload, then the library", () => {
+    expect(html).toMatch(/<h1[^>]*>Your documents<\/h1>/);
+    expect(html).toContain("Upload, process and review German and EU legal documents.");
     expect(html).toContain('type="file"');
+    expect(html).toContain('accept="application/pdf,.pdf"');
     expect(html).toContain("Choose a PDF or drop it here");
-    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Process Document<\/button>/); // nothing chosen yet
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Process document<\/button>/); // nothing chosen yet
     expect(html).not.toContain('role="alert"');
+    expect(html).toContain('id="upload"');
+    expect(html).toContain('id="library"');
+    expect(html.indexOf("Your documents")).toBeLessThan(html.indexOf("Document library"));
+    expect(html).not.toMatch(/hero|pricing|testimonial|statistics/i);
+  });
+  it("shows the document library below, loading its data from the backend", () => {
+    expect(html).toContain(">Document library</h2>");
+    expect(html).toContain("Loading documents…"); // the first render, before the list request has answered
+    expect(html).not.toContain("demo-docitem"); // no example records
   });
 });
 
@@ -76,7 +104,9 @@ describe("result view", () => {
     expect(html).toContain('aria-label="Recognized legal structure"');
     // the docbar: no "precomputed result" chip since the prepared example mode was removed, every result is live
     const docbar = /<div class="docbar">([\s\S]*?)<\/div>/.exec(html)![1];
-    expect(docbar.replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["ODOS", "Musterbauordnung (MBO)", "Choose another PDF"]);
+    expect(docbar).toContain('aria-label="ODOS, ontology-driven operating system"'); // the compact logo, without the subtitle
+    expect(docbar).not.toContain("ONTOLOGY-DRIVEN");
+    expect(docbar.replace(/<span class="logo-mark"[\s\S]*?<\/span><\/span>/, "").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Musterbauordnung (MBO)", "Completed", "Back to documents"]);
     expect(html).toContain("Legal structure");
     expect(html).toContain("Artifacts");
     expect(html.match(/role="tab"/g)).toHaveLength(2); // Legal structure and Artifacts only
@@ -93,7 +123,7 @@ describe("result view", () => {
 describe("Custom Legal JSON preview and downloads", () => {
   const html = renderToStaticMarkup(<Artifacts result={result} />);
   it("shows only the heading, the download and the preview", () => {
-    expect(html.replace(/<pre[\s\S]*<\/pre>/, "<pre/>").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Custom Legal JSON", "Download"]);
+    expect(html.replace(/<pre[\s\S]*<\/pre>/, "<pre/>").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Custom Legal JSON", "Rule JSON", "Custom Legal JSON", "Download"]);
   });
   it("previews the Legal JSON 2.0 excerpt exactly as the downloaded file: Zweiter Teil, § 6, Absatz 1 with both Nummern, Absatz 2", () => {
     const { text } = preview(html, "Custom Legal JSON");
@@ -112,5 +142,44 @@ describe("Custom Legal JSON preview and downloads", () => {
   });
   it("shows no Akoma Ntoso XML", () => {
     expect(html).not.toMatch(/Akoma|\.akn\.xml/);
+  });
+});
+
+
+// The detail of a selected element is a plain function component: its element tree is searched for the page buttons.
+const allElements = (node: ReactNode, found: ReactElement<{ [key: string]: unknown }>[] = []) => {
+  if (Array.isArray(node)) node.forEach((n) => allElements(n, found));
+  else if (node && typeof node === "object" && "props" in node) {
+    found.push(node as ReactElement<{ [key: string]: unknown }>);
+    allElements((node as ReactElement<{ children?: ReactNode }>).props.children, found);
+  }
+  return found;
+};
+
+describe("Legal structure detail of an element that runs over a page break (MBO § 6 (1), pages 9 and 10)", () => {
+  const absatz = result.model.elements.find((e) => e.id === ABS)!;
+  const merged = { ...absatz, hygiene_flags: [PAGE_BREAK_MERGED], original_text: "(1) 1 Vor den Außenwänden sind Abstandsflächen von\noberirdischen Gebäuden freizuhalten." };
+
+  it("shows the complete reconstructed text and every page it is on", () => {
+    const html = renderToStaticMarkup(<SourceDetail element={merged} page={9} onGoToPage={() => {}} />);
+    expect(html).toContain("(1) 1 Vor den Außenwänden sind Abstandsflächen von oberirdischen Gebäuden freizuhalten.");
+    expect(html).not.toContain("von\noberirdischen");
+    expect(html.match(/>p\. \d+</g)).toEqual([">p. 9<", ">p. 10<"]);
+    expect(html).toMatch(/aria-current="page"[^>]*>p\. 9</); // the page the viewer shows
+  });
+
+  it("navigates the PDF to the clicked page", () => {
+    const visited: number[] = [];
+    const tree = SourceDetail({ element: merged, page: 9, onGoToPage: (p) => visited.push(p) });
+    const buttons = allElements(tree).filter((n) => n.type === "button");
+    expect(buttons.map((b) => b.props.children)).toEqual([["p. ", 9], ["p. ", 10]]);
+    (buttons[1].props.onClick as () => void)();
+    (buttons[0].props.onClick as () => void)();
+    expect(visited).toEqual([10, 9]);
+  });
+
+  it("keeps the text of an element that does not run over a page break as it is", () => {
+    const html = renderToStaticMarkup(<SourceDetail element={{ ...absatz, original_text: "zeile eins\nzeile zwei", pages: [3] }} page={3} onGoToPage={() => {}} />);
+    expect(html).toContain("zeile eins\nzeile zwei");
   });
 });

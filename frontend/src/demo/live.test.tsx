@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { highlightsOf } from "../structure";
 import { box, el, modelOf } from "../testing";
-import DemoApp, { Artifacts, ResultView } from "./DemoApp";
-import { nodeJson, processPdf, releaseJob, type Job } from "./live";
+import DemoApp, { ArtifactSwitch, Artifacts, ResultView, RuleJsonPreview } from "./DemoApp";
+import { ProcessingError, STAGE_LABELS, deleteStoredDocument, listDocuments, openStoredDocument, nodeJson, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, stageLabel, type Job } from "./live";
 
 vi.mock("../components/PdfViewer", () => ({
   PdfViewer: (p: { url: string; page: number; highlights: unknown[] }) => (
@@ -43,7 +43,8 @@ function backend(states: Job[], files: Record<string, unknown>) {
     if (init?.method === "POST") return json(states.shift(), 202);
     if (init?.method === "DELETE") return new Response(null, { status: 204 });
     const file = /\/files\/([^?]+)$/.exec(url)?.[1];
-    return file ? json(files[file]) : json(states.shift());
+    if (file) return Object.prototype.hasOwnProperty.call(files, file) ? json(files[file]) : new Response(null, { status: 404 });
+    return json(states.shift());
   });
   vi.stubGlobal("fetch", fetch);
   return calls;
@@ -64,18 +65,60 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+// Minimal records that validate against backend/schemas/rule-json/rule.schema.json.
+const ruleRecord = (id: string, type: string, summary: string, elementIds: string[]) => ({
+  schemaVersion: "2.0", id,
+  source: { documentId: "beispielgesetz", elements: elementIds.map((elementId) => ({ elementId })) },
+  classification: { type, summary },
+  requirements: [{ kind: "unresolved", text: "Dieses Gesetz gilt.", reason: "Fixture only." }],
+  review: { status: "draft" },
+});
+const ruleSet = [
+  ruleRecord("rule-a", "obligation", "First fixture rule.", [ABS]),
+  ruleRecord("rule-b", "prohibition", "Second fixture rule.", [ABS, "doc/par-1"]),
+  ruleRecord("rule-c", "permission", "Other element rule.", ["doc/par-1"]),
+];
+
+describe("Rule JSON source mapping", () => {
+  it("switches the selected artifact to Rule JSON", () => {
+    let selected: "legal" | "rule" = "legal";
+    const selector = ArtifactSwitch({ selected, onChange: (next) => { selected = next; } });
+    const ruleButton = selector.props.children[1];
+    ruleButton.props.onClick();
+    expect(selected).toBe("rule");
+  });
+
+  it("maps every rule to its stable source element ID and returns multiple matches", () => {
+    expect(rulesForElement(ruleSet, ABS).map((rule) => rule.id)).toEqual(["rule-a", "rule-b"]);
+    expect(rulesForElement(ruleSet, "doc/par-1").map((rule) => rule.id)).toEqual(["rule-b", "rule-c"]);
+  });
+
+  it("accepts a collection wrapper and returns no entries for a missing artifact or unmatched element", () => {
+    expect(ruleEntries({ rules: ruleSet })).toEqual(ruleSet);
+    expect(rulesForElement(null, ABS)).toEqual([]);
+    expect(rulesForElement(ruleSet, "doc/missing")).toEqual([]);
+  });
+
+  it("ignores records that are not Rule JSON 2.0, such as the removed 1.0 shape", () => {
+    const legacy = { schemaVersion: "1.0", id: "rule-old", type: "obligation", source: [{ elementId: ABS }], summary: "Legacy rule." };
+    expect(ruleEntries([legacy, ruleSet[0]]).map((rule) => rule.id)).toEqual(["rule-a"]);
+    expect(rulesForElement({ rules: [legacy] }, ABS)).toEqual([]);
+  });
+});
+
 describe("live processing through the backend", () => {
   it("uploads the PDF, polls the job through its stages and loads the document model and Legal JSON", async () => {
     const { result, calls, stages } = await run([job("queued"), job("processing", { stage: "extracting" }), job("processing", { stage: "normalizing" }), done]);
     const r = await result;
-    expect(stages).toEqual(["uploading", "queued", "extracting", "normalizing"]);
+    expect(stages).toEqual(["uploading", "queued", "extracting", "normalizing", "completed"]);
     expect(calls).toEqual([
       "POST /api/jobs", "GET /api/jobs/j1", "GET /api/jobs/j1", "GET /api/jobs/j1",
-      "GET /api/jobs/j1/files/document_model.json", "GET /api/jobs/j1/files/document.json",
+      "GET /api/jobs/j1/files/document_model.json", "GET /api/jobs/j1/files/document.json", "GET /api/jobs/j1/files/rules.json",
     ]);
     expect(r.title).toBe("Beispielgesetz");
     expect(r.download).toEqual({ href: "/api/jobs/j1/files/document.json?download=true", name: "Gesetz.legal.json" });
     expect(r.live?.legal).toEqual(legal); // kept unchanged: the download is the complete canonical document.json
+    expect(r.live?.ruleJson).toBeNull(); // optional artifact missing means no extracted rules
     expect(r.json).toContain('"germanType": "Paragraph"');
     expect(r.json).not.toContain("nativeType");
   });
@@ -83,7 +126,22 @@ describe("live processing through the backend", () => {
   it("reports an unsupported structure with the backend's message and removes the job", async () => {
     const { result, calls } = await run([job("unsupported", { message: "The document type could not be recognized." })]);
     await expect(result).rejects.toThrow("The document type could not be recognized.");
+    await expect(result).rejects.toMatchObject({ name: "ProcessingError", kind: "unsupported" });
     expect(calls).toContain("DELETE /api/jobs/j1");
+  });
+
+  it("never reports completion or loads results before the backend confirms it", async () => {
+    for (const status of ["failed", "unsupported"] as const) {
+      const { result, calls, stages } = await run([job("queued"), job("processing", { stage: "extracting" }), job(status, { message: "No result." })]);
+      await expect(result).rejects.toBeInstanceOf(ProcessingError);
+      await expect(result).rejects.toMatchObject({ kind: status, message: "No result." });
+      expect(stages).not.toContain("completed");
+      expect(calls.some((c) => c.includes("/files/"))).toBe(false);
+    }
+    const { result, calls, stages } = await run([job("queued"), job("processing", { stage: "normalizing" }), done]);
+    await result;
+    expect(stages.at(-1)).toBe("completed");
+    expect(calls.findIndex((c) => c.includes("/files/"))).toBeGreaterThan(calls.lastIndexOf("GET /api/jobs/j1")); // results only after the last poll
   });
 
   it("leaves jobs the backend keeps in its database", async () => {
@@ -105,6 +163,7 @@ describe("live processing through the backend", () => {
     await expect((await run([job("failed", { message: "The PDF could not be processed." })])).result).rejects.toThrow("The PDF could not be processed.");
     vi.stubGlobal("fetch", vi.fn(async () => json({ detail: "The PDF is larger than 50 MB." }, 413)));
     await expect(processPdf(new File(["x"], "big.pdf"), () => {})).rejects.toThrow("The PDF is larger than 50 MB.");
+    await expect(processPdf(new File(["x"], "big.pdf"), () => {})).rejects.not.toBeInstanceOf(ProcessingError); // refused before any job existed
   });
 
   it("says when the backend is not running", async () => {
@@ -112,6 +171,117 @@ describe("live processing through the backend", () => {
     await expect(processPdf(new File(["x"], "a.pdf"), () => {})).rejects.toThrow("The ODOS backend is not reachable");
     vi.stubGlobal("fetch", vi.fn(async () => new Response("", { status: 502 }))); // the dev server's proxy without a backend
     await expect(processPdf(new File(["x"], "a.pdf"), () => {})).rejects.toThrow("The ODOS backend is not reachable");
+  });
+});
+
+describe("processing stage wording", () => {
+  it("describes the stages the backend reports in user-facing words", () => {
+    expect(stageLabel("uploading")).toBe("Uploading document…");
+    expect(stageLabel("extracting")).toBe("Analyzing document structure…");
+    expect(stageLabel("normalizing")).toBe("Preparing structured legal data…");
+    expect(stageLabel("completed")).toContain("Document processing complete.");
+    expect(stageLabel("something-new")).toBe("Processing document…"); // an unknown stage still gets neutral wording
+  });
+
+  it("names no implementation detail and invents no progress", () => {
+    for (const label of Object.values(STAGE_LABELS)) expect(label).not.toMatch(/docling|\d+\s*%/i);
+  });
+});
+
+describe("PDF selection", () => {
+  it("accepts PDFs by type or by name", () => {
+    expect(pdfProblem(new File(["%PDF-1.7"], "a.pdf", { type: "application/pdf" }))).toBeNull();
+    expect(pdfProblem(new File(["%PDF-1.7"], "B.PDF"))).toBeNull(); // the browser reported no type
+  });
+
+  it("rejects other files and empty files", () => {
+    expect(pdfProblem(new File(["hello"], "notes.txt", { type: "text/plain" }))).toContain("Only PDF files");
+    expect(pdfProblem(new File(["x"], "image.png", { type: "image/png" }))).toContain("Only PDF files");
+    expect(pdfProblem(new File([], "empty.pdf", { type: "application/pdf" }))).toContain("empty");
+  });
+});
+
+describe("stored documents", () => {
+  const stored = [{ id: "j2", filename: "Zwei.pdf", status: "completed", created_at: "2026-11-11T10:00:00Z" }];
+
+  it("lists the documents from GET /api/documents", async () => {
+    const fetch = vi.fn(async () => json(stored));
+    vi.stubGlobal("fetch", fetch);
+    expect(await listDocuments()).toEqual(stored);
+    expect(fetch).toHaveBeenCalledWith("/api/documents", undefined);
+  });
+
+  /** A fake backend for stored documents: the job, its result files and the PDF; every request is recorded. */
+  function backendWith(jobState: Job, extra: Record<string, () => Response> = {}) {
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push(`${init?.method ?? "GET"} ${url}`);
+      const route = Object.keys(extra).find((k) => url.endsWith(k));
+      if (route) return extra[route]();
+      if (url.endsWith("/files/document_model.json")) return json(model);
+      if (url.endsWith("/files/document.json")) return json(legal);
+      if (url.endsWith("/files/rules.json")) return new Response(null, { status: 404 }); // no extracted rules
+      if (url.endsWith("/pdf")) return new Response("%PDF-1.7");
+      return json(jobState);
+    }));
+    return calls;
+  }
+
+  it("opens a stored document from its job, results and PDF, without uploading or polling", async () => {
+    const calls = backendWith(job("completed", { persistent: true }));
+    const { result, pdf } = await openStoredDocument("j1");
+    expect(calls.filter((c) => c.startsWith("POST"))).toEqual([]); // no new job
+    expect(calls[0]).toBe("GET /api/jobs/j1");
+    expect(calls.slice(1).sort()).toEqual([
+      "GET /api/jobs/j1/files/document.json", "GET /api/jobs/j1/files/document_model.json", "GET /api/jobs/j1/files/rules.json", "GET /api/jobs/j1/pdf",
+    ]);
+    expect(result.title).toBe("Beispielgesetz");
+    expect(result.live).toMatchObject({ jobId: "j1", persistent: true, legal, ruleJson: null });
+    expect(result.download.href).toBe("/api/jobs/j1/files/document.json?download=true");
+    expect(await pdf.text()).toBe("%PDF-1.7");
+  });
+
+  it("does not open a document that has no completed result", async () => {
+    for (const [status, message] of [["queued", /still being processed/], ["processing", /still being processed/], ["failed", /no result/], ["unsupported", /no result/]] as const) {
+      const calls = backendWith(job(status));
+      await expect(openStoredDocument("j1")).rejects.toThrow(message);
+      expect(calls).toEqual(["GET /api/jobs/j1"]); // and neither results nor PDF are requested
+    }
+    backendWith(job("failed", { message: "The PDF could not be processed." }));
+    await expect(openStoredDocument("j1")).rejects.toThrow("The PDF could not be processed.");
+  });
+
+  it("explains what is missing instead of opening a half-empty result", async () => {
+    backendWith(job("completed"), { "/pdf": () => json({ detail: "The original PDF is no longer available." }, 404) });
+    await expect(openStoredDocument("j1")).rejects.toThrow("The original PDF is no longer available.");
+    backendWith(job("completed"), { "/files/document.json": () => json({ detail: "The result file is no longer available." }, 404) });
+    await expect(openStoredDocument("j1")).rejects.toThrow("The result file is no longer available.");
+    vi.stubGlobal("fetch", vi.fn(async () => json({ detail: "Unknown job." }, 404)));
+    await expect(openStoredDocument("gone")).rejects.toThrow("Unknown job.");
+  });
+
+  it("deletes one stored document and resolves only when the backend confirms", async () => {
+    const calls = backendWith(job("completed"), { "/jobs/j1": () => new Response(null, { status: 204 }) });
+    await expect(deleteStoredDocument("j1")).resolves.toBeUndefined();
+    expect(calls).toEqual(["DELETE /api/jobs/j1"]);
+  });
+
+  it("reports a refused or failed deletion instead of pretending it worked", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({ detail: "Cannot delete a running job." }, 409)));
+    await expect(deleteStoredDocument("j1")).rejects.toThrow("Cannot delete a running job.");
+    vi.stubGlobal("fetch", vi.fn(async () => json({ detail: "Unknown job." }, 404)));
+    await expect(deleteStoredDocument("j1")).rejects.toThrow("Unknown job.");
+    vi.stubGlobal("fetch", vi.fn(async () => json({ detail: "The ODOS database is not available." }, 503)));
+    await expect(deleteStoredDocument("j1")).rejects.toThrow("The ODOS database is not available.");
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("Failed to fetch"); }));
+    await expect(deleteStoredDocument("j1")).rejects.toThrow("not reachable");
+  });
+
+  it("reports the backend's explanation when the database is down, and an unreachable backend", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({ detail: "The ODOS database is not available." }, 503)));
+    await expect(listDocuments()).rejects.toThrow("The ODOS database is not available.");
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("Failed to fetch"); }));
+    await expect(listDocuments()).rejects.toThrow("The ODOS backend is not reachable");
   });
 });
 
@@ -123,7 +293,7 @@ describe("live result view", async () => {
 
   it("keeps the layout and shows no status badges", () => {
     const html = renderToStaticMarkup(<ResultView result={r} pdfUrl="blob:pdf" onReset={() => {}} />);
-    for (const s of ['aria-label="Original PDF"', 'data-url="blob:pdf"', 'aria-label="Recognized legal structure"', "Legal structure", "Artifacts", "Choose another PDF"]) {
+    for (const s of ['aria-label="Original PDF"', 'data-url="blob:pdf"', 'aria-label="Recognized legal structure"', "Legal structure", "Artifacts", "Back to documents"]) {
       expect(html).toContain(s);
     }
     expect(html).not.toMatch(/Processing details|processed as|schema-valid|parser warning|precomputed result|class="chip/);
@@ -138,22 +308,66 @@ describe("live result view", async () => {
     expect(html).not.toMatch(/Preview:|shown as/); // no explanatory text above the JSON
   });
 
+  it("loads persisted Rule JSON for this job and prepares its collection download", async () => {
+    const { result: loaded } = await run([done], { "document_model.json": model, "document.json": legal, "rules.json": ruleSet });
+    const withRules = await loaded;
+    expect(withRules.live?.ruleJson).toEqual(ruleSet);
+    expect(withRules.live?.ruleDownload).toEqual({ href: "/api/jobs/j1/files/rules.json?download=true", name: "Gesetz.rules.json" });
+    const html = renderToStaticMarkup(<Artifacts result={withRules} element={withRules.model.elements.find((e) => e.id === ABS)} full={false} onFull={() => {}} />);
+    expect(html).toContain("Custom Legal JSON");
+    expect(html).toContain("Rule JSON");
+    expect(html).toContain('aria-label="Artifact type"');
+  });
+
+  it("shows all rules mapped to the selected element and keeps their source references", () => {
+    const html = renderToStaticMarkup(<RuleJsonPreview result={{ ...r, live: { ...r.live!, ruleJson: ruleSet } }} element={abs} full={false} />);
+    const shown = JSON.parse(/<pre[^>]*>([\s\S]*?)<\/pre>/.exec(html)![1].replace(/&quot;/g, '"'));
+    expect(shown.map((rule: { id: string }) => rule.id)).toEqual(["rule-a", "rule-b"]);
+    expect(shown[1].source).toEqual(ruleSet[1].source);
+  });
+
+  it("shows element and document empty states when rules are absent", () => {
+    const withRules = { ...r, live: { ...r.live!, ruleJson: ruleSet } };
+    expect(renderToStaticMarkup(<RuleJsonPreview result={withRules} element={el("doc/no-rules", "paragraph", "doc", [])} full={false} />)).toContain("No Rule JSON available for this element.");
+    expect(renderToStaticMarkup(<RuleJsonPreview result={r} element={abs} full={false} />)).toContain("No Rule JSON available for this document.");
+  });
+
+  it("shows all available rules in full-document mode", () => {
+    const html = renderToStaticMarkup(<RuleJsonPreview result={{ ...r, live: { ...r.live!, ruleJson: { rules: ruleSet } } }} element={abs} full />);
+    const shown = JSON.parse(/<pre[^>]*>([\s\S]*?)<\/pre>/.exec(html)![1].replace(/&quot;/g, '"'));
+    expect(shown.map((rule: { id: string }) => rule.id)).toEqual(["rule-a", "rule-b", "rule-c"]);
+    expect(shown[0].source).toEqual(ruleSet[0].source);
+  });
+
+  it("offers the Rule JSON download only when real rule entries are available", () => {
+    const withRules = { ...r, live: { ...r.live!, ruleJson: ruleSet } };
+    const available = renderToStaticMarkup(<Artifacts result={withRules} element={abs} full={false} onFull={() => {}} artifactView="rule" />);
+    expect(available).toContain('href="/api/jobs/j1/files/rules.json?download=true" download="Gesetz.rules.json"');
+    expect(available).toContain("rule-a");
+    const missing = renderToStaticMarkup(<Artifacts result={r} element={abs} full={false} onFull={() => {}} artifactView="rule" />);
+    expect(missing).not.toContain("rules.json?download=true");
+    expect(missing).toContain("No Rule JSON available for this document.");
+  });
+
   it("offers a switch between the selected element and the full document", () => {
     const pressed = (html: string) => [...html.matchAll(/aria-pressed="(\w+)">([^<]+)</g)].map((m) => [m[2], m[1]]);
     const selected = renderToStaticMarkup(<Artifacts result={r} element={abs} full={false} onFull={() => {}} />);
-    expect(pressed(selected)).toEqual([["Selected element", "true"], ["Full document", "false"]]);
+    expect(pressed(selected).filter(([label]) => label === "Selected element" || label === "Full document")).toEqual([["Selected element", "true"], ["Full document", "false"]]);
     expect(selected).toContain("&quot;id&quot;: &quot;doc/par-1/abs-1&quot;"); // the element's node only
     expect(selected).not.toContain("schemaVersion");
     const full = renderToStaticMarkup(<Artifacts result={r} element={abs} full onFull={() => {}} />);
-    expect(pressed(full)).toEqual([["Selected element", "false"], ["Full document", "true"]]);
+    expect(pressed(full).filter(([label]) => label === "Selected element" || label === "Full document")).toEqual([["Selected element", "false"], ["Full document", "true"]]);
     const text = /<pre[^>]*>([\s\S]*?)<\/pre>/.exec(full)![1].replace(/&quot;/g, '"');
     expect(JSON.parse(text)).toEqual({ ...legal, structure: [{ ...legal.structure[0], nativeType: undefined, germanType: "Paragraph", children: [{ ...legal.structure[0].children[0], nativeType: undefined, germanType: "Absatz" }] }] });
     expect(full).toContain('href="/api/jobs/j1/files/document.json?download=true"'); // the download is the same either way
     expect(selected).toContain('href="/api/jobs/j1/files/document.json?download=true"');
   });
 
-  it("offers no switch for the prepared examples", () => {
-    expect(renderToStaticMarkup(<Artifacts result={{ ...r, live: undefined }} />)).not.toContain("aria-pressed");
+  it("keeps selected-element and full-document controls limited to live jobs", () => {
+    const html = renderToStaticMarkup(<Artifacts result={{ ...r, live: undefined }} />);
+    expect(html).toContain("Rule JSON");
+    expect(html).not.toContain("Selected element");
+    expect(html).not.toContain("Full document");
   });
 
   it("shows the whole document in presentation form when nothing is selected", () => {
@@ -170,6 +384,12 @@ describe("upload screen", () => {
   it("has no document type choice: the backend recognizes the type", () => {
     const html = renderToStaticMarkup(<DemoApp />);
     expect(html).not.toMatch(/Document type|<select|<option/);
+  });
+
+  it("starts idle: no processing status, no error, nothing to submit yet", () => {
+    const html = renderToStaticMarkup(<DemoApp />);
+    expect(html).not.toMatch(/role="progressbar"|role="alert"|Docling/);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Process document<\/button>/);
   });
 });
 

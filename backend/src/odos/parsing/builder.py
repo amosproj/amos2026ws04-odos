@@ -81,20 +81,36 @@ class StructureBuilder:
         return el
 
     def extend(self, el: Element, item: SourceItem) -> None:
-        """Append a later, unsplit source item to an existing element (its text continued on the next page). Like a
-        merged item in `add`: the source pieces stay one per line in `original_text`, every item keeps its own
-        reference, box and repairs, and `content_text` reads as one text."""
+        """Append the text that runs on over a page break (see `parsing.continuation`) to the element that holds its
+        beginning. Like a merged item in `add`: the source pieces stay one per line in `original_text`, every item keeps
+        its own reference, box, source span and repairs, and `content_text` reads as one text. Highlighting stays exact
+        when every piece is a whole item or has exact line rectangles; otherwise the viewer falls back to the
+        provenance boxes (marked approximate)."""
         before = el.original_text
-        el.source_refs.append(item.ref)
+        partial_new = item.span is not None or bool(item.parts)
+        partial_prev = bool(el.source_spans or el.highlight_boxes)
+        # per piece: its exact rectangles (a whole item's provenance is exact), or None when only the box of a larger item is known
+        exact_prev = list(el.highlight_boxes) if el.highlight_boxes else (None if el.source_spans else list(el.provenance))
+        exact_new = list(item.highlight_boxes) if item.highlight_boxes else (None if partial_new else list(item.provenance))
+        if partial_new or partial_prev:
+            self._whole_spans(el)  # the element's earlier whole items become explicit spans beside the partial ones
+        el.source_refs += [r for r in [item.ref, *(s.ref for s in item.parts)] if r not in el.source_refs]
         el.provenance.extend(item.provenance)
         el.pages = sorted({*el.pages, *item.pages})
-        el.original_text += "\n" + item.orig
+        el.original_text += "\n" + _piece_text(item)
         el.content_text = f"{el.content_text} {item.orig}" if el.content_text else item.orig
+        if partial_new or partial_prev:
+            el.source_spans.extend(_spans_of(item))
+            exact = exact_prev is not None and exact_new is not None
+            el.highlight_boxes = [*exact_prev, *exact_new] if exact else []
         el.hygiene_flags += [f for f in item.hygiene_flags if f not in el.hygiene_flags]
         if el.docling_text is not None or item.docling_orig is not None:
             el.docling_text = "\n".join([el.docling_text if el.docling_text is not None else before,
                                          item.docling_orig if item.docling_orig is not None else item.orig])  # fmt: skip
         el.text_repairs += item.text_repairs
+        for f in item.boundary_flags:
+            el.uncertain = True
+            el.uncertainty_reasons.append(f"segment_boundary_uncertain:{f}")
         for r in item.text_repairs:
             if r.status == "unresolved" and f"source_text_uncertain:{r.rule}" not in el.uncertainty_reasons:
                 el.uncertain = True
@@ -102,6 +118,20 @@ class StructureBuilder:
         self._warn_unresolved(el, item.text_repairs)
         st, _ = search_normalize(el.original_text)
         el.search_text = st if st != el.original_text else None
+
+    @staticmethod
+    def _whole_spans(el: Element) -> None:
+        """Give the whole source items of an element that has no spans yet an explicit span each, so that spans of
+        partial items can stand beside them. The pieces are the lines of `original_text` (one per source item)."""
+        if el.source_spans or not el.source_refs:
+            return
+        pieces = el.original_text.split("\n")
+        if len(pieces) != len(el.source_refs):
+            return
+        for i, (ref, text) in enumerate(zip(el.source_refs, pieces)):
+            prov = el.provenance[i] if len(el.provenance) == len(pieces) else None
+            el.source_spans.append(SourceSpan(ref=ref, start=0, end=len(text), page_no=prov.page_no if prov else None,
+                                              bbox=prov.bbox if prov else None))  # fmt: skip
 
     def _warn_unresolved(self, el: Element, repairs) -> None:
         for r in repairs:
@@ -129,6 +159,27 @@ def furniture_element(item: SourceItem, eid: str, type_: T) -> Element:
                  source_refs=[item.ref], docling_label=item.label, pages=item.pages, provenance=item.provenance)  # fmt: skip
     apply_source_fields(el, [item])
     return el
+
+
+def _piece_text(item: SourceItem) -> str:
+    """The item's source text as the model keeps it: one line per verbatim piece of a reading-order repaired item."""
+    if not item.parts:
+        return item.orig
+    pieces, pos = [], 0
+    for s in item.parts:
+        pieces.append(item.orig[pos : pos + s.end - s.start])
+        pos += s.end - s.start + 1
+    return "\n".join(pieces)
+
+
+def _spans_of(item: SourceItem) -> list[SourceSpan]:
+    """The spans an item contributes to an element whose source is partly partial (see `apply_source_fields`)."""
+    if item.parts:
+        return list(item.parts)
+    s, e = item.span if item.span is not None else (0, len(item.orig))
+    prov = item.provenance[0] if item.provenance else None
+    return [SourceSpan(ref=item.ref, start=s, end=e, page_no=prov.page_no if prov else None,
+                       bbox=prov.bbox if prov else None)]  # fmt: skip
 
 
 def apply_source_fields(el: Element, parts: list[SourceItem]) -> None:

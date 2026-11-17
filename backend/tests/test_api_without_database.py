@@ -1,5 +1,6 @@
 """The API with persistence disabled (the original in-memory mode) and its database error handling; no PostgreSQL."""
 
+import json
 from pathlib import Path
 from unittest.mock import patch
 
@@ -10,11 +11,11 @@ from fastapi.testclient import TestClient
 
 import odos.api
 from odos.api import DATABASE_UNAVAILABLE, app
-from odos.artifact_names import LEGAL_JSON
+from odos.artifact_names import LEGAL_JSON, RULE_JSON
 from odos.database import connect
 
 REPOSITORY_CALLS = ("create_document", "delete_document", "finish_document", "list_documents",
-                    "mark_interrupted_jobs", "update_document_status")
+                    "get_pdf_storage_key", "list_recent_documents", "mark_interrupted_jobs", "update_document_status")
 
 
 @pytest.fixture
@@ -37,6 +38,12 @@ def test_in_memory_mode_works_without_database(no_database):
             job = wait_for(client, upload(client).json()["id"])
             assert (job["status"], job["persistent"]) == ("completed", False)  # the frontend deletes it when done
             assert client.get(f"/api/jobs/{job['id']}/files/{LEGAL_JSON}").status_code == 200
+            assert client.get(f"/api/jobs/{job['id']}/files/{RULE_JSON}").status_code == 404
+            rules = [{"schemaVersion": "1.0", "id": "rule-1", "type": "obligation", "source": [{"elementId": "art-1"}]}]
+            (storage / job["id"] / RULE_JSON).write_text(json.dumps(rules), encoding="utf-8")
+            assert client.get(f"/api/jobs/{job['id']}/files/{RULE_JSON}").json() == rules
+            download = client.get(f"/api/jobs/{job['id']}/files/{RULE_JSON}?download=true")
+            assert "test.rules.json" in download.headers["content-disposition"]
             assert not (storage / job["id"] / "source.pdf").exists()  # the upload is not kept
             assert client.delete(f"/api/jobs/{job['id']}").status_code == 204
             assert client.get(f"/api/jobs/{job['id']}").status_code == 404
@@ -55,6 +62,52 @@ def test_upload_validation_is_unchanged(no_database):
     with TestClient(app) as client:
         assert upload(client, b"not a pdf").status_code == 415
         assert upload(client, b"").status_code == 415
+
+
+def test_original_pdf_is_not_kept_without_persistence(no_database):
+    with patch("odos.api.run_pipeline", side_effect=fake_pipeline()):
+        with TestClient(app) as client:
+            job_id = wait_for(client, upload(client).json()["id"])["id"]
+            response = client.get(f"/api/jobs/{job_id}/pdf")
+            assert (response.status_code, response.json()["detail"]) == (404, "The original PDF is no longer available.")
+            assert client.get("/api/jobs/unknown/pdf").status_code == 404
+
+
+def test_document_list_is_empty_without_persistence(no_database):
+    with TestClient(app) as client:
+        response = client.get("/api/documents")
+    assert (response.status_code, response.json()) == (200, [])
+
+
+def test_document_list_while_database_is_down_answers_503(monkeypatch, tmp_path):
+    monkeypatch.setenv("ODOS_DATABASE_ENABLED", "1")
+    monkeypatch.setenv("ODOS_STORAGE_DIR", str(tmp_path))
+    monkeypatch.setattr(odos.api, "mark_interrupted_jobs", lambda: None)
+    monkeypatch.setattr(odos.api, "list_documents", lambda: [])
+
+    def down(*_args):
+        raise psycopg.OperationalError("connection refused")
+
+    monkeypatch.setattr(odos.api, "list_recent_documents", down)
+    with TestClient(app) as client:
+        response = client.get("/api/documents")
+    assert (response.status_code, response.json()["detail"]) == (503, DATABASE_UNAVAILABLE)
+
+
+def test_pdf_lookup_while_database_is_down_answers_503(monkeypatch, tmp_path):
+    monkeypatch.setenv("ODOS_DATABASE_ENABLED", "1")
+    monkeypatch.setenv("ODOS_STORAGE_DIR", str(tmp_path))
+    monkeypatch.setattr(odos.api, "mark_interrupted_jobs", lambda: None)
+    monkeypatch.setattr(odos.api, "list_documents", lambda: [{"id": "done", "filename": "a.pdf", "status": "completed",
+                                                               "stage": None, "message": None, "summary": {}}])
+
+    def down(*_args):
+        raise psycopg.OperationalError("connection refused")
+
+    monkeypatch.setattr(odos.api, "get_pdf_storage_key", down)
+    with TestClient(app) as client:
+        response = client.get("/api/jobs/done/pdf")
+    assert (response.status_code, response.json()["detail"]) == (503, DATABASE_UNAVAILABLE)
 
 
 def test_persistence_requires_a_storage_dir(monkeypatch):

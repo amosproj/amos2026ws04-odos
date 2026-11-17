@@ -1,110 +1,211 @@
-# ODOS – Ontology-Driven Operating System
+# ODOS: build, test and run with Docker
 
-AMOS WS 2026 research prototype for converting legal PDFs into structured legal JSON.
+These instructions cover the local Docker workflow for the current project:
+clone a clean repository, configure it, build the images, run automated tests,
+and open the frontend. PDF processing is not required for the startup check.
 
-Project mission: In this project we turn laws and standards into rules that a computer can check. We start with two documents, the EU Machinery Regulation and the German Musterbauordnung. We read their PDFs into a structured JSON, extract the rules from it, and check digital twins against those rules, so that only designs that follow the law pass. For Wisdom Bridge AI, we deliver a clear recommendation and a working prototype.
-
-Upload a PDF in the web app. The Python backend extracts its content with Docling, recognizes a German-law or German-language EU structure, and exports Custom Legal JSON 2.0. The frontend displays the original PDF, the recognized hierarchy with source highlighting, and JSON results.
-
-## Current scope
-
-- Live PDF processing through a FastAPI backend.
-- German-law and EU-legislation parsing profiles, developed around the Musterbauordnung and Regulation (EU) 2023/1230.
-- Custom Legal JSON for the selected element or the full document, with a full-document download.
-- A collapsible Docling Raw JSON view below Custom Legal JSON, provided the raw-output API and UI extension has been applied.
-- Runtime schema validation and diagnostic reports.
-
-The simplified version has no prepared-example mode. Automated backend and frontend tests are described in [development](Documentation/development.md#manual-verification). Recognition of a document's structure does not guarantee that every passage is parsed correctly. Review warnings and compare the output with the PDF.
-
-LLM-based rule extraction and digital-twin validation are future steps. Akoma Ntoso XML is not generated in this version.
+Run the commands in a **PowerShell terminal**, one at a time. Unless stated
+otherwise, stay in the repository root: the folder containing `compose.yaml`,
+`backend` and `frontend`. Stop and investigate if a command fails.
 
 ## Requirements
 
-- Python 3.12
-- Node.js 22.12 or newer, including npm
-- Network access for installation and the first Docling model download
-- A few GB of free disk space
+- Git and VS Code.
+- Docker Desktop running with Linux containers; on Windows, use the WSL 2 backend.
+- Internet access for container images and dependencies.
+- Several GB of free disk space and sufficient Docker memory. The existing
+  Docker guide suggests an 8 GB starting allocation for document processing;
+  actual needs depend on the workload.
+- Available host ports 5173, 8000 and 5433.
 
-Processing time depends on the computer and PDF. The first extraction may take considerably longer while Docling downloads its models.
+Python and Node.js run inside the containers; separate host installations are
+not required for this workflow. Stop any older ODOS stack before starting a new
+checkout: this configuration uses the fixed container name `odos-postgres`.
 
-## First-time setup on Windows
+## 1. Clone a clean checkout
 
-Extract the ZIP completely, or clone the repository. Open the project folder containing `backend` and `frontend` in VS Code. Execute commands one at a time and stop if a command fails.
-
-### Backend
-
-From the project root, open a PowerShell terminal:
-
-```powershell
-cd backend
-py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.lock
-.\.venv\Scripts\python.exe -m pip install --no-deps -e .
-.\.venv\Scripts\python.exe -m uvicorn odos.api:app --port 8000
-```
-
-Leave this terminal running. The backend API documentation is available at `http://127.0.0.1:8000/docs`. A 404 at `/` is expected: the backend does not serve the frontend page there.
-
-### Frontend
-
-Open a second PowerShell terminal at the project root:
+Use the repository's GitHub clone URL if it differs from the example below.
+The branch must contain the version you intend to demonstrate.
 
 ```powershell
-cd frontend
-npm ci
-npm run dev
+git clone --branch develop https://github.com/amosproj/amos2026ws04-odos.git odos-build-video
+cd odos-build-video
+git status
+git log -1 --oneline
 ```
 
-Open the URL printed by Vite, normally `http://localhost:5173`. Select a PDF and press **Process Document**. No demo-data generation is needed. Leave both terminals running.
+Open this folder in VS Code.
 
-The document type is recognized from legal structures such as German section headings or EU articles, not from the filename. Unrecognized or ambiguous documents are reported as unsupported.
+## 2. Configure the environment
 
-## Later starts
-
-Installation is only needed again when dependencies change or a new environment is created.
-
-In a terminal inside `backend`:
+For a new checkout:
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn odos.api:app --port 8000
+Copy-Item .env.example .env
 ```
 
-In another terminal inside `frontend`:
+Edit `.env`, keeping `POSTGRES_USER=odos` and `POSTGRES_DB=odos` for the
+commands below. Replace `POSTGRES_PASSWORD` with a local password. Do not
+commit this file or display its password in a recording.
+
+If `.env` already exists, edit it instead of overwriting it. Existing database
+volumes retain their original database credentials; editing `.env` does not
+change a password already stored in PostgreSQL.
+
+Validate the configuration without printing the resolved credentials:
 
 ```powershell
-npm run dev
+docker compose config --quiet
 ```
 
-Stop a server with **Ctrl+C**. If port 8000 is occupied, stop the previous backend instance before starting another. After a backend restart, process the PDF again: in this local setup job information is held in memory. Docker Compose stores jobs in PostgreSQL instead, see [DOCKER.md](DOCKER.md).
+No output normally means validation succeeded.
 
-## Results
-
-| File | Purpose |
-|---|---|
-| `docling_raw.json` | Original Docling extraction, including layout and source references |
-| `document_model.json` | Internal legal model with provenance, highlights and diagnostics |
-| `document.json` | Public Custom Legal JSON 2.0 |
-| `legal_json_validation_report.json` | Schema, structure and source-related validation results |
-
-The internal model links the public legal nodes to Docling items and PDF locations. Technical provenance remains in the model, rather than the public 2.0 schema.
-
-Legal JSON nodes give the source-language legal term in `germanType`, for example `Absatz`. The schema also accepts the earlier name `nativeType`, so documents written before the rename stay valid; the frontend preview shows either as `germanType`.
-
-If the Docling panel cannot load, check that `DOCLING_RAW` is imported and included in `RESULT_FILES` in `backend/src/odos/api.py`. Restart the backend after changing it and process the PDF again.
-
-## Build and manual verification
-
-From `frontend`:
+## 3. Build the images
 
 ```powershell
-npm run typecheck
-npm run build
-npm run preview
+docker compose build
 ```
 
-The build also checks TypeScript and writes the frontend to `dist/`. Preview normally runs at `http://localhost:4173` and still requires the backend. A separate production host needs API routing; the frontend build does not deploy Python.
+The frontend image runs `npm ci` and `npm run build`. The build performs
+TypeScript checking and generates `dist/`.
 
-Before a release, process both a German-law and EU example. Check the hierarchy, selected-element and full-document JSON, downloaded JSON, PDF highlights and collapsible raw output. Also check the error shown for an unsupported document. Runtime validation remains enabled in every run; the automated tests do not replace this check.
+The backend image installs its system and Python dependencies, installs the
+ODOS package and runs `pip check`.
+
+Continue only when the build succeeds.
+
+## 4. Start PostgreSQL and create the test database
+
+```powershell
+docker compose up -d postgres
+docker compose ps
+```
+
+Wait until PostgreSQL is healthy, then run:
+
+```powershell
+docker compose exec postgres createdb -U odos odos_test
+```
+
+Create this database once per PostgreSQL volume. A message that `odos_test`
+already exists means it is already available. Other errors need investigation.
+
+The tests enforce a database name ending in `_test` and use `odos_test`
+by default. They create the test table and clear its records between tests.
+The application uses the separate `odos` database.
+
+If you changed `POSTGRES_USER`, replace `odos` after `-U` with that username.
+
+## 5. Run the backend tests
+
+Run the following as one command:
+
+```powershell
+docker compose run --rm --no-deps -v ./backend/tests:/app/backend/tests:ro -v ./backend/db:/app/backend/db:ro -v ./dev-fixtures:/app/dev-fixtures:ro backend python -m pytest -v -m "not slow" tests
+```
+
+The mounts supply tests, database initialization SQL and rule examples that
+are not copied into the backend image. Compose supplies the database
+connection settings; PostgreSQL must already be running.
+
+This selection covers:
+
+- API behavior with and without database persistence.
+- PostgreSQL repository and persistence integration.
+- Legal JSON schema compatibility.
+- Rule JSON schema and example validation.
+- Legal text continued across page breaks and its source geometry.
+- PDF rendering with non-embedded fonts.
+
+The command excludes tests marked `slow`, which process complete reference PDFs.
+Two additional Rule JSON source-reference checks skip unless
+`ODOS_MBO_LEGAL_JSON_PATH` and `ODOS_EU_LEGAL_JSON_PATH` are configured with
+accessible Legal JSON files. Read the final pytest summary and skip reasons.
+Skipped tests are not passed tests.
+
+For full reference-document tests, see `backend/data/input/SOURCE.md`,
+`DOCKER.md` and `Documentation/database-poc.md`. Partner PDFs are not included
+in Git. They are unnecessary for the selected startup demonstration.
+
+## 6. Run the frontend tests
+
+```powershell
+docker compose run --rm --no-deps frontend npm test
+```
+
+The frontend tests cover document upload and processing states, document lists,
+hierarchy navigation, JSON views, source highlights and interface interactions.
+Read the final Vitest result and resolve failures before proceeding.
+
+This checkout has no GitHub Actions workflow. Run the tests locally as above.
+
+## 7. Start the complete application
+
+```powershell
+docker compose up -d
+docker compose ps
+```
+
+Wait for PostgreSQL and the backend to become healthy and the frontend to be
+running. The frontend has no separate health check in this configuration.
+
+Open:
+
+- Frontend: http://localhost:5173
+- API documentation: http://localhost:8000/docs
+
+The startup check is complete when the frontend opens and the services have
+the expected status. This demonstrates startup; it does not demonstrate the
+PDF-processing workflow.
+
+The frontend container starts Vite's development server. These instructions
+describe local development, not a production deployment.
+
+## 8. Stop or restart later
+
+Stop the stack while retaining its named volumes:
+
+```powershell
+docker compose down
+```
+
+Start it again:
+
+```powershell
+docker compose up -d
+```
+
+After source or dependency changes:
+
+```powershell
+docker compose build
+docker compose up -d
+```
+
+Avoid `docker compose down --volumes` unless you intend to delete the stored
+database, result files and downloaded model cache.
+
+## Troubleshooting
+
+| Problem | What to check |
+| --- | --- |
+| Missing POSTGRES variables | Create and fill in the root `.env` file before running Compose. |
+| Docker cannot connect to its engine | Start Docker Desktop and wait until it is ready. |
+| Container name or port already in use | Stop the previous ODOS stack or conflicting local server. |
+| Backend unhealthy | Run `docker compose logs --tail 100 backend`. |
+| Database authentication fails | Verify the credentials match those used when the volume was initialized. |
+| Database tests skip unexpectedly | Check PostgreSQL is healthy and `odos_test` exists. |
+| Missing test/example files | Use the backend test command above with all three mounts, from the repository root. |
+| Frontend does not open | Check `docker compose ps` and `docker compose logs --tail 100 frontend`. |
+
+## Build-process video
+
+Show the clean clone, configuration check, image build, automated test results,
+service status and frontend startup. Narrate each step. Long installations
+may be paused in the recording.
+
+Save the recording as `Deliverables/sprint-05/build-process-video.mp4`
+(or another accepted common video format with the same base name).
 
 ## Configuration and storage
 
@@ -118,7 +219,7 @@ Set variables before starting the corresponding process. Jobs are processed one 
 
 Setting `ODOS_STORAGE_DIR` retains files but does not restore the in-memory job registry after restart. Do not commit uploaded PDFs, generated document data, virtual environments or `node_modules`.
 
-Optional persistence: with a local PostgreSQL 17 database (Docker Compose) and `ODOS_DATABASE_ENABLED=1`, jobs and their Legal JSON are stored as JSONB and restored after a backend restart; the uploaded PDF and result files are kept, and old jobs are not removed automatically. See the [PostgreSQL proof of concept](Documentation/database-poc.md). [DOCKER.md](DOCKER.md) runs PostgreSQL, backend and frontend with Docker Compose, with this persistence enabled.
+Optional persistence: with a local PostgreSQL 17 database (Docker Compose) and `ODOS_DATABASE_ENABLED=1`, jobs and their Legal JSON are stored as JSONB and restored after a backend restart; the uploaded PDF and result files are kept, and old jobs are not removed automatically. See the [PostgreSQL proof of concept](Documentation/database-poc.md). [DOCKER.md](DOCKER.md) runs PostgreSQL, backend and frontend with Docker Compose, with this persistence enabled. To start the stack and inspect the stored Legal JSON with `psql`, see the [Docker and PostgreSQL developer guide](Documentation/docker-postgresql-guide.md).
 
 ## Repository layout
 

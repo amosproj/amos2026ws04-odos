@@ -1,0 +1,32 @@
+Title	URL	Assignees	Status	Estimated size	Real size
+Create a Video Documenting The Build Process	https://github.com/amosproj/amos2026ws04-odos/issues/33		Product Backlog		
+Define the Rule JSON schema	https://github.com/amosproj/amos2026ws04-odos/issues/34		Product Backlog		
+Draw the pipeline path diagram	https://github.com/amosproj/amos2026ws04-odos/issues/41		Product Backlog		
+Create Definition of Done for Features	https://github.com/amosproj/amos2026ws04-odos/issues/17	NicoleT02	Awaiting Review	1	1
+Create Definition of Done for Sprints	https://github.com/amosproj/amos2026ws04-odos/issues/18	NicoleT02	Awaiting Review	1	1
+Create Definition of Done for Project Releases	https://github.com/amosproj/amos2026ws04-odos/issues/19	NicoleT02	Awaiting Review	1	1
+Agree on a project mission	https://github.com/amosproj/amos2026ws04-odos/issues/21	zeynephaykir	Awaiting Review	1	1
+Agree on the product vision	https://github.com/amosproj/amos2026ws04-odos/issues/20	zeynephaykir	Awaiting Review	1	1
+Migrate Product to Docker	https://github.com/amosproj/amos2026ws04-odos/issues/27	leones18, moritzbarv	Awaiting Review	2	
+Analyze Database Options	https://github.com/amosproj/amos2026ws04-odos/issues/24	leones18, WasimAkramShuvo	Awaiting Review	2	
+Decide on a Technology for the Database	https://github.com/amosproj/amos2026ws04-odos/issues/25	leones18	Awaiting Review	1	
+Create PoC/Prototype for the GUI	https://github.com/amosproj/amos2026ws04-odos/issues/26		Sprint Backlog	2	
+Create a Legal JSON Schema for Normative Documents	https://github.com/amosproj/amos2026ws04-odos/issues/12	leones18, moritzbarv	In Progress	5	
+Design ODOS Project Logo	https://github.com/amosproj/amos2026ws04-odos/issues/1	leones18	Feature Archive	5	5
+Research and Evaluate Options for Representation of Normative Documents	https://github.com/amosproj/amos2026ws04-odos/issues/2	moritzbarv	Feature Archive	3	5
+Deep Dive on SHACL and pySHACL	https://github.com/amosproj/amos2026ws04-odos/issues/11	WindyLeeV, YaraSoli	Feature Archive	3	3
+Deep Dive on Akoma Ntoso and AKN4EU	https://github.com/amosproj/amos2026ws04-odos/issues/10	leones18, WasimAkramShuvo	Feature Archive	3	3
+Test Docling on the Musterbauordnung (MBO)	https://github.com/amosproj/amos2026ws04-odos/issues/13	leones18, moritzbarv	Feature Archive	3	3
+Research on How to Transform PDF Documents Into Digital Representations	https://github.com/amosproj/amos2026ws04-odos/issues/4		Feature Archive		
+Test Docling on the Machinery Regulation	https://github.com/amosproj/amos2026ws04-odos/issues/14	leones18, moritzbarv	Feature Archive	3	3
+Decide on a Technology for Transforming PDF-Documents Into Digital Representations	https://github.com/amosproj/amos2026ws04-odos/issues/5		Feature Archive	1	1
+Decide on a Technology for the Representation of Normative Documents	https://github.com/amosproj/amos2026ws04-odos/issues/3	moritzbarv	Feature Archive	1	1
+Enforce Integrity and Compliance of Digital Twins	https://github.com/amosproj/amos2026ws04-odos/issues/6		Product Backlog		
+Create the Mid-Project Release Plan	https://github.com/amosproj/amos2026ws04-odos/issues/22	zeynephaykir	Product Backlog	3	
+Create an Automatically Updated Burndown Chart	https://github.com/amosproj/amos2026ws04-odos/issues/23	zeynephaykir	Product Backlog	1	
+Build the LLM rule interpreter and compare it with hand-written rules	https://github.com/amosproj/amos2026ws04-odos/issues/36		Product Backlog		
+SHACL branch: rules to SHACL shapes and pySHACL check	https://github.com/amosproj/amos2026ws04-odos/issues/37		Product Backlog		
+SPARQL branch: rules to SPARQL queries and script check	https://github.com/amosproj/amos2026ws04-odos/issues/38		Product Backlog		
+Leftover branch: LLM and human check for remaining rules	https://github.com/amosproj/amos2026ws04-odos/issues/39		Product Backlog		
+Create test twin data	https://github.com/amosproj/amos2026ws04-odos/issues/40		Product Backlog		
+LLM DeepSeek validation layer demo	https://github.com/amosproj/amos2026ws04-odos/pull/42	WindyLeeV	Feature Archive		

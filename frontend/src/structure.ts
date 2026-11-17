@@ -171,3 +171,13 @@ export function rectsOnPage(highlights: Provenance[], page: number, pageHeight: 
 
 /** The page the PDF viewer jumps to when an element is selected: the first page its text is on. */
 export const firstPage = (e: DocElement | null | undefined): number | null => e?.pages[0] ?? null;
+
+/** The flag the parser sets on an element that received the rest of its text from the next page. */
+export const PAGE_BREAK_MERGED = "page_break_continuation_merged_confirmed";
+
+/** The element's complete own text as it reads: the pieces of a text that a page break cut are one running text
+ *  (the model keeps them one per line, one per source item). Other line breaks, e.g. of a heading and its title, stay. */
+export function fullText(e: DocElement): string {
+  if (!e.hygiene_flags?.includes(PAGE_BREAK_MERGED)) return e.original_text;
+  return e.original_text.split("\n").map((piece) => piece.trim()).filter(Boolean).join(" ");
+}
