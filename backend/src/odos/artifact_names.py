@@ -1,6 +1,6 @@
 """Names of the files ODOS writes for a document: one source for the pipeline and the CLI.
 
-The demo fixture script (frontend/scripts/build-demo-fixtures.mjs) and the web API (`odos.api`) read them by these names:
+The web API (`odos.api`) serves them and the frontend (frontend/src/demo/live.ts) requests them by these names:
 never rename one.
 """
 

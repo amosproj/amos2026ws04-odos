@@ -15,8 +15,6 @@ Documentation for the simplified live PDF-processing prototype. Start with the a
 
 ## Scope of this documentation
 
-These files describe the simplified target version: live processing only, no prepared-example mode, and no bundled automated test suite. Runtime schema and structural validation remain part of PDF processing.
+These files describe the simplified target version: live processing only and no prepared-example mode. Runtime schema and structural validation remain part of PDF processing. Automated tests live in `backend/tests/` and next to the frontend sources; [development.md](development.md) and [database-poc.md](database-poc.md) describe how to run them.
 
-The collapsible Docling Raw JSON preview requires the API allowlist and frontend changes described in [development.md](development.md). Documentation alone does not implement these changes.
-
-Place these six files in the repository's `Documentation/` folder. This README is the documentation index, not a replacement for the repository's root README. Sprint submissions belong in `Deliverables/`.
+This README is the documentation index, not a replacement for the repository's root README. Sprint submissions belong in `Deliverables/`.

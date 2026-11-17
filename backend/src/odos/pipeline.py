@@ -1,6 +1,6 @@
 """End-to-end pipeline (`odos process`): Docling extraction, parsing and Custom Legal JSON.
 
-It produces the files the static demo is built from (see frontend/scripts/build-demo-fixtures.mjs).
+It produces the files the web API (`odos.api`) serves to the frontend.
 """
 
 from __future__ import annotations

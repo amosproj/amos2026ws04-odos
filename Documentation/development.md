@@ -66,12 +66,12 @@ Set variables before starting the corresponding process. Retaining files does no
 
 ## Docling Raw JSON panel
 
-The panel assumes these code changes have been applied:
+The panel is implemented as follows:
 
-- In `backend/src/odos/api.py`, import `DOCLING_RAW` and include it in `RESULT_FILES`.
-- In `frontend/src/demo/DemoApp.tsx`, render a collapsible panel below Custom Legal JSON. Fetch `/api/jobs/{id}/files/docling_raw.json` when opened, show loading/errors, and reset its state when the job changes.
+- `backend/src/odos/api.py` includes `DOCLING_RAW` in `RESULT_FILES`.
+- `frontend/src/demo/DemoApp.tsx` renders a collapsible panel below Custom Legal JSON. It fetches `/api/jobs/{id}/files/docling_raw.json` when opened, shows loading/errors, and resets its state when the job changes.
 
-It displays the entire extracted document, not just the selected legal node. It does not alter the pipeline or the Legal JSON schema. Restart the backend after changing its allowlist and process the PDF again if the old job is gone.
+It displays the entire extracted document, not just the selected legal node. It does not alter the pipeline or the Legal JSON schema.
 
 ## Command line
 
