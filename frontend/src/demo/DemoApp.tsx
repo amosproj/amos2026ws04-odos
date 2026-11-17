@@ -11,10 +11,11 @@ import { TYPE_LABELS, firstPage, fullText, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
 import { ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
+import { RuleExtractionView } from "./RuleExtraction";
 import "./demo.css";
 
 
-type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string };
+type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string } | { kind: "rules"; result: DemoResult; pdfUrl: string };
 /** What went wrong: the file cannot be used ("invalid"), its structure was not recognized, or the upload/processing failed. */
 type Problem = { kind: "invalid" | "unsupported" | "failed"; message: string };
 
@@ -37,7 +38,7 @@ export default function DemoApp() {
   const input = useRef<HTMLInputElement>(null);
   const running = useRef(false); // processing or opening; set synchronously: the disabled state only follows after the next render
 
-  const pdfUrl = phase.kind === "done" ? phase.pdfUrl : null;
+  const pdfUrl = phase.kind === "done" || phase.kind === "rules" ? phase.pdfUrl : null;
   useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
 
   const choose = (f: File | undefined) => {
@@ -94,7 +95,7 @@ export default function DemoApp() {
   };
 
   const reset = () => {
-    if (phase.kind === "done" && phase.result.live) releaseJob(phase.result.live.jobId, phase.result.live.persistent);
+    if ((phase.kind === "done" || phase.kind === "rules") && phase.result.live) releaseJob(phase.result.live.jobId, phase.result.live.persistent);
     setPhase({ kind: "idle" });
     setFile(null);
     setProblem(null);
@@ -102,7 +103,14 @@ export default function DemoApp() {
     if (input.current) input.current.value = "";
   };
 
-  if (phase.kind === "done") return <ResultView result={phase.result} pdfUrl={phase.pdfUrl} onReset={reset} />;
+  if (phase.kind === "done") {
+    const { result, pdfUrl } = phase;
+    return <ResultView result={result} pdfUrl={pdfUrl} onReset={reset} onContinueToRules={() => setPhase({ kind: "rules", result, pdfUrl })} />;
+  }
+  if (phase.kind === "rules") {
+    const { result, pdfUrl } = phase;
+    return <RuleExtractionView result={result} onBack={() => setPhase({ kind: "done", result, pdfUrl })} />;
+  }
 
   const busy = phase.kind === "busy";
   const locked = busy || opening !== null; // one thing at a time: a run or opening a stored document
@@ -152,7 +160,7 @@ export default function DemoApp() {
   );
 }
 
-export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pdfUrl: string; onReset: () => void }) {
+export function ResultView({ result, pdfUrl, onReset, onContinueToRules }: { result: DemoResult; pdfUrl: string; onReset: () => void; onContinueToRules?: () => void }) {
   const { model } = result;
   const [tab, setTab] = useState<"structure" | "artifacts">("structure");
   const [selected, setSelected] = useState<string | null>(null);
@@ -179,6 +187,7 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
         <span className="demo-status ok">Completed</span>{/* a result is only ever shown for a completed document */}
         <span className="spacer" />
         <button className="btn" onClick={onReset}><Icon name="back" size={16} />Back to documents</button>
+        {onContinueToRules && <button className="btn primary" onClick={onContinueToRules}>Continue to Rule Extraction<Icon name="chevron-right" size={16} /></button>}
       </div>
       <div className="split" ref={splitRef} style={splitVars(split)}>
         <section className="pane left" aria-label="Original PDF">
