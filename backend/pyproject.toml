@@ -15,6 +15,7 @@ dependencies = [
     "python-multipart>=0.0.9",  # PDF upload
     "uvicorn>=0.30",
     "psycopg[binary]>=3.2,<4",
+    "boto3>=1.40,<2",  # Amazon Bedrock client (odos.llm); reads the Bedrock API key from AWS_BEARER_TOKEN_BEDROCK
 ]
 
 [project.optional-dependencies]
