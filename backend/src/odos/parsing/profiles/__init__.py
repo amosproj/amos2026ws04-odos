@@ -10,8 +10,9 @@ from __future__ import annotations
 from odos.parsing.profiles.base import LegalProfile, TocVocabulary
 from odos.parsing.profiles.eu_legislation import EU_LEGISLATION
 from odos.parsing.profiles.german_law import GERMAN_LAW
+from odos.parsing.profiles.technical_standard import TECHNICAL_STANDARD
 
-PROFILES: dict[str, LegalProfile] = {p.mode: p for p in (GERMAN_LAW, EU_LEGISLATION)}
+PROFILES: dict[str, LegalProfile] = {p.mode: p for p in (GERMAN_LAW, EU_LEGISLATION, TECHNICAL_STANDARD)}
 
 __all__ = ["PROFILES", "LegalProfile", "TocVocabulary", "for_legal_system", "for_model", "get", "structured_modes"]
 

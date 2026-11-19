@@ -30,6 +30,8 @@ class TocVocabulary:
     inline_citation: re.Pattern | None = None  # text after an inline marker that makes it a citation ("§ 65 Absatz 2")
     ordinal: re.Pattern | None = None  # "ErsterTeil": groups (ordinal stem, kind word)
     ordinal_numbers: dict[str, int] = field(default_factory=dict)
+    split_toc_rows: bool = False  # table TOC rows: split a cell that holds several numbers / a repeated number (second language)
+    title_trailer: re.Pattern | None = None  # printed after a TOC title and not part of it (dot leaders, page number)
 
 
 @dataclass(frozen=True)
@@ -59,3 +61,4 @@ class LegalProfile:
     unsupported_message: str
     summary: Callable[[DocumentModel, Path], dict]  # pipeline summary of a parsed document
     completed_message: str  # pipeline message of a completed run
+    read_nested_items: bool = False  # also read texts Docling keeps under tables/pictures (captions); see docling_reader

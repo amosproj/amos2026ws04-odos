@@ -93,8 +93,43 @@ def _box(ln) -> BoundingBox:
     return BoundingBox(l=ln.left, t=ln.top, r=ln.right, b=ln.bottom, coord_origin="BOTTOMLEFT")
 
 
+def _published_cell_text(table, cell) -> str:
+    """The cell's text as `table.rows` (the published grid) holds it; Docling's `table_cells` text can differ in length for
+    merged cells with long dot leaders. Falls back to the cell's own text when the grid has no such position."""
+    if cell.row < len(table.rows) and cell.col < len(table.rows[cell.row]):
+        return table.rows[cell.row][cell.col]
+    return cell.text
+
+
+def _whole_marker(token: str, voc: TocVocabulary) -> tuple[str, str | None] | None:
+    """(kind, number) when the whole token is one heading marker. Markers are matched with the title that follows them, so a
+    sentinel letter stands in for it."""
+    ms = _markers(token + "x", voc)
+    return (ms[0][2], ms[0][3]) if len(ms) == 1 and ms[0][0] == 0 and ms[0][1] == len(token) else None
+
+
+def _piece(st) -> str:
+    """The text a strip stands for: its span of the cell text."""
+    return st[4][st[3].start : st[3].end].strip()
+
+
+def _parallel_segments(cells: list, voc: TocVocabulary) -> list[list]:
+    """A contents table that prints two languages side by side repeats the entry number in the middle of the row
+    ("1 | Anwendungsbereich ... | 17 | 1 | Scope ... | 17"). Where the first cell is a bare entry number and a later cell is
+    the same number again, the row is two entries."""
+    first = _compact(_piece(cells[0])) if cells else ""
+    if not first or _whole_marker(first, voc) is None:
+        return [cells]
+    cuts = [k for k in range(1, len(cells)) if _compact(_piece(cells[k])) == first]
+    if not cuts:
+        return [cells]
+    bounds = [0, *cuts, len(cells)]
+    return [cells[a:b] for a, b in zip(bounds, bounds[1:])]
+
+
 def _lines(model: DocumentModel, toc: Element, evidence) -> tuple[list[_Line], list[str]]:
     index = model.by_id()
+    voc = for_model(model).toc
     region = getattr(evidence, "region_lines", None) or {}
     out: list[_Line] = []
     notes: list[str] = []
@@ -111,16 +146,17 @@ def _lines(model: DocumentModel, toc: Element, evidence) -> tuple[list[_Line], l
                 if ln.cell is not None:
                     by_cell.setdefault((ln.cell[0], ln.cell[1]), []).append(ln)
             for c in el.table.cells or []:
-                if not c.text.strip():
+                text = _published_cell_text(el.table, c)  # spans index the text the Legal JSON publishes (the grid)
+                if not text.strip():
                     continue
-                cut = _cut(c.text, by_cell.get((c.row, c.col), [])) if by_cell.get((c.row, c.col)) else None
+                cut = _cut(text, by_cell.get((c.row, c.col), [])) if by_cell.get((c.row, c.col)) else None
                 if cut:
                     for s, e, ln in cut:
                         strips.append((ln.top, ln.bottom, ln.left, TocSpan(element_id=el.id, cell=[c.row, c.col], start=s, end=e,
-                                       page=ln.page, bbox=_box(ln), bbox_scope="text_line"), c.text))  # fmt: skip
+                                       page=ln.page, bbox=_box(ln), bbox_scope="text_line"), text))  # fmt: skip
                 elif c.bbox is not None:
                     strips.append((c.bbox.t, c.bbox.b, c.bbox.l, TocSpan(element_id=el.id, cell=[c.row, c.col], start=0,
-                                   end=len(c.text), page=c.page_no, bbox=c.bbox, bbox_scope="table_cell"), c.text))  # fmt: skip
+                                   end=len(text), page=c.page_no, bbox=c.bbox, bbox_scope="table_cell"), text))  # fmt: skip
                 else:
                     notes.append(f"{el.id}: cell {c.row},{c.col} has no box; not placed")
             rows: list[list] = []
@@ -132,10 +168,12 @@ def _lines(model: DocumentModel, toc: Element, evidence) -> tuple[list[_Line], l
                 else:
                     row.append(st)
             for row in rows:
-                line = _Line()
-                for st in sorted(row, key=lambda s: s[2]):
-                    line.add(st[3], st[4])
-                out.append(line)
+                cells = sorted(row, key=lambda s: s[2])
+                for seg in _parallel_segments(cells, voc) if voc.split_toc_rows else [cells]:
+                    line = _Line()
+                    for st in seg:
+                        line.add(st[3], st[4])
+                    out.append(line)
             continue
         text = el.content_text
         cut = _cut(text, region[ref]) if region.get(ref) else None
@@ -208,6 +246,34 @@ def _markers(compact: str, voc: TocVocabulary) -> list[tuple[int, int, str, str 
     return found
 
 
+def marker_of(line: _Line, a: int, b: int) -> str:
+    return re.sub(r"\s+", " ", "".join(c[0] for c in line.chars[a:b])).strip()
+
+
+def _number_tokens(line: _Line, ls: int, me: int, kind: str, voc: TocVocabulary) -> list[tuple[str, int, int]] | None:
+    """[(number, start, end)] when the marker text is several whitespace-separated tokens that each are a complete marker of
+    the same kind; None for a single marker ("§ 1" is one marker: its parts are not markers on their own)."""
+    spans, start = [], None
+    for k in range(ls, me):
+        space = line.chars[k][0].isspace()
+        if not space and start is None:
+            start = k
+        if space and start is not None:
+            spans.append((start, k))
+            start = None
+    if start is not None:
+        spans.append((start, me))
+    if len(spans) < 2:
+        return None
+    out = []
+    for a, b in spans:
+        whole = _whole_marker(_compact("".join(c[0] for c in line.chars[a:b])), voc)
+        if whole is None or whole[0] != kind or not whole[1]:
+            return None
+        out.append((whole[1], a, b))
+    return out
+
+
 def _entries(lines: list[_Line], voc: TocVocabulary) -> list[dict]:
     entries: list[dict] = []
     for line in lines:
@@ -227,6 +293,15 @@ def _entries(lines: list[_Line], voc: TocVocabulary) -> list[dict]:
             ls, me = keep[s][0], keep[e - 1][0] + 1
             le = keep[nxt[0]][0] if nxt[0] < len(keep) else len(line.chars)
             marker = "".join(c[0] for c in line.chars[ls:me])
+            if voc.split_toc_rows and (toks := _number_tokens(line, ls, me, kind, voc)):
+                # "7.4 7.5": the compact line would read one number "7.47.5". Each number is an entry; the title that follows
+                # belongs to the first, and the others are kept without one (the extraction holds no title for them).
+                (n0, a0, b0), rest = toks[0], toks[1:]
+                entries.append({"kind": kind, "number": n0, "marker": marker_of(line, a0, b0),
+                                "parts": [(line, a0, b0), (line, me, le)], "title_from": b0})  # fmt: skip
+                for n, a, b in rest:
+                    entries.append({"kind": kind, "number": n, "marker": marker_of(line, a, b), "parts": [(line, a, b)], "title_from": b})
+                continue
             entries.append({"kind": kind, "number": number, "marker": re.sub(r"\s+", " ", marker).strip(),
                             "parts": [(line, ls, le)], "title_from": me})  # fmt: skip
     return entries
@@ -282,6 +357,8 @@ def normalize_toc(model: DocumentModel, evidence=None) -> dict:
     for r in raw:
         kind, number = r["kind"], r["number"]
         title = _title(r)
+        if voc.title_trailer is not None and title:
+            title = voc.title_trailer.sub("", title).strip() or None
         spans = _spans(r["parts"])
         src = list(dict.fromkeys(s.element_id for s in spans))
         if kind is None:

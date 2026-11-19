@@ -59,6 +59,22 @@ class ElementType(StrEnum):
     FINAL_FORMULA = "final_formula"  # "Diese Verordnung ist in allen ihren Teilen verbindlich ..."
     SIGNATURE = "signature"
     PICTURE = "picture"
+    # Technical standards (DIN, DIN EN, DIN ISO, DIN EN ISO, DIN VDE, DIN SPEC, ISO, IEC, EN)
+    STANDARD_TITLE = "standard_title"  # "DIN EN ISO 12100", with issue
+    FOREWORD = "foreword"  # "Nationales Vorwort", "Europäisches Vorwort", "Vorwort"
+    INTRODUCTION = "introduction"  # "Einleitung"
+    CLAUSE = "clause"  # dotted-numbered clause: "1", "1.1", "1.1.1"
+    DEFINITION = "definition"  # "3.1 <term> <definition>" entry in the terms-and-definitions clause
+    NOTE = "note"  # "ANMERKUNG", "ANMERKUNG 1 ", "NOTE"
+    EXAMPLE = "example"  # "BEISPIEL", "EXAMPLE"
+    FIGURE = "figure"  # "Bild N — Caption", figure float with caption
+    FORMULA = "formula"  # mathematical formula with its number "(1)"
+    BIBLIOGRAPHY = "bibliography"  # "Literaturhinweise", bibliography list
+    BIBLIOGRAPHIC_ENTRY = "bibliographic_entry"  # one entry inside the bibliography
+    LIST_ITEM = "list_item"  # unmarked bulleted list item inside a clause
+    DASH_ITEM = "dash_item"  # "— item": dash-bulleted item (common in technical standards)
+    INDEX = "index"  # back-matter index ("Stichwortverzeichnis")
+    STANDARD_ANNEX = "standard_annex"  # "Anhang A (normativ)", "Annex A (informative)"
 
 
 class BoundingBox(BaseModel):
@@ -215,6 +231,7 @@ class Element(BaseModel):
     number: str | None = None  # "1", "22a", ...
     marker: str | None = None  # "§ 1", "(2)", "3.", "a)"
     title: str | None = None  # headings only
+    classification: str | None = Field(default=None, exclude_if=lambda v: v is None)  # annex: "normative" | "informative" as printed
     original_text: str = ""  # source text: Docling `orig`, with characters restored from the PDF text layer (text_repairs)
     content_text: str = ""  # original_text without the structural marker
     table: TableData | None = None
@@ -265,6 +282,9 @@ class DocumentMetadata(BaseModel):
     # EU legislation: values are verbatim from the document; ISO dates only where the text gives a full date.
     document_type: str | None = Field(default=None, exclude_if=_empty)  # "VERORDNUNG"
     document_number: str | None = Field(default=None, exclude_if=_empty)  # "2023/1230"
+    language: str | None = Field(default=None, exclude_if=_empty)  # language edition printed with the identifier: "de", "en", "de,en"
+    language_detected: str | None = Field(default=None, exclude_if=_empty)  # technical standards: language read from the unit headings (not part of the id)
+    document_variant: str | None = Field(default=None, exclude_if=_empty)  # technical standards: "Beiblatt 1", "Berichtigung 1", "A3", "Entwurf"
     issuing_bodies: str | None = Field(default=None, exclude_if=_empty)  # "DES EUROPÄISCHEN PARLAMENTS UND DES RATES"
     adoption_date_text: str | None = Field(default=None, exclude_if=_empty)  # "vom 14. Juni 2023"
     adoption_date: str | None = Field(default=None, exclude_if=_empty)

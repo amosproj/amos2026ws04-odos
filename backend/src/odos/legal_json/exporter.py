@@ -26,8 +26,8 @@ COMMON_TYPES: dict[T, str] = {
 }  # fmt: skip
 
 FOOTNOTE_TYPES = (T.FOOTNOTE, T.FOOTNOTE_HEADING)
-FRONT_TYPES = (T.FRONT_MATTER, T.DOC_TITLE)
-NO_ANCHOR_PARENTS = (T.DOCUMENT, T.FRONT_MATTER, T.DOC_TITLE, T.TOC, T.TOC_ENTRY, *FOOTNOTE_TYPES)
+FRONT_TYPES = (T.FRONT_MATTER, T.DOC_TITLE, T.STANDARD_TITLE)
+NO_ANCHOR_PARENTS = (T.DOCUMENT, T.FRONT_MATTER, T.DOC_TITLE, T.STANDARD_TITLE, T.TOC, T.TOC_ENTRY, *FOOTNOTE_TYPES)
 
 
 @dataclass(frozen=True)
@@ -50,7 +50,8 @@ def to_legal_json(model: DocumentModel) -> LegalDocument:
         if el.type in FOOTNOTE_TYPES:
             continue
         node = _node(el, index, names)
-        (front if el.type in FRONT_TYPES else toc if el.type == T.TOC else structure).append(node)
+        cover_picture = el.type in (T.PICTURE, T.TABLE) and el.region == "front"  # a logo or a title-block table on the cover page
+        (front if el.type in FRONT_TYPES or cover_picture else toc if el.type == T.TOC else structure).append(node)
     md = model.metadata
     return LegalDocument(
         id=_document_id(model, profile),
@@ -59,7 +60,7 @@ def to_legal_json(model: DocumentModel) -> LegalDocument:
         documentType=profile.json_document_type(md),
         nativeDocumentType=md.document_type,
         legalSystem=profile.legal_system,
-        language=profile.language,  # the recognizer's rules match text of this language only
+        language=md.language or md.language_detected or profile.language,  # a language edition stated by the document; else the language the recognizer's rules match
         version=Version(statement=md.stand or md.stated_version_text, date=md.version_year_month),
         publicationDate=md.publication_date,
         adoptionDate=md.adoption_date,
@@ -137,6 +138,7 @@ def _node(el: Element, index: dict[str, Element], names: _Names) -> Node:
         number=el.number,
         marker=el.marker,
         title=el.title,
+        classification=el.classification,
         text=own_text(el),
         numRows=table.num_rows if table else None,
         numCols=table.num_cols if table else None,

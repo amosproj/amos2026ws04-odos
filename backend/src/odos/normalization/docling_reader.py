@@ -25,6 +25,7 @@ class SourceItem(BaseModel):
     marker: str | None = None
     enumerated: bool | None = None
     group_ref: str | None = None
+    nested_in: str | None = None  # ref of the table/picture whose children list holds this item (captions, notes in figures)
     provenance: list[Provenance] = Field(default_factory=list)
     table: TableData | None = None
     # Set by odos.normalization.hygiene; the Docling fields above are never modified.
@@ -105,7 +106,9 @@ def read_page_sizes(path: Path) -> dict[int, tuple[float, float]]:
     return {int(k): (v["size"]["width"], v["size"]["height"]) for k, v in (raw.get("pages") or {}).items()}
 
 
-def read_docling_json(path: Path) -> tuple[SourceInfo, list[SourceItem]]:
+def read_docling_json(path: Path, include_nested: bool = False) -> tuple[SourceInfo, list[SourceItem]]:
+    """`include_nested`: also read the text items Docling keeps only under a table or picture (their captions, notes
+    inside figures); they follow their parent item. Off by default: the German and EU profiles never saw them."""
     raw_bytes = Path(path).read_bytes()
     raw = json.loads(raw_bytes)
 
@@ -125,20 +128,29 @@ def read_docling_json(path: Path) -> tuple[SourceInfo, list[SourceItem]]:
                 walk(n, ref)
                 continue
             text = n.get("text", "")
-            items.append(
-                SourceItem(
-                    ref=ref,
-                    label=n.get("label", ""),
-                    layer=n.get("content_layer", "body"),
-                    orig=n.get("orig") or text,
-                    text=text,
-                    marker=n.get("marker") or None,
-                    enumerated=n.get("enumerated"),
-                    group_ref=group_ref,
-                    provenance=_provenance(n),
-                    table=_table(n, heights) if kind == "tables" else None,
-                )
+            add(ref, kind, n, text, group_ref, None)
+            if include_nested and kind in ("tables", "pictures"):
+                for sub in n.get("children", []):
+                    if sub["$ref"].split("/")[1] == "texts":
+                        sn = resolve(sub["$ref"])
+                        add(sub["$ref"], "texts", sn, sn.get("text", ""), group_ref, ref)
+
+    def add(ref: str, kind: str, n: dict, text: str, group_ref: str | None, nested_in: str | None) -> None:
+        items.append(
+            SourceItem(
+                ref=ref,
+                label=n.get("label", ""),
+                layer=n.get("content_layer", "body"),
+                orig=n.get("orig") or text,
+                text=text,
+                marker=n.get("marker") or None,
+                enumerated=n.get("enumerated"),
+                group_ref=group_ref,
+                nested_in=nested_in,
+                provenance=_provenance(n),
+                table=_table(n, heights) if kind == "tables" else None,
             )
+        )
 
     walk(raw["body"], None)
     walk(raw["furniture"], None)

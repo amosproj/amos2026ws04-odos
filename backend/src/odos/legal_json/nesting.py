@@ -15,7 +15,7 @@ from odos.parsing.profiles import for_legal_system
 BLOCKS = {"text", "item", "table", "picture"}
 LEAVES = BLOCKS | {"tocEntry"}
 
-FRONT = {"frontMatter", "documentTitle"}
+FRONT = {"frontMatter", "documentTitle", "standardTitle", "picture", "table"}
 TOC = {"tableOfContents"}
 
 

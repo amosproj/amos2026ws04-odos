@@ -25,11 +25,15 @@ NodeType = Literal[
     # EU preamble and conclusions
     "preamble", "preambleFormula", "citation", "recitalsIntro", "recital", "enactingFormula",
     "conclusions", "finalFormula", "signature",
+    # technical standards (DIN / EN / ISO / IEC / VDE / DIN SPEC)
+    "standardTitle", "foreword", "introduction", "clause", "definition", "note", "example",
+    "figure", "formula", "bibliography", "bibliographicEntry", "index", "listItem", "dashItem",
     # outside the legal body
     "frontMatter", "documentTitle", "tableOfContents", "tocEntry",
 ]  # fmt: skip
 
 DocumentType = Literal["de_legislation", "eu_regulation", "eu_directive", "eu_decision", "eu_legislation", "technical_standard"]
+LegalSystem = Literal["de", "eu", "ts"]
 
 
 def _none(v) -> bool:
@@ -51,6 +55,7 @@ class Node(_Out):
     number: str | None = Field(default=None, exclude_if=_none)
     marker: str | None = Field(default=None, exclude_if=_none, description="exact marker as printed")
     title: str | None = Field(default=None, exclude_if=_none)
+    classification: str | None = Field(default=None, exclude_if=_none, description="annex of a technical standard: 'normative' or 'informative', as printed")
     text: str | None = Field(default=None, exclude_if=_none, description="the element's own text, without marker, title or children")
     numRows: int | None = Field(default=None, exclude_if=_none)
     numCols: int | None = Field(default=None, exclude_if=_none)
@@ -139,7 +144,7 @@ class LegalDocument(_Out):
     shortTitle: str | None = Field(default=None, exclude_if=_none)
     documentType: DocumentType
     nativeDocumentType: str | None = Field(default=None, exclude_if=_none)
-    legalSystem: Literal["de", "eu"]
+    legalSystem: LegalSystem
     language: str
     version: Version
     publicationDate: str | None = Field(default=None, exclude_if=_none)

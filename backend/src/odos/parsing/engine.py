@@ -50,7 +50,7 @@ class ParseState:
 
 
 def read_source(s: ParseState) -> None:
-    s.info, s.items = read_docling_json(s.path)
+    s.info, s.items = read_docling_json(s.path, include_nested=s.profile.read_nested_items)
     s.page_sizes = read_page_sizes(s.path)
 
 

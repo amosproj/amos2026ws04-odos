@@ -266,6 +266,20 @@
             "conclusions",
             "finalFormula",
             "signature",
+            "standardTitle",
+            "foreword",
+            "introduction",
+            "clause",
+            "definition",
+            "note",
+            "example",
+            "figure",
+            "formula",
+            "bibliography",
+            "bibliographicEntry",
+            "index",
+            "listItem",
+            "dashItem",
             "frontMatter",
             "documentTitle",
             "tableOfContents",
@@ -336,6 +350,19 @@
           ],
           "default": null,
           "title": "Title"
+        },
+        "classification": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "annex of a technical standard: 'normative' or 'informative', as printed",
+          "title": "Classification"
         },
         "text": {
           "anyOf": [
@@ -652,7 +679,8 @@
     "legalSystem": {
       "enum": [
         "de",
-        "eu"
+        "eu",
+        "ts"
       ],
       "title": "Legalsystem",
       "type": "string"

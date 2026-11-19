@@ -23,6 +23,7 @@ from odos.normalization.reading_order import write_evidence
 class ProcessingMode(StrEnum):
     GERMAN_LAW = "german_law"  # Docling + German legal structure parser
     EU_LEGISLATION = "eu_legislation"  # Docling + EU legal structure parser
+    TECHNICAL_STANDARD = "technical_standard"  # Docling + technical-standard parser (DIN, EN, ISO, IEC, VDE)
 
 
 class Outcome(StrEnum):
@@ -30,10 +31,11 @@ class Outcome(StrEnum):
     UNSUPPORTED = "unsupported"  # processed, but no structure/Legal JSON is offered
 
 
-UNRECOGNIZED = ("The document type could not be recognized: neither German legislation (sections '§ <number> <title>') "
-                "nor EU legislation (articles 'Artikel <n>') was found. ODOS does not produce a legal structure or Legal JSON for it.")  # fmt: skip
-AMBIGUOUS = ("The document type is ambiguous: both German and EU legislation structures were found. "
-             "ODOS does not produce a legal structure or Legal JSON for it.")  # fmt: skip
+UNRECOGNIZED = ("The document type could not be recognized: neither German legislation (sections '§ <number> <title>'), "
+                "EU legislation (articles 'Artikel <n>') nor a technical standard (numbered clauses like '1 Scope') "
+                "was found. ODOS does not produce a legal structure or Legal JSON for it.")  # fmt: skip
+AMBIGUOUS = ("The document type is ambiguous: more than one profile (German, EU or technical standard) recognised "
+             "a structure. ODOS does not produce a legal structure or Legal JSON for it.")  # fmt: skip
 
 
 def _sha256(path: Path) -> str:
