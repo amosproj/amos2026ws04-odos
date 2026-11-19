@@ -37,6 +37,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+      # Amazon Bedrock for LLM rule extraction (optional, `odos extract-rules`; see Documentation/bedrock-rule-extraction.md).
+      # The API key comes from .env and is only passed into this container; without it the backend works as before.
+      AWS_BEARER_TOKEN_BEDROCK: ${AWS_BEARER_TOKEN_BEDROCK:-}
+      ODOS_BEDROCK_REGION: ${ODOS_BEDROCK_REGION:-eu-central-1}
+      ODOS_BEDROCK_MODEL_ID: ${ODOS_BEDROCK_MODEL_ID:-eu.anthropic.claude-sonnet-4-6}
+      ODOS_BEDROCK_MAX_TOKENS: ${ODOS_BEDROCK_MAX_TOKENS:-32000}
+      ODOS_BEDROCK_OUTPUT_RETRIES: ${ODOS_BEDROCK_OUTPUT_RETRIES:-1}  # 0 or 1 paid re-request for an answer that is not valid JSON
+      ODOS_RULE_EXTRACTION_MAX_QUEUED: ${ODOS_RULE_EXTRACTION_MAX_QUEUED:-3}
     volumes:
       - model-cache:/root/.cache
       - backend_storage:/data/odos-storage

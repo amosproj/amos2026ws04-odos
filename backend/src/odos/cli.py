@@ -1,4 +1,5 @@
-"""Command line interface `odos`: process (the whole pipeline), extract, normalize, legal-json (see `odos --help`)."""
+"""Command line interface `odos`: process (the whole pipeline), extract, normalize, legal-json, and the optional Amazon
+Bedrock steps bedrock-check and extract-rules (see `odos --help`)."""
 
 from __future__ import annotations
 
@@ -31,6 +32,14 @@ def build_parser() -> argparse.ArgumentParser:
     proc.add_argument("pdf", type=Path)
     proc.add_argument("-o", "--output-dir", type=Path, required=True)
     proc.add_argument("--mode", choices=list(structured_modes()), required=True, help="parser profile (explicit, never guessed)")
+    sub.add_parser("bedrock-check", help="One minimal request to Amazon Bedrock (checks the API key, region and model; a few tokens)")
+    rules = sub.add_parser("extract-rules", help="Extract Rule JSON from a document.json with Amazon Bedrock (paid API calls)")
+    rules.add_argument("legal_json", type=Path, help="document.json (Custom Legal JSON 2.0)")
+    rules.add_argument("-o", "--output", type=Path, default=None, help="default: rules.json next to the input")
+    rules.add_argument("--element-id", action="append", default=None, metavar="ID", help="only this element with its subtree (repeatable); default: the whole document")  # fmt: skip
+    rules.add_argument("--dry-run", action="store_true", help="show the scope and the estimated size, do not call Bedrock")
+    rules.add_argument("--accept-partial", action="store_true",
+                       help="if the answer is still not valid JSON after the allowed retry, use the complete records before the defect (marked partial)")
     return parser
 
 
@@ -38,6 +47,10 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "process":
         return run_process(args)
+    if args.command == "bedrock-check":
+        return run_bedrock_check()
+    if args.command == "extract-rules":
+        return run_extract_rules(args)
     if args.command == "legal-json":
         return run_legal_json(args)
     if args.command == "normalize":
@@ -107,6 +120,80 @@ def run_legal_json(args) -> int:
     for e in (rep["schema_errors"] + rep["structure_errors"])[:10]:
         print(f"  {e}", file=sys.stderr)
     return 0 if rep["valid"] else 2
+
+
+def run_bedrock_check() -> int:
+    from odos.llm.bedrock import API_KEY_ENV, BedrockClient, BedrockError, load_bedrock_env
+
+    env = load_bedrock_env()  # the Bedrock settings of .env; only names and the file path are ever shown
+    print("env file:   " + (f"{env.path} ({len(env.loaded)} Bedrock setting(s) applied)" if env.path else "none found (working directory, its parents, repository root)"))
+    try:
+        client = BedrockClient()
+        cfg = client.config
+        print(f"region:     {cfg.region}")
+        print(f"model:      {cfg.model_id}")
+        res = client.converse("Reply with the single word: ok", "ping", max_tokens=16, temperature=0.0)
+    except BedrockError as e:
+        print(f"error: {e}", file=sys.stderr)
+        if env.path and API_KEY_ENV not in env.present:
+            print(f"hint: {env.path} has no non-empty {API_KEY_ENV} line (is the file saved?)", file=sys.stderr)
+        return 2
+    print(f"answer:     {res.text.strip()[:80]!r}")
+    print(f"stop:       {res.stop_reason}")
+    print(f"tokens:     {res.input_tokens} in, {res.output_tokens} out ({res.latency_ms} ms)")
+    return 0
+
+
+def run_extract_rules(args) -> int:
+    import json
+
+    from odos.artifact_names import RULE_JSON
+    from odos.llm.bedrock import BedrockClient, BedrockConfig, BedrockError, load_bedrock_env
+    from odos.llm.model_output import default_diagnostics_dir
+    from odos.llm.rule_extraction import RuleExtractionError, extract_rules, prepare_request, write_rules_json
+
+    load_bedrock_env()
+    if not args.legal_json.is_file():
+        print(f"error: file not found: {args.legal_json}", file=sys.stderr)
+        return 1
+    try:
+        legal = json.loads(args.legal_json.read_text(encoding="utf-8"))
+        if args.dry_run:
+            config = BedrockConfig.from_env()
+            req = prepare_request(legal, config, args.element_id)
+            print(f"scope:      {req.scope if isinstance(req.scope, str) else ', '.join(req.scope)}")
+            print(f"model:      {config.model_id} ({config.region})")
+            print(f"input:      about {req.estimated_input_tokens:,} tokens (upper estimate), context window {req.context_tokens:,}")
+            print(f"output:     up to {req.max_output_tokens:,} tokens, at most {1 + config.output_retries} model request(s)")
+            print("dry run:    nothing was sent")
+            return 0
+        diagnostics = default_diagnostics_dir()
+        result = extract_rules(legal, client=BedrockClient(), element_ids=args.element_id, diagnostics_dir=diagnostics,
+                               accept_partial=args.accept_partial)
+    except (RuleExtractionError, BedrockError) as e:
+        print(f"error: {e}", file=sys.stderr)
+        if getattr(e, "diagnostic_ids", None):
+            print(f"diagnostics: {diagnostics} (private; contains the model's answer)", file=sys.stderr)
+        return 2
+    except ValueError as e:
+        print(f"error: {args.legal_json} is not valid JSON: {e}", file=sys.stderr)
+        return 1
+    out = write_rules_json(result, args.output or args.legal_json.parent / RULE_JSON)
+    g = result.generation
+    c = g["counts"]
+    print(f"rules:      {c['accepted']} accepted ({c['flagged']} flagged for review, {c['repaired']} repaired), "
+          f"{c['rejected']} rejected (of {c['proposed']} proposed)")
+    cov = g["coverage"]
+    print(f"coverage:   {cov['sentencesCited']}/{cov['sentences']} sentences and {cov['elementsCited']}/{cov['elements']} "
+          f"elements cited; {len(cov['citedOnlyByRejected'])} only by a rejected record")
+    out_info = g["modelOutput"]
+    print(f"tokens:     {g['inputTokens']} in, {g['outputTokens']} out ({out_info['requests']} model request(s))")
+    if out_info["partial"]:
+        print("warning:    the answer was not valid JSON; only the complete records before the defect were used", file=sys.stderr)
+    print(f"rules.json: {out}")
+    for r in result.rejected:
+        print(f"rejected:   #{r['index']} {r['id']}: {'; '.join(r['reasons'])}", file=sys.stderr)
+    return 0
 
 
 if __name__ == "__main__":
