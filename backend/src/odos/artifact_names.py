@@ -1,6 +1,6 @@
 """Names of the files ODOS writes for a document: one source for the pipeline and the CLI.
 
-The demo fixture script (frontend/scripts/build-demo-fixtures.mjs) and the web API (`odos.api`) read them by these names:
+The web API (`odos.api`) serves them and the frontend (frontend/src/demo/live.ts) requests them by these names:
 never rename one.
 """
 
@@ -14,5 +14,5 @@ DOCUMENT_MODEL = "document_model.json"  # canonical model incl. internal diagnos
 VALIDATION_REPORT = "validation_report.json"
 VALIDATION_REPORT_MD = "validation_report.md"
 LEGAL_JSON = "document.json"  # public JSON serialization of the canonical model
-RULE_JSON = "rules.json"  # optional extracted Rule JSON collection; no extractor writes it yet
+RULE_JSON = "rules.json"  # optional extracted Rule JSON collection; written by `odos extract-rules` (odos.llm), not by live processing
 LEGAL_JSON_REPORT = "legal_json_validation_report.json"

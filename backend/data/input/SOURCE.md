@@ -9,6 +9,5 @@ not redistributed. Keep them under `backend/data/input/private/` (gitignored) or
 | `private/MusterBauVerordnung.pdf` | `53fd13388013263c3f676a3a8024f6932e38b8d326af6d2d844ecb9be61d340c` |
 | `private/eu_2023_1230.pdf` | `fe36f0d148a84e790ec9a9825017baaea66fb931a5314ad0a614a1cde0ec182c` |
 
-No public law is stored in this repository. The always-running tests use the synthetic German law
-(`tests/synthetic_german.py`) and the synthetic EU regulation (`tests/synthetic_eu.py`): original text with generated
-PDFs, freely redistributable.
+No public law is stored in this repository. The always-running tests use synthetic Docling output with invented legal
+text (`tests/docling_synthetic.py`) and generated PDFs (`tests/test_page_rendering.py`), freely redistributable.

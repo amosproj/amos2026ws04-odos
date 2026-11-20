@@ -1,5 +1,4 @@
-// Helpers shared by the fixture script (scripts/build-demo-fixtures.mjs, in Node) and the live mode of the app
-// (src/demo/live.ts, in the browser). Plain JavaScript so both can import it unchanged.
+// JSON formatting and presentation helpers for the live mode of the app (src/demo/live.ts, in the browser).
 
 export const pick = (o, keys) => Object.fromEntries(keys.filter((k) => o[k] !== undefined).map((k) => [k, o[k]]));
 

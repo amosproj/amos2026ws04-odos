@@ -1,5 +1,5 @@
-// The slice of the ODOS DocumentModel the demonstration reads (backend/src/odos/document_model.py). The demo fixture
-// script (scripts/build-demo-fixtures.mjs) writes it as structure.json; fields the demo never shows are left out.
+// The slice of the ODOS DocumentModel the demonstration reads (backend/src/odos/document_model.py), loaded from a
+// job's document_model.json; fields the demo never shows are left out.
 
 /** A Docling bounding box in PDF points. */
 export interface BoundingBox {

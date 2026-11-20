@@ -17,7 +17,7 @@ from collections import Counter
 from docling_synthetic import build, item, page_numbers
 from jsonschema import Draft202012Validator
 
-from odos.document_model import DocumentModel, SourceSpan
+from odos.document_model import DocumentModel
 from odos.legal_json.artifacts import published_schema, serialize
 from odos.legal_json.exporter import to_legal_json
 from odos.normalization.docling_reader import SourceItem
