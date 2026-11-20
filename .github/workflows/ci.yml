@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  frontend:
+    name: Frontend (typecheck · test · build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  backend:
+    name: Backend (pytest, no slow tests)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: odos_ci
+          POSTGRES_PASSWORD: odos_ci
+          POSTGRES_DB: odos_test
+        options: >-
+          --health-cmd "pg_isready -U odos_ci -d odos_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5433:5432
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.lock
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.lock
+          pip install --no-deps -e '.[dev]'
+
+      - name: Run tests
+        # Exclude slow tests (require real PDF files and full Docling conversion).
+        # Database tests run against the postgres service container above;
+        # they are skipped automatically when POSTGRES_USER/PASSWORD are absent.
+        run: pytest -m "not slow"
+        env:
+          POSTGRES_USER: odos_ci
+          POSTGRES_PASSWORD: odos_ci
+          POSTGRES_DB: odos_test
+          POSTGRES_HOST: 127.0.0.1
