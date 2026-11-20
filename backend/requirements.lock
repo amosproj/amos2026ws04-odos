@@ -7,6 +7,8 @@
 # The Amazon Bedrock client (odos.llm) adds boto3, botocore, jmespath and s3transfer (2026-11-18). botocore requires
 # python-dateutil<3, so python-dateutil is pinned to 2.9.0.post0 (pandas only needs >=2.8.2).
 accelerate==1.15.0
+coverage==7.17.4
+
 annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.15.1
@@ -77,6 +79,7 @@ pydantic_core==2.50.1
 Pygments==2.21.0
 pylatexenc==2.11
 pypdfium2==5.14.0
+pytest-cov==7.1.0
 pytest==9.1.1
 python-dateutil==2.9.0.post0
 python-docx==1.2.0
