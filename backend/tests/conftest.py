@@ -2,7 +2,7 @@
 
 Database safety: every test runs with POSTGRES_DB set to the test database (ODOS_TEST_DATABASE, default `odos_test`),
 whatever the shell exported (e.g. after sourcing .env). Names that do not end in `_test` are refused, and the `db`
-fixture checks the server-side database name again before it empties the `documents` table. The regular `odos`
+fixture checks the server-side database name again before it empties the `documents` and `rule_reviews` tables. The regular `odos`
 database is never connected to by the tests.
 """
 
@@ -17,7 +17,7 @@ import pytest
 from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON
 from odos.pipeline import Outcome, PipelineResult
 
-SCHEMA = Path(__file__).resolve().parents[1] / "db" / "001_documents.sql"
+SCHEMAS = [Path(__file__).resolve().parents[1] / "db" / name for name in ("001_documents.sql", "002_rule_reviews.sql")]
 TEST_DATABASE = os.environ.get("ODOS_TEST_DATABASE", "odos_test")
 MINIMAL_PDF = b"%PDF-1.4\n%%EOF\n"
 LEGAL_DOCUMENT = {
@@ -60,12 +60,13 @@ def db():
     with conn:
         actual = conn.execute("SELECT current_database()").fetchone()[0]
         require_test_database(actual)
-        conn.execute(SCHEMA.read_text(encoding="utf-8"))
-        conn.execute("TRUNCATE documents")
+        for schema in SCHEMAS:
+            conn.execute(schema.read_text(encoding="utf-8"))
+        conn.execute("TRUNCATE documents CASCADE")  # also empties rule_reviews
     yield actual
     with connect() as conn:
         require_test_database(conn.execute("SELECT current_database()").fetchone()[0])
-        conn.execute("TRUNCATE documents")
+        conn.execute("TRUNCATE documents CASCADE")
 
 
 def fake_pipeline(outcome: Outcome = Outcome.COMPLETED, legal: dict | None = None):
