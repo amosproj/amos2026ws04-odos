@@ -4,6 +4,7 @@ Documentation for the simplified live PDF-processing prototype. Start with the a
 
 | Document | Contents |
 |---|---|
+| [design-documentation.md](design-documentation.md) | **Consolidated technical design**, architecture, stack, data flow, models, API, storage, conventions, extension and maintenance |
 | [architecture.md](architecture.md) | Components, live data flow, API and frontend |
 | [development.md](development.md) | Windows setup, startup, CLI and manual verification |
 | [document-model.md](document-model.md) | Internal structure, text, source references and diagnostics |
