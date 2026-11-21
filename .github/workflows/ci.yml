@@ -10,10 +10,18 @@ on:
   pull_request:
     branches: [main, develop]
 
+# Cancel in-progress runs for the same branch when new commits arrive.
+# On PRs this keeps the queue short; on direct pushes to develop/main
+# we let runs complete so artefacts (coverage, smoke-test logs) are always saved.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   frontend:
     name: Frontend (typecheck · test · build)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
@@ -37,9 +45,34 @@ jobs:
       - name: Build
         run: npm run build
 
+  lint:
+    name: Python Lint (ruff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.lock
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff (F + E9)
+        # Phase 1: pyflakes (undefined names, unused imports) and syntax errors only.
+        # Zero violations expected — if any appear they represent real bugs, not style.
+        run: ruff check src/ tests/
+
   backend:
     name: Backend (pytest, no slow tests)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     services:
       postgres:
@@ -101,6 +134,7 @@ jobs:
   docker-build:
     name: Docker Build
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -132,9 +166,170 @@ jobs:
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
+  smoke-test:
+    name: Docker Compose Smoke Test
+    runs-on: ubuntu-latest
+    # Runs on every PR and push.  Loading the backend image (~4–5 GB, torch
+    # included) from the GHA layer cache takes ~3–5 min on a warm runner; the
+    # first run after a Dockerfile change takes ~10–15 min.  GHA caches are
+    # shared across branches, so a PR that does not touch the Dockerfiles will
+    # almost always hit the cache populated by the most recent push to develop.
+    needs: [docker-build]
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Load backend image from layer cache
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          load: true
+          tags: odos-backend:ci
+          cache-from: type=gha,scope=backend
+
+      - name: Load frontend image from layer cache
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          load: true
+          tags: odos-frontend:ci
+          cache-from: type=gha,scope=frontend
+
+      - name: Start stack
+        run: |
+          docker compose -f compose.yaml -f compose.smoke.yml \
+            up -d --wait --wait-timeout 180
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: odos_ci
+
+      - name: Check backend /openapi.json
+        run: |
+          curl -sf http://localhost:8000/openapi.json \
+            | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          title = d.get('info', {}).get('title', '')
+          assert title == 'ODOS', f'unexpected title: {title!r}'
+          print(f'Backend OK — title={title!r}')
+          "
+
+      - name: Check backend /api/documents (DB connectivity)
+        # With ODOS_DATABASE_ENABLED=1 (the compose.yaml default), this endpoint
+        # issues a real SELECT against the postgres service started by compose.
+        # An empty list is the correct response for a fresh database.
+        run: |
+          curl -sf http://localhost:8000/api/documents \
+            | python3 -c "
+          import sys, json
+          docs = json.load(sys.stdin)
+          assert isinstance(docs, list), f'expected list, got {type(docs).__name__}'
+          print(f'DB connectivity OK — {len(docs)} stored document(s)')
+          "
+
+      - name: Check frontend root
+        run: |
+          curl -sf --retry 10 --retry-delay 2 --retry-connrefused \
+            http://localhost:5173/ > /dev/null
+          echo "Frontend OK"
+
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          docker compose -f compose.yaml -f compose.smoke.yml logs
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: odos_ci
+
+      - name: Tear down
+        if: always()
+        run: |
+          docker compose -f compose.yaml -f compose.smoke.yml down -v
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: odos_ci
+
+  sbom-validate:
+    name: SBOM Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check SBOM present
+        id: sbom_check
+        run: |
+          if [ -f sbom.spdx.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "sbom.spdx.json found — will validate."
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            # TEMPORARY SKIP: sbom.spdx.json lives in feature/mid-project-sbom and
+            # has not yet been merged to develop.  Once that merge happens, remove
+            # this skip entirely so a missing SBOM becomes a hard CI failure.
+            #
+            # Lockfile completeness (packages in requirements.lock / package-lock.json
+            # all represented in the SBOM) is NOT checked here — only SPDX structural
+            # validity is.  Add a lockfile-completeness check as a separate step once
+            # the SBOM is on the main branch and regeneration is part of the release flow.
+            echo "No sbom.spdx.json in this branch; validation skipped (TEMPORARY)."
+            echo "Remove the skip condition once feature/mid-project-sbom is merged."
+          fi
+
+      - name: Validate SBOM structure (SPDX 2.3)
+        if: steps.sbom_check.outputs.present == 'true'
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+
+          with open('sbom.spdx.json') as f:
+              doc = json.load(f)
+
+          required = [
+              'spdxVersion', 'SPDXID', 'dataLicense',
+              'name', 'documentNamespace', 'creationInfo',
+              'packages', 'relationships',
+          ]
+          missing = [k for k in required if k not in doc]
+          if missing:
+              print(f'ERROR: missing required SPDX fields: {missing}', file=sys.stderr)
+              sys.exit(1)
+
+          if doc['spdxVersion'] != 'SPDX-2.3':
+              print(f"ERROR: unexpected spdxVersion: {doc['spdxVersion']!r}", file=sys.stderr)
+              sys.exit(1)
+
+          pkgs = doc['packages']
+          rels = doc['relationships']
+
+          if not pkgs:
+              print('ERROR: packages list is empty', file=sys.stderr)
+              sys.exit(1)
+
+          bad = [p for p in pkgs if 'SPDXID' not in p or 'name' not in p]
+          if bad:
+              print(f'ERROR: {len(bad)} package(s) missing SPDXID or name', file=sys.stderr)
+              sys.exit(1)
+
+          if not rels:
+              print('ERROR: relationships list is empty', file=sys.stderr)
+              sys.exit(1)
+
+          print(f'SBOM OK: SPDX-2.3, {len(pkgs)} packages, {len(rels)} relationships')
+          EOF
+
   dependency-security:
     name: Dependency Security
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Two existing ReDoS findings in transitive deps (opentelemetry-api 1.45.1,
     # soupsieve 3.0.4) that are not reachable via ODOS's PDF-upload surface.
     # Marked continue-on-error so PRs are not blocked on third-party fixes, but
