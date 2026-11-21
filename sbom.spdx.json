@@ -5,11 +5,11 @@
   "name": "odos-mid-project-release",
   "documentNamespace": "https://github.com/amosproj/amos2026ws04-odos/spdx/ea4731a1-548c-5d7e-bf0c-32cefeaca6b5",
   "creationInfo": {
-    "created": "2026-11-19T13:41:52Z",
+    "created": "2026-11-21T14:30:14Z",
     "creators": [
       "Tool: ODOS lockfile-to-SPDX generator (local script, not part of the repository)"
     ],
-    "comment": "Generated from backend/requirements.lock, frontend/package-lock.json, the Dockerfiles and compose.yaml of develop at 29a8ab7. Python licenses and requirements come from PyPI metadata plus manual license review; npm data comes from package-lock.json. Docker images are listed by tag only and the three apt packages have no pinned version; operating-system packages inside the images are not enumerated. setuptools and websockets are not pinned in requirements.lock; their versions were observed in locally built backend images. licenseConcluded is NOASSERTION throughout."
+    "comment": "Generated from backend/requirements.lock, frontend/package-lock.json, the Dockerfiles and compose.yaml of develop at e600640. Python licenses and requirements come from PyPI metadata plus manual license review; npm data comes from package-lock.json. Docker images are listed by tag only and the three apt packages have no pinned version; operating-system packages inside the images are not enumerated. setuptools and websockets are not pinned in requirements.lock; their versions were observed in locally built backend images. licenseConcluded is NOASSERTION throughout. Scope: every package in frontend/package-lock.json and every pin in backend/requirements.lock (with setuptools and websockets, which the lock leaves out), the three Docker base images by tag and the apt packages backend/Dockerfile installs. These are inventory entries from lockfiles: development dependencies and platform-specific optional packages are listed and marked in each package's comment, and are not necessarily installed in any deployed image. Deliberately not listed: the operating-system packages and runtime software inside the Docker images, Rust crates and libraries embedded in Python wheels, and packages vendored inside other packages. See frontend/notices/README.md."
   },
   "packages": [
     {
@@ -55,9 +55,16 @@
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
           "referenceLocator": "pkg:docker/node@22-bookworm-slim"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "main-license",
+          "referenceLocator": "https://github.com/nodejs/node/blob/main/LICENSE",
+          "comment": "MIT License"
         }
       ],
-      "comment": "Docker image tag referenced in frontend/Dockerfile. Tag only, no digest is pinned in the repository, so the image content is not fixed. Operating-system packages inside the image are not enumerated."
+      "comment": "Docker image tag referenced in frontend/Dockerfile. Tag only, no digest is pinned in the repository, so the image content is not fixed. Operating-system packages inside the image are not enumerated.",
+      "licenseComments": "Composite image: it contains many components with different licenses, so no single license is assigned to the image. Main software: Node.js, under the MIT License (https://github.com/nodejs/node/blob/main/LICENSE); that license applies to Node.js only. The licenses of the other components in the image, such as its operating-system packages, have not been individually verified."
     },
     {
       "SPDXID": "SPDXRef-docker-postgres-17-alpine",
@@ -74,9 +81,16 @@
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
           "referenceLocator": "pkg:docker/postgres@17-alpine"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "main-license",
+          "referenceLocator": "https://www.postgresql.org/about/licence/",
+          "comment": "PostgreSQL License"
         }
       ],
-      "comment": "Docker image tag referenced in compose.yaml. Tag only, no digest is pinned in the repository, so the image content is not fixed. Operating-system packages inside the image are not enumerated."
+      "comment": "Docker image tag referenced in compose.yaml. Tag only, no digest is pinned in the repository, so the image content is not fixed. Operating-system packages inside the image are not enumerated.",
+      "licenseComments": "Composite image: it contains many components with different licenses, so no single license is assigned to the image. Main software: PostgreSQL, under the PostgreSQL License (https://www.postgresql.org/about/licence/); that license applies to PostgreSQL only. The licenses of the other components in the image, such as its operating-system packages, have not been individually verified."
     },
     {
       "SPDXID": "SPDXRef-docker-python-3.12-slim-bookworm",
@@ -93,9 +107,16 @@
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
           "referenceLocator": "pkg:docker/python@3.12-slim-bookworm"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "main-license",
+          "referenceLocator": "https://docs.python.org/3/license.html",
+          "comment": "Python Software Foundation License"
         }
       ],
-      "comment": "Docker image tag referenced in backend/Dockerfile. Tag only, no digest is pinned in the repository, so the image content is not fixed. Operating-system packages inside the image are not enumerated."
+      "comment": "Docker image tag referenced in backend/Dockerfile. Tag only, no digest is pinned in the repository, so the image content is not fixed. Operating-system packages inside the image are not enumerated.",
+      "licenseComments": "Composite image: it contains many components with different licenses, so no single license is assigned to the image. Main software: CPython, under the Python Software Foundation License (https://docs.python.org/3/license.html); that license applies to CPython only. The licenses of the other components in the image, such as its operating-system packages, have not been individually verified."
     },
     {
       "SPDXID": "SPDXRef-apt-fonts-liberation",
@@ -104,7 +125,7 @@
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
+      "licenseDeclared": "LicenseRef-Liberation-fonts-GPL-2.0-with-exceptions",
       "copyrightText": "NOASSERTION",
       "externalRefs": [
         {
@@ -113,8 +134,8 @@
           "referenceLocator": "pkg:deb/debian/fonts-liberation?distro=bookworm"
         }
       ],
-      "comment": "Debian package installed with apt-get in backend/Dockerfile; version is not pinned (latest at build time). Its own dependencies are not enumerated.",
-      "licenseComments": "Debian bookworm fonts-liberation 1:1.07.4-11 (debian/copyright) ships Liberation 1.x under the GNU GPL v2 with a font exception, not OFL-1.1; no single SPDX expression was assigned, needs review"
+      "comment": "Debian package installed with apt-get in backend/Dockerfile; version is not pinned (latest at build time). Its own dependencies are not enumerated. Installed version in the backend image analysed on 2026-11-21: 1:1.07.4-11 (the Dockerfile does not pin it, so the SBOM does not either).",
+      "licenseComments": "The Debian copyright file (fonts-liberation 1:1.07.4-11) grants the fonts under the GNU General Public License version 2 with two exceptions (documents that embed the font are not covered by the GPL; distribution in a physical product must give access to the source and the right to reinstall). That is not a standard SPDX identifier, so the text is kept verbatim in hasExtractedLicensingInfos."
     },
     {
       "SPDXID": "SPDXRef-apt-libgl1",
@@ -123,7 +144,7 @@
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
+      "licenseDeclared": "MIT",
       "copyrightText": "NOASSERTION",
       "externalRefs": [
         {
@@ -132,8 +153,8 @@
           "referenceLocator": "pkg:deb/debian/libgl1?distro=bookworm"
         }
       ],
-      "comment": "Debian package installed with apt-get in backend/Dockerfile; version is not pinned (latest at build time). Its own dependencies are not enumerated.",
-      "licenseComments": "Debian source package libglvnd 1.6.0-1 lists mixed licenses (MIT, BSD-1-Clause, Apache-2.0, GPL-3+ for build files) in debian/copyright; binary package license not assigned"
+      "comment": "Debian package installed with apt-get in backend/Dockerfile; version is not pinned (latest at build time). Its own dependencies are not enumerated. Installed version in the backend image analysed on 2026-11-21: 1.6.0-1 (the Dockerfile does not pin it, so the SBOM does not either).",
+      "licenseComments": "The Debian copyright file (libglvnd, libgl1 1.6.0-1) licenses everything under MIT except API headers and generator data (Apache-2.0), build macros (GPL-3+, public domain), documentation (GPL) and the bundled uthash header (BSD-1-clause). The package ships only libGL.so.1 (dpkg -L), so MIT is the license of what it installs; whether uthash is compiled into libGL is not stated."
     },
     {
       "SPDXID": "SPDXRef-apt-libglib2.0-0",
@@ -149,10 +170,16 @@
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
           "referenceLocator": "pkg:deb/debian/libglib2.0-0?distro=bookworm"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "main-license",
+          "referenceLocator": "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html",
+          "comment": "LGPL-2.1-or-later"
         }
       ],
-      "comment": "Debian package installed with apt-get in backend/Dockerfile; version is not pinned (latest at build time). Its own dependencies are not enumerated.",
-      "licenseComments": "Debian source package glib2.0 2.74.6-2+deb12u9 lists mixed licenses (LGPL, GPL-2+, Apache-2.0 with LLVM exception, others) in debian/copyright; binary package license not assigned"
+      "comment": "Debian package installed with apt-get in backend/Dockerfile; version is not pinned (latest at build time). Its own dependencies are not enumerated. Installed version in the backend image analysed on 2026-11-21: 2.74.6-2+deb12u9 (the Dockerfile does not pin it, so the SBOM does not either).",
+      "licenseComments": "Composite: the Debian copyright file (glib2.0 2.74.6-2+deb12u9) assigns LGPL-2+, LGPL-2.1+, GPL-2+, LGPL-3+, Unicode-DFS-2016, bzip2-1.0.6, public-domain and other licenses to different files. The main license of the GLib libraries is LGPL-2.1-or-later; no single expression is asserted for the whole package."
     },
     {
       "SPDXID": "SPDXRef-pypi-accelerate-1.15.0",
@@ -393,6 +420,26 @@
         }
       ],
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
+    },
+    {
+      "SPDXID": "SPDXRef-pypi-coverage-7.17.4",
+      "name": "coverage",
+      "versionInfo": "7.17.4",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "homepage": "https://github.com/coveragepy/coveragepy",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "licenseComments": "PyPI license field",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/coverage@7.17.4"
+        }
+      ],
+      "comment": "Python, backend/requirements.lock; transitive development dependency"
     },
     {
       "SPDXID": "SPDXRef-pypi-defusedxml-0.7.1",
@@ -1255,9 +1302,9 @@
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
     },
     {
-      "SPDXID": "SPDXRef-pypi-opentelemetry-api-1.45.1",
+      "SPDXID": "SPDXRef-pypi-opentelemetry-api-1.45.2",
       "name": "opentelemetry-api",
-      "versionInfo": "1.45.1",
+      "versionInfo": "1.45.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "homepage": "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api",
@@ -1269,7 +1316,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/opentelemetry-api@1.45.1"
+          "referenceLocator": "pkg:pypi/opentelemetry-api@1.45.2"
         }
       ],
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
@@ -1590,6 +1637,26 @@
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
           "referenceLocator": "pkg:pypi/pytest@9.1.1"
+        }
+      ],
+      "comment": "Python, backend/requirements.lock; direct development dependency"
+    },
+    {
+      "SPDXID": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "name": "pytest-cov",
+      "versionInfo": "7.1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "homepage": "https://github.com/pytest-dev/pytest-cov",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "licenseComments": "PyPI license_expression",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pytest-cov@7.1.0"
         }
       ],
       "comment": "Python, backend/requirements.lock; direct development dependency"
@@ -2015,9 +2082,9 @@
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
     },
     {
-      "SPDXID": "SPDXRef-pypi-soupsieve-3.0.4",
+      "SPDXID": "SPDXRef-pypi-soupsieve-4.0.1",
       "name": "soupsieve",
-      "versionInfo": "3.0.4",
+      "versionInfo": "4.0.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "homepage": "https://github.com/facelessuser/soupsieve",
@@ -2029,7 +2096,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/soupsieve@3.0.4"
+          "referenceLocator": "pkg:pypi/soupsieve@4.0.1"
         }
       ],
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
@@ -6022,7 +6089,7 @@
     {
       "spdxElementId": "SPDXRef-pypi-beautifulsoup4-4.15.0",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pypi-soupsieve-3.0.4"
+      "relatedSpdxElement": "SPDXRef-pypi-soupsieve-4.0.1"
     },
     {
       "spdxElementId": "SPDXRef-pypi-beautifulsoup4-4.15.0",
@@ -6432,7 +6499,7 @@
     {
       "spdxElementId": "SPDXRef-pypi-fastapi-0.162.0",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pypi-opentelemetry-api-1.45.1"
+      "relatedSpdxElement": "SPDXRef-pypi-opentelemetry-api-1.45.2"
     },
     {
       "spdxElementId": "SPDXRef-pypi-fastapi-0.162.0",
@@ -6605,7 +6672,7 @@
       "relatedSpdxElement": "SPDXRef-pypi-et-xmlfile-2.0.0"
     },
     {
-      "spdxElementId": "SPDXRef-pypi-opentelemetry-api-1.45.1",
+      "spdxElementId": "SPDXRef-pypi-opentelemetry-api-1.45.2",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-pypi-typing-extensions-4.16.0"
     },
@@ -6723,6 +6790,26 @@
       "spdxElementId": "SPDXRef-pypi-pytest-9.1.1",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-pypi-pygments-2.21.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "relationshipType": "DEV_DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-odos-backend"
+    },
+    {
+      "spdxElementId": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pypi-coverage-7.17.4"
+    },
+    {
+      "spdxElementId": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pypi-pluggy-1.7.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pypi-pytest-9.1.1"
     },
     {
       "spdxElementId": "SPDXRef-pypi-python-dateutil-2.9.0.post0",
@@ -7859,6 +7946,16 @@
       "spdxElementId": "SPDXRef-npm-whatwg-url-17.3.0",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-npm-webidl-conversions-8.0.1"
+    }
+  ],
+  "hasExtractedLicensingInfos": [
+    {
+      "licenseId": "LicenseRef-Liberation-fonts-GPL-2.0-with-exceptions",
+      "name": "GPL-2.0 with the Liberation font exceptions",
+      "extractedText": "This agreement governs the use of the Software and any updates to the Software,\nregardless of the delivery mechanism. Subject to the following terms, Red Hat, Inc.\n(\"Red Hat\") grants to the user (\"Client\") a license to this work pursuant to \nthe GNU General Public License v.2 with the exceptions set forth below and such \nother terms as our set forth in this End User License Agreement.\n\n1. The Software and License Exception. LIBERATION font software  (the \"Software\")\nconsists of TrueType-OpenType formatted font software for rendering LIBERATION\ntypefaces in sans serif, serif, and monospaced character styles. You are licensed \nto  use, modify, copy, and distribute the Software pursuant to the GNU General\nPublic License v.2 with the following exceptions:  \n\n(a) As a special exception, if you create a document which uses this font, and \n    embed this font or unaltered portions of this font into the document, this\n    font does not by itself cause the resulting document to be covered by the \n    GNU General Public License.  This exception does not however invalidate any\n    other reasons why the document might be covered by the GNU General Public \n    License.  If you modify this font, you may extend this exception to your \n    version of the font, but you are not obligated to do so. If you do not \n    wish to do so, delete this exception statement from your version.\n\n(b) As a further exception, any distribution of the object code of the Software \n    in a physical product must provide you the right to access and modify the\n    source code for the Software and to reinstall that modified version of the \n    Software in object code form on the same physical product on which you \n    received it.\n\n2. Intellectual Property Rights. The Software and each of its components, including \n   the source code, documentation, appearance, structure and organization are owned \n   by Red Hat and others and are protected under copyright and other laws. Title to \n   the Software and any component, or to any copy, modification, or merged portion\n   shall remain with the aforementioned, subject to the applicable license. \n   The \"LIBERATION\" trademark is a trademark of Red Hat, Inc. in the U.S. and other\n   countries. This agreement does not permit Client to distribute modified versions \n   of the Software using Red Hat's trademarks. If Client makes a redistribution of \n   a modified version of the Software, then Client must modify the files names to \n   remove any reference to the Red Hat trademarks and must not use the Red Hat \n   trademarks in any way to reference or promote the modified Software. \n\n3. Limited Warranty. To the maximum extent permitted under applicable law, the \n   Software is provided and licensed \"as is\" without warranty of any kind, \n   expressed or implied, including the implied warranties of merchantability, \n   non-infringement or fitness for a particular purpose. Red Hat does not warrant\n   that the functions contained in the Software will meet Client's requirements or\n   that the operation of the Software will be entirely error free or appear precisely\n   as described in the accompanying documentation. \n\n4. Limitation of Remedies and Liability.  To the maximum extent permitted by applicable\n   law, Red Hat or any Red Hat authorized dealer will not be liable to Client for any\n   incidental or consequential damages, including lost profits or lost savings arising \n   out of the use or inability to use the Software, even if Red Hat or such dealer has\n   been advised of the possibility of such damages. \n\n5. General. If any provision of this agreement is held to be unenforceable, that shall\n   not affect the enforceability of the remaining provisions. This agreement shall be\n   governed by the laws of the State of North Carolina and of the United States, without\n   regard to any conflict of laws provisions, except that the United Nations Convention \n   on the International Sale of Goods shall not apply.",
+      "seeAlsos": [
+        "https://pagure.io/liberation-fonts/"
+      ]
     }
   ]
 }
