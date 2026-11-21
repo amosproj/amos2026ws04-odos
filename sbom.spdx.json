@@ -5,11 +5,11 @@
   "name": "odos-mid-project-release",
   "documentNamespace": "https://github.com/amosproj/amos2026ws04-odos/spdx/ea4731a1-548c-5d7e-bf0c-32cefeaca6b5",
   "creationInfo": {
-    "created": "2026-11-19T13:41:52Z",
+    "created": "2026-11-21T14:30:14Z",
     "creators": [
       "Tool: ODOS lockfile-to-SPDX generator (local script, not part of the repository)"
     ],
-    "comment": "Generated from backend/requirements.lock, frontend/package-lock.json, the Dockerfiles and compose.yaml of develop at 29a8ab7. Python licenses and requirements come from PyPI metadata plus manual license review; npm data comes from package-lock.json. Docker images are listed by tag only and the three apt packages have no pinned version; operating-system packages inside the images are not enumerated. setuptools and websockets are not pinned in requirements.lock; their versions were observed in locally built backend images. licenseConcluded is NOASSERTION throughout."
+    "comment": "Generated from backend/requirements.lock, frontend/package-lock.json, the Dockerfiles and compose.yaml of develop at e600640. Python licenses and requirements come from PyPI metadata plus manual license review; npm data comes from package-lock.json. Docker images are listed by tag only and the three apt packages have no pinned version; operating-system packages inside the images are not enumerated. setuptools and websockets are not pinned in requirements.lock; their versions were observed in locally built backend images. licenseConcluded is NOASSERTION throughout."
   },
   "packages": [
     {
@@ -393,6 +393,26 @@
         }
       ],
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
+    },
+    {
+      "SPDXID": "SPDXRef-pypi-coverage-7.17.4",
+      "name": "coverage",
+      "versionInfo": "7.17.4",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "homepage": "https://github.com/coveragepy/coveragepy",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "licenseComments": "PyPI license field",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/coverage@7.17.4"
+        }
+      ],
+      "comment": "Python, backend/requirements.lock; transitive development dependency"
     },
     {
       "SPDXID": "SPDXRef-pypi-defusedxml-0.7.1",
@@ -1255,9 +1275,9 @@
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
     },
     {
-      "SPDXID": "SPDXRef-pypi-opentelemetry-api-1.45.1",
+      "SPDXID": "SPDXRef-pypi-opentelemetry-api-1.45.2",
       "name": "opentelemetry-api",
-      "versionInfo": "1.45.1",
+      "versionInfo": "1.45.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "homepage": "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api",
@@ -1269,7 +1289,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/opentelemetry-api@1.45.1"
+          "referenceLocator": "pkg:pypi/opentelemetry-api@1.45.2"
         }
       ],
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
@@ -1590,6 +1610,26 @@
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
           "referenceLocator": "pkg:pypi/pytest@9.1.1"
+        }
+      ],
+      "comment": "Python, backend/requirements.lock; direct development dependency"
+    },
+    {
+      "SPDXID": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "name": "pytest-cov",
+      "versionInfo": "7.1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "homepage": "https://github.com/pytest-dev/pytest-cov",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "licenseComments": "PyPI license_expression",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pytest-cov@7.1.0"
         }
       ],
       "comment": "Python, backend/requirements.lock; direct development dependency"
@@ -2015,9 +2055,9 @@
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
     },
     {
-      "SPDXID": "SPDXRef-pypi-soupsieve-3.0.4",
+      "SPDXID": "SPDXRef-pypi-soupsieve-4.0.1",
       "name": "soupsieve",
-      "versionInfo": "3.0.4",
+      "versionInfo": "4.0.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "homepage": "https://github.com/facelessuser/soupsieve",
@@ -2029,7 +2069,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/soupsieve@3.0.4"
+          "referenceLocator": "pkg:pypi/soupsieve@4.0.1"
         }
       ],
       "comment": "Python, backend/requirements.lock; transitive runtime dependency"
@@ -6022,7 +6062,7 @@
     {
       "spdxElementId": "SPDXRef-pypi-beautifulsoup4-4.15.0",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pypi-soupsieve-3.0.4"
+      "relatedSpdxElement": "SPDXRef-pypi-soupsieve-4.0.1"
     },
     {
       "spdxElementId": "SPDXRef-pypi-beautifulsoup4-4.15.0",
@@ -6432,7 +6472,7 @@
     {
       "spdxElementId": "SPDXRef-pypi-fastapi-0.162.0",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-pypi-opentelemetry-api-1.45.1"
+      "relatedSpdxElement": "SPDXRef-pypi-opentelemetry-api-1.45.2"
     },
     {
       "spdxElementId": "SPDXRef-pypi-fastapi-0.162.0",
@@ -6605,7 +6645,7 @@
       "relatedSpdxElement": "SPDXRef-pypi-et-xmlfile-2.0.0"
     },
     {
-      "spdxElementId": "SPDXRef-pypi-opentelemetry-api-1.45.1",
+      "spdxElementId": "SPDXRef-pypi-opentelemetry-api-1.45.2",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-pypi-typing-extensions-4.16.0"
     },
@@ -6723,6 +6763,26 @@
       "spdxElementId": "SPDXRef-pypi-pytest-9.1.1",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-pypi-pygments-2.21.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "relationshipType": "DEV_DEPENDENCY_OF",
+      "relatedSpdxElement": "SPDXRef-odos-backend"
+    },
+    {
+      "spdxElementId": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pypi-coverage-7.17.4"
+    },
+    {
+      "spdxElementId": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pypi-pluggy-1.7.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-pypi-pytest-cov-7.1.0",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pypi-pytest-9.1.1"
     },
     {
       "spdxElementId": "SPDXRef-pypi-python-dateutil-2.9.0.post0",
