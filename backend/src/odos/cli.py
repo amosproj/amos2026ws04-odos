@@ -150,7 +150,8 @@ def run_extract_rules(args) -> int:
     from odos.artifact_names import RULE_JSON
     from odos.llm.bedrock import BedrockClient, BedrockConfig, BedrockError, load_bedrock_env
     from odos.llm.model_output import default_diagnostics_dir
-    from odos.llm.rule_extraction import RuleExtractionError, extract_rules, prepare_request, write_rules_json
+    from odos.llm.rule_extraction import RuleExtractionError, write_rules_json
+    from odos.llm.document_extraction import extract_document as extract_rules, plan_chunks, prepare_chunk
 
     load_bedrock_env()
     if not args.legal_json.is_file():
@@ -160,11 +161,13 @@ def run_extract_rules(args) -> int:
         legal = json.loads(args.legal_json.read_text(encoding="utf-8"))
         if args.dry_run:
             config = BedrockConfig.from_env()
-            req = prepare_request(legal, config, args.element_id)
-            print(f"scope:      {req.scope if isinstance(req.scope, str) else ', '.join(req.scope)}")
+            _, chunks = plan_chunks(legal, args.element_id)
+            requests = [prepare_chunk(legal, chunk, config)[0] for chunk in chunks]
+            print(f"scope:      {', '.join(args.element_id) if args.element_id else 'document'}")
+            print(f"chunks:     {len(chunks)} provision/fallback targets, up to 4 concurrent workers")
             print(f"model:      {config.model_id} ({config.region})")
-            print(f"input:      about {req.estimated_input_tokens:,} tokens (upper estimate), context window {req.context_tokens:,}")
-            print(f"output:     up to {req.max_output_tokens:,} tokens, at most {1 + config.output_retries} model request(s)")
+            print(f"input:      about {sum(r.estimated_input_tokens for r in requests):,} initial tokens across all chunks")
+            print(f"output:     up to {config.max_tokens:,} tokens per call, at most 3 model calls per chunk")
             print("dry run:    nothing was sent")
             return 0
         diagnostics = default_diagnostics_dir()
@@ -181,16 +184,20 @@ def run_extract_rules(args) -> int:
     out = write_rules_json(result, args.output or args.legal_json.parent / RULE_JSON)
     g = result.generation
     c = g["counts"]
-    print(f"rules:      {c['accepted']} accepted ({c['flagged']} flagged for review, {c['repaired']} repaired), "
-          f"{c['rejected']} rejected (of {c['proposed']} proposed)")
+    print(f"rules:      {c.get('retained', c['accepted'])} retained, {c['accepted']} passed validation, "
+          f"{c.get('invalid', 0)} with validation issues, {c['flagged']} flagged for review")
     cov = g["coverage"]
     print(f"coverage:   {cov['sentencesCited']}/{cov['sentences']} sentences and {cov['elementsCited']}/{cov['elements']} "
           f"elements cited; {len(cov['citedOnlyByRejected'])} only by a rejected record")
     out_info = g["modelOutput"]
     print(f"tokens:     {g['inputTokens']} in, {g['outputTokens']} out ({out_info['requests']} model request(s))")
     if out_info["partial"]:
-        print("warning:    the answer was not valid JSON; only the complete records before the defect were used", file=sys.stderr)
+        print("warning:    extraction is partial; inspect the report for failed or truncated chunks", file=sys.stderr)
     print(f"rules.json: {out}")
+    if result.report is not None:
+        print(f"report:     {out.with_name('rule_extraction_report.json')}")
+    for record in g.get("rulesWithIssues", []):
+        print(f"retained with issues: #{record['index']} {record['id']}: {'; '.join(record['errors'])}", file=sys.stderr)
     for r in result.rejected:
         print(f"rejected:   #{r['index']} {r['id']}: {'; '.join(r['reasons'])}", file=sys.stderr)
     return 0

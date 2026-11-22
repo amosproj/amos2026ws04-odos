@@ -44,10 +44,9 @@ from odos.llm.rule_extraction import (
     InvalidScopeError,
     MalformedOutputError,
     OutputTruncatedError,
-    extract_rules,
-    prepare_request,
     write_rules_json,
 )
+from odos.llm.document_extraction import extract_document as extract_rules, check_document_request
 
 log = logging.getLogger("odos.rule_extraction_jobs")
 
@@ -109,6 +108,8 @@ class RuleExtraction(BaseModel):
     modelOutput: dict = Field(default_factory=dict)  # requests, parse mode, partial, number of kept diagnostics
     review: dict = Field(default_factory=lambda: dict(REVIEW))
     rulesFile: str | None = None  # RULE_JSON once completed
+    reportFile: str | None = None
+    workflow: dict = Field(default_factory=dict)
 
     @classmethod
     def queued(cls, request: RuleExtractionRequest) -> RuleExtraction:
@@ -191,7 +192,7 @@ def check_request(legal: dict, request: RuleExtractionRequest) -> None:
         raise HTTPException(422, "Element IDs must be non-empty strings.")
     config = bedrock_settings()
     try:
-        prepare_request(legal, config, request.elementIds)
+        check_document_request(legal, config, request.elementIds)
     except InvalidScopeError:
         raise HTTPException(422, "The selected element IDs are not part of this document.") from None
     except DocumentTooLargeError:
@@ -235,6 +236,8 @@ def run(directory: Path, request: RuleExtractionRequest, extraction: RuleExtract
     g = result.generation
     cov = g["coverage"]
     extraction.status, extraction.finishedAt, extraction.rulesFile = "completed", _now(), RULE_JSON
+    extraction.workflow = dict(g.get("workflow", {}))
+    extraction.reportFile = extraction.workflow.get("reportFile")
     extraction.modelId, extraction.promptVersion = g["modelId"], g["promptVersion"]
     extraction.counts = dict(g["counts"])
     extraction.coverage = {
@@ -249,7 +252,9 @@ def run(directory: Path, request: RuleExtractionRequest, extraction: RuleExtract
     extraction.modelOutput = {"requests": out["requests"], "parse": out["parse"], "partial": out["partial"],
                               "diagnostics": len(out["diagnostics"])}
     extraction.review = {**REVIEW, "rulesFlagged": g["counts"]["flagged"], "rulesRejected": g["counts"]["rejected"],
+                         "rulesWithIssues": g["counts"].get("invalid", 0),
                          "partialModelOutput": out["partial"]}
-    extraction.message = (f"{extraction.counts['accepted']} rules accepted as drafts, {extraction.counts['rejected']} rejected, "
+    extraction.message = (f"{extraction.counts.get('retained', extraction.counts['accepted'])} candidate rules retained as drafts, "
+                          f"{extraction.counts.get('invalid', 0)} with validation issues, "
                           f"{extraction.counts['flagged']} flagged for review.")
     return extraction

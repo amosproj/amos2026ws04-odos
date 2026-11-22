@@ -401,11 +401,12 @@ def test_the_dry_run_reports_the_size_and_calls_nothing(legal_file, capsys, monk
 
 def test_the_command_writes_rules_json_next_to_the_input(legal_file, capsys, monkeypatch):
     monkeypatch.setattr("odos.llm.bedrock.BedrockClient", lambda: FakeClient(answer(model_rule(), model_rule(source={"elements": [{"elementId": "x"}]}))))
-    assert cli.main(["extract-rules", str(legal_file)]) == 0
+    assert cli.main(["extract-rules", str(legal_file), "--element-id", ABS1]) == 0
     out = capsys.readouterr()
-    assert "1 accepted (0 flagged for review, 0 repaired), 1 rejected" in out.out and "rejected:" in out.err
+    assert "2 retained, 1 passed validation, 1 with validation issues" in out.out and "retained with issues:" in out.err
     assert "coverage:" in out.out
-    assert [r["id"] for r in json.loads((legal_file.parent / RULE_JSON).read_text(encoding="utf-8"))["rules"]] == ["demo-par-1-abs-1"]
+    assert len(json.loads((legal_file.parent / RULE_JSON).read_text(encoding="utf-8"))["rules"]) == 2
+    assert (legal_file.parent / "rule_extraction_report.json").is_file()
 
 
 def test_the_command_reports_a_bedrock_error_and_writes_nothing(legal_file, capsys, monkeypatch):

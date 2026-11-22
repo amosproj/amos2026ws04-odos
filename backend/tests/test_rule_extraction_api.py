@@ -49,6 +49,8 @@ class FakeBedrock:
         self.calls += 1
         if self.gate is not None:
             assert self.gate.wait(5), "the test never released the model answer"
+        if "REVISION MODE:" in system:
+            return answer(text='{"replacements": [], "additions": []}')
         item = self.answers.pop(0)
         if isinstance(item, Exception):
             raise item
@@ -101,19 +103,23 @@ def test_extraction_returns_at_once_runs_in_the_background_and_saves_the_rules_a
     assert client.get(f"/api/jobs/{job_id}").json()["ruleExtraction"]["status"] in ("queued", "running")
     gate.set()  # the model answers only after the request has returned
     done = wait_for_extraction(client, job_id)
-    assert fake.calls == 1
+    assert fake.calls == 3
     assert done["status"] == "completed" and done["rulesFile"] == RULE_JSON and done["errorCode"] is None
-    assert done["counts"] == {"proposed": 2, "accepted": 1, "rejected": 1, "repaired": 0, "flagged": 0}
+    assert done["counts"] == {"proposed": 2, "accepted": 1, "retained": 2, "invalid": 1,
+                              "rejected": 0, "repaired": 0, "flagged": 0}
     assert done["coverage"]["sentences"] == 2 and done["coverage"]["sentencesCited"] == 1
     assert done["coverage"]["uncitedSentenceIds"] == ["doc/par-6/abs-2/satz-1"]
     assert done["coverage"]["coveredByExceptionTextIds"] == []
-    assert done["modelOutput"] == {"requests": 1, "parse": "exact", "partial": False, "diagnostics": 0}
-    assert done["review"]["status"] == "draft" and done["review"]["rulesRejected"] == 1
+    assert done["modelOutput"] == {"requests": 3, "parse": "workflow", "partial": False, "diagnostics": 0}
+    assert done["review"]["status"] == "draft" and done["review"]["rulesWithIssues"] == 1
     assert done["startedAt"] and done["finishedAt"] and done["promptVersion"] == "4"
     rules = client.get(f"/api/jobs/{job_id}/files/{RULE_JSON}").json()
-    assert [r["id"] for r in rules["rules"]] == ["demo-bo-par-6-abs-1"]  # document-scoped
+    assert [r["id"] for r in rules["rules"]] == ["demo-bo-par-6-abs-1", "demo-bo-bad"]
     assert rules["rules"][0]["source"]["documentId"] == "demo-bo" and rules["rules"][0]["review"]["status"] == "draft"
-    assert rules["_generation"]["rulesRejected"][0]["candidate"] == UNUSABLE
+    assert rules["_generation"]["rulesRejected"] == []
+    report = client.get(f"/api/jobs/{job_id}/files/{done['reportFile']}").json()
+    assert report["runId"] == rules["_generation"]["runId"]
+    assert report["chunks"][0]["report"]["rounds"][0]["candidatesAfter"][1] == UNUSABLE
     assert client.get(f"/api/jobs/{job_id}").json()["ruleExtraction"] == done
 
 
@@ -196,17 +202,20 @@ def test_a_failure_without_a_response_reports_the_client_side_cause(api, monkeyp
     assert (failed["errorCode"], failed["errorDetail"]["cause"]) == ("bedrock_unavailable", "ConnectionClosedError")
 
 
-def test_a_malformed_answer_is_retried_once_then_reported_and_kept_privately(api, monkeypatch):
+def test_malformed_answers_are_preserved_after_the_three_call_budget(api, monkeypatch):
     client, job_id = api
-    fake = use(monkeypatch, FakeBedrock(answer(text='{"rules": [{"id": "x" "y"}]}'), answer(text="still not JSON {")))
+    fake = use(monkeypatch, FakeBedrock(answer(text='{"rules": [{"id": "x" "y"}]}'),
+                                       answer(text="still not JSON {"), answer(text="not JSON")))
     start(client, job_id)
     failed = wait_for_extraction(client, job_id)
-    assert fake.calls == 2
-    assert (failed["status"], failed["errorCode"], failed["modelOutput"]) == ("failed", "malformed_output", {"diagnostics": 2})
-    folder = odos.api._storage / job_id / rx.DIAGNOSTICS_DIR
-    assert len(list(folder.glob("*.json"))) == 2
+    assert fake.calls == 3
+    assert failed["status"] == "completed" and failed["workflow"]["outcome"] == "completed_with_issues"
+    assert failed["modelOutput"]["partial"] is True
+    report = client.get(f"/api/jobs/{job_id}/files/{failed['reportFile']}").json()
+    rounds = report["chunks"][0]["report"]["rounds"]
+    assert len(rounds) == 3 and all(r["rawResponse"] for r in rounds)
     assert client.get(f"/api/jobs/{job_id}/files/{rx.DIAGNOSTICS_DIR}").status_code == 404  # never served
-    assert client.get(f"/api/jobs/{job_id}/files/{RULE_JSON}").status_code == 404  # nothing accepted
+    assert client.get(f"/api/jobs/{job_id}/files/{RULE_JSON}").json()["rules"] == []
 
 
 def test_a_malformed_first_answer_and_a_valid_correction_complete(api, monkeypatch):
@@ -214,7 +223,7 @@ def test_a_malformed_first_answer_and_a_valid_correction_complete(api, monkeypat
     use(monkeypatch, FakeBedrock(answer(text="Here: {not json"), answer(RULE)))
     start(client, job_id)
     done = wait_for_extraction(client, job_id)
-    assert done["status"] == "completed" and done["modelOutput"] == {"requests": 2, "parse": "exact", "partial": False, "diagnostics": 1}
+    assert done["status"] == "completed" and done["modelOutput"] == {"requests": 2, "parse": "workflow", "partial": False, "diagnostics": 0}
 
 
 # ── request validation (nothing is queued or paid for) ────────────────────────────────────────────────────────────────

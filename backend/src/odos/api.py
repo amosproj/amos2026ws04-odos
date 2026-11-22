@@ -74,7 +74,7 @@ _log_odos_messages()
 MAX_UPLOAD_BYTES = int(os.environ.get("ODOS_MAX_UPLOAD_MB", "50")) * 1024 * 1024
 MAX_JOBS = 10  # when a new job comes in, the oldest finished ones beyond this are deleted with their files
 # the job files the frontend reads; nothing else in a job directory is served
-RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON)
+RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON, "rule_extraction_report.json")
 SOURCE_PDF = "source.pdf"  # the uploaded PDF inside a job directory; kept only with database persistence
 FAILED_MESSAGE = "The PDF could not be processed. It may be damaged, encrypted or a scanned image without a text layer."
 NOT_STORED_MESSAGE = "The PDF was processed, but its result could not be stored in the database."
@@ -223,7 +223,7 @@ def get_file(job_id: str, name: str, download: bool = False) -> FileResponse:
         raise HTTPException(404, "The result file is no longer available.")
     filename = None
     if download:
-        suffix = ".rules.json" if name == RULE_JSON else ".legal.json"
+        suffix = ".rules.json" if name == RULE_JSON else ".report.json" if name == "rule_extraction_report.json" else ".legal.json"
         filename = f"{Path(job.filename).stem}{suffix}"
     return FileResponse(path, media_type="application/json", filename=filename)
 

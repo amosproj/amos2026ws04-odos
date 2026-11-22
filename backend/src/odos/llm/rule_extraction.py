@@ -220,6 +220,7 @@ class PreparedRequest:
     estimated_input_tokens: int
     max_output_tokens: int
     context_tokens: int
+    target_document: dict | None = None  # Context may support citations, but is not an extraction target.
 
     @property
     def fits(self) -> bool:
@@ -424,6 +425,7 @@ class ExtractionResult:
     rules: list[dict]
     rejected: list[dict] = field(default_factory=list)  # {"index", "id", "reasons", "candidate": the record as proposed}
     generation: dict = field(default_factory=dict)
+    report: dict | None = None  # workflow report, written separately from the Rule JSON collection
 
     def to_json_dict(self) -> dict:
         """The content of `rules.json`: the `{ "rules": [...] }` collection the viewer reads, plus `_generation`."""
@@ -572,4 +574,49 @@ def write_rules_json(result: ExtractionResult, path: Path) -> Path:
         os.replace(tmp, path)
     finally:
         tmp.unlink(missing_ok=True)
+    if result.report is not None:
+        result.report["jobId"] = path.parent.name if re.fullmatch(r"[0-9a-f]{32}", path.parent.name) else None
+        result.report["resultFile"] = path.name
+        result.report["reportFile"] = "rule_extraction_report.json"
+        _write_report(result.report, path.with_name("rule_extraction_report.json"))
+    _archive_rules_json(path, result.generation.get("documentId", "document"), result.report)
     return path
+
+
+def _write_report(report: dict, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        temporary.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _archive_rules_json(source: Path, document_id: str, report: dict | None = None) -> Path | None:
+    """Optionally keep a timestamped copy without changing the job artifact or overwriting earlier runs."""
+    configured = os.environ.get("ODOS_RULE_EXTRACTION_ARCHIVE_DIR", "").strip()
+    if not configured:
+        return None
+    document_name = re.sub(r"[^a-zA-Z0-9_-]+", "-", str(document_id)).strip("-_")[:80] or "document"
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S-%fZ")
+    destination = Path(configured) / f"{document_name}_{stamp}.rules.json"
+    try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with destination.open("xb") as archive:
+            archive.write(source.read_bytes())
+        if report is not None:
+            report_root = Path(os.environ.get("ODOS_RULE_EXTRACTION_REPORT_DIR") or
+                               destination.parent.parent / "Reports_for_results")
+            report_name = destination.name.removesuffix(".rules.json") + ".report.json"
+            archive_report = {**report, "resultFile": destination.name, "reportFile": report_name,
+                              "resultDirectory": str(destination.parent)}
+            report_root.mkdir(parents=True, exist_ok=True)
+            with (report_root / report_name).open("x", encoding="utf-8") as output:
+                json.dump(archive_report, output, ensure_ascii=False, indent=2)
+                output.write("\n")
+    except OSError as error:
+        # An optional archive failure must not discard a successful, already stored model result.
+        log.warning("Could not archive Rule JSON (%s).", type(error).__name__)
+        return None
+    return destination
