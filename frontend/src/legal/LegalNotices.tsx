@@ -56,8 +56,11 @@ function MainLicense({ p }: { p: LicensePackage }) {
 function ThirdParty({ manifest }: { manifest: LicenseManifest }) {
   const [query, setQuery] = useState("");
   const [license, setLicense] = useState("");
-  const licenses = useMemo(() => [...new Set(manifest.packages.map(licenseLabel))].sort((a, b) => a.localeCompare(b)), [manifest]);
-  const shown = useMemo(() => filterPackages(manifest.packages, query, license), [manifest, query, license]);
+  const [view, setView] = useState<"direct" | "all">("direct");
+  const directPackages = useMemo(() => manifest.packages.filter((p) => p.direct), [manifest]);
+  const basePackages = view === "direct" ? directPackages : manifest.packages;
+  const licenses = useMemo(() => [...new Set(basePackages.map(licenseLabel))].sort((a, b) => a.localeCompare(b)), [basePackages]);
+  const shown = useMemo(() => filterPackages(basePackages, query, license), [basePackages, query, license]);
   return (
     <section aria-labelledby="legal-third">
       <h2 id="legal-third">Third-party open-source software</h2>
@@ -69,6 +72,14 @@ function ThirdParty({ manifest }: { manifest: LicenseManifest }) {
             ODOS is built on {manifest.packages.length} open-source packages and base images, listed below with their licenses. Their full license texts and copyright notices are in{" "}
             <a href={NOTICES_URL} target="_blank" rel="noopener noreferrer">THIRD-PARTY-NOTICES.txt</a>.
           </p>
+          <div className="legal-view-toggle" role="group" aria-label="Dependency view">
+            <button type="button" className={view === "direct" ? "active" : ""} aria-pressed={view === "direct"} onClick={() => { setView("direct"); setLicense(""); }}>
+              Direct Dependencies ({directPackages.length})
+            </button>
+            <button type="button" className={view === "all" ? "active" : ""} aria-pressed={view === "all"} onClick={() => { setView("all"); setLicense(""); }}>
+              All Dependencies ({manifest.packages.length})
+            </button>
+          </div>
           <div className="legal-tools">
             <label className="legal-search">
               <span className="sr-only">Search packages</span>
@@ -90,10 +101,10 @@ function ThirdParty({ manifest }: { manifest: LicenseManifest }) {
                 {shown.map((p) => (
                   <tr key={`${p.kind}|${p.name}|${p.version}`}>
                     <th scope="row">{p.name}</th>
-                    <td>{p.version ?? "not pinned"}</td>
+                    <td>{p.version ?? <abbr title="This package's version is not pinned in the project lockfiles; the SBOM lists the entry without a fixed version">Not pinned</abbr>}</td>
                     <td>{p.licenseName ? <span className="chip">{p.licenseName}</span> : p.mainLicense ? <MainLicense p={p} /> : <span className="legal-unknown" title={p.note ?? undefined}>{UNDETERMINED}</span>}</td>
                     <td>{typeOf(p)}</td>
-                    <td>{p.url ? <a href={p.url} target="_blank" rel="noopener noreferrer">{p.url.includes("npmjs.com") || p.url.includes("pypi.org") ? "Package page" : "Homepage"}<span className="sr-only"> of {p.name}</span></a> : <span className="muted">–</span>}</td>
+                    <td>{p.url ? <a href={p.url} target="_blank" rel="noopener noreferrer">{p.url.includes("npmjs.com") || p.url.includes("pypi.org") ? "Package page" : p.url.includes("hub.docker.com") ? "Docker Hub" : p.url.includes("packages.debian.org") ? "Debian package" : "Homepage"}<span className="sr-only"> of {p.name}</span></a> : <span className="muted">–</span>}</td>
                   </tr>
                 ))}
                 {shown.length === 0 && <tr><td colSpan={5} className="muted">No package matches.</td></tr>}
