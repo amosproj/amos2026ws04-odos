@@ -39,13 +39,6 @@ def _test_database_only(monkeypatch):
     monkeypatch.setenv("POSTGRES_DB", require_test_database(TEST_DATABASE))
 
 
-@pytest.fixture(autouse=True)
-def _no_real_bedrock_settings(monkeypatch, tmp_path_factory):
-    """No test reads the developer's .env (with a real Bedrock key) or writes diagnostics outside a temporary folder."""
-    monkeypatch.setenv("ODOS_ENV_FILE", str(tmp_path_factory.getbasetemp() / "no-such.env"))
-    monkeypatch.setenv("ODOS_LLM_DIAGNOSTICS_DIR", str(tmp_path_factory.mktemp("llm-diagnostics")))
-
-
 @pytest.fixture
 def db():
     """An empty `documents` table in the test database; skips when PostgreSQL is not configured or reachable."""

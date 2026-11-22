@@ -24,7 +24,6 @@
   --hl: rgba(224, 177, 94, .32); --hl-b: #E0B15E;
   /* scale */
   --r: 14px; --r-sm: 10px;
-  --footer-h: 56px;         /* the footer's height: screens that fill the window leave this much room */
   --font-display: Audiowide, "Arial Black", Arial, sans-serif;
   --font-mono: monospace;
   color-scheme: dark;
@@ -147,10 +146,3 @@ select { cursor: pointer; }
 .preview { flex: 1; margin: 0; padding: 12px; overflow: auto; font: 12px/1.5 ui-monospace, "SF Mono", Menlo, monospace; white-space: pre; background: var(--bg); min-height: 200px; }
 /* an error from the PDF viewer sits inside the workspace */
 .workspace .alert { margin: 6px 0; }
-/* ---- application shell and footer (one footer under every screen) ---------------------------------------------- */
-.app { display: flex; flex-direction: column; min-height: 100vh; }
-.app-page, .app > main { flex: 1 0 auto; min-width: 0; }
-.site-footer { flex: none; min-height: var(--footer-h); display: flex; align-items: center; border-top: 1px solid var(--border); background: var(--bar); color: var(--muted); font-size: 13px; }
-.site-footer-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; padding: 10px 0; }
-.site-footer a { color: var(--accent-hover); }
-@media (max-width: 760px) { .site-footer { font-size: 12px; } }

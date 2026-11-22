@@ -358,7 +358,7 @@ ODOS_MBO_LEGAL_JSON_PATH=/path/to/mbo/document.json ODOS_EU_LEGAL_JSON_PATH=/pat
 
 ## Future Rule Interpreter
 
-The schema itself does no extraction. A first LLM extractor on Amazon Bedrock exists ([bedrock-rule-extraction.md](bedrock-rule-extraction.md)): it sends Legal JSON to the model, rewrites the provenance from the Legal JSON and stores validated `draft` records as `rules.json`. An interpreter can receive the relevant Legal JSON source nodes, this schema or a constrained structured-output equivalent, and extraction instructions to preserve modality, actors, conditions, exceptions, references and unresolved meaning. It should cite only IDs from the supplied document, treat recitals as context unless supported by operative provisions, and emit `draft` records for human review.
+LLM integration and rule extraction are out of scope. A future interpreter can receive the relevant Legal JSON source nodes, this schema or a constrained structured-output equivalent, and extraction instructions to preserve modality, actors, conditions, exceptions, references and unresolved meaning. It should cite only IDs from the supplied document, treat recitals as context unless supported by operative provisions, and emit `draft` records for human review.
 
 ## Files
 

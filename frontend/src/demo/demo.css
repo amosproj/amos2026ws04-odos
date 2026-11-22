@@ -24,7 +24,7 @@
   .nav-links a { padding: 10px 16px 12px; }
 }
 /* ---- workspace page --------------------------------------------------------------------------------------------- */
-.home { min-height: calc(100vh - var(--footer-h)); background: radial-gradient(900px 520px at 6% -4%, rgba(45, 212, 191, .12), rgba(45, 212, 191, 0) 70%), radial-gradient(800px 500px at 100% 100%, rgba(15, 129, 118, .08), rgba(15, 129, 118, 0) 70%), var(--bg); }
+.home { min-height: 100vh; background: radial-gradient(900px 520px at 6% -4%, rgba(45, 212, 191, .12), rgba(45, 212, 191, 0) 70%), radial-gradient(800px 500px at 100% 100%, rgba(15, 129, 118, .08), rgba(15, 129, 118, 0) 70%), var(--bg); }
 .shell { width: min(1400px, 100% - 2 * var(--gutter)); margin-inline: auto; }
 .eyebrow { display: flex; align-items: center; gap: 14px; margin: 0; color: #DCE6EB; font-size: clamp(12px, 1.1vw, 16px); font-weight: 500; line-height: 1.2; letter-spacing: .16em; text-transform: uppercase; }
 .eyebrow i { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px rgba(45, 212, 191, .7); }
@@ -118,7 +118,7 @@
   .demo-tools { width: 100%; }
 }
 /* ---- result view ---- */
-.demo-result { height: calc(100vh - var(--footer-h)); min-height: 600px; background: radial-gradient(900px 520px at 6% -4%, rgba(45, 212, 191, .1), rgba(45, 212, 191, 0) 70%), var(--bg); }
+.demo-result { height: 100vh; min-height: 600px; background: radial-gradient(900px 520px at 6% -4%, rgba(45, 212, 191, .1), rgba(45, 212, 191, 0) 70%), var(--bg); }
 .demo-result .split { min-height: 0; }
 .demo-result .demo-status { font-size: clamp(12px, 1vw, 14px); }
 @media (max-width: 1000px) { .demo-result { height: auto; } }
