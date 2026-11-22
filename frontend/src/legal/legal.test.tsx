@@ -17,7 +17,10 @@ const sbom = {
     { SPDXID: "SPDXRef-c", name: "libgl1", versionInfo: "NOASSERTION", licenseDeclared: "NOASSERTION", licenseComments: "mixed licenses", externalRefs: [{ referenceType: "purl", referenceLocator: "pkg:deb/debian/libgl1" }] },
     { SPDXID: "SPDXRef-d", name: "react", versionInfo: "19.3.1", licenseDeclared: "MIT", externalRefs: [{ referenceType: "purl", referenceLocator: "pkg:npm/react@19.3.1" }] },
   ],
-  relationships: [{ spdxElementId: "SPDXRef-DOCUMENT", relationshipType: "DESCRIBES", relatedSpdxElement: "SPDXRef-root" }],
+  relationships: [
+    { spdxElementId: "SPDXRef-DOCUMENT", relationshipType: "DESCRIBES", relatedSpdxElement: "SPDXRef-root" },
+    { spdxElementId: "SPDXRef-root", relationshipType: "DEPENDS_ON", relatedSpdxElement: "SPDXRef-b" }, // fastapi is direct; react and libgl1 are transitive
+  ],
 };
 
 describe("buildManifest", () => {
@@ -28,7 +31,7 @@ describe("buildManifest", () => {
   it("keeps declared licenses and treats NOASSERTION as not determined", () => {
     expect(m.packages.find((p) => p.name === "react")!.license).toBe("MIT");
     const lib = m.packages.find((p) => p.name === "libgl1")!;
-    expect(lib).toMatchObject({ license: null, version: null, note: "mixed licenses", kind: "Debian package", url: null });
+    expect(lib).toMatchObject({ license: null, version: null, note: "mixed licenses", kind: "Debian package", url: "https://packages.debian.org/bookworm/libgl1" });
   });
   it("links the SBOM's homepage, else the registry page, never an invented URL", () => {
     expect(m.packages.find((p) => p.name === "fastapi")!.url).toBe("https://github.com/fastapi/fastapi");
@@ -37,6 +40,56 @@ describe("buildManifest", () => {
   it("carries only what the page shows", () => {
     expect(Object.keys(m).sort()).toEqual(["available", "created", "packages", "spdxVersion", "staleNotices"]);
     expect(JSON.stringify(m)).not.toMatch(/\/Users\/|SPDXRef|checksum/);
+  });
+  it("marks only packages directly DEPENDS_ON'd by a root as direct", () => {
+    expect(m.packages.map((p) => [p.name, p.direct])).toEqual([["fastapi", true], ["libgl1", false], ["react", false]]);
+  });
+  it("also marks a deduplicated package direct when any of its SPDXIDs is direct", () => {
+    // SPDXRef-d is a duplicate of SPDXRef-a; marking SPDXRef-a direct should propagate
+    const withDirectDup = { ...sbom, relationships: [...sbom.relationships, { spdxElementId: "SPDXRef-root", relationshipType: "DEPENDS_ON", relatedSpdxElement: "SPDXRef-a" }] };
+    expect(buildManifest(withDirectDup).packages.find((p) => p.name === "react")!.direct).toBe(true);
+  });
+});
+
+describe("source URLs and version display", () => {
+  const sbomWithDockerDeb = {
+    spdxVersion: "SPDX-2.3", creationInfo: { created: "2026-11-21T10:00:00Z" },
+    packages: [
+      { SPDXID: "SPDXRef-root", name: "odos", versionInfo: "0.1.0", licenseDeclared: "MIT" },
+      { SPDXID: "SPDXRef-node", name: "node", versionInfo: "22-bookworm-slim", licenseDeclared: "MIT", externalRefs: [{ referenceType: "purl", referenceLocator: "pkg:docker/node@22-bookworm-slim" }] },
+      { SPDXID: "SPDXRef-libgl1", name: "libgl1", versionInfo: "NOASSERTION", licenseDeclared: "MIT", externalRefs: [{ referenceType: "purl", referenceLocator: "pkg:deb/debian/libgl1" }] },
+      { SPDXID: "SPDXRef-react2", name: "react", versionInfo: "19.3.1", licenseDeclared: "MIT", homepage: "https://react.dev", externalRefs: [{ referenceType: "purl", referenceLocator: "pkg:npm/react@19.3.1" }] },
+    ],
+    relationships: [
+      { spdxElementId: "SPDXRef-DOCUMENT", relationshipType: "DESCRIBES", relatedSpdxElement: "SPDXRef-root" },
+      // mark all as direct so renderToStaticMarkup (which uses the default Direct view) shows them
+      { spdxElementId: "SPDXRef-root", relationshipType: "DEPENDS_ON", relatedSpdxElement: "SPDXRef-node" },
+      { spdxElementId: "SPDXRef-root", relationshipType: "DEPENDS_ON", relatedSpdxElement: "SPDXRef-libgl1" },
+      { spdxElementId: "SPDXRef-root", relationshipType: "DEPENDS_ON", relatedSpdxElement: "SPDXRef-react2" },
+    ],
+  };
+  const m2 = buildManifest(sbomWithDockerDeb);
+  it("generates a Docker Hub URL for Docker image packages", () => {
+    expect(m2.packages.find((p) => p.name === "node")!.url).toBe("https://hub.docker.com/_/node");
+  });
+  it("generates a Debian packages.debian.org URL for Debian packages", () => {
+    expect(m2.packages.find((p) => p.name === "libgl1")!.url).toBe("https://packages.debian.org/bookworm/libgl1");
+  });
+  it("prefers the SBOM homepage over a generated registry URL", () => {
+    expect(m2.packages.find((p) => p.name === "react")!.url).toBe("https://react.dev");
+  });
+  it("renders Not pinned with tooltip when version is null", () => {
+    const html = renderToStaticMarkup(<LegalNotices manifest={buildManifest(sbomWithDockerDeb)} />);
+    expect(html).toContain("Not pinned");
+    expect(html).toContain("not pinned in the project lockfiles");
+    expect(html).not.toContain(">not pinned<"); // old lowercase text must be gone
+  });
+  it("renders Docker Hub and Debian links in the Source column", () => {
+    const html = renderToStaticMarkup(<LegalNotices manifest={buildManifest(sbomWithDockerDeb)} />);
+    expect(html).toContain("hub.docker.com/_/node");
+    expect(html).toContain("Docker Hub");
+    expect(html).toContain("packages.debian.org/bookworm/libgl1");
+    expect(html).toContain("Debian package");
   });
 });
 
@@ -88,6 +141,8 @@ describe("composite components and extracted licenses", () => {
     packages: [...sbom.packages,
       { SPDXID: "SPDXRef-img", name: "postgres", versionInfo: "17-alpine", licenseDeclared: "NOASSERTION", externalRefs: [{ referenceType: "purl", referenceLocator: "pkg:docker/postgres@17-alpine" }, { referenceCategory: "OTHER", referenceType: "main-license", referenceLocator: "https://www.postgresql.org/about/licence/", comment: "PostgreSQL License" }] },
       { SPDXID: "SPDXRef-font", name: "fonts", versionInfo: "NOASSERTION", licenseDeclared: "LicenseRef-X", externalRefs: [{ referenceType: "purl", referenceLocator: "pkg:deb/debian/fonts" }] }],
+    // mark postgres as a direct dependency so it appears in the default Direct view used by renderToStaticMarkup
+    relationships: [...sbom.relationships, { spdxElementId: "SPDXRef-root", relationshipType: "DEPENDS_ON", relatedSpdxElement: "SPDXRef-img" }],
   };
   const m = buildManifest(composite);
   it("reads the main license of a composite component, never as its license", () => {

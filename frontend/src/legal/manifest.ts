@@ -14,6 +14,8 @@ export type LicensePackage = {
   note: string | null;
   /** Whether the SBOM calls the component a runtime or a development dependency (null: it does not say). */
   scope: "runtime" | "development" | null;
+  /** True when the package is a direct (first-level) dependency of a project root, as recorded by a DEPENDS_ON relationship in the SBOM. */
+  direct: boolean;
   /** How well the notice store evidences this exact name and version; only VERIFIED_FULL_TEXT counts as a notice. */
   noticeStatus: NoticeStatus;
   /** Shorthand for noticeStatus === "VERIFIED_FULL_TEXT". */
@@ -86,6 +88,10 @@ const web = (v: string | undefined) => (v && /^https?:\/\//.test(v) ? v : null);
 function registryUrl(type: string, name: string, version: string | null) {
   if (type === "npm") return `https://www.npmjs.com/package/${name}${version ? `/v/${version}` : ""}`;
   if (type === "pypi") return `https://pypi.org/project/${name}/${version ? `${version}/` : ""}`;
+  // Official Docker Hub page for the named image (all three ODOS base images are Docker official images).
+  if (type === "docker") return `https://hub.docker.com/_/${name}`;
+  // Official Debian package page. ODOS backend images are bookworm-slim, so bookworm is the right suite.
+  if (type === "deb") return `https://packages.debian.org/bookworm/${name}`;
   return null;
 }
 
@@ -97,6 +103,8 @@ const mainLicenseOf = (p: SpdxPackage) => {
 /** SBOM (SPDX JSON) to manifest: the described root components are the project itself, not third-party, and are left out; duplicates are merged. */
 export function buildManifest(sbom: Spdx, store: NoticeStore | null = null): LicenseManifest {
   const roots = new Set((sbom.relationships ?? []).filter((r) => r.relationshipType === "DESCRIBES").map((r) => r.relatedSpdxElement));
+  // Direct dependencies: packages that a root directly DEPENDS_ON (first-level only, not transitive).
+  const directSPDXIDs = new Set((sbom.relationships ?? []).filter((r) => r.spdxElementId && roots.has(r.spdxElementId) && r.relationshipType === "DEPENDS_ON").map((r) => r.relatedSpdxElement));
   const seen = new Map<string, LicensePackage>();
   for (const p of sbom.packages ?? []) {
     if (!p.name || (p.SPDXID && roots.has(p.SPDXID))) continue;
@@ -104,6 +112,10 @@ export function buildManifest(sbom: Spdx, store: NoticeStore | null = null): Lic
     const type = /^pkg:([^/]+)\//.exec(purl)?.[1] ?? "";
     const version = known(p.versionInfo);
     const license = known(p.licenseDeclared);
+    const isDirect = !!(p.SPDXID && directSPDXIDs.has(p.SPDXID));
+    const key = `${KINDS[type] ?? "Other"}|${p.name}|${version}`;
+    // If this SPDXID is direct, mark the entry direct even if another duplicate entry was added first.
+    if (seen.has(key)) { if (isDirect) seen.get(key)!.direct = true; continue; }
     const entry: LicensePackage = {
       name: p.name, version, license, kind: KINDS[type] ?? "Other",
       licenseName: license ? license.replace(/LicenseRef-[A-Za-z0-9.-]+/g, (id) => sbom.hasExtractedLicensingInfos?.find((e) => e.licenseId === id)?.name ?? id) : null,
@@ -111,12 +123,13 @@ export function buildManifest(sbom: Spdx, store: NoticeStore | null = null): Lic
       url: web(p.homepage) ?? registryUrl(type, p.name, version),
       note: license ? null : p.licenseComments ?? null,
       scope: /\bdevelopment dependency/.test(p.comment ?? "") ? "development" : /\bruntime dependency/.test(p.comment ?? "") ? "runtime" : null,
+      direct: isDirect,
       noticeStatus: "UNRESOLVED",
       notice: false,
     };
     entry.noticeStatus = noticeStatus(store, entry);
     entry.notice = entry.noticeStatus === "VERIFIED_FULL_TEXT";
-    seen.set(`${entry.kind}|${entry.name}|${entry.version}`, entry);
+    seen.set(key, entry);
   }
   const packages = [...seen.values()].sort((a, b) => a.name.localeCompare(b.name) || (a.version ?? "").localeCompare(b.version ?? ""));
   return { available: true, spdxVersion: sbom.spdxVersion ?? null, created: sbom.creationInfo?.created ?? null, packages, staleNotices: staleKeys(packages, store).length };

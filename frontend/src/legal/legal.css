@@ -6,6 +6,12 @@
 .legal p, .legal li { max-width: 78ch; }
 .legal ul { margin: 0; padding-left: 20px; }
 .legal li { margin-bottom: 8px; }
+.legal-view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin: 16px 0 0; }
+.legal-view-toggle button { background: var(--bar); border: none; border-right: 1px solid var(--border); color: var(--text); cursor: pointer; font-size: 14px; padding: 8px 16px; transition: background .15s; }
+.legal-view-toggle button:last-child { border-right: none; }
+.legal-view-toggle button:hover:not(.active) { background: var(--panel); }
+.legal-view-toggle button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.legal-view-toggle button.active { background: #2c8a78; color: #fff; font-weight: 600; }
 .legal-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
 .legal-search { flex: 1 1 260px; max-width: 420px; }
 .legal-search input { width: 100%; height: 42px; border-radius: 12px; background: var(--panel); }
