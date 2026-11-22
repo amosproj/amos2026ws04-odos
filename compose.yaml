@@ -63,7 +63,10 @@ services:
       start_period: 60s
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      additional_contexts:
+        repo: . # the root-level sbom.spdx.json, which the Legal Notices page is built from
     environment:
       ODOS_API_URL: http://backend:8000
     ports:

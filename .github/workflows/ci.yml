@@ -162,6 +162,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
+          build-contexts: repo=.
           push: false
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
@@ -195,6 +196,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
+          build-contexts: repo=.
           push: false
           load: true
           tags: odos-frontend:ci
