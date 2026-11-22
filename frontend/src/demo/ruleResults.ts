@@ -1,6 +1,7 @@
 // What the Rule Extraction page shows of a job's `rules.json` (written by the backend's Bedrock extraction): the Rule JSON
 // 2.0 records exactly as stored, plus the facts the page may state about them. Nothing here invents a field, a score or a
 // review decision: a value the file does not hold is absent from the result.
+import type { DocElement } from "../types";
 import { ruleEntries, type HumanState, type RuleReviewEntry } from "./live";
 
 /** Prefix of the review ambiguities the backend's own quality checks add to a rule (backend/src/odos/llm/rule_checks.py). */
@@ -205,4 +206,50 @@ export function overviewOf(results: RuleResults): Overview {
     flagged: items.filter((r) => r.checkFlags.length > 0).length,
     autoRejected: results.autoRejected.length,
   };
+}
+
+// ── provisions: how the review queue groups and names rules, for any document type ─────────────────────────────────────
+
+/** Element types that are a *provision* of a document: the unit a reader cites (a section sign in German law, an article in EU
+ *  law). The queue groups rules by the nearest of these around their source. Another document type (for example a technical
+ *  standard's clause) is supported by adding its element type here; a rule whose sources lie in none of them is listed under
+ *  "Other provisions". Nothing else in the page depends on the document type. */
+export const PROVISION_TYPES: ReadonlySet<string> = new Set(["paragraph", "article"]);
+
+export interface Provision {
+  id: string;
+  /** "§ 6 · Abstandsflächen, Abstände", "Artikel 4 · Verfügbarkeit …": marker and title as the document prints them. */
+  label: string;
+}
+
+export const provisionLabel = (e: DocElement): string => [e.marker, e.title].filter(Boolean).join(" · ") || e.id;
+
+/** The provision a rule belongs to: that of its primary source element (else of any source element); null when its sources lie in
+ *  none or are not part of the opened document. */
+export function provisionOf(item: RuleItem, elements: Map<string, DocElement>): Provision | null {
+  const sources = [...item.sources].sort((a, b) => Number((b.role ?? "primary") === "primary") - Number((a.role ?? "primary") === "primary"));
+  for (const s of sources) {
+    for (let e = elements.get(s.elementId); e; e = e.parent_id ? elements.get(e.parent_id) : undefined) {
+      if (PROVISION_TYPES.has(e.type)) return { id: e.id, label: provisionLabel(e) };
+    }
+  }
+  return null;
+}
+
+export type QueueOrder = "flagged" | "document";
+
+/** The queue in the order the reviewer works it. "flagged": rules with a check flag first (they ask for a closer look), the
+ *  rest in document order. "document": as extracted, which follows the document. Both are stable and drop nothing. A rule
+ *  without a flag is not thereby verified; the order only says where attention goes first. */
+export function queueOrder<T extends RuleItem>(items: T[], order: QueueOrder): T[] {
+  return order === "document" ? items : [...items.filter((r) => r.checkFlags.length > 0), ...items.filter((r) => r.checkFlags.length === 0)];
+}
+
+/** How many of the document's provisions have at least one rule, or null when the opened document has no provisions of a known
+ *  type. A count of where rules exist, not a measure of completeness: many provisions need no rule. */
+export function provisionCoverage(elements: Map<string, DocElement>, items: RuleItem[]): { total: number; withRules: number } | null {
+  const all = [...elements.values()].filter((e) => PROVISION_TYPES.has(e.type));
+  if (all.length === 0) return null;
+  const used = new Set(items.map((r) => provisionOf(r, elements)?.id).filter((id): id is string => !!id));
+  return { total: all.length, withRules: used.size };
 }

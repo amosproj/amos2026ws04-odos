@@ -1,7 +1,8 @@
 // The rule-extraction client (live.ts) and the mapping of a stored rules.json (ruleResults.ts), without any UI.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { type RuleReviewEntry, EXTRACTION_TIMEOUT_MS, ExtractionWaitError, HttpError, getRuleExtraction, loadRules, startRuleExtraction, watchRuleExtraction, type RuleExtractionStatus } from "./live";
-import { CHECK_FLAG_PREFIX, applyReview, generatedAt, matchesFilter, matchesSearch, overviewOf, pagesLabel, toRuleResults, validPages } from "./ruleResults";
+import { CHECK_FLAG_PREFIX, PROVISION_TYPES, applyReview, generatedAt, matchesFilter, matchesSearch, overviewOf, pagesLabel, provisionCoverage, provisionOf, queueOrder, toRuleItem, toRuleResults, validPages } from "./ruleResults";
+import { el, modelOf } from "../testing";
 import { RULE_DOOR, RULE_FIRE, RULE_FOREIGN, STORED, rule, rulesFile, status } from "./ruleTestData";
 
 const json = (body: unknown, code = 200) => new Response(JSON.stringify(body), { status: code, headers: { "Content-Type": "application/json" } });
@@ -180,5 +181,55 @@ describe("applying the reviewers' decisions", () => {
     expect([a, b, c].map((i) => matchesFilter(i, "rejected"))).toEqual([false, true, false]);
     expect([a, b, c].map((i) => matchesFilter(i, "pending"))).toEqual([false, false, true]);
     expect(matchesFilter(c, "reviewed")).toBe(false); // the file's own "reviewed" status is not used once decisions are stored
+  });
+});
+
+
+describe("provisions: the grouping of the review queue, for any document type", () => {
+  // German law (section sign), EU law (article) and a type the page does not know yet, as the document model names them
+  const german = modelOf([
+    el("doc", "document", null, ["doc/par-6"], { region: "document" }),
+    el("doc/par-6", "paragraph", "doc", ["doc/par-6/abs-5"], { marker: "§ 6", title: "Abstandsflächen" }),
+    el("doc/par-6/abs-5", "absatz", "doc/par-6", [], { marker: "(5)" }),
+  ]);
+  const eu = modelOf([
+    el("doc", "document", null, ["doc/art-4"], { region: "document" }),
+    el("doc/art-4", "article", "doc", ["doc/art-4/para-1"], { marker: "Artikel 4", title: "Verfügbarkeit auf dem Markt" }),
+    el("doc/art-4/para-1", "article_paragraph", "doc/art-4", [], { marker: "1." }),
+  ]);
+  const future = modelOf([el("std/cl-5", "clause", null, ["std/cl-5/sub"], { marker: "5", title: "Safety requirements" }), el("std/cl-5/sub", "subclause", "std/cl-5", [])]);
+  const byId = (m: ReturnType<typeof modelOf>) => new Map(m.elements.map((e) => [e.id, e]));
+  const ruleAt = (id: string, elementId: string, role = "primary") => toRuleItem(rule(id, id, elementId, {}, { source: { documentId: "d", citation: id, elements: [{ elementId, role }] } }));
+
+  it("names the provision as the document prints it, for German and EU documents alike", () => {
+    expect(provisionOf(ruleAt("a", "doc/par-6/abs-5"), byId(german))).toEqual({ id: "doc/par-6", label: "§ 6 · Abstandsflächen" });
+    expect(provisionOf(ruleAt("b", "doc/art-4/para-1"), byId(eu))).toEqual({ id: "doc/art-4", label: "Artikel 4 · Verfügbarkeit auf dem Markt" });
+  });
+
+  it("knows no provision for a document type it has not been told about, instead of guessing; the set is the one place to extend", () => {
+    expect(provisionOf(ruleAt("c", "std/cl-5/sub"), byId(future))).toBeNull();
+    expect(provisionCoverage(byId(future), [ruleAt("c", "std/cl-5/sub")])).toBeNull();
+    expect(PROVISION_TYPES.has("clause")).toBe(false); // a future technical standard is added here, when its support exists
+  });
+
+  it("prefers the provision of the primary source, and finds none for a source outside the document", () => {
+    const two = toRuleItem(rule("m", "m", "doc/par-6/abs-5", {}, { source: { documentId: "d", elements: [{ elementId: "doc/art-4", role: "context" }, { elementId: "doc/par-6/abs-5", role: "primary" }] } }));
+    expect(provisionOf(two, new Map([...byId(german), ...byId(eu)]))?.id).toBe("doc/par-6");
+    expect(provisionOf(ruleAt("x", "doc/elsewhere"), byId(german))).toBeNull();
+  });
+
+  it("counts how many provisions have a rule, as a count and not as completeness", () => {
+    const many = modelOf([...german.elements, el("doc/par-7", "paragraph", "doc", [], { marker: "§ 7" })]);
+    expect(provisionCoverage(byId(many), [ruleAt("a", "doc/par-6/abs-5"), ruleAt("b", "doc/par-6")])).toEqual({ total: 2, withRules: 1 });
+  });
+
+  it("puts rules with a flag first and otherwise keeps the order; document order changes nothing; nothing is dropped", () => {
+    const flagged = toRuleItem(RULE_DOOR);
+    const plain = [toRuleItem(RULE_FIRE), toRuleItem(RULE_FOREIGN)];
+    const items = [plain[0], flagged, plain[1]];
+    expect(queueOrder(items, "flagged").map((r) => r.id)).toEqual(["tuer-breite", "brandabschnitt", "fremd"]);
+    expect(queueOrder(items, "document")).toEqual(items);
+    expect(queueOrder(items, "flagged")).toHaveLength(3);
+    expect(items.map((r) => r.id)).toEqual(["brandabschnitt", "tuer-breite", "fremd"]); // the input is not reordered
   });
 });

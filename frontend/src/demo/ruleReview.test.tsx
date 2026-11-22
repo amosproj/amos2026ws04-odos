@@ -6,7 +6,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RuleExtractionView, type RulesNav } from "./RuleExtraction";
 import type { RuleHistoryEvent, RuleReviewEntry } from "./live";
-import { RULE_DOOR, RULE_FIRE, STORED, demoResult, generation, rulesFile, status } from "./ruleTestData";
+import { RULE_DOOR, RULE_FIRE, RULE_FOREIGN, STORED, demoResult, generation, rulesFile, status } from "./ruleTestData";
 
 vi.mock("../components/PdfViewer", () => ({ PdfViewer: () => <div className="pdf-stub" /> }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -111,174 +111,253 @@ const mount = async (over: Partial<Fake> = {}, { name = "", nav }: { name?: stri
   await open(nav);
 };
 const close = () => { act(() => root.unmount()); host.remove(); };
-const q = <T extends Element = HTMLElement>(sel: string) => host.querySelector<T>(sel);
-const qa = <T extends Element = HTMLElement>(sel: string) => [...host.querySelectorAll<T>(sel)];
+// the overview and help are dialogs rendered on document.body, so queries look at the whole document
+const q = <T extends Element = HTMLElement>(sel: string) => document.body.querySelector<T>(sel);
+const qa = <T extends Element = HTMLElement>(sel: string) => [...document.body.querySelectorAll<T>(sel)];
 const button = (name: string | RegExp) => qa<HTMLButtonElement>("button").find((b) => { const t = (b.textContent ?? "").trim(); return typeof name === "string" ? t === name : name.test(t); });
 const click = async (target: Element | null | undefined) => { if (!target) throw new Error("nothing to click"); await act(async () => { (target as HTMLElement).click(); }); await flush(); };
-const fill = async (el: HTMLInputElement | HTMLTextAreaElement, value: string) => {
-  const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-  await act(async () => { Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(el, value); el.dispatchEvent(new Event("input", { bubbles: true })); });
+const fill = async (el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string) => {
+  const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+  await act(async () => { Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(el, value); el.dispatchEvent(new Event(el instanceof HTMLSelectElement ? "change" : "input", { bubbles: true })); });
   await flush();
 };
-const reviewerInput = () => q<HTMLInputElement>('.rex-review input[type="text"]')!;
+const key = async (k: string, target: EventTarget = document.body) => { await act(async () => { target.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true })); }); await flush(); };
+
+/** The three decisions under "Is this rule suggestion correct?". */
+const YES = "Yes, correct", ADJUST = "Adjust", NO = "No, incorrect";
+const choice = (name: typeof YES | typeof ADJUST | typeof NO) => qa<HTMLButtonElement>(".rex-choice").find((b) => b.querySelector(".rex-choice-main")?.textContent === name)!;
+const allOff = () => [YES, ADJUST, NO].every((n) => choice(n as typeof YES).disabled);
+const reviewerInput = () => q<HTMLInputElement>(".rex-name input")!;
+const current = () => q(".rex-card")?.getAttribute("aria-label"); // the title of the rule on screen
+const pager = () => q(".rex-pager-pos")?.textContent;
+const decided = () => q(".rex-decided")?.textContent ?? null;
+const side = () => q(".rex-side")?.textContent ?? "";
+const ring = () => Number(q(".rex-ring")?.getAttribute("aria-valuenow"));
+const alert = () => q('.rex-decide [role="alert"]')?.textContent;
+const openOverview = () => click(button("All rules"));
+const rows = () => qa(".rex-dialog .rex-rule");
+const rowStates = () => qa(".rex-dialog .rex-rule .rex-state").map((c) => c.textContent);
+const rowTags = (kind: "flag" | "edited") => qa(`.rex-dialog .rex-rule .rex-tag.${kind}`).length;
+const closeOverview = () => click(q('.rex-dialog button[aria-label="Close"]'));
+const advanced = () => click(q(".rex-adv-toggle"));
+const next = () => click(q('button[aria-label="Next rule"]'));
+const previous = () => click(q('button[aria-label="Previous rule"]'));
+const stayOnRule = async () => { await openOverview(); await click(q<HTMLInputElement>('.rex-queue-opts input[type="checkbox"]')); await closeOverview(); };
 
 beforeEach(() => { vi.useFakeTimers(); Element.prototype.scrollIntoView = () => {}; window.scrollTo = () => {}; });
 afterEach(() => { close(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe("without review storage", () => {
-  it("keeps Accept, Reject and Edit disabled and passes on the backend's reason", async () => {
+  it("keeps the three decisions disabled and passes on the backend's reason", async () => {
     await mount({ enabled: false });
-    for (const name of ["Accept Rule", "Reject", "Edit JSON"]) expect(button(new RegExp(`^${name}$`))?.disabled, name).toBe(true);
-    expect(q(".rex-detail")?.textContent).toContain("Review decisions cannot be saved right now");
-    expect(q(".rex-detail")?.textContent).toContain("002_rule_reviews.sql");
-    expect(q('[aria-label="Human review"].rex-group')?.textContent).toContain("Review decisions are not stored yet");
+    expect(allOff()).toBe(true);
+    expect(q(".rex-card")?.textContent).toContain("Review decisions cannot be saved right now");
+    expect(q(".rex-card")?.textContent).toContain("002_rule_reviews.sql");
     expect(button(/Download approved rules/)).toBeUndefined();
+    expect(q(".rex-name")).toBeNull(); // no reviewer name is asked for when nothing can be decided
     expect(posts()).toEqual([]);
   });
 });
 
 describe("with review storage", () => {
-  it("shows real counts, enables the controls and offers the approved export only once something is accepted", async () => {
+  it("shows one rule with real progress in the sidebar, enables the decisions and offers the export only once something is accepted", async () => {
     await mount();
-    const group = q('[aria-label="Human review"].rex-group')!;
-    expect([...group.querySelectorAll(".rex-stat")].map((s) => [s.querySelector(".rex-stat-label")?.textContent, s.querySelector(".rex-stat-value")?.textContent]))
-      .toEqual([["Pending Review", "3"], ["Accepted", "0"], ["Rejected", "0"], ["Edited", "0"]]);
-    expect(group.textContent).toContain("The extracted rules are never changed");
-    expect(button("Accept Rule")?.disabled).toBe(false);
+    expect(side()).toContain("3 rules found");
+    expect(ring()).toBe(0);
+    expect(side()).toContain("1 with potential issues");
+    expect(side()).toContain("3 waiting for review"); // the unflagged rules wait for review too
+    expect(pager()).toBe("1 of 3");
+    expect(qa(".rex-card")).toHaveLength(1); // one rule at a time
+    expect(choice(YES).disabled).toBe(false);
     expect(button(/Download approved rules/)?.disabled).toBe(true);
-    expect(qa(".rex-tabs button").map((b) => b.textContent)).toEqual(["All Rules (3)", "Pending Review (3)", "Accepted (0)", "Rejected (0)", "Flagged by Checks (1)"]);
   });
 
   it("needs a reviewer name before it sends anything, and remembers the name in this browser", async () => {
     await mount();
-    await click(button("Accept Rule"));
-    expect(q('.rex-review [role="alert"]')?.textContent).toContain("Enter your reviewer name first");
+    await click(choice(YES));
+    expect(alert()).toContain("Enter your name next to “Reviewing as” first.");
+    expect(reviewerInput().getAttribute("aria-invalid")).toBe("true");
     expect(posts()).toEqual([]);
     await fill(reviewerInput(), "Dana Prüfer");
     expect(window.localStorage.getItem("odos.reviewer")).toBe("Dana Prüfer");
+    expect(alert()).toBeUndefined();
   });
 
-  it("accepts a rule with the exact identifiers the backend gave, updates the chip, the counts and the filter", async () => {
+  it("accepts a rule with the exact identifiers the backend gave, then moves on to the next open rule", async () => {
     await mount({}, { name: "Dana Prüfer" });
-    await click(button("Accept Rule"));
+    expect(current()).toBe(RULE_DOOR.classification.summary);
+    await click(choice(YES));
     expect(fake.bodies).toEqual([{ ruleId: "tuer-breite", extractionId: EXTRACTION, expectedRuleSha256: sha(RULE_DOOR), expectedLastEventId: 0, action: "accept", reviewer: "Dana Prüfer" }]);
-    expect(q(".rex-review-state")?.textContent).toContain("Accepted by Dana Prüfer");
-    expect(qa(".rex-rule .rex-status")[0].textContent).toBe("Accepted");
-    expect(button("Accept Rule")?.disabled).toBe(true); // already accepted
-    expect(qa(".rex-tabs button").map((b) => b.textContent)).toContain("Accepted (1)");
+    expect(current()).toBe(RULE_FIRE.classification.summary);
+    expect(pager()).toBe("2 of 3"); // all rules stay in the sequence
+    expect(side()).toContain("1 accepted");
+    expect(side()).toContain("2 waiting for review");
+    expect(ring()).toBe(33);
     expect(button(/Download approved rules/)?.textContent).toContain("Download approved rules (1)");
     expect(button(/Download approved rules/)?.disabled).toBe(false);
-    await click(button(/^Accepted \(1\)/));
-    expect(qa(".rex-rule-id").map((t) => t.textContent)).toEqual(["tuer-breite"]);
+    await previous();
+    expect(decided()).toContain("Accepted by Dana Prüfer");
+    expect(choice(YES).disabled).toBe(true); // already accepted
+  });
+
+  it("stays on the decided rule when the next-open-rule option is off, and remembers the option", async () => {
+    const nav: { current: RulesNav | null } = { current: null };
+    await mount({}, { name: "Dana", nav });
+    await stayOnRule();
+    expect(nav.current?.advance).toBe(false);
+    await click(choice(YES));
+    expect(current()).toBe(RULE_DOOR.classification.summary);
+    expect(decided()).toContain("Accepted by Dana");
+  });
+
+  it("offers the next-open-rule option only where decisions can be made", async () => {
+    await mount({ enabled: false });
+    await openOverview();
+    expect(q('.rex-queue-opts input[type="checkbox"]')).toBeNull();
   });
 
   it("sends one event even when clicked twice", async () => {
     await mount({}, { name: "Dana" });
-    const accept = button("Accept Rule")!;
-    await act(async () => { accept.click(); accept.click(); });
+    const yes = choice(YES);
+    await act(async () => { yes.click(); yes.click(); });
     await flush();
     expect(posts()).toHaveLength(1);
   });
 
-  it("rejects only with a reason and keeps the rejected rule listed and counted", async () => {
+  it("rejects only with a reason and shows the reason on the rule", async () => {
     await mount({}, { name: "Dana" });
-    await click(button("Reject"));
-    const confirm = button("Confirm rejection")!;
-    expect(confirm.disabled).toBe(true);
+    await click(choice(NO));
+    expect(choice(NO).getAttribute("aria-expanded")).toBe("true");
+    expect(button("Reject rule")?.disabled).toBe(true);
     await fill(q<HTMLTextAreaElement>(".rex-form textarea")!, "Wrong threshold");
-    await click(button("Confirm rejection"));
+    await click(button("Reject rule"));
     expect(fake.bodies[0]).toMatchObject({ action: "reject", reason: "Wrong threshold" });
-    expect(qa(".rex-rule .rex-status")[0].textContent).toBe("Rejected");
-    expect(qa(".rex-rule")).toHaveLength(3);
-    expect(q('[aria-label="Human review"].rex-group')?.textContent).toMatch(/1Rejected/);
-    expect(q(".rex-review")?.textContent).toContain("Reason: Wrong threshold");
+    expect(side()).toContain("1 rejected");
+    await previous();
+    expect(decided()).toContain("Rejected by Dana");
+    expect(q(".rex-decided-reason")?.textContent).toBe("Reason: Wrong threshold");
   });
 
-  it("edits a rule: validates the JSON locally, stores the edit beside the original and returns the rule to pending", async () => {
+  it("adjusts a value in the simple editor: the same record with the new value, same JSON type, original kept", async () => {
     await mount({}, { name: "Dana" });
-    await click(button("Edit JSON"));
+    await click(choice(ADJUST));
+    const labels = qa(".rex-fields .rex-field > span").map((s) => s.textContent);
+    expect(labels).toContain("Requirement: tuer lichte breite (m)");
+    expect(labels).toContain("Applies when: gebaeude hoehe (m)");
+    const width = qa<HTMLLabelElement>(".rex-fields .rex-field").find((l) => l.querySelector("span")?.textContent === "Requirement: tuer lichte breite (m)")!.querySelector("input")!;
+    expect(width.value).toBe("0.9");
+    await fill(width, "1,0"); // a decimal comma is read as a number
+    await click(button("Save adjustment"));
+    const sent = fake.bodies[0].editedRule as typeof RULE_DOOR;
+    expect(fake.bodies[0].action).toBe("edit");
+    expect(sent).toEqual({ ...RULE_DOOR, requirements: [{ ...RULE_DOOR.requirements[0], value: 1 }] });
+    expect(typeof sent.requirements[0].value).toBe("number");
+    expect(RULE_DOOR.requirements[0].value).toBe(0.9); // the extracted record is not touched
+    expect(current()).toBe(RULE_DOOR.classification.summary); // an adjustment is not a decision: the rule stays
+    expect(decided()).toContain("Adjusted · not reviewed yet");
+    expect(q(".rex-suggest")?.textContent).toContain("tuer lichte breite is at least 1 m");
+    await advanced();
+    expect(JSON.parse(q(".jsonv-code")!.textContent!)).toEqual(sent);
+    await click(button("Extracted (original)"));
+    expect(JSON.parse(q(".jsonv-code")!.textContent!)).toEqual(RULE_DOOR);
+  });
+
+  it("refuses values that are not numbers, and an adjustment that changes nothing, without sending", async () => {
+    await mount({}, { name: "Dana" });
+    await click(choice(ADJUST));
+    await click(button("Save adjustment"));
+    expect(alert()).toBe("Nothing was changed.");
+    const width = qa<HTMLLabelElement>(".rex-fields .rex-field").find((l) => l.querySelector("span")?.textContent === "Requirement: tuer lichte breite (m)")!.querySelector("input")!;
+    await fill(width, "breit");
+    await click(button("Save adjustment"));
+    expect(alert()).toContain("enter a number");
+    expect(posts()).toEqual([]);
+  });
+
+  it("the advanced editor validates the JSON locally and stores the edit beside the original", async () => {
+    await mount({}, { name: "Dana" });
+    await click(choice(ADJUST));
+    await click(button("Advanced editor"));
     const editor = q<HTMLTextAreaElement>(".rex-editor")!;
     expect(JSON.parse(editor.value)).toEqual(RULE_DOOR); // starts from the rule in force
     await fill(editor, "{ not json");
-    await click(button("Save edit"));
-    expect(q('.rex-review [role="alert"]')?.textContent).toContain("not valid JSON");
+    await click(button("Save adjustment"));
+    expect(alert()).toContain("not valid JSON");
     await fill(editor, "[1]");
-    await click(button("Save edit"));
-    expect(q('.rex-review [role="alert"]')?.textContent).toContain("must be a JSON object");
+    await click(button("Save adjustment"));
+    expect(alert()).toContain("must be a JSON object");
     expect(posts()).toEqual([]);
-
     const edited = { ...RULE_DOOR, classification: { ...RULE_DOOR.classification, summary: "Türen: mindestens 1,00 m." } };
     await fill(editor, JSON.stringify(edited));
-    await click(button("Save edit"));
+    await click(button("Save adjustment"));
     expect(fake.bodies[0]).toMatchObject({ action: "edit", editedRule: edited });
-    expect(qa(".rex-rule .rex-status").map((s) => s.textContent).slice(0, 2)).toEqual(["Pending Review", "Edited"]);
-    expect(q(".rex-detail-title strong")?.textContent).toBe("Türen: mindestens 1,00 m.");
-    expect(JSON.parse(q(".jsonv-code")!.textContent!)).toEqual(edited);
-    await click(button("Extracted (original)")); // the extracted record is untouched and still viewable
-    expect(JSON.parse(q(".jsonv-code")!.textContent!)).toEqual(RULE_DOOR);
-    expect(q(".jsonv-label")?.textContent).toContain("Extracted Rule JSON");
-    expect(q('[aria-label="Human review"].rex-group')?.textContent).toMatch(/1Edited/);
+    expect(current()).toBe("Türen: mindestens 1,00 m.");
+    expect(q(".rex-edited-note")?.textContent).toContain("Adjusted by a reviewer");
   });
 
   it("shows the backend's validation message for an invalid edit and keeps the editor open", async () => {
     await mount({}, { name: "Dana" });
-    await click(button("Edit JSON"));
+    await click(choice(ADJUST));
+    await click(button("Advanced editor"));
     fake.fail = { status: 422, detail: "The edited rule is not valid Rule JSON 2.0: classification: 'classification' is a required property" };
-    await click(button("Save edit"));
-    expect(q('.rex-review [role="alert"]')?.textContent).toContain("is a required property");
+    await click(button("Save adjustment"));
+    expect(alert()).toContain("is a required property");
     expect(q(".rex-editor")).not.toBeNull();
-    expect(qa(".rex-rule .rex-status")[0].textContent).toBe("Pending Review");
+    expect(decided()).toBeNull(); // still open, nothing applied
   });
 
-  it("resets an edit", async () => {
+  it("undoes an adjustment", async () => {
     await mount({}, { name: "Dana" });
-    await click(button("Edit JSON"));
-    await click(button("Save edit"));
-    expect(button("Reset edit")).not.toBeUndefined();
-    await click(button("Reset edit"));
+    await click(choice(ADJUST));
+    await click(button("Advanced editor"));
+    await click(button("Save adjustment"));
+    await click(button("Undo adjustment"));
     expect(fake.bodies.map((b) => b.action)).toEqual(["edit", "reset"]);
-    expect(button("Reset edit")).toBeUndefined();
-    expect(qa(".rex-rule .rex-status").map((s) => s.textContent)).not.toContain("Edited");
+    expect(button("Undo adjustment")).toBeUndefined();
+    await openOverview();
+    expect(rowTags("edited")).toBe(0);
   });
 
-  it("on a conflict says so and reloads the current state instead of applying anything", async () => {
+  it("on a conflict says so, keeps the rule in view and reloads the current state instead of applying anything", async () => {
     await mount({}, { name: "Dana" });
     fake.entries["tuer-breite"] = { ...fake.entries["tuer-breite"], state: "rejected", lastEventId: 7, reviewer: "Alex", reason: "no" }; // somebody else decided
     const before = fake.calls.filter((c) => c.startsWith("GET") && c.endsWith("/rule-reviews")).length;
-    await click(button("Accept Rule"));
-    expect(q('.rex-review [role="alert"]')?.textContent).toContain("Someone else changed this rule's review");
+    await click(choice(YES));
+    expect(alert()).toContain("Someone else changed this rule's review");
     expect(fake.calls.filter((c) => c.startsWith("GET") && c.endsWith("/rule-reviews")).length).toBe(before + 1);
-    expect(qa(".rex-rule .rex-status")[0].textContent).toBe("Rejected"); // the other reviewer's decision is now shown
+    expect(current()).toBe(RULE_DOOR.classification.summary);
+    expect(decided()).toContain("Rejected by Alex"); // the other reviewer's decision is now shown
   });
 
-  it("lists the audit trail of the selected rule", async () => {
+  it("lists the review history of the rule on screen under Advanced details", async () => {
     await mount({}, { name: "Dana" });
-    await click(button("Accept Rule"));
-    await click(button("Reject"));
+    await stayOnRule();
+    await click(choice(YES));
+    await click(choice(NO));
     await fill(q<HTMLTextAreaElement>(".rex-form textarea")!, "On second thought");
-    await click(button("Confirm rejection"));
-    const details = q<HTMLDetailsElement>(".rex-audit")!;
-    await act(async () => { details.open = true; details.dispatchEvent(new Event("toggle")); });
-    await flush();
+    await click(button("Reject rule"));
+    expect(q(".rex-audit")).toBeNull(); // closed by default
+    await advanced();
     expect(qa(".rex-audit-list li").map((li) => li.textContent)).toEqual([expect.stringContaining("Accepted by Dana"), expect.stringContaining("Rejected by Dana — On second thought")]);
-    await click(qa(".rex-rule")[1]); // another rule has no events
-    await act(async () => { q<HTMLDetailsElement>(".rex-audit")!.open = true; q(".rex-audit")!.dispatchEvent(new Event("toggle")); });
-    await flush();
+    await next(); // another rule has no events
     expect(q(".rex-audit")?.textContent).toContain("No review events yet");
   });
 
-  it("notes decisions that belong to earlier extractions and are not applied", async () => {
+  it("notes decisions that belong to earlier extractions and are not applied, under Advanced details", async () => {
     await mount({ earlier: 4 });
-    expect(q('[aria-label="Human review"].rex-group')?.textContent).toContain("4 decision events from earlier extractions are kept in the history and not applied to these rules.");
+    await advanced();
+    const row = qa(".rex-tech-list > div").find((d) => d.querySelector("dt")?.textContent === "Events of earlier extractions");
+    expect(row?.querySelector("dd")?.textContent).toContain("4 (kept in the history, not applied to these rules)");
   });
 
-  it("keeps the flagged verdict apart from the human decision", async () => {
+  it("keeps the potential issue apart from the human decision", async () => {
     await mount({}, { name: "Dana" });
-    expect(qa(".rex-rule .rex-status").map((s) => s.textContent)).toEqual(["Pending Review", "Flagged", "Pending Review", "Pending Review"]);
-    await click(button("Accept Rule")); // accepting a flagged rule does not clear its flag
-    expect(qa(".rex-rule .rex-status").map((s) => s.textContent).slice(0, 2)).toEqual(["Accepted", "Flagged"]);
-    expect(q(".rex-reviewinfo")?.textContent).toContain("Flagged by ODOS checks");
-    void RULE_FIRE;
+    expect(q(".rex-issue-btn")?.textContent).toContain("Potential issue");
+    await click(choice(YES)); // accepting a flagged rule does not clear its notice
+    await openOverview();
+    expect(rowStates()).toEqual(["Accepted", "Open", "Open"]);
+    expect(rowTags("flag")).toBe(1);
+    expect(side()).toContain("1 with potential issues");
   });
 });
 
@@ -287,8 +366,6 @@ describe("with review storage", () => {
 const stateOf = (state: RuleReviewEntry["state"] = "pending", lastEventId = 0): Record<string, RuleReviewEntry> =>
   Object.fromEntries((STORED.rules as Array<{ id: string }>).map((r) => [r.id, { ruleSha256: sha(r), state, edited: false, verification: "unverified" as const, lastEventId,
     reviewer: state === "pending" ? null : "Alex", reason: null, at: state === "pending" ? null : "2026-11-21T09:00:00+00:00", effectiveRule: null }]));
-const chips = () => qa(".rex-rule > .rex-chips .rex-status:first-child, .rex-rule .rex-chips > .rex-status:first-child").map((c) => c.textContent);
-const disabledAll = () => ["Accept Rule", "Reject", "Edit JSON"].every((n) => button(new RegExp(`^${n}$`))?.disabled === true);
 
 describe("extraction identity", () => {
   it("two tabs: after another extraction replaced the rules, nothing displayed can be decided, and reloading shows consistent rules and decisions", async () => {
@@ -299,27 +376,26 @@ describe("extraction identity", () => {
     fake.entries = stateOf("accepted", 5);
     fake.entries["brandabschnitt"] = { ...fake.entries["brandabschnitt"], state: "pending", lastEventId: 0, reviewer: null, at: null };
 
-    await click(button("Accept Rule")); // tab A still shows the old extraction: the backend refuses it (409) ...
+    await click(choice(YES)); // tab A still shows the old extraction: the backend refuses it (409) ...
     expect(posts()).toHaveLength(1);
     expect(fake.bodies[0]).toMatchObject({ extractionId: EXTRACTION });
     // ... and the page now knows the review state belongs to another extraction
     expect(q(".rex-stale")?.textContent).toContain("The extraction has changed");
-    expect(disabledAll()).toBe(true);
-    expect(chips()).not.toContain("Accepted"); // the other extraction's decisions are not applied to the displayed rules by ID
-    expect(qa(".rex-tabs button").map((b) => b.textContent?.replace(/ \(\d+\)/, ""))).toEqual(["All Rules", "Pending Review", "Flagged by Checks", "Reviewed"]); // no Accepted / Rejected filters
+    expect(allOff()).toBe(true);
+    expect(side()).not.toContain("accepted"); // the other extraction's decisions are not applied to the displayed rules by ID
     expect(button(/Download approved rules/)).toBeUndefined();
-    for (const name of ["Accept Rule", "Reject", "Edit JSON"]) await click(button(new RegExp(`^${name}$`)));
+    for (const name of [YES, ADJUST, NO]) await click(choice(name as typeof YES));
     expect(posts()).toHaveLength(1); // disabled buttons send nothing
 
     const rulesGets = () => fake.calls.filter((c) => c === "GET /api/jobs/j1/files/rules.json").length;
     const before = rulesGets();
-    await click(button("Reload results"));
-    expect(rulesGets()).toBe(before + 1); // the current rules.json, then the review state of those very rules
+    await click(button("Reload results")); // the current rules.json, then the review state of those very rules
+    expect(rulesGets()).toBe(before + 1);
     expect(q(".rex-stale")).toBeNull();
-    expect(chips()).toContain("Accepted"); // Alex's decision on the new extraction, now on the new rules
-    // a decision made now carries the new identity
-    await click(qa(".rex-rule")[1]);
-    await click(button("Accept Rule"));
+    expect(side()).toContain("2 accepted"); // Alex's decisions on the new extraction, now on the new rules
+    await openOverview();
+    await click(rows().find((r) => r.textContent?.includes(RULE_FIRE.classification.summary)));
+    await click(choice(YES)); // a decision made now carries the new identity
     expect(fake.bodies[1]).toMatchObject({ extractionId: NEWER, ruleId: "brandabschnitt" });
     expect(posts()).toHaveLength(2);
   });
@@ -327,24 +403,23 @@ describe("extraction identity", () => {
   it("the same extraction is not stale: identical identity means decisions are applied and possible", async () => {
     await mount({}, { name: "Dana" });
     expect(q(".rex-stale")).toBeNull();
-    expect(button("Accept Rule")?.disabled).toBe(false);
+    expect(choice(YES).disabled).toBe(false);
   });
 
-  it("review state of another extraction than the displayed rules: controls are disabled at once and no decision of it is shown", async () => {
+  it("review state of another extraction than the displayed rules: decisions are disabled at once and none of it is shown", async () => {
     await mount({ extraction: NEWER, entries: stateOf("rejected", 9) });
     expect(q(".rex-stale")?.textContent).toContain("The extraction has changed");
-    expect(q(".rex-detail")?.textContent).toContain("not the current extraction");
-    expect(disabledAll()).toBe(true);
-    expect(chips()).not.toContain("Rejected");
-    expect(q('[aria-label="Human review"].rex-group')?.textContent).toContain("belong to a newer extraction");
+    expect(q(".rex-card")?.textContent).toContain("not the current extraction");
+    expect(allOff()).toBe(true);
+    expect(ring()).toBe(0);
+    expect(side()).not.toContain("rejected");
     expect(posts()).toEqual([]);
   });
 
   it("rules without an extraction identifier cannot be reviewed", async () => {
-    const bare = { rules: STORED.rules }; // no _generation.generatedAt
-    await mount({ file: bare });
-    expect(disabledAll()).toBe(true);
-    expect(q(".rex-detail")?.textContent).toContain("carry no extraction identifier");
+    await mount({ file: { rules: STORED.rules } }); // no _generation.generatedAt
+    expect(allOff()).toBe(true);
+    expect(q(".rex-card")?.textContent).toContain("carry no extraction identifier");
     expect(button("Reload results")).toBeUndefined(); // reloading would not help
     expect(posts()).toEqual([]);
   });
@@ -352,19 +427,19 @@ describe("extraction identity", () => {
   it("a review action cannot be started while the review state is still loading", async () => {
     let release!: () => void;
     await mount({ reviewsGate: new Promise<void>((r) => { release = r; }) });
-    expect(disabledAll()).toBe(true);
-    expect(q(".rex-detail")?.textContent).toContain("Loading the review state");
+    expect(allOff()).toBe(true);
+    expect(q(".rex-card")?.textContent).toContain("Loading the review state");
     await act(async () => { release(); });
     await flush();
-    expect(button("Accept Rule")?.disabled).toBe(false);
+    expect(choice(YES).disabled).toBe(false);
     expect(posts()).toEqual([]);
   });
 
-  it("a backend that cannot be reached leaves the controls disabled and sends nothing", async () => {
+  it("a backend that cannot be reached leaves the decisions disabled and sends nothing", async () => {
     await mount({ unreachable: true });
-    expect(disabledAll()).toBe(true);
-    expect(q(".rex-detail")?.textContent).toContain("Review decisions cannot be saved right now");
-    expect(q(".rex-detail")?.textContent).toContain("This rule stays “Pending Review”");
+    expect(allOff()).toBe(true);
+    expect(q(".rex-card")?.textContent).toContain("Review decisions cannot be saved right now");
+    expect(q(".rex-card")?.textContent).toContain("This rule stays “Pending Review”");
     expect(posts()).toEqual([]);
   });
 
@@ -372,31 +447,26 @@ describe("extraction identity", () => {
     await mount({}, { name: "Dana" });
     fake.entries["tuer-breite"] = { ...fake.entries["tuer-breite"], ruleSha256: "b".repeat(64) };
     fake.fail = { status: 409, detail: "The rules of this job changed since they were loaded. Reload the page." };
-    await click(button("Accept Rule"));
-    expect(q('.rex-review [role="alert"]')?.textContent).toContain("changed since they were loaded");
-    expect(qa(".rex-rule .rex-status")[0].textContent).toBe("Pending Review"); // nothing was applied
+    await click(choice(YES));
+    expect(alert()).toContain("changed since they were loaded");
+    expect(decided()).toBeNull(); // nothing was applied
   });
 });
 
 // ── audit trail across extractions (M1) ──────────────────────────────────────────────────────────────────────────────────────
 
-const openAudit = async () => {
-  await act(async () => { const d = q<HTMLDetailsElement>(".rex-audit")!; d.open = true; d.dispatchEvent(new Event("toggle")); });
-  await flush();
-};
 const earlierEvent = (over: Partial<RuleHistoryEvent> = {}): RuleHistoryEvent => ({ id: 3, extractionId: "2026-11-01T08:00:00+00:00", action: "accept", decision: "accepted", reviewer: "Alex",
   reason: null, at: "2026-11-01T09:00:00+00:00", edited: false, ruleSha256: sha(RULE_DOOR), ...over });
 
 describe("audit trail across extractions", () => {
   it("lists events of earlier extractions apart, labelled as history that does not apply to these rules", async () => {
     await mount({ events: [earlierEvent()], earlier: 1 }, { name: "Dana" });
-    expect(q(".rex-review-state")?.textContent).toContain("Pending review"); // the earlier acceptance is not carried over
-    await openAudit();
-    const current = qa('.rex-audit-list[aria-label="Events of this extraction"] li');
-    const earlier = qa(".rex-audit-earlier li");
-    expect(current).toHaveLength(0);
+    expect(decided()).toBeNull(); // the earlier acceptance is not carried over
+    await advanced();
+    expect(qa('.rex-audit-list[aria-label="Events of this extraction"] li')).toHaveLength(0);
     expect(q(".rex-audit")?.textContent).toContain("No review events yet for these rules");
     expect(q(".rex-audit-earlier-h")?.textContent).toContain("history only, not applied to these rules");
+    const earlier = qa(".rex-audit-earlier li");
     expect(earlier).toHaveLength(1);
     expect(earlier[0].textContent).toContain("Accepted by Alex");
     expect(earlier[0].textContent).toContain("earlier extraction");
@@ -404,35 +474,38 @@ describe("audit trail across extractions", () => {
 
   it("keeps the current extraction's events and the earlier ones in separate lists", async () => {
     await mount({ events: [earlierEvent()], nextId: 10 }, { name: "Dana" });
-    await click(button("Accept Rule"));
-    await openAudit();
-    const current = qa('.rex-audit-list[aria-label="Events of this extraction"] li').map((li) => li.textContent);
-    expect(current).toHaveLength(1);
-    expect(current[0]).toContain("Accepted by Dana");
-    expect(current[0]).not.toContain("earlier extraction");
+    await stayOnRule();
+    await click(choice(YES));
+    await advanced();
+    const now = qa('.rex-audit-list[aria-label="Events of this extraction"] li').map((li) => li.textContent);
+    expect(now).toHaveLength(1);
+    expect(now[0]).toContain("Accepted by Dana");
+    expect(now[0]).not.toContain("earlier extraction");
     expect(qa(".rex-audit-earlier li")).toHaveLength(1);
-    expect(q(".rex-review-state")?.textContent).toContain("Accepted by Dana"); // the state comes from the current extraction's event only
+    expect(decided()).toContain("Accepted by Dana"); // the state comes from the current extraction's event only
   });
 });
 
 describe("small review form fixes", () => {
-  it("L1: the reason typed for a rejection is not carried into an edit", async () => {
+  it("L1: the reason typed for a rejection is not carried into an adjustment", async () => {
     await mount({}, { name: "Dana" });
-    await click(button("Reject"));
+    await click(choice(NO));
     await fill(q<HTMLTextAreaElement>(".rex-form textarea")!, "Wrong threshold");
     await click(button("Cancel"));
-    await click(button("Edit JSON"));
-    expect(q<HTMLInputElement>('.rex-form input[type="text"]')!.value).toBe("");
-    await click(button("Save edit"));
+    await click(choice(ADJUST));
+    await click(button("Advanced editor"));
+    const reason = qa<HTMLLabelElement>(".rex-form .rex-field").find((l) => l.textContent?.startsWith("Reason for the change"))!.querySelector("input")!;
+    expect(reason.value).toBe("");
+    await click(button("Save adjustment"));
     expect(fake.bodies[0]).toMatchObject({ action: "edit" });
     expect(fake.bodies[0]).not.toHaveProperty("reason");
   });
 
-  it("L2: a slow audit trail of the previous rule never shows under the selected one", async () => {
+  it("L2: a slow history of the previous rule never shows under the one on screen", async () => {
     let release!: () => void;
     await mount({ events: [earlierEvent({ extractionId: EXTRACTION, reviewer: "Previous" })], historyGate: { "tuer-breite": new Promise<void>((r) => { release = r; }) } }, { name: "Dana" });
-    await openAudit(); // asks for tuer-breite, which is still on its way
-    await click(qa(".rex-rule")[1]); // another rule is selected meanwhile
+    await advanced(); // asks for tuer-breite, which is still on its way
+    await next(); // another rule meanwhile
     await act(async () => { release(); });
     await flush();
     expect(q(".rex-audit")?.textContent).not.toContain("Previous");
@@ -455,17 +528,17 @@ describe("approved export download", () => {
 
   it("saves the file the backend sent, under the name it proposed", async () => {
     await mount({}, { name: "Dana" });
-    await click(button("Accept Rule"));
+    await click(choice(YES));
     await click(button(/Download approved rules/));
     expect(fake.calls).toContain("GET /api/jobs/j1/rule-reviews/approved-export?download=true");
     expect(created).toHaveLength(1);
     expect(saved).toEqual([{ name: "MusterBauVerordnung.approved.rules.json", href: "blob:approved" }]);
-    expect(q('[role="alert"]')).toBeNull();
+    expect(q('.rex-results > [role="alert"]')).toBeNull();
   });
 
   it("does not save anything when the backend answers with an error, and says why", async () => {
     await mount({ exportFail: { status: 409, detail: "A rule extraction of this job is running; rules can be reviewed when it has finished." } }, { name: "Dana" });
-    await click(button("Accept Rule"));
+    await click(choice(YES));
     await click(button(/Download approved rules/));
     expect(created).toHaveLength(0);
     expect(saved).toEqual([]);
@@ -474,7 +547,7 @@ describe("approved export download", () => {
 
   it("does not save an error when the backend cannot be reached", async () => {
     await mount({}, { name: "Dana" });
-    await click(button("Accept Rule"));
+    await click(choice(YES));
     fake.unreachable = true;
     await click(button(/Download approved rules/));
     expect(created).toHaveLength(0);
@@ -482,45 +555,154 @@ describe("approved export download", () => {
   });
 });
 
-// ── navigation state across "Show in PDF" (M3) ───────────────────────────────────────────────────────────────────────────────
+// ── navigation: one rule at a time, the overview, the keyboard, and the place across "View in document" (M3) ─────────────────
 
-describe("navigation state", () => {
-  it("restores the selected rule, filter, search, detail tab and list position when the page is opened again, without new extraction requests", async () => {
+describe("navigation", () => {
+  it("walks the rules one at a time with Previous and Next, potential issues first, and stops at both ends", async () => {
+    await mount({ enabled: false });
+    expect(pager()).toBe("1 of 3");
+    expect(current()).toBe(RULE_DOOR.classification.summary); // the flagged rule first
+    expect(q<HTMLButtonElement>('button[aria-label="Previous rule"]')!.disabled).toBe(true);
+    await next();
+    expect(current()).toBe(RULE_FIRE.classification.summary);
+    await next();
+    expect(pager()).toBe("3 of 3");
+    expect(q<HTMLButtonElement>('button[aria-label="Next rule"]')!.disabled).toBe(true);
+    await previous();
+    expect(pager()).toBe("2 of 3");
+  });
+
+  it("← and → move between rules, but not while the reviewer is typing", async () => {
+    await mount({}, { name: "Dana" });
+    await key("ArrowRight");
+    expect(pager()).toBe("2 of 3");
+    await key("ArrowRight", reviewerInput());
+    expect(pager()).toBe("2 of 3");
+    await key("ArrowLeft");
+    expect(pager()).toBe("1 of 3");
+  });
+
+  it("opens on the first rule that still waits for a decision", async () => {
+    await mount({ entries: { ...stateOf(), "tuer-breite": { ...stateOf("accepted", 1)["tuer-breite"] } } });
+    expect(current()).toBe(RULE_FIRE.classification.summary);
+    expect(pager()).toBe("2 of 3");
+  });
+
+  it("keeps the overview of all rules hidden until asked for; a rule chosen there is shown and the overview closes", async () => {
+    await mount();
+    expect(q(".rex-list")).toBeNull();
+    await openOverview();
+    expect(q('[role="dialog"]')?.getAttribute("aria-modal")).toBe("true");
+    expect(rows().map((r) => r.querySelector(".rex-rule-title")?.textContent)).toEqual([RULE_DOOR, RULE_FIRE, RULE_FOREIGN].map((x) => x.classification.summary));
+    await click(rows()[2]);
+    expect(q('[role="dialog"]')).toBeNull();
+    expect(pager()).toBe("3 of 3");
+    await openOverview();
+    await key("Escape", q('[role="dialog"] input[type="search"]')!);
+    expect(q('[role="dialog"]')).toBeNull();
+  });
+
+  it("a filter chosen in the overview limits Previous and Next to its rules and says so", async () => {
+    await mount();
+    await openOverview();
+    await click(button(/^Potential issues \(1\)/));
+    await closeOverview();
+    expect(pager()).toBe("1 of 1 · Potential issues");
+  });
+
+  it("restores the rule, filter, search and Advanced details when the page is opened again, without new extraction requests", async () => {
     const nav: { current: RulesNav | null } = { current: null };
     await mount({}, { name: "Dana", nav });
-    await click(button(/^Pending Review \(/));
+    await openOverview();
     await fill(q<HTMLInputElement>('input[type="search"]')!, "brand");
-    await click(qa(".rex-rule")[0]); // the only match: brandabschnitt
-    await click(qa('[role="tab"]').find((t) => t.textContent === "Source Text"));
-    const list = q(".rex-list")!;
-    list.scrollTop = 120;
-    await act(async () => { list.dispatchEvent(new Event("scroll")); });
-    expect(nav.current).toMatchObject({ jobId: "j1", filter: "pending", search: "brand", selectedId: "brandabschnitt", tab: "source", listScroll: 120 });
+    await click(rows()[0]); // the only match: brandabschnitt
+    await advanced();
+    expect(nav.current).toMatchObject({ jobId: "j1", filter: "all", search: "brand", selectedId: "brandabschnitt", advanced: true });
 
-    close(); // "Show in PDF" leaves the page ...
+    close(); // "View in document" leaves the page ...
     const callsBefore = fake.calls.length;
     await open(nav); // ... and "Continue to Rule Extraction" opens it again
-    expect(q<HTMLInputElement>('input[type="search"]')!.value).toBe("brand");
-    expect(qa(".rex-tabs button").find((b) => b.getAttribute("aria-pressed") === "true")?.textContent).toContain("Pending Review");
-    expect(q(".rex-rule.selected .rex-rule-id")?.textContent).toBe("brandabschnitt");
-    expect(q('[role="tab"][aria-selected="true"]')?.textContent).toBe("Source Text");
-    expect(q(".rex-list")!.scrollTop).toBe(120);
+    expect(current()).toBe(RULE_FIRE.classification.summary);
+    expect(pager()).toBe("1 of 1 · “brand”");
+    expect(q(".rex-adv-toggle")?.getAttribute("aria-expanded")).toBe("true");
     const again = fake.calls.slice(callsBefore);
     expect(again.filter((c) => c.startsWith("POST"))).toEqual([]); // nothing was started
     expect(again.filter((c) => c.endsWith("/files/rules.json"))).toEqual([]); // the rules in hand are not fetched again
   });
 
   it("starts clean for another document", async () => {
-    const nav: { current: RulesNav | null } = { current: { jobId: "other", filter: "flagged", search: "x", selectedId: "fremd", tab: "source", listScroll: 5, pageScroll: 5 } };
+    const nav: { current: RulesNav | null } = { current: { jobId: "other", filter: "flagged", search: "x", selectedId: "fremd", advanced: true, pageScroll: 5 } };
     await mount({}, { name: "Dana", nav });
-    expect(q<HTMLInputElement>('input[type="search"]')!.value).toBe("");
-    expect(q(".rex-rule.selected .rex-rule-id")?.textContent).toBe("tuer-breite");
+    expect(pager()).toBe("1 of 3");
+    expect(current()).toBe(RULE_DOOR.classification.summary);
+    expect(q(".rex-adv-toggle")?.getAttribute("aria-expanded")).toBe("false");
     expect(nav.current?.jobId).toBe("j1");
   });
 
   it("a saved filter that is not offered any more falls back to all rules", async () => {
-    const nav: { current: RulesNav | null } = { current: { jobId: "j1", filter: "accepted", search: "", selectedId: null, tab: "json", listScroll: 0, pageScroll: 0 } };
+    const nav: { current: RulesNav | null } = { current: { jobId: "j1", filter: "accepted", search: "", selectedId: null, pageScroll: 0 } };
     await mount({ enabled: false }, { nav }); // no review storage: there is no "Accepted" filter
-    expect(qa(".rex-rule")).toHaveLength(3);
+    expect(pager()).toBe("1 of 3");
+  });
+});
+
+// ── the ⋯ menu and help ─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+describe("the more-actions menu", () => {
+  const trigger = () => q<HTMLButtonElement>('button[aria-label="More actions"]')!;
+  const menu = () => q('[role="menu"]');
+
+  it("is a labelled menu button that opens with its first item focused and closes on Escape, returning focus", async () => {
+    await mount();
+    expect(trigger().getAttribute("aria-haspopup")).toBe("menu");
+    expect(trigger().getAttribute("aria-expanded")).toBe("false");
+    expect(menu()).toBeNull();
+    await click(trigger());
+    expect(trigger().getAttribute("aria-expanded")).toBe("true");
+    expect(qa('[role="menuitem"]').map((i) => i.textContent)).toEqual(["Restart Extraction"]);
+    expect(document.activeElement).toBe(qa('[role="menuitem"]')[0]);
+    await key("Escape", document.activeElement!);
+    expect(menu()).toBeNull();
+    expect(document.activeElement).toBe(trigger());
+  });
+
+  it("closes on a click outside, but not on a click inside", async () => {
+    await mount();
+    await click(trigger());
+    await act(async () => { menu()!.dispatchEvent(new Event("pointerdown", { bubbles: true })); });
+    expect(menu()).not.toBeNull();
+    await act(async () => { q(".rex-card")!.dispatchEvent(new Event("pointerdown", { bubbles: true })); });
+    expect(menu()).toBeNull();
+  });
+
+  it("closes after the item is used, which asks for the cost confirmation instead of restarting", async () => {
+    await mount();
+    await click(trigger());
+    await click(qa('[role="menuitem"]')[0]);
+    expect(menu()).toBeNull();
+    expect(q('[role="alertdialog"]')?.textContent).toContain("paid request");
+    expect(posts()).toEqual([]);
+  });
+});
+
+describe("help", () => {
+  it("explains the three steps and that unflagged rules are not verified, and closes on Escape", async () => {
+    await mount();
+    await click(q('button[aria-label="Help"]'));
+    const dialog = q('[role="dialog"]')!;
+    expect(dialog.textContent).toContain("How reviewing works");
+    expect(dialog.textContent).toContain("Rules without that mark are not verified");
+    await key("Escape", document.activeElement!);
+    expect(q('[role="dialog"]')).toBeNull();
+  });
+});
+
+describe("reviewer identity", () => {
+  it("starts empty: no name is ever supplied for a decision, so none is sent until the reviewer types one", async () => {
+    await mount();
+    expect(reviewerInput().value).toBe("");
+    await click(choice(YES));
+    expect(posts()).toEqual([]);
+    expect(window.localStorage.getItem("odos.reviewer")).toBeNull();
   });
 });

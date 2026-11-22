@@ -22,7 +22,7 @@ export const rule = (id: string, summary: string, elementId: string, review: Rec
   id,
   source: { documentId: "beispielgesetz", documentTitle: "Beispielgesetz", language: "de", citation: `§ 1 ${id}`, elements: [{ elementId, sentenceId: `${elementId}/satz-1`, role: "primary", pdfPages: [3] }] },
   classification: { type: "obligation", normativeCategory: "substantive", summary },
-  requirements: [{ kind: "comparison", fact: "tuer.lichte_breite", operator: ">=", value: 0.9, valueType: "number", unit: "m" }],
+  requirements: [{ kind: "numeric", fact: "tuer.lichte_breite", operator: ">=", value: 0.9, unit: "m" }],
   review: { status: "draft", machineCheckable: true, checkMethods: ["ids"], notes: ["Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)"], ...review },
   ...extra,
 });

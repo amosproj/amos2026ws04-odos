@@ -61,8 +61,9 @@ const mount = async (node: React.ReactElement) => {
   await act(async () => { root.render(node); });
   await flush();
 };
-const q = <T extends Element = HTMLElement>(sel: string) => host.querySelector<T>(sel);
-const qa = <T extends Element = HTMLElement>(sel: string) => [...host.querySelectorAll<T>(sel)];
+// dialogs (the overview, help) are rendered on document.body
+const q = <T extends Element = HTMLElement>(sel: string) => document.body.querySelector<T>(sel);
+const qa = <T extends Element = HTMLElement>(sel: string) => [...document.body.querySelectorAll<T>(sel)];
 const button = (name: string | RegExp) => qa<HTMLButtonElement>("button").find((b) => { const t = (b.textContent ?? "").trim(); return typeof name === "string" ? t === name : name.test(t); });
 const click = async (target: Element | null | undefined) => { if (!target) throw new Error("nothing to click"); await act(async () => { (target as HTMLElement).click(); }); await flush(); };
 const type = async (input: HTMLInputElement, value: string) => {
@@ -70,7 +71,21 @@ const type = async (input: HTMLInputElement, value: string) => {
   await act(async () => { setValue.call(input, value); input.dispatchEvent(new Event("input", { bubbles: true })); });
   await flush();
 };
-const text = () => host.textContent ?? "";
+const text = () => document.body.textContent ?? "";
+/** The page's text without the review-progress ring (the one real percentage on the page: decisions of people). */
+const textWithoutRing = () => { const c = document.body.cloneNode(true) as HTMLElement; c.querySelectorAll(".rex-ring").forEach((r) => r.remove()); return c.textContent ?? ""; };
+/** Restart Extraction lives in the ⋯ menu: open it first. */
+const restart = async () => { await click(q('button[aria-label="More actions"]')); await click(button("Restart Extraction")); };
+const openOverview = () => click(button("All rules"));
+const closeOverview = () => click(q('.rex-dialog button[aria-label="Close"]'));
+/** The citation line of each rule in the overview, without the fixtures' "§ 1 " prefix: stands for the rule's id. */
+const queued = () => qa(".rex-dialog .rex-rule-sub").map((t) => t.textContent!.replace("§ 1 ", ""));
+const current = () => q(".rex-card")?.getAttribute("aria-label");
+const pager = () => q(".rex-pager-pos")?.textContent;
+const side = () => q(".rex-side")?.textContent ?? "";
+const next = () => click(q('button[aria-label="Next rule"]'));
+const choices = () => qa<HTMLButtonElement>(".rex-choice");
+const view = () => button("View in document");
 
 beforeEach(() => { vi.useFakeTimers(); Element.prototype.scrollIntoView = () => {}; });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.useRealTimers(); vi.unstubAllGlobals(); });
@@ -79,7 +94,6 @@ describe("before an extraction", () => {
   it("shows the document, its page count, the Legal JSON status and a Start button, and sends nothing to Bedrock", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    expect(q(".docbar h2")?.textContent).toBe("MusterBauVerordnung.pdf");
     expect(q(".rex-facts")?.textContent).toContain("MusterBauVerordnung.pdf");
     expect(q(".rex-facts")?.textContent).toContain("83");
     expect(q(".rex-facts")?.textContent).toContain("Ready");
@@ -95,8 +109,9 @@ describe("before an extraction", () => {
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     for (const gone of ["Ontology", "Digital Twin", "Coming Soon", "Upload", "mock", "Auto-Accepted", "80%", "Confidence", "Validation"]) expect(text(), gone).not.toContain(gone);
     expect(q('input[type="file"]')).toBeNull();
-    expect(qa(".rex-step").map((s) => s.querySelector(".rex-step-label")?.textContent)).toEqual(["Document Review", "LLM Rule Extraction & Review"]);
-    expect(qa(".rex-step")[1].className).toContain("current");
+    expect(qa(".rex-step").map((s) => s.querySelector(".rex-step-label")?.textContent)).toEqual(["Document", "Rules extracted", "Review"]);
+    expect(qa(".rex-step")[1].className).toContain("current"); // before the rules exist, "Rules extracted" is the step in progress
+    expect(qa(".rex-step")[1].getAttribute("aria-current")).toBe("step");
   });
 
   it("cannot start without Legal JSON structure or without the backend's job", async () => {
@@ -111,7 +126,7 @@ describe("before an extraction", () => {
     installBackend();
     const onBack = vi.fn();
     await mount(<RuleExtractionView result={demoResult()} onBack={onBack} />);
-    await click(button("Back to Document Review"));
+    await click(q('button[aria-label="Back to Document Review"]')); // the "Document" step
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
@@ -140,11 +155,11 @@ describe("starting an extraction", () => {
     await flush(2000);
     expect(q(".rex-progress-title")?.textContent).toBe("AI Rule Extraction in Progress");
     expect(q(".rex-progress-facts")?.textContent).toContain("Running");
-    expect(text()).not.toContain("Amazon Bedrock"); // the heading is provider-neutral
+    expect(q(".rex-progress")?.textContent).not.toContain("Amazon Bedrock"); // the heading is provider-neutral
     expect(q(".rex-indeterminate")).not.toBeNull();
     expect(q('[role="progressbar"]')).not.toBeNull();
     expect(q('[role="progressbar"]')?.hasAttribute("aria-valuenow")).toBe(false); // indeterminate: no invented percentage
-    expect(text()).not.toMatch(/\d+\s?%/);
+    expect(q(".rex-progress")?.textContent).not.toMatch(/\d+\s?%/);
     expect(q(".rex-elapsed")?.textContent).toMatch(/^0:0\d$/);
     await flush(5000);
     expect(q(".rex-elapsed")?.textContent).toBe("0:07"); // real time since the backend reported the start
@@ -155,7 +170,9 @@ describe("starting an extraction", () => {
     await flush(2000);
     expect(q(".rex-progress")).toBeNull();
     expect(onRulesLoaded).toHaveBeenCalledWith(STORED);
-    expect(qa(".rex-rule")).toHaveLength(3);
+    expect(current()).toBe(RULE_DOOR.classification.summary); // one rule at a time, the first that waits for a decision
+    expect(pager()).toBe("1 of 3");
+    expect(qa(".rex-step")[2].getAttribute("aria-current")).toBe("step"); // now: Review
     expect(posts()).toHaveLength(1);
   });
 
@@ -180,7 +197,7 @@ describe("starting an extraction", () => {
     installBackend({ status: status("completed"), rules: STORED });
     const onRulesLoaded = vi.fn();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} onRulesLoaded={onRulesLoaded} />);
-    expect(qa(".rex-rule")).toHaveLength(3);
+    expect(pager()).toBe("1 of 3");
     expect(onRulesLoaded).toHaveBeenCalledWith(STORED);
     expect(posts()).toEqual([]);
   });
@@ -233,19 +250,19 @@ describe("failures and timeouts", () => {
     backend.rules = STORED;
     backend.status = status("completed");
     await click(button("Check status"));
-    expect(qa(".rex-rule")).toHaveLength(3);
+    expect(pager()).toBe("1 of 3");
   });
 
   it("a failed new extraction keeps the previous results available", async () => {
     installBackend({ rules: STORED, status: status("completed") });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    await click(button("Restart Extraction"));
+    await restart();
     await click(button("Start new extraction"));
     backend.status = status("failed", { message: "Amazon Bedrock is busy. Try again later.", errorCode: "bedrock_throttled" });
     await flush(2000);
     expect(q(".alert.error")?.textContent).toContain("busy");
     await click(button("Show previous results"));
-    expect(qa(".rex-rule")).toHaveLength(3);
+    expect(pager()).toBe("1 of 3");
   });
 });
 
@@ -253,7 +270,7 @@ describe("a stored rules.json", () => {
   it("is shown at once, without any request to the model, and the extraction is not started", async () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    expect(qa(".rex-rule")).toHaveLength(3);
+    expect(current()).toBe(RULE_DOOR.classification.summary);
     expect(button("Start Rule Extraction")).toBeUndefined();
     expect(posts()).toEqual([]);
   });
@@ -261,14 +278,14 @@ describe("a stored rules.json", () => {
   it("is rendered on the first paint, before the backend answered anything", () => {
     installBackend();
     const html = renderToStaticMarkup(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    expect(html).toContain("Extracted Rules");
-    expect(html).toContain("tuer-breite");
+    expect(html).toContain("Review Rule");
+    expect(html).toContain("Türen müssen eine lichte Breite");
   });
 
   it("Restart Extraction asks for confirmation naming the cost; Cancel sends nothing, confirming sends one request", async () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    await click(button("Restart Extraction"));
+    await restart();
     const dialog = q('[role="alertdialog"]')!;
     expect(dialog.textContent).toContain("paid request");
     expect(dialog.textContent).toContain("stay in place until the new extraction has succeeded");
@@ -276,170 +293,215 @@ describe("a stored rules.json", () => {
     await click(button("Cancel"));
     expect(q('[role="alertdialog"]')).toBeNull();
     expect(posts()).toEqual([]);
-    await click(button("Restart Extraction"));
+    await restart();
     await click(button("Start new extraction"));
     expect(posts()).toHaveLength(1);
     expect(q(".rex-progress-facts")?.textContent).toContain("Queued");
   });
 });
 
-describe("displaying the real Rule JSON", () => {
-  it("lists the records by their summary and id and shows the selected record unchanged, nested structures included", async () => {
-    installBackend({ status: status("completed"), rules: STORED });
-    await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    expect(qa(".rex-rule-title").map((t) => t.textContent)).toEqual([RULE_DOOR.classification.summary, RULE_FIRE.classification.summary, "Regel mit Quelle außerhalb des Dokuments."]);
-    expect(qa(".rex-rule-id").map((t) => t.textContent)).toEqual(["tuer-breite", "brandabschnitt", "fremd"]);
-    const shown = JSON.parse(q(".rex-detail .jsonv-code")!.textContent!);
-    expect(shown).toEqual(RULE_DOOR); // exactly the record, no added or removed field
+describe("the review page: one rule at a time", () => {
+  const openStored = async (file: unknown = STORED, onShowInPdf?: (id: string) => void) => {
+    installBackend({ status: status("completed"), rules: file });
+    await mount(<RuleExtractionView result={demoResult(file)} onBack={() => {}} onShowInPdf={onShowInPdf} />);
+  };
+
+  it("shows the original text and ODOS's suggestion of one rule, and the three decisions in the mockup's order", async () => {
+    await openStored();
+    expect(qa(".rex-card")).toHaveLength(1);
+    expect(q(".rex-main-title")?.textContent).toBe("Review Rule");
+    expect(q(".rex-source .rex-cite")?.textContent).toBe("§ 1 tuer-breite");
+    expect(q(".rex-quote")?.textContent).toBe("(1) Türen müssen mindestens 0,90 m breit sein."); // the exact wording of the document
+    expect(q(".rex-summary-text")?.textContent).toBe(RULE_DOOR.classification.summary);
+    expect(q(".rex-suggest")?.textContent).toContain("tuer lichte breite is at least 0.9 m"); // derived from the record, operator and unit as stored
+    expect(q(".rex-suggest")?.textContent).toContain("gebaeude hoehe is more than 7 m");
+    expect(q(".rex-question")?.textContent).toBe("Is this rule suggestion correct?");
+    expect(choices().map((b) => b.querySelector(".rex-choice-main")?.textContent)).toEqual(["Yes, correct", "Adjust", "No, incorrect"]);
+    expect(q(".rex-source")!.compareDocumentPosition(q(".rex-suggest")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(q(".rex-suggest")!.compareDocumentPosition(q(".rex-choices")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("keeps the record unchanged: the Rule JSON under Advanced details is exactly the stored record, nested structures included", async () => {
+    await openStored();
+    expect(q(".jsonv-code")).toBeNull(); // no JSON in the default view
+    await click(q(".rex-adv-toggle"));
+    const shown = JSON.parse(q(".jsonv-code")!.textContent!);
+    expect(shown).toEqual(RULE_DOOR);
     expect(shown.applicability.conditions).toEqual(NESTED);
-    await click(qa(".rex-rule")[1]);
-    expect(JSON.parse(q(".rex-detail .jsonv-code")!.textContent!)).toEqual(RULE_FIRE);
+    await next();
+    expect(JSON.parse(q(".jsonv-code")!.textContent!)).toEqual(RULE_FIRE);
   });
 
-  it("shows no confidence value or invented accept status", async () => {
-    installBackend({ status: status("completed"), rules: STORED });
-    await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
+  it("shows no confidence value or invented status, and never calls an unflagged rule verified", async () => {
+    await openStored();
     expect(text()).not.toMatch(/confidence/i);
-    expect(text()).not.toContain("Auto-Accepted");
-    expect(qa(".rex-rule .rex-status").map((s) => s.textContent)).toEqual(["Pending Review", "Flagged", "Pending Review", "Reviewed"]);
+    expect(text()).not.toMatch(/auto-?(accepted|verified|approved)/i);
+    expect(text()).not.toMatch(/\b(is|are) verified\b/i);
+    expect(textWithoutRing()).not.toMatch(/\b\d+\s?%/); // the only percentage is the share of rules people reviewed
+    expect(side()).toContain("1 with potential issues");
+    expect(side()).toContain("2 waiting for review"); // the unflagged rule waits too; the third is marked reviewed in the file
+    expect(side()).toContain("Every rule is a draft");
+    await click(q(".rex-side-issues button"));
+    expect(q(".rex-side-why")?.textContent).toContain("A rule without such a notice is not verified");
   });
 
-  it("states only counts that the stored result supports and keeps automated refusals apart from human decisions", async () => {
-    installBackend({ status: status("completed"), rules: STORED });
-    await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    const stats = (scope: ParentNode) => [...scope.querySelectorAll(".rex-stat")].map((s) => [s.querySelector(".rex-stat-label")?.textContent, s.querySelector(".rex-stat-value")?.textContent]);
-    expect(stats(q(".rex-overview-head")!)).toEqual([["Extracted Rules", "3"]]);
-    expect(stats(q('[aria-label="Human review"].rex-group')!)).toEqual([["Pending Review", "2"], ["Reviewed or Approved", "1"]]);
-    // what the automated checks found is a separate group, with the backend's own counts
-    expect(stats(q('[aria-label="Automated ODOS checks"]')!)).toEqual([
-      ["Flagged by ODOS Checks", "1"], ["Refused by ODOS Checks", "1"], ["Repaired by Schema Repair", "0"], ["Sentences Cited by a Rule", "8 of 10"],
-    ]);
-    expect(q('[aria-label="Human review"].rex-group')?.textContent).toContain("Review decisions are not stored yet, so human rejections cannot be counted.");
-    expect(q('[aria-label="Automated ODOS checks"]')?.textContent).toContain("A rule without a flag is not verified as correct");
+  it("states only counts the stored result supports, and keeps everything technical behind Advanced details", async () => {
+    await openStored();
+    expect(side()).toContain("3 rules found");
+    expect(q(".rex-ring")?.getAttribute("aria-valuenow")).toBe("33"); // one of three rules is marked reviewed in the file
+    expect(side()).toContain("1 of 3 reviewed");
+    expect(q(".rex-adv-body")).toBeNull();
+    await click(q(".rex-adv-toggle"));
+    const rows = qa(".rex-tech-list > div").map((d) => [d.querySelector("dt")?.textContent, d.querySelector("dd")?.textContent]);
+    expect(rows).toEqual(expect.arrayContaining([
+      ["Rule ID", "tuer-breite"], ["Model", "eu.anthropic.claude-sonnet-4-6"], ["Refused by checks", "1"], ["Repaired by schema repair", "0"],
+      ["Text units cited by a rule", expect.stringContaining("8 of 10")], ["Provisions with a rule", expect.stringContaining("1 of 1")],
+    ]));
     expect(q(".rex-rejected")?.textContent).toContain("abgelehnt-1");
     expect(q(".rex-rejected")?.textContent).toContain("unknown operator");
-    expect(qa(".rex-rule")).toHaveLength(3); // the refused candidate is not a rule in the list
-    expect(text()).not.toMatch(/\b\d+%/);
-    expect(q(".rex-bar")?.getAttribute("aria-label")).toBe("2 of 3 rules pending review, 1 reviewed or approved");
+    expect(q(".rex-advanced")?.textContent).toContain("Der Begriff 'Tür' ist nicht definiert."); // the model's notes
+    await openOverview();
+    expect(qa(".rex-dialog .rex-rule")).toHaveLength(3); // the refused candidate is not a rule
+  });
+
+  it("keeps the model identifier, raw IDs, JSON and the rule list out of the default view", async () => {
+    await openStored();
+    const shown = text();
+    expect(shown).not.toContain("eu.anthropic");
+    expect(shown).not.toContain("doc/par-1/abs-1");
+    expect(shown).not.toContain("tuer-breite\""); // no JSON
+    expect(q(".rex-list")).toBeNull();
+    expect(qa('[role="tab"]')).toHaveLength(0); // no tabs
+  });
+
+  it("explains a potential issue only when asked", async () => {
+    await openStored();
+    expect(q(".rex-issue-btn")?.textContent).toContain("Potential issue");
+    expect(q(".rex-issue-list")).toBeNull();
+    await click(q(".rex-issue-btn"));
+    expect(q(".rex-issue-list")?.textContent).toContain("unit of 'tuer.lichte_breite' is not stated in the source text");
+    await next(); // an unflagged rule has no notice
+    expect(q(".rex-issue")).toBeNull();
   });
 
   it("handles an empty result", async () => {
     const empty = rulesFile([], { modelId: "m", counts: { proposed: 0 }, rulesRejected: [] });
-    installBackend({ status: status("completed"), rules: empty });
-    await mount(<RuleExtractionView result={demoResult(empty)} onBack={() => {}} />);
+    await openStored(empty);
     expect(q(".rex-noresults")?.textContent).toContain("produced no rules");
-    expect(q(".rex-list")).toBeNull();
-    expect(button("Restart Extraction")).not.toBeUndefined();
+    expect(q(".rex-card")).toBeNull();
   });
 
   it("copes with a partial result: records that are not Rule JSON 2.0 are reported, optional fields may be missing", async () => {
     const bare = { schemaVersion: "2.0", id: "bare", source: { elements: [] }, classification: { type: "obligation" }, review: { status: "draft" } };
     const file = { rules: [bare, { schemaVersion: "1.0", id: "old" }] };
-    installBackend({ status: status("completed"), rules: file });
-    await mount(<RuleExtractionView result={demoResult(file)} onBack={() => {}} />);
+    await openStored(file);
     expect(text()).toContain("1 record in the result file is not valid Rule JSON 2.0");
-    expect(qa(".rex-rule")).toHaveLength(1);
-    expect(q(".rex-rule-title")?.textContent).toBe("bare"); // no summary: the id
-    expect(q(".rex-overview")).not.toBeNull(); // no _generation block: nothing breaks
-    expect(button("Show in PDF")?.disabled).toBe(true);
-    await click(qa('[role="tab"]').find((t) => t.textContent === "Source Text"));
-    expect(text()).toContain("names no source element");
+    expect(pager()).toBe("1 of 1");
+    expect(current()).toBe("bare"); // no summary: the id
+    expect(view()?.disabled).toBe(true);
+    expect(q(".rex-source")?.textContent).toContain("names no passage of the document");
+    expect(q(".rex-gap")?.textContent).toContain("cannot be shown in plain language"); // no requirement at all: said so, not hidden
+  });
+
+  it("a rule whose structure the page cannot put into words says so and points to the complete rule", async () => {
+    const odd = rule("odd", "Eine Regel mit unbekannter Form.", ABS1, {}, { requirements: [{ kind: "spline", fact: "x" }] });
+    await openStored(rulesFile([odd]));
+    expect(q(".rex-gap")?.textContent).toContain("not the complete rule");
+    expect(q(".rex-gap")?.textContent).toContain("Advanced details → Rule JSON");
   });
 });
 
-describe("search, filters and selection", () => {
-  const open = async () => {
-    installBackend({ status: status("completed"), rules: STORED });
-    await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
+describe("the overview of all rules (hidden by default)", () => {
+  const open = async (file: unknown = STORED) => {
+    installBackend({ status: status("completed"), rules: file });
+    await mount(<RuleExtractionView result={demoResult(file)} onBack={() => {}} />);
+    await openOverview();
   };
 
-  it("searches by id, summary and citation, and falls back to the first match for the selection", async () => {
+  it("lists the rules by title and citation, potential issues first", async () => {
+    await open();
+    expect(qa(".rex-dialog .rex-rule-title").map((t) => t.textContent)).toEqual([RULE_DOOR.classification.summary, RULE_FIRE.classification.summary, "Regel mit Quelle außerhalb des Dokuments."]);
+    expect(queued()).toEqual(["tuer-breite", "brandabschnitt", "fremd"]);
+    expect(qa(".rex-dialog .rex-rule .rex-chips").map((s) => s.textContent)).toEqual(["OpenPotential issue", "Open", "Reviewed"]);
+  });
+
+  it("searches by id, summary and citation; Previous and Next then walk the matches", async () => {
     await open();
     const search = q<HTMLInputElement>('input[type="search"]')!;
     await type(search, "brandabschnitt");
-    expect(qa(".rex-rule")).toHaveLength(1);
-    expect(q(".rex-detail-id")?.textContent).toBe("brandabschnitt");
+    expect(queued()).toEqual(["brandabschnitt"]);
+    expect(current()).toBe(RULE_FIRE.classification.summary);
     await type(search, "lichte Breite");
-    expect(qa(".rex-rule-id").map((t) => t.textContent)).toEqual(["tuer-breite"]);
-    await type(search, "§ 1 fremd");
-    expect(qa(".rex-rule-id").map((t) => t.textContent)).toEqual(["fremd"]);
+    expect(queued()).toEqual(["tuer-breite"]);
     await type(search, "gibt es nicht");
-    expect(q(".rex-empty")?.textContent).toContain("No rules match");
-    expect(q(".rex-empty-detail")).not.toBeNull();
+    expect(q(".rex-dialog .rex-empty")?.textContent).toContain("No rules match");
+    await closeOverview();
+    expect(q(".rex-main.rex-empty-detail")?.textContent).toContain("No rules match");
+    await click(button("Show all rules"));
+    expect(pager()).toBe("1 of 3");
   });
 
-  it("filters by review status and by the backend's own flags", async () => {
+  it("filters by review status and by the checks' notices", async () => {
     await open();
-    await click(button(/^Pending Review \(2\)/));
-    expect(qa(".rex-rule")).toHaveLength(2);
-    await click(button(/^Flagged by Checks \(1\)/));
-    expect(qa(".rex-rule-id").map((t) => t.textContent)).toEqual(["tuer-breite"]);
+    expect(qa(".rex-tabs button").map((b) => [b.textContent, b.getAttribute("aria-pressed")])).toEqual([["All (3)", "true"], ["To review (2)", "false"], ["Potential issues (1)", "false"], ["Reviewed (1)", "false"]]);
+    await click(button(/^Potential issues \(1\)/));
+    expect(queued()).toEqual(["tuer-breite"]);
     await click(button(/^Reviewed \(1\)/));
-    expect(qa(".rex-rule-id").map((t) => t.textContent)).toEqual(["fremd"]);
-    await click(button(/^All Rules \(3\)/));
-    expect(qa(".rex-rule")).toHaveLength(3);
+    expect(queued()).toEqual(["fremd"]);
   });
 
-  it("switches between Rule JSON and Source Text without losing the selection", async () => {
-    await open();
-    await click(qa(".rex-rule")[1]);
-    await click(qa('[role="tab"]').find((t) => t.textContent === "Source Text"));
-    expect(q(".rex-sourcetext")?.textContent).toBe("(2) Brandabschnitte sind zu begrenzen.");
-    expect(q(".rex-detail .jsonv")).toBeNull();
-    await click(qa('[role="tab"]').find((t) => t.textContent === "Rule JSON"));
-    expect(q(".rex-detail-id")?.textContent).toBe("brandabschnitt");
-  });
-
-  it("says so when a source element is not part of the opened document", async () => {
-    await open();
-    await click(qa(".rex-rule")[2]);
-    await click(qa('[role="tab"]').find((t) => t.textContent === "Source Text"));
-    expect(text()).toContain("not part of the opened document");
+  it("lists the rules by provision on request, without dropping any", async () => {
+    const flaggedLater = rulesFile([RULE_FIRE, RULE_DOOR]);
+    await open(flaggedLater);
+    expect(queued()).toEqual(["tuer-breite", "brandabschnitt"]); // the rule with a potential issue moves up
+    expect(q(".rex-group-h")).toBeNull();
+    const order = q<HTMLSelectElement>('select[aria-label="Order of the rules"]')!;
+    await act(async () => { order.value = "document"; order.dispatchEvent(new Event("change", { bubbles: true })); });
+    await flush();
+    expect(queued()).toEqual(["brandabschnitt", "tuer-breite"]);
+    expect(qa(".rex-group-h").map((h) => h.textContent)).toEqual(["§ 1 · Türen"]);
   });
 });
 
-describe("Human Review", () => {
-  it("keeps Accept, Reject and Edit visible but disabled, explains why, and shows the rule as pending", async () => {
+describe("Human Review without stored decisions", () => {
+  it("keeps the three decisions visible but disabled, explains why, and shows the rule as pending", async () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    for (const name of ["Accept Rule", "Reject", "Edit JSON"]) {
-      const b = button(new RegExp(`^${name}$`));
-      expect(b, name).not.toBeUndefined();
-      expect(b!.disabled, name).toBe(true);
-      expect(b!.title).toContain("cannot be saved right now");
+    for (const b of choices()) {
+      expect(b.disabled).toBe(true);
+      expect(b.title).toContain("cannot be saved right now");
     }
-    expect(q(".rex-detail")?.textContent).toContain("Review decisions cannot be saved right now");
-    expect(q(".rex-detail")?.textContent).toContain("stays “Pending Review”");
-  });
-
-  it("shows the review information stored in the rule: ODOS check flags, ambiguities and notes", async () => {
-    installBackend({ status: status("completed"), rules: STORED });
-    await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    const info = q(".rex-reviewinfo")!.textContent!;
-    expect(info).toContain("unit of 'tuer.lichte_breite' is not stated in the source text");
-    expect(info).toContain("Der Begriff 'Tür' ist nicht definiert.");
-    expect(info).toContain("Model: eu.anthropic.claude-sonnet-4-6");
-    expect(info).toContain("Machine-checkable: yes");
+    expect(q(".rex-card")?.textContent).toContain("Review decisions cannot be saved right now");
+    expect(q(".rex-card")?.textContent).toContain("stays “Pending Review”");
   });
 });
 
 describe("PDF source navigation", () => {
-  it("'Show in PDF' hands the rule's first source element to Document Review", async () => {
+  it("'View in document' hands the source element of the rule to Document Review", async () => {
     installBackend({ status: status("completed"), rules: STORED });
     const onShowInPdf = vi.fn();
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} onShowInPdf={onShowInPdf} />);
-    await click(button("Show in PDF"));
+    await click(view());
     expect(onShowInPdf).toHaveBeenLastCalledWith(ABS1);
-    await click(qa(".rex-rule")[1]);
-    await click(button("Show in PDF"));
+    await next();
+    await click(view());
     expect(onShowInPdf).toHaveBeenLastCalledWith(ABS2);
+  });
+
+  it("offers exactly one way into the document for the rule's passage", async () => {
+    installBackend({ status: status("completed"), rules: STORED });
+    await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} onShowInPdf={() => {}} />);
+    expect(qa("button").filter((b) => /document|PDF/i.test(`${b.textContent} ${b.getAttribute("aria-label") ?? ""}`) && !/Back to Document Review/.test(b.getAttribute("aria-label") ?? ""))).toHaveLength(1);
   });
 
   it("is unavailable for a rule whose source is not in the document, and never invents a page", async () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} onShowInPdf={() => {}} />);
-    await click(qa(".rex-rule")[2]);
-    expect(button("Show in PDF")?.disabled).toBe(true);
+    await next();
+    await next();
+    expect(view()?.disabled).toBe(true);
+    expect(q(".rex-source")?.textContent).toContain("not part of the opened document");
+    expect(q(".rex-pages")?.textContent).toBe("p. 3"); // the page the record itself states, nothing else
   });
 
   it("Document Review opens with that element selected, on its page, with its source highlighted", async () => {
@@ -467,59 +529,51 @@ describe("source references", () => {
     await mount(<RuleExtractionView result={demoResult(file)} onBack={() => {}} onShowInPdf={onShowInPdf} />);
     return onShowInPdf;
   };
-  const refs = () => qa<HTMLButtonElement>(".rex-ref");
 
-  it("makes the citation a link into the PDF that reuses 'Show in PDF'", async () => {
-    const onShowInPdf = await open([RULE_DOOR]);
-    const citation = q<HTMLButtonElement>(".rex-citation")!;
-    expect(citation.textContent).toBe("§ 1 tuer-breite");
-    await click(citation);
-    expect(onShowInPdf).toHaveBeenCalledWith(ABS1);
+  it("shows the citation and the pages of the passage", async () => {
+    await open([RULE_DOOR]);
+    expect(q(".rex-cite")?.textContent).toBe("§ 1 tuer-breite");
+    expect(q(".rex-pages")?.textContent).toBe("p. 3");
   });
 
-  it("lists every source element with its name and pages and opens the one that is clicked", async () => {
+  it("shows every primary passage with its name, and opens the first one", async () => {
     const multi = withSource("multi", [{ elementId: ABS1, pdfPages: [3] }, { elementId: ABS2, pdfPages: [4, 5] }], "§ 1 Abs. 1 und 2");
     const onShowInPdf = await open([multi]);
-    expect(refs().map((r) => r.textContent)).toEqual(["Absatz (1) · p. 3", "Absatz (2) · p. 4–5"]);
-    await click(refs()[1]);
-    expect(onShowInPdf).toHaveBeenLastCalledWith(ABS2);
-    await click(q(".rex-citation"));
-    expect(onShowInPdf).toHaveBeenLastCalledWith(ABS1); // the citation opens the first source that exists
+    expect(qa(".rex-quote-label").map((l) => l.textContent)).toEqual(["Absatz (1) · p. 3", "Absatz (2) · p. 4–5"]);
+    expect(qa(".rex-quote").map((x) => x.textContent)).toEqual(["(1) Türen müssen mindestens 0,90 m breit sein.", "(2) Brandabschnitte sind zu begrenzen."]);
+    expect(q(".rex-pages")?.textContent).toBe("p. 3–5");
+    await click(view());
+    expect(onShowInPdf).toHaveBeenLastCalledWith(ABS1);
   });
 
-  it("shows a source that is not in the document as unavailable, without a link", async () => {
+  it("puts context and definition passages behind “Related passages”, each with its own way into the document", async () => {
+    const ctx = withSource("ctx", [{ elementId: ABS1, role: "primary", pdfPages: [3] }, { elementId: ABS2, role: "context", pdfPages: [4] }]);
+    const onShowInPdf = await open([ctx]);
+    expect(qa(".rex-quote")).toHaveLength(2); // the related one is in the closed disclosure, rendered but folded
+    expect(q(".rex-related summary")?.textContent).toBe("Related passages (1)");
+    expect(q(".rex-related .rex-quote-label")?.textContent).toBe("Absatz (2) · context · p. 4");
+    await click(q('.rex-related button[aria-label="View Absatz (2) in the document"]'));
+    expect(onShowInPdf).toHaveBeenLastCalledWith(ABS2);
+  });
+
+  it("opens the first primary passage that is part of the document", async () => {
     const mixed = withSource("mixed", [{ elementId: "doc/missing", pdfPages: [2] }, { elementId: ABS2, pdfPages: [4] }]);
     const onShowInPdf = await open([mixed]);
-    expect(refs().map((r) => [r.textContent, r.disabled])).toEqual([["doc/missing · p. 2", true], ["Absatz (2) · p. 4", false]]);
-    expect(refs()[0].title).toContain("not part of the opened document");
-    await click(refs()[0]);
-    expect(onShowInPdf).not.toHaveBeenCalled();
-    await click(q(".rex-citation"));
-    expect(onShowInPdf).toHaveBeenCalledWith(ABS2);
-  });
-
-  it("explains a rule none of whose sources can be shown, and leaves the citation as plain text", async () => {
-    await open([withSource("foreign", [{ elementId: "doc/other", pdfPages: [1] }])]);
-    expect(q(".rex-citation")).toBeNull();
-    expect(q(".rex-refs")?.textContent).toContain("None of this rule's source elements is part of the opened document");
-    expect(button("Show in PDF")?.disabled).toBe(true);
+    expect(q(".rex-source")?.textContent).toContain("not part of the opened document");
+    await click(view());
+    expect(onShowInPdf).toHaveBeenLastCalledWith(ABS2);
   });
 
   it("drops page numbers that cannot be pages of this document instead of guessing, and falls back to the element's own pages", async () => {
-    const odd = withSource("odd", [{ elementId: ABS1, pdfPages: [0, 999, 3.5, -1] }]);
-    await open([odd]);
-    expect(refs()[0].textContent).toBe("Absatz (1) · p. 3"); // the document element's page, not a made-up one
-    const unknown = withSource("unknown", [{ elementId: "doc/other", pdfPages: [0, 999] }]);
-    await open([unknown]);
-    expect(refs().map((r) => r.textContent)).toEqual(["doc/other"]);
+    await open([withSource("odd", [{ elementId: ABS1, pdfPages: [0, 999, 3.5, -1] }])]);
+    expect(q(".rex-pages")?.textContent).toBe("p. 3"); // the document element's page, not a made-up one
   });
 
   it("handles a rule without citation or source elements", async () => {
     await open([withSource("bare", [], null)]);
-    expect(q(".rex-citation")).toBeNull();
-    expect(q(".rex-detail-source")?.textContent).toContain("Source: —");
-    expect(q(".rex-refs")?.textContent).toContain("names no source element");
-    expect(qa(".rex-ref")).toHaveLength(0);
+    expect(q(".rex-cite")).toBeNull();
+    expect(q(".rex-source")?.textContent).toContain("names no passage of the document");
+    expect(view()?.disabled).toBe(true);
   });
 });
 

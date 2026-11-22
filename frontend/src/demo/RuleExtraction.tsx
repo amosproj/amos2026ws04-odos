@@ -1,25 +1,23 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Icon } from "../components/Icon";
-import { JsonViewer } from "../components/JsonViewer";
 import { Logo } from "../components/Logo";
-import { TYPE_LABELS, fullText } from "../structure";
-import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
 import {
   ExtractionWaitError, HttpError, downloadApprovedRules, extractionActive, getRuleExtraction, loadRules, startRuleExtraction, watchRuleExtraction,
-  type RuleExtractionStatus, type RuleReviewEntry,
+  type RuleExtractionStatus,
 } from "./live";
-import { ReviewControls } from "./ReviewControls";
+import type { DocElement } from "../types";
+import type { RuleReviewEntry } from "./live";
+import { useReviewActions } from "./ReviewControls";
+import { FILTER_LABEL, RuleQueue } from "./RuleQueue";
+import { AdvancedDetails, Dialog, HelpContent, MoreMenu, ReviewMain, ReviewSidebar } from "./RuleReview";
 import {
-  applyReview, generatedAt, isReviewed, matchesFilter, matchesSearch, overviewOf, pagesLabel, reviewLabel, toRuleResults, validPages,
-  type ReviewFilter, type RuleItem, type RuleResults,
+  applyReview, generatedAt, isPending, isReviewed, matchesFilter, matchesSearch, overviewOf, provisionCoverage, provisionOf, queueOrder, toRuleResults,
+  type QueueOrder, type ReviewFilter, type RuleItem, type RuleResults,
 } from "./ruleResults";
 import { useReviewerName, useRuleReviews, type ReviewApi } from "./useRuleReviews";
 import "./rule-extraction.css";
 
-type DetailTab = "json" | "source";
-
-const FILTER_LABEL: Record<ReviewFilter, string> = { all: "All Rules", pending: "Pending Review", accepted: "Accepted", rejected: "Rejected", flagged: "Flagged by Checks", reviewed: "Reviewed" };
 const TOO_LARGE_CODES = new Set(["too_large", "output_truncated"]);
 
 /** Where the page is. `results` shows the job's stored `rules.json`; every other stage is about getting one. */
@@ -38,8 +36,11 @@ export interface RulesNav {
   filter: ReviewFilter;
   search: string;
   selectedId: string | null;
-  tab: DetailTab;
-  listScroll: number;
+  /** Order of the rules and "next open rule after a decision"; absent in a place saved before they existed. */
+  order?: QueueOrder;
+  advance?: boolean;
+  /** Advanced details open. */
+  advanced?: boolean;
   pageScroll: number;
 }
 
@@ -165,19 +166,9 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
     }
   };
 
-  const filename = result.filename ?? result.title;
   return (
     <main className="workspace rex">
-      <div className="docbar">
-        <Logo compact />
-        <span className="docbar-sep" aria-hidden="true" />
-        <h2 title={filename}>{filename}</h2>
-        <span className="demo-status ok">Completed</span>
-        <span className="spacer" />
-        <button className="btn" onClick={onBack}><Icon name="back" size={16} />Back to Document Review</button>
-      </div>
-
-      <WorkflowSteps />
+      <TopBar step={stage.kind === "results" ? 3 : 2} onBack={onBack} />
 
       <div className="rex-body">
         <div className="rex-fade" key={stage.kind}>
@@ -209,14 +200,34 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
   );
 }
 
-function WorkflowSteps() {
+/** The page's header: the logo, the three steps of the workflow and help. "Document" leads back to Document Review. */
+function TopBar({ step, onBack }: { step: 2 | 3; onBack: () => void }) {
+  const [help, setHelp] = useState(false);
+  const steps: Array<{ label: string; state: "done" | "current" | "upcoming" }> = [
+    { label: "Document", state: "done" },
+    { label: "Rules extracted", state: step === 3 ? "done" : "current" },
+    { label: "Review", state: step === 3 ? "current" : "upcoming" },
+  ];
   return (
-    <nav className="rex-steps" aria-label="Rule extraction workflow">
-      <ol>
-        <li className="rex-step done"><span className="rex-step-circle"><Icon name="check" size={18} /></span><span className="rex-step-label">Document Review</span></li>
-        <li className="rex-step current" aria-current="step"><span className="rex-step-circle">2</span><span className="rex-step-label">LLM Rule Extraction &amp; Review</span></li>
-      </ol>
-    </nav>
+    <header className="rex-top">
+      <Logo compact />
+      <nav className="rex-steps" aria-label="Rule extraction workflow">
+        <ol>
+          {steps.map((s, i) => {
+            const mark = <span className="rex-step-circle">{s.state === "done" ? <Icon name="check" size={16} /> : i + 1}</span>;
+            return (
+              <li key={s.label} className={`rex-step ${s.state}`} aria-current={s.state === "current" ? "step" : undefined}>
+                {i === 0
+                  ? <button type="button" className="rex-step-link" onClick={onBack} aria-label="Back to Document Review" title="Back to Document Review">{mark}<span className="rex-step-label">{s.label}</span></button>
+                  : <>{mark}<span className="rex-step-label">{s.label}</span></>}
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+      <button type="button" className="rex-icon-btn rex-help-btn" onClick={() => setHelp(true)} aria-label="Help" title="How reviewing works"><Icon name="help" size={26} /></button>
+      {help && <Dialog title="How reviewing works" onClose={() => setHelp(false)} className="small"><HelpContent /></Dialog>}
+    </header>
   );
 }
 
@@ -341,9 +352,15 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
   const saved = nav?.current && nav.current.jobId === jobId ? nav.current : null; // the place this reviewer left (same job only)
   const [filter, setFilter] = useState<ReviewFilter>(saved?.filter ?? "all");
   const [search, setSearch] = useState(saved?.search ?? "");
-  const [selectedId, setSelectedId] = useState<string | null>(saved?.selectedId ?? results.items[0]?.id ?? null);
-  const [detailTab, setDetailTab] = useState<DetailTab>(saved?.tab ?? "json");
-  const listRef = useRef<HTMLDivElement>(null);
+  const [order, setOrder] = useState<QueueOrder>(saved?.order ?? "flagged"); // rules with a potential issue first
+  const [advance, setAdvance] = useState(saved?.advance ?? true);
+  const [advanced, setAdvanced] = useState(saved?.advanced ?? false);
+  const [overview, setOverview] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(saved?.selectedId ?? null);
+  // a rule that was just decided (with "next open rule" off) or that met a conflict stays in the sequence until the reviewer moves
+  // on, so its new state and any message about it do not vanish with it when a filter is on
+  const [pinned, setPinned] = useState<string | null>(null);
+  const select = useCallback((id: string) => { setPinned(null); setSelectedId(id); }, []);
   const [exportState, setExportState] = useState<{ busy: boolean; error: string | null }>({ busy: false, error: null });
   // the review state is bound to the extraction of the rules on screen (`_generation.generatedAt`), never to rule IDs alone
   const { api, reload, setEntry } = useRuleReviews(jobId, results.generation?.generatedAt ?? null);
@@ -352,22 +369,65 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
   const view = useMemo<RuleResults>(() => (api.kind === "ready" ? { ...results, items: results.items.map((r) => applyReview(r, api.data.rules[r.id])) } : results), [results, api]);
   const ov = useMemo(() => overviewOf(view), [view]);
   const elements = useMemo(() => new Map(result.model.elements.map((e) => [e.id, e])), [result.model]);
+  const provisions = useMemo(() => provisionCoverage(elements, view.items), [elements, view.items]);
+  const provisionById = useMemo(() => new Map(view.items.map((r) => [r.id, provisionOf(r, elements)])), [view.items, elements]);
 
   const reviewedCount = view.items.filter(isReviewed).length;
-  const filters: ReviewFilter[] = api.kind === "ready" ? ["all", "pending", "accepted", "rejected", "flagged"]
+  const filters: ReviewFilter[] = api.kind === "ready" ? ["all", "pending", "flagged", "accepted", "rejected"]
     : reviewedCount ? ["all", "pending", "flagged", "reviewed"] : ["all", "pending", "flagged"];
   const activeFilter = filters.includes(filter) ? filter : "all"; // a filter that is not offered now (e.g. a saved "Accepted") does not hide everything
-  const filtered = useMemo(() => view.items.filter((r) => matchesFilter(r, activeFilter) && matchesSearch(r, search)), [view, activeFilter, search]);
-  useEffect(() => {
-    if (!filtered.some((r) => r.id === selectedId)) setSelectedId(filtered[0]?.id ?? null);
-  }, [filtered, selectedId]);
-  const selected = useMemo(() => view.items.find((r) => r.id === selectedId) ?? null, [view, selectedId]);
+  // the order in which Previous / Next walk the rules: all rules (or those of the filter chosen in the overview)
+  const sequence = useMemo(() => queueOrder(view.items.filter((r) => (matchesFilter(r, activeFilter) || r.id === pinned) && matchesSearch(r, search)), order),
+                           [view, activeFilter, search, order, pinned]);
 
-  // remember the place (the scroll positions are kept by the listeners below)
+  // the selection: on opening, the first rule that waits for a decision (once the decisions are known); when the selected rule
+  // leaves the sequence (a filter is on), the rule that now stands at its place
+  const lastIndex = useRef(-1);
+  useEffect(() => {
+    const at = sequence.findIndex((r) => r.id === selectedId);
+    if (at >= 0) { lastIndex.current = at; return; }
+    if (lastIndex.current < 0) {
+      if (api.kind === "loading") return;
+      lastIndex.current = 0;
+      setSelectedId((sequence.find(isPending) ?? sequence[0])?.id ?? null);
+      return;
+    }
+    setSelectedId(sequence[Math.min(lastIndex.current, sequence.length - 1)]?.id ?? null);
+  }, [sequence, selectedId, api.kind]);
+  const selected = useMemo(() => sequence.find((r) => r.id === selectedId) ?? (lastIndex.current < 0 ? sequence[0] ?? null : null), [sequence, selectedId]);
+  const position = selected ? sequence.indexOf(selected) + 1 : 0;
+  const move = useCallback((by: number) => {
+    const next = sequence[position - 1 + by];
+    if (next) select(next.id);
+  }, [sequence, position, select]);
+
+  // ← and → go to the previous and next rule, unless the reviewer is typing or a dialog is open
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (overview || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest?.("input, textarea, select, [contenteditable], [role='dialog'], [role='menu']")) return;
+      e.preventDefault();
+      move(e.key === "ArrowLeft" ? -1 : 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [move, overview]);
+
+  /** After an accepted or rejected decision: on to the next rule that still waits for one (when the reviewer wants that). */
+  const onDecided = (ruleId: string) => {
+    const at = sequence.findIndex((r) => r.id === ruleId);
+    const next = advance ? [...sequence.slice(at + 1), ...sequence.slice(0, Math.max(at, 0))].find((r) => r.id !== ruleId && isPending(r)) : undefined;
+    if (next) select(next.id);
+    else setPinned(ruleId); // staying: the decided rule remains in the sequence with its new state
+  };
+
+  // remember the place (the page scroll position is kept by the listener below)
   useEffect(() => {
     if (!nav || !jobId) return;
-    nav.current = { listScroll: 0, pageScroll: 0, ...(nav.current?.jobId === jobId ? nav.current : {}), jobId, filter, search, selectedId, tab: detailTab };
-  }, [nav, jobId, filter, search, selectedId, detailTab]);
+    nav.current = { pageScroll: 0, ...(nav.current?.jobId === jobId ? nav.current : {}), jobId, filter, search, selectedId, order, advance, advanced };
+  }, [nav, jobId, filter, search, selectedId, order, advance, advanced]);
   useEffect(() => {
     if (!nav || !jobId) return;
     const onScroll = () => { if (nav.current?.jobId === jobId) nav.current.pageScroll = window.scrollY; };
@@ -375,12 +435,10 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
     return () => window.removeEventListener("scroll", onScroll);
   }, [nav, jobId]);
   const restored = useRef(false);
-  useLayoutEffect(() => { // once the page has its usual height (the review state is in), put the scroll positions back
+  useLayoutEffect(() => { // once the page has its usual height (the review state is in), put the scroll position back
     if (restored.current || api.kind === "loading") return;
     restored.current = true;
-    if (!saved) return;
-    if (listRef.current) listRef.current.scrollTop = saved.listScroll;
-    window.scrollTo?.(0, saved.pageScroll);
+    if (saved) window.scrollTo?.(0, saved.pageScroll);
   }, [api.kind, saved]);
 
   const download = async () => {
@@ -391,158 +449,70 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
   };
 
   const countOf = (f: ReviewFilter) => view.items.filter((r) => matchesFilter(r, f)).length;
-  const { generation } = results;
+  const scope = activeFilter !== "all" || search.trim() ? [activeFilter !== "all" ? FILTER_LABEL[activeFilter] : null, search.trim() ? `“${search.trim()}”` : null].filter(Boolean).join(", ") : null;
+  const filename = result.filename ?? result.title;
 
   return (
-    <section className="rex-panel rex-results" aria-label="Extracted rules">
-      <div className="rex-main-head">
-        <div>
-          <div className="rex-main-title"><Icon name="sparkle" size={20} />Extracted Rules</div>
-          <p className="rex-main-sub">
-            Draft Rule JSON extracted by an LLM; none of it is a legal compliance decision until a person has reviewed it.
-            {generation?.modelId && <> Model: <code>{generation.modelId}</code>{generation.generatedAt ? ` · ${new Date(generation.generatedAt).toLocaleString()}` : ""}.</>}
-          </p>
-        </div>
-        <div className="rex-main-actions">
-          {api.kind === "ready" && jobId && (
-            <button type="button" className="btn" disabled={api.data.counts.accepted === 0 || exportState.busy} onClick={() => void download()}
-                    title={api.data.counts.accepted > 0 ? "The accepted rules as Rule JSON 2.0 (status approved); rejected and pending rules are not included" : "No rule has been accepted yet"}>
-              <Icon name="open" size={16} />Download approved rules{api.data.counts.accepted > 0 ? ` (${api.data.counts.accepted})` : ""}
-            </button>
-          )}
-          <button type="button" className="btn" onClick={onAskRestart} disabled={!canRestart || confirmRestart} title={canRestart ? "Run the extraction again (paid request, asks for confirmation)" : "Needs the ODOS backend"}>
-            <Icon name="refresh" size={16} />Restart Extraction
-          </button>
-        </div>
-      </div>
+    <section className="rex-results" aria-label="Extracted rules">
       {confirmRestart && <RestartConfirm onConfirm={onRestart} onCancel={onCancelRestart} />}
       {exportState.error && <div className="alert error" role="alert">The approved rules were not downloaded: {exportState.error}</div>}
       {api.kind === "stale" && !api.unidentified && <StaleBanner onReload={onReloadRules} />}
       {notice && <div className="alert warn" role="status"><Icon name="info" size={14} />{notice}</div>}
       {results.skipped > 0 && <div className="alert warn" role="status"><Icon name="info" size={14} />{results.skipped} record{results.skipped === 1 ? " in the result file is" : "s in the result file are"} not valid Rule JSON 2.0 and cannot be shown.</div>}
 
-      <Overview ov={ov} results={view} api={api} />
-
       {ov.total === 0 ? (
         <div className="rex-empty-detail rex-noresults" role="status">
           <Icon name="info" size={20} /><span>The extraction completed but produced no rules for this document.</span>
         </div>
       ) : (
-        <>
-          <div className="rex-filters">
-            <div className="rex-tabs" role="group" aria-label="Filter rules">
-              {filters.map((f) => (
-                <button key={f} type="button" className="btn small" aria-pressed={activeFilter === f} onClick={() => setFilter(f)}>{FILTER_LABEL[f]} ({countOf(f)})</button>
-              ))}
+        <div className="rex-layout">
+          <ReviewSidebar filename={filename} ov={ov} api={api} onOverview={() => setOverview(true)} exporting={exportState.busy} onDownload={() => void download()}
+                         menu={(
+                           <MoreMenu>
+                             {(close) => (
+                               <button type="button" role="menuitem" disabled={!canRestart || confirmRestart} onClick={() => { close(); onAskRestart(); }}
+                                       title={canRestart ? "Run the extraction again (paid request, asks for confirmation)" : "Needs the ODOS backend"}>
+                                 <Icon name="refresh" size={14} />Restart Extraction
+                               </button>
+                             )}
+                           </MoreMenu>
+                         )} />
+          {selected ? (
+            <RuleView key={selected.id} rule={selected} position={position} count={sequence.length} scope={scope} onPrevious={() => move(-1)} onNext={() => move(1)}
+                      elements={elements} numPages={result.model.source.num_pages} onShowInPdf={onShowInPdf} jobId={jobId} api={api} reviewer={reviewer} onReviewer={setReviewer}
+                      onEntry={setEntry} onReload={reload} onDecided={onDecided} onConflict={setPinned} results={view} ov={ov} provisions={provisions}
+                      advanced={advanced} onAdvanced={setAdvanced} />
+          ) : (
+            <div className="rex-main rex-empty-detail" role="status">
+              <Icon name="info" size={20} /><span>No rules match the chosen filter. <button type="button" className="btn small" onClick={() => { setFilter("all"); setSearch(""); }}>Show all rules</button></span>
             </div>
-            <label className="rex-search">
-              <Icon name="search" size={14} />
-              <input type="search" placeholder="Search rules…" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search rules" />
-            </label>
-          </div>
+          )}
+        </div>
+      )}
 
-          <div className="rex-split">
-            <div className="rex-list" role="listbox" aria-label="Extracted rules" ref={listRef}
-                 onScroll={(e) => { if (nav?.current && nav.current.jobId === jobId) nav.current.listScroll = e.currentTarget.scrollTop; }}>
-              {filtered.length === 0 && <p className="rex-empty">No rules match this filter.</p>}
-              {filtered.map((r) => (
-                <button key={r.id} type="button" role="option" aria-selected={r.id === selectedId}
-                        className={`rex-rule${r.id === selectedId ? " selected" : ""}`}
-                        onClick={() => { setSelectedId(r.id); setDetailTab("json"); }}>
-                  <span className="rex-rule-main">
-                    <span className="rex-rule-title">{r.title}</span>
-                    <span className="rex-rule-id">{r.id}</span>
-                  </span>
-                  <StatusChip rule={r} />
-                </button>
-              ))}
-            </div>
-            <RuleDetail rule={selected} tab={detailTab} onTab={setDetailTab} elements={elements} numPages={result.model.source.num_pages} onShowInPdf={onShowInPdf}
-                        jobId={jobId} api={api} reviewer={reviewer} onReviewer={setReviewer} onEntry={setEntry} onReload={reload} />
-          </div>
-        </>
+      {overview && (
+        <Dialog title="All rules" onClose={() => setOverview(false)} className="wide">
+          <RuleQueue items={sequence} selectedId={selected?.id ?? null} onSelect={(id) => { select(id); setOverview(false); }} filters={filters} activeFilter={activeFilter}
+                     onFilter={(f) => { setPinned(null); setFilter(f); }} countOf={countOf} search={search} onSearch={(q) => { setPinned(null); setSearch(q); }}
+                     order={order} onOrder={setOrder} advance={advance} onAdvance={setAdvance} canAdvance={api.kind === "ready"} provisionOf={(r) => provisionById.get(r.id) ?? null} />
+        </Dialog>
       )}
     </section>
   );
 }
 
-/** The counts of the stored result, in two groups that are never mixed: what people have decided (nothing yet: the backend
- *  stores no decisions) and what ODOS's automated checks found. A rule without a flag is not "verified". */
-function Overview({ ov, results, api }: { ov: ReturnType<typeof overviewOf>; results: RuleResults; api: ReviewApi }) {
-  const g = results.generation;
-  const reviewed = ov.reviewed + ov.approved;
-  const ready = api.kind === "ready";
+/** One rule on screen: its review state (the hook belongs to the rule, so nothing typed for one rule reaches another). */
+function RuleView({ rule, jobId, api, reviewer, onEntry, onReload, onDecided, onConflict, results, ov, provisions, advanced, onAdvanced, ...card }: {
+  rule: RuleItem; position: number; count: number; scope: string | null; onPrevious: () => void; onNext: () => void;
+  elements: Map<string, DocElement>; numPages: number; onShowInPdf?: (elementId: string) => void;
+  jobId: string | undefined; api: ReviewApi; reviewer: string; onReviewer: (name: string) => void;
+  onEntry: (ruleId: string, entry: RuleReviewEntry) => void; onReload: () => Promise<void>; onDecided: (ruleId: string) => void; onConflict: (ruleId: string) => void;
+  results: RuleResults; ov: ReturnType<typeof overviewOf>; provisions: { total: number; withRules: number } | null; advanced: boolean; onAdvanced: (open: boolean) => void;
+}) {
+  const review = useReviewActions({ jobId: jobId ?? "", rule, api: jobId ? api : { kind: "unavailable", reason: null }, reviewer: jobId ? reviewer : "", onEntry, onReload, onDecided, onConflict });
   return (
-    <div className="rex-overview">
-      <div className="rex-overview-head">
-        <div>
-          <p className="rex-card-title">Extraction Overview</p>
-          <p className="rex-card-sub">Counts from the stored result. No score or percentage is estimated.</p>
-        </div>
-        <Stat value={ov.total} label="Extracted Rules" />
-      </div>
-      <div className="rex-groups">
-        <section className="rex-group" aria-label="Human review">
-          <p className="rex-group-title"><Icon name="user" size={14} />Human review</p>
-          {ready ? (
-            <>
-              <div className="rex-stats">
-                <Stat value={ov.pending} label="Pending Review" tone="warn" />
-                <Stat value={ov.accepted} label="Accepted" tone="accent" />
-                <Stat value={ov.rejected} label="Rejected" tone="danger" />
-                <Stat value={ov.edited} label="Edited" />
-              </div>
-              {ov.total > 0 && (
-                <div className="rex-bar" role="img" aria-label={`${ov.accepted} accepted, ${ov.rejected} rejected and ${ov.pending} pending of ${ov.total} rules`}>
-                  <span className="rex-bar-auto" style={{ flexGrow: ov.accepted }} />
-                  <span className="rex-bar-rejected" style={{ flexGrow: ov.rejected }} />
-                  <span className="rex-bar-review" style={{ flexGrow: ov.pending }} />
-                </div>
-              )}
-              <p className="rex-note"><Icon name="info" size={14} />Decisions are saved in the ODOS database with the reviewer's name and kept in an audit trail. The extracted rules are never changed.</p>
-              {api.data.earlierExtractionEvents > 0 && <p className="rex-note"><Icon name="info" size={14} />{api.data.earlierExtractionEvents} decision event{api.data.earlierExtractionEvents === 1 ? "" : "s"} from earlier extractions {api.data.earlierExtractionEvents === 1 ? "is" : "are"} kept in the history and not applied to these rules.</p>}
-            </>
-          ) : api.kind === "stale" ? (
-            <>
-              <div className="rex-stats"><Stat value={ov.total} label="Rules on this page" /></div>
-              <p className="rex-note"><Icon name="lock" size={14} />{api.unidentified
-                ? "These rules carry no extraction identifier, so no review decisions are shown or accepted for them."
-                : "The review decisions on the server belong to a newer extraction than the rules on this page, so none are shown here. Reload the results."}</p>
-            </>
-          ) : (
-            <>
-              <div className="rex-stats">
-                <Stat value={ov.pending} label="Pending Review" tone="warn" />
-                <Stat value={reviewed} label={`Reviewed or Approved${ov.approved ? ` (${ov.approved} approved)` : ""}`} tone="accent" />
-              </div>
-              {ov.total > 0 && (
-                <div className="rex-bar" role="img" aria-label={`${ov.pending} of ${ov.total} rules pending review, ${reviewed} reviewed or approved`}>
-                  <span className="rex-bar-auto" style={{ flexGrow: reviewed }} />
-                  <span className="rex-bar-review" style={{ flexGrow: ov.total - reviewed }} />
-                </div>
-              )}
-              <p className="rex-note"><Icon name="lock" size={14} />Review decisions are not stored yet, so human rejections cannot be counted.</p>
-            </>
-          )}
-        </section>
-        <section className="rex-group" aria-label="Automated ODOS checks">
-          <p className="rex-group-title"><Icon name="info" size={14} />Automated ODOS checks</p>
-          <div className="rex-stats">
-            <Stat value={ov.flagged} label="Flagged by ODOS Checks" hint="Rules kept as drafts with a note from an automated check" />
-            <Stat value={ov.autoRejected} label="Refused by ODOS Checks" hint="Candidates the checks refused; they are not in the rule list" />
-            {g?.repaired !== undefined && <Stat value={g.repaired} label="Repaired by Schema Repair" hint="Records whose form was repaired along the schema" />}
-            {g?.coverage && <Stat value={`${g.coverage.sentencesCited} of ${g.coverage.sentences}`} label="Sentences Cited by a Rule" hint="Normative sentences that some rule cites as its primary source" />}
-          </div>
-          <p className="rex-note"><Icon name="info" size={14} />The checks cover form, units, numbers and sources. A rule without a flag is not verified as correct, and a refused or flagged one is not a human decision.</p>
-          {ov.autoRejected > 0 && (
-            <details className="rex-rejected">
-              <summary>Show candidates refused by automated checks</summary>
-              <ul>{results.autoRejected.map((r, i) => <li key={`${r.id}-${i}`}><code>{r.id}</code>{r.reasons.map((reason, j) => <span key={j} className="rex-reason">{reason}</span>)}</li>)}</ul>
-            </details>
-          )}
-        </section>
-      </div>
-    </div>
+    <ReviewMain rule={rule} review={review} reviewer={reviewer} {...card}
+                advanced={<AdvancedDetails rule={rule} results={results} ov={ov} review={review} provisions={provisions} open={advanced} onOpen={onAdvanced} />} />
   );
 }
 
@@ -564,147 +534,6 @@ function StaleBanner({ onReload }: { onReload: () => Promise<void> }) {
         {error && <p>{error}</p>}
         <button type="button" className="btn primary small" disabled={busy} onClick={() => void reload()}><Icon name="refresh" size={14} />Reload results</button>
       </div>
-    </div>
-  );
-}
-
-function Stat({ value, label, tone, hint }: { value: number | string; label: string; tone?: "accent" | "warn" | "danger"; hint?: string }) {
-  return (
-    <div className="rex-stat" title={hint}>
-      <span className="rex-stat-value">{typeof value === "number" ? <span className={tone}>{value}</span> : value}</span>
-      <span className="rex-stat-label">{label}</span>
-    </div>
-  );
-}
-
-function StatusChip({ rule }: { rule: RuleItem }) {
-  // with stored decisions the chip shows the reviewer's decision; without them, the status written in the file
-  const label = rule.human ? ({ pending: "Pending Review", accepted: "Accepted", rejected: "Rejected" } as const)[rule.human] : reviewLabel(rule.reviewStatus);
-  const tone = rule.human === "accepted" || isReviewed(rule) ? "auto" : rule.human === "rejected" ? "flag" : "review";
-  return (
-    <span className="rex-chips">
-      <span className={`rex-status ${tone}`}>{tone === "auto" ? <Icon name="check" size={12} /> : <Icon name="user" size={12} />}{label}</span>
-      {rule.edited && <span className="rex-status ok" title="A reviewer edited this rule; the extracted record is kept unchanged">Edited</span>}
-      {rule.checkFlags.length > 0 && <span className="rex-status flag" title="ODOS's automated checks flagged this rule">Flagged</span>}
-    </span>
-  );
-}
-
-/** How a source reference of a rule reads: the document element it names (null when the opened document has none with that
- *  ID) and its pages. Pages come from the rule itself, else from the element; invalid ones are dropped, never guessed. */
-function describeSource(s: RuleItem["sources"][number], elements: Map<string, DocElement>, numPages: number) {
-  const e = elements.get(s.elementId) ?? null;
-  const own = validPages(s.pdfPages, numPages);
-  const pages = own.length ? own : e ? validPages(e.pages, numPages) : [];
-  const name = e ? `${TYPE_LABELS[e.type] ?? e.type} ${e.marker ?? ""}`.trim() : s.elementId;
-  return { e, pages, name, pagesText: pagesLabel(pages) };
-}
-
-function RuleDetail({ rule, tab, onTab, elements, numPages, onShowInPdf, jobId, api, reviewer, onReviewer, onEntry, onReload }: {
-  rule: RuleItem | null; tab: DetailTab; onTab: (t: DetailTab) => void; elements: Map<string, DocElement>; numPages: number; onShowInPdf?: (elementId: string) => void;
-  jobId: string | undefined; api: ReviewApi; reviewer: string; onReviewer: (name: string) => void; onEntry: (ruleId: string, entry: RuleReviewEntry) => void; onReload: () => Promise<void>;
-}) {
-  const [jsonView, setJsonView] = useState<"effective" | "original">("effective");
-  useEffect(() => setJsonView("effective"), [rule?.id]);
-  if (!rule) return <div className="rex-detail rex-empty-detail"><Icon name="info" size={20} /><span>Select a rule to see its details.</span></div>;
-  const refs = rule.sources.map((s) => ({ s, ...describeSource(s, elements, numPages) }));
-  const first = refs.find((r) => r.e);
-  const canShow = !!first && !!onShowInPdf;
-  const showTitle = canShow ? "Open this source in Document Review, highlighted in the PDF" : "This rule names no source element that is part of this document";
-  return (
-    <div className="rex-detail">
-      <div className="rex-detail-head">
-        <div className="rex-detail-title">
-          <strong>{rule.title}</strong>
-          <StatusChip rule={rule} />
-        </div>
-        <span className="rex-detail-id">{rule.id}</span>
-      </div>
-      <div className="rex-detail-tabs" role="tablist">
-        <button type="button" role="tab" aria-selected={tab === "json"} onClick={() => onTab("json")}>Rule JSON</button>
-        <button type="button" role="tab" aria-selected={tab === "source"} onClick={() => onTab("source")}>Source Text</button>
-      </div>
-      {tab === "json" && rule.edited && (
-        <div className="rex-jsonview" role="group" aria-label="Which version of the rule to show">
-          <button type="button" className="btn small" aria-pressed={jsonView === "effective"} onClick={() => setJsonView("effective")}>Edited (in force)</button>
-          <button type="button" className="btn small" aria-pressed={jsonView === "original"} onClick={() => setJsonView("original")}>Extracted (original)</button>
-        </div>
-      )}
-      {tab === "json"
-        ? <JsonViewer value={jsonView === "original" ? rule.rule : rule.effective} label={rule.edited ? (jsonView === "original" ? "Extracted Rule JSON" : "Edited Rule JSON") : "Rule JSON"} />
-        : <SourceTexts rule={rule} elements={elements} numPages={numPages} onShowInPdf={onShowInPdf} />}
-      <div className="rex-refs" aria-label="Source references">
-        <div className="rex-detail-source">
-          <span className="rex-refs-citation">Source:{" "}
-            {rule.citation
-              ? (canShow
-                ? <button type="button" className="rex-citation" onClick={() => first && onShowInPdf?.(first.s.elementId)} title={`Show ${rule.citation} in the PDF`}>{rule.citation}</button>
-                : <code>{rule.citation}</code>)
-              : "—"}
-          </span>
-          <button type="button" className="btn small" disabled={!canShow} onClick={() => first && onShowInPdf?.(first.s.elementId)} title={showTitle}>
-            <Icon name="open" size={14} />Show in PDF
-          </button>
-        </div>
-        {refs.length > 0 && (
-          <ul className="rex-ref-list">
-            {refs.map(({ s, e, name, pagesText }) => (
-              <li key={`${s.elementId}-${s.sentenceId ?? ""}`}>
-                <button type="button" className="rex-ref" disabled={!e || !onShowInPdf} onClick={() => onShowInPdf?.(s.elementId)}
-                        title={e ? `Show ${name} in the PDF` : "This element is not part of the opened document"}>
-                  <Icon name={e ? "open" : "info"} size={12} />{name}{pagesText ? ` · ${pagesText}` : ""}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {refs.length === 0 && <p className="rex-note"><Icon name="info" size={14} />This rule names no source element, so it cannot be shown in the PDF.</p>}
-        {refs.length > 0 && !first && <p className="rex-note"><Icon name="info" size={14} />None of this rule's source elements is part of the opened document, so it cannot be shown in the PDF.</p>}
-      </div>
-      <ReviewInfo rule={rule} />
-      {jobId
-        ? <ReviewControls jobId={jobId} rule={rule} api={api} reviewer={reviewer} onReviewer={onReviewer} onEntry={onEntry} onReload={onReload} />
-        : <ReviewControls jobId="" rule={rule} api={{ kind: "unavailable", reason: null }} reviewer="" onReviewer={() => {}} onEntry={() => {}} onReload={async () => {}} />}
-    </div>
-  );
-}
-
-function SourceTexts({ rule, elements, numPages, onShowInPdf }: { rule: RuleItem; elements: Map<string, DocElement>; numPages: number; onShowInPdf?: (elementId: string) => void }) {
-  if (!rule.sources.length) return <p className="rex-empty">This rule names no source element.</p>;
-  return (
-    <ul className="rex-sources">
-      {rule.sources.map((s) => {
-        const { e, pagesText, name } = describeSource(s, elements, numPages);
-        return (
-          <li key={`${s.elementId}-${s.sentenceId ?? ""}`}>
-            <div className="rex-source-head">
-              <span>{e ? name : "Unknown element"}{s.role ? ` · ${s.role}` : ""}</span>
-              <span className="rex-source-pages">{pagesText}</span>
-            </div>
-            {e
-              ? <blockquote className="rex-sourcetext">{fullText(e) || <em>(no text)</em>}</blockquote>
-              : <p className="rex-empty">This element is not part of the opened document.</p>}
-            <div className="rex-source-foot">
-              <code>{s.elementId}{s.sentenceId ? ` · ${s.sentenceId}` : ""}</code>
-              {e && onShowInPdf && <button type="button" className="btn small" onClick={() => onShowInPdf(s.elementId)}><Icon name="open" size={14} />Show in PDF</button>}
-            </div>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-function ReviewInfo({ rule }: { rule: RuleItem }) {
-  const any = rule.checkFlags.length || rule.ambiguities.length || rule.notes.length || rule.machineCheckable !== null;
-  if (!any) return null;
-  return (
-    <div className="rex-reviewinfo">
-      <p className="rex-card-title">Review information</p>
-      {rule.machineCheckable !== null && <p className="rex-note">Machine-checkable: {rule.machineCheckable ? "yes" : "no"}</p>}
-      {rule.checkFlags.length > 0 && <><p className="rex-reviewinfo-h">Flagged by ODOS checks</p><ul>{rule.checkFlags.map((f, i) => <li key={i}>{f}</li>)}</ul></>}
-      {rule.ambiguities.length > 0 && <><p className="rex-reviewinfo-h">Ambiguities noted by the model</p><ul>{rule.ambiguities.map((f, i) => <li key={i}>{f}</li>)}</ul></>}
-      {rule.notes.length > 0 && <><p className="rex-reviewinfo-h">Notes</p><ul>{rule.notes.map((f, i) => <li key={i}>{f}</li>)}</ul></>}
     </div>
   );
 }
