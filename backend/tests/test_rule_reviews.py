@@ -4,7 +4,6 @@ Needs the test database (see conftest: POSTGRES_* exported, database name ending
 The extraction is faked (no request reaches AWS) and rules.json must stay byte-identical through every review action."""
 
 import copy
-import hashlib
 import json
 import threading
 from unittest.mock import patch
@@ -15,7 +14,6 @@ from conftest import SCHEMAS, fake_pipeline, upload, wait_for
 from fastapi.testclient import TestClient
 from test_rule_extraction_api import LEGAL, RULE, FakeBedrock, answer, api, start, use, wait_for_extraction  # noqa: F401 (api: fixture)
 
-import odos.rule_extraction_jobs as rx
 import odos.rule_reviews as rv
 from odos.api import app
 from odos.artifact_names import RULE_JSON
@@ -341,7 +339,7 @@ def test_without_the_table_the_review_endpoints_say_how_to_create_it_and_the_res
             conn.execute(SCHEMAS[1].read_text(encoding="utf-8"))
 
 
-def test_without_the_database_review_is_unavailable(api):
+def test_without_the_database_review_is_unavailable(api):  # noqa: F811
     client, job_id = api
     use_rules = client.get(f"/api/jobs/{job_id}/rule-reviews")
     assert use_rules.status_code == 503 and "ODOS_DATABASE_ENABLED" in use_rules.json()["detail"]
