@@ -10,7 +10,7 @@ import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, fullText, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
-import { ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
+import { fileUrl, ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
 import { RuleExtractionView, type RulesNav } from "./RuleExtraction";
 import "./demo.css";
 
@@ -348,6 +348,7 @@ export function Artifacts({ result, element = null, full, onFull, artifactView, 
           : <RuleJsonPreview result={result} element={element} full={!!full} />}
       </section>
       
+      {artifact === "legal" && result.live && <LlmInputViews result={result} />}
       {result.live && (
         <DoclingRaw
           key={result.live.jobId}
@@ -379,4 +380,27 @@ export function RuleJsonPreview({ result, element, full }: { result: DemoResult;
     return <p className="demo-artifact-empty" role="status">{message}</p>;
   }
   return <pre className="preview demo-code" tabIndex={0}>{JSON.stringify(visibleRules, null, 2)}</pre>;
+}
+
+
+export function LlmInputViews({ result }: { result: DemoResult }) {
+  const live = result.live;
+  if (!live) return null;
+  const stem = (result.filename ?? result.title).replace(/\.pdf$/i, "");
+  const variants = [
+    { key: "v1", title: "Reduced LLM input JSON V1", file: "llm_input_v1.json", suffix: "llm-input-v1", data: live.llmInputV1 },
+    { key: "v2", title: "LLM applicability input JSON V2", file: "llm_applicability_input_v2.json", suffix: "llm-applicability-input-v2", data: live.llmInputV2 },
+  ];
+  return <>
+    {variants.map(v => <details className="demo-artifact" key={v.key}>
+      <summary style={{ cursor: "pointer", padding: "10px 12px" }}>
+        <span style={{ display: "inline-flex", width: "calc(100% - 20px)", justifyContent: "space-between", alignItems: "center", gap: "12px", verticalAlign: "middle" }}>
+          <h3 style={{ display: "inline", fontSize: "14px", margin: 0 }}>{v.title}</h3>
+          {v.data != null && <a className="btn small" href={fileUrl(live.jobId, v.file, true)} download={`${stem}.${v.suffix}.json`} onClick={event => event.stopPropagation()}>Download</a>}
+        </span>
+      </summary>
+      {v.data == null ? <p>This input view is not available. Reprocess the document with the updated backend.</p>
+        : <pre className="preview demo-code" tabIndex={0}>{JSON.stringify(v.data, null, 2)}</pre>}
+    </details>)}
+  </>;
 }
