@@ -12,11 +12,27 @@ export interface DocumentProblem { id: string; message: string }
 
 const STATUS: Record<StoredDocument["status"], { label: string; tone: "ok" | "busy" | "warn" | "danger" }> = {
   completed: { label: "Completed", tone: "ok" },
-  processing: { label: "Processing", tone: "busy" },
-  queued: { label: "Queued", tone: "busy" },
+  processing: { label: "In progress", tone: "busy" },
+  queued: { label: "Waiting to start", tone: "busy" },
   unsupported: { label: "Not recognized", tone: "warn" },
   failed: { label: "Failed", tone: "danger" },
+  cancelled: { label: "Cancelled", tone: "warn" },
 };
+
+/** The library label. A known stage replaces the generic "in progress" wording; unknown stages stay generic.
+ *  A cancellation the database stored as failed (its check predates status "cancelled") is still shown as cancelled. */
+export function documentStatus(doc: StoredDocument): { label: string; tone: "ok" | "busy" | "warn" | "danger" } {
+  if (doc.status === "cancelled" || (doc.status === "failed" && (doc.message ?? "").startsWith("Processing was cancelled"))) {
+    return { label: "Cancelled", tone: "warn" };
+  }
+  if (doc.status === "processing" || doc.status === "queued") {
+    if (doc.stage === "cancelling") return { label: "Cancelling", tone: "warn" };
+    if (doc.stage === "extracting") return { label: "Reading your document", tone: "busy" };
+    if (doc.stage === "normalizing") return { label: "Preparing results", tone: "busy" };
+    if (doc.stage === "uploading") return { label: "Uploading document", tone: "busy" };
+  }
+  return STATUS[doc.status] ?? { label: doc.status, tone: "warn" };
+}
 
 /** Only a completed document has a result to open; the backend refuses to delete one that is still being processed. */
 export const canOpen = (doc: StoredDocument) => doc.status === "completed";
@@ -73,11 +89,13 @@ interface Props {
   openError?: DocumentProblem | null;
   /** Opening is not possible right now (a PDF is being processed or another document is opening). */
   openDisabled?: boolean;
+  /** Stop a document that is still queued or processing. Shown on that row. */
+  onCancelDocument?: (doc: StoredDocument) => void;
 }
 
 /** The documents the backend keeps in its database (metadata only): open a completed one, delete any finished one.
  *  Loads them on mount and whenever `refreshKey` changes. */
-export function RecentDocuments({ refreshKey = 0, onOpen, openingId = null, openError = null, openDisabled = false }: Props) {
+export function RecentDocuments({ refreshKey = 0, onOpen, openingId = null, openError = null, openDisabled = false, onCancelDocument }: Props) {
   const [state, setState] = useState<DocumentsState>({ kind: "loading" });
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -116,6 +134,13 @@ export function RecentDocuments({ refreshKey = 0, onOpen, openingId = null, open
     return () => { latest.current++; };
   }, [refreshKey, load]);
 
+  const busyDocument = state.kind === "ready" && state.documents.some((doc) => doc.status === "queued" || doc.status === "processing");
+  useEffect(() => {
+    if (!busyDocument) return;
+    const timer = window.setInterval(() => load(true), 2000);
+    return () => window.clearInterval(timer);
+  }, [busyDocument, load]);
+
   const confirmDelete = async (doc: StoredDocument) => {
     if (deleting.current) return;
     deleting.current = true;
@@ -150,6 +175,7 @@ export function RecentDocuments({ refreshKey = 0, onOpen, openingId = null, open
       onAskDelete={(doc) => { setDeleteError(null); setConfirmId(doc.id); }}
       onCancelDelete={() => { setDeleteError(null); setReturnFocusTo(confirmId); setConfirmId(null); }}
       onConfirmDelete={(doc) => void confirmDelete(doc)}
+      onCancelDocument={onCancelDocument}
       headingRef={heading}
       triggerRefs={triggers}
       query={query}
@@ -171,6 +197,7 @@ interface ViewProps {
   onAskDelete?: (doc: StoredDocument) => void;
   onCancelDelete?: () => void;
   onConfirmDelete?: (doc: StoredDocument) => void;
+  onCancelDocument?: (doc: StoredDocument) => void;
   headingRef?: Ref<HTMLHeadingElement>;
   triggerRefs?: RefObject<Map<string, HTMLButtonElement | null>>;
   /** Filters the listed documents by file name; without `onQueryChange` there is no search field. */
@@ -180,7 +207,7 @@ interface ViewProps {
 
 export function RecentDocumentsView({
   state, onRefresh, onOpen, openingId = null, openError = null, openDisabled = false,
-  confirmId = null, deletingId = null, deleteError = null, onAskDelete, onCancelDelete, onConfirmDelete, headingRef, triggerRefs, query = "", onQueryChange,
+  confirmId = null, deletingId = null, deleteError = null, onAskDelete, onCancelDelete, onConfirmDelete, onCancelDocument, headingRef, triggerRefs, query = "", onQueryChange,
 }: ViewProps) {
   const loading = state.kind === "loading";
   const idle = openingId === null && deletingId === null;
@@ -224,7 +251,7 @@ export function RecentDocumentsView({
         </div>
         <ul className={`demo-doclist${showType ? " has-type" : ""}`}>
           {shown.map((doc) => {
-            const status = STATUS[doc.status] ?? { label: doc.status, tone: "busy" as const };
+            const status = documentStatus(doc);
             const created = formatDate(doc.created_at);
             const rank = ranks.get(doc.id);
             // identical file names: the accessible names and the confirmation say which upload is meant
@@ -256,6 +283,9 @@ export function RecentDocumentsView({
                   {created ? <time className="muted demo-docdate" dateTime={doc.created_at}>{created}</time> : <span />}
                   <div className="demo-actions">
                     {canOpen(doc) && onOpen && <span className="demo-openicon" aria-hidden="true"><Icon name="open" size={19} /></span>}
+                    {(doc.status === "queued" || doc.status === "processing") && doc.stage !== "cancelling" && onCancelDocument && (
+                      <button type="button" className="btn small" onClick={() => onCancelDocument(doc)} disabled={!idle} aria-label={`Cancel processing of ${doc.filename}`}>Cancel</button>
+                    )}
                     {canDelete(doc) && onAskDelete && (
                       <button type="button" className="demo-iconbtn" ref={(el) => { triggerRefs?.current.set(doc.id, el); }} onClick={() => onAskDelete(doc)} disabled={!idle || confirming} aria-label={`Delete ${doc.filename}${which}`} title="Delete">
                         <Icon name="trash" size={19} />

@@ -64,7 +64,7 @@ def list_recent_documents(limit: int = 20):
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                SELECT id, filename, status, created_at
+                SELECT id, filename, status, stage, message, created_at
                 FROM documents
                 ORDER BY created_at DESC, id
                 LIMIT %s

@@ -15,7 +15,7 @@ import odos.api
 import odos.rule_extraction_jobs as rx
 from odos.api import app
 from odos.artifact_names import RULE_JSON
-from odos.llm.bedrock import BedrockConfig, BedrockRequestError, BedrockResponse, BedrockThrottledError, BedrockUnavailableError
+from odos.llm.bedrock import BedrockAborted, BedrockConfig, BedrockRequestError, BedrockResponse, BedrockThrottledError, BedrockUnavailableError
 from odos.pipeline import Outcome
 
 LEGAL = {
@@ -40,15 +40,29 @@ def answer(*rules, text=None):
 
 
 class FakeBedrock:
-    """Answers in order. `gate` holds the answer back until the test releases it (the request must not wait for it)."""
+    """Answers in order. `gate` holds the answer back until the test releases it (the request must not wait for it).
+
+    `abort` releases the gate and makes the blocked call raise, so a cancellation does not wait for an answer."""
 
     def __init__(self, *answers, gate: threading.Event | None = None):
         self.config, self.answers, self.gate, self.calls = BedrockConfig(), list(answers), gate, 0
+        self._abort = False
+
+    def abort(self) -> None:
+        self._abort = True
+        if self.gate is not None:
+            self.gate.set()
 
     def converse(self, system, user, **kwargs):
+        if self._abort and (self.gate is None or self.gate.is_set()):
+            self._abort = False
+            raise BedrockAborted("The Bedrock request was stopped.")
         self.calls += 1
         if self.gate is not None:
             assert self.gate.wait(5), "the test never released the model answer"
+            if self._abort:
+                self._abort = False
+                raise BedrockAborted("The Bedrock request was stopped.")
         item = self.answers.pop(0)
         if isinstance(item, Exception):
             raise item

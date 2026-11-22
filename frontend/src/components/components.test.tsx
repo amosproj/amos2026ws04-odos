@@ -52,9 +52,23 @@ describe("recent documents: list", () => {
     const items = rows(render(all));
     expect(items).toHaveLength(5);
     expect(items.map((i) => /class="demo-docname[^"]*"[^>]*>([^<]+)</.exec(i)![1])).toEqual(["Bauordnung.pdf", "Scan.pdf", "Notiz.pdf", "Laufend.pdf", "Wartend.pdf"]);
-    expect(items.map((i) => />([^<]+)<\/span><time/.exec(i)![1])).toEqual(["Completed", "Failed", "Not recognized", "Processing", "Queued"]);
+    expect(items.map((i) => />([^<]+)<\/span><time/.exec(i)![1])).toEqual(["Completed", "Failed", "Not recognized", "In progress", "Waiting to start"]);
     expect(items.map((i) => /class="demo-status (\w+)"/.exec(i)![1])).toEqual(["ok", "danger", "warn", "busy", "busy"]);
     expect(items[1]).toContain('dateTime="2026-11-10T08:00:00Z"');
+  });
+
+  it("shows a stored cancellation as cancelled, and a job that is still finishing as cancelling", () => {
+    const html = render(ready(
+      { ...doc("a", "Alt.pdf", "failed"), message: "Processing was cancelled." },
+      { ...doc("b", "Neu.pdf", "processing"), stage: "cancelling" },
+      doc("c", "Fertig.pdf", "completed"),
+    ), { onCancelDocument: noop });
+    const items = rows(html);
+    expect(items[0]).toContain("Cancelled");
+    expect(items[0]).not.toContain("Failed");
+    expect(items[1]).toContain("Cancelling");
+    expect(items[1]).not.toContain("Cancel processing");
+    expect(items[2]).toContain('aria-label="Open Fertig.pdf"');
   });
 
   it("offers Open only for completed documents", () => {
@@ -307,15 +321,16 @@ describe("recent documents: delete confirmation", () => {
 describe("processing status", () => {
   it("states the stage in words with an indeterminate progress bar", () => {
     const html = renderToStaticMarkup(<ProcessingStatus stage="extracting" />);
-    expect(html).toContain("Analyzing document structure…");
+    expect(html).toContain("Reading your document");
     expect(html).toContain('role="status"');
     expect(html).toMatch(/role="progressbar"/);
     expect(html).not.toMatch(/aria-valuenow|aria-valuemax|\d+\s*%|Docling/); // no invented progress
   });
 
   it("follows the backend's stage", () => {
-    expect(renderToStaticMarkup(<ProcessingStatus stage="uploading" />)).toContain("Uploading document…");
-    expect(renderToStaticMarkup(<ProcessingStatus stage="normalizing" />)).toContain("Preparing structured legal data…");
-    expect(renderToStaticMarkup(<ProcessingStatus stage="completed" />)).toContain("Document processing complete.");
+    expect(renderToStaticMarkup(<ProcessingStatus stage="uploading" />)).toContain("Uploading document");
+    expect(renderToStaticMarkup(<ProcessingStatus stage="normalizing" />)).toContain("Preparing results");
+    expect(renderToStaticMarkup(<ProcessingStatus stage="completed" />)).toContain("Ready");
+    expect(renderToStaticMarkup(<ProcessingStatus stage="extracting" />)).not.toMatch(/aria-valuenow|\d+\s*%/);
   });
 });

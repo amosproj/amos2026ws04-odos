@@ -19,6 +19,11 @@ job directory (`RULE_EXTRACTION_STATUS`, restored with the job; the database sch
 job's `rules.json` artifact, served like the other result files. Unusable model answers are kept for diagnosis in the
 job directory (`llm-diagnostics/`, never served).
 
+Cancellation (`POST /api/jobs/{id}/cancel` and `POST /api/jobs/{id}/rule-extraction/cancel`) is cooperative. A job that
+has not started is dropped. A step that has already entered Docling or Bedrock runs until that call returns; its result
+is then discarded and cannot overwrite a cancelled state. `rules.json`, the original PDF and other jobs are left as they
+were. There is no chunked extraction: one model request is in flight at a time, so there is no per-section progress.
+
 Human review of the extracted rules (needs the database and `backend/db/002_rule_reviews.sql`): `GET/POST /api/jobs/{id}/rule-reviews`,
 `GET .../rule-reviews/history` and `GET .../rule-reviews/approved-export`. Decisions are append-only events in PostgreSQL bound to one
 extraction and one record hash; `rules.json` is never modified (Documentation/review-state-design.md).
@@ -34,7 +39,7 @@ import tempfile
 import threading
 import urllib.parse
 import uuid
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -86,6 +91,11 @@ SOURCE_PDF = "source.pdf"  # the uploaded PDF inside a job directory; kept only 
 FAILED_MESSAGE = "The PDF could not be processed. It may be damaged, encrypted or a scanned image without a text layer."
 NOT_STORED_MESSAGE = "The PDF was processed, but its result could not be stored in the database."
 DATABASE_UNAVAILABLE = "The ODOS database is not available. Check that PostgreSQL is running and try again."
+CANCELLED_DOCUMENT = "Processing was cancelled."
+
+
+class JobCancelled(Exception):
+    """Raised between pipeline stages so a cancelled document does not continue or publish a result."""
 
 
 def _persistent() -> bool:
@@ -95,9 +105,10 @@ def _persistent() -> bool:
 class Job(BaseModel):
     id: str
     filename: str  # the uploaded file's name, for display and the download name only
-    status: Literal["queued", "processing", "completed", "unsupported", "failed"] = "queued"
-    stage: str | None = None  # while processing: run_pipeline's progress ("extracting", "normalizing")
+    status: Literal["queued", "processing", "completed", "unsupported", "failed", "cancelled"] = "queued"
+    stage: str | None = None  # while processing: run_pipeline's progress ("extracting", "normalizing", "cancelling")
     message: str | None = None
+    cancelRequested: bool = False  # set while a running stage is asked to stop; cleared once the status is terminal
     summary: dict = Field(default_factory=dict)  # run_pipeline's summary (pages, counts, json_schema_valid, ...)
     ruleExtraction: rx.RuleExtraction | None = None  # the latest LLM rule extraction of this job, if one was started
 
@@ -113,7 +124,9 @@ class StoredDocument(BaseModel):
 
     id: str
     filename: str
-    status: Literal["queued", "processing", "completed", "unsupported", "failed"]
+    status: Literal["queued", "processing", "completed", "unsupported", "failed", "cancelled"]
+    stage: str | None = None
+    message: str | None = None  # so a cancellation stored as failed is not shown as an unexplained failure
     created_at: datetime
 
 
@@ -122,6 +135,9 @@ _lock = threading.Lock()
 _storage = Path()
 _executor = ThreadPoolExecutor(max_workers=1)
 _rule_executor = ThreadPoolExecutor(max_workers=1)  # paid Bedrock calls: one at a time, never alongside each other
+_doc_futures: dict[str, Future] = {}
+_rule_futures: dict[str, Future] = {}
+_rule_clients: dict[str, object] = {}  # the client of the running extraction, so cancel can close its connection
 
 
 @asynccontextmanager
@@ -143,6 +159,9 @@ async def lifespan(_app: FastAPI):
 
     with _lock:
         _jobs.clear()
+        _doc_futures.clear()
+        _rule_futures.clear()
+        _rule_clients.clear()
         if _persistent():
             mark_interrupted_jobs()
             for row in list_documents():
@@ -196,7 +215,11 @@ def create_job(file: UploadFile = File(...)) -> Job:
                 _remove(old.id)
         _jobs[job.id] = job
     queued = job.model_copy()  # as created: the worker may already be changing `job`
-    _executor.submit(_process, job, pdf)
+    future = _executor.submit(_process, job, pdf)
+    with _lock:
+        _doc_futures[job.id] = future
+        if job.cancelRequested and future.cancel():
+            _settle_document_cancel(job, pdf)
     return queued
 
 
@@ -273,7 +296,13 @@ def start_rule_extraction(job_id: str, request: rx.RuleExtractionRequest | None 
         rx.save(directory, extraction)
         job.ruleExtraction = extraction
     queued = extraction.model_copy(deep=True)
-    _rule_executor.submit(_extract_rules, job, request)
+    future = _rule_executor.submit(_extract_rules, job, request, extraction.runId)
+    with _lock:
+        _rule_futures[job.id] = future
+        current = job.ruleExtraction
+        if current is not None and current.runId == extraction.runId and current.cancelRequested and future.cancel():
+            current.mark_cancelled()
+            rx.save(directory, current)
     return queued
 
 
@@ -285,19 +314,156 @@ def get_rule_extraction(job_id: str) -> rx.RuleExtraction:
     return job.ruleExtraction
 
 
-def _extract_rules(job: Job, request: rx.RuleExtractionRequest) -> None:
-    """The worker: runs outside the HTTP request; the status file is written before each published change."""
+@app.post("/api/jobs/{job_id}/cancel")
+def cancel_job(job_id: str) -> Job:
+    """Stop a document that is queued or processing. Other jobs are not affected. A stage that has already started
+    (Docling) finishes, then its result is discarded."""
+    with _lock:
+        job = _job(job_id)
+        if job.status not in ("queued", "processing"):
+            raise HTTPException(409, "This document is no longer being processed.")
+        job.cancelRequested = True
+        future = _doc_futures.get(job.id)
+        if job.status == "queued" and future is not None and future.cancel():
+            _settle_document_cancel(job, _storage / job.id / SOURCE_PDF)
+        else:
+            job.stage = "cancelling"
+            if _persistent():
+                try:
+                    update_document_status(job.id, "processing", "cancelling")
+                except psycopg.Error:
+                    log.exception("could not record cancellation of job %s", job.id)
+        return job.model_copy()
+
+
+@app.post("/api/jobs/{job_id}/rule-extraction/cancel")
+def cancel_rule_extraction(job_id: str) -> rx.RuleExtraction:
+    """Stop finding rules for this job. Closes the model connection so the request does not keep running, discards the
+    answer, and leaves the extraction ready to start again. A request Amazon Bedrock has already accepted can still be
+    billed for work done before the connection closed."""
+    with _lock:
+        job = _job(job_id)
+        extraction = job.ruleExtraction
+        if not rx.active(extraction):
+            raise HTTPException(409, "No rule extraction is running.")
+        assert extraction is not None
+        extraction.cancelRequested = True
+        future = _rule_futures.get(job.id)
+        client = _rule_clients.get(job.id)
+        if extraction.status == "queued" and future is not None:
+            future.cancel()  # a run that has not started never calls the model
+        extraction.mark_cancelled()
+        directory = _storage / job.id
+        try:
+            rx.save(directory, extraction)
+        except OSError:
+            log.exception("could not store the cancellation of job %s", job.id)
+        stopped = extraction.model_copy(deep=True)
+    abort = getattr(client, "abort", None)
+    if callable(abort):
+        abort()  # outside the lock: closing the connection unblocks the worker, which needs this lock to finish
+    return stopped
+
+
+def _rule_stopped(job: Job, run_id: str) -> bool:
+    current = job.ruleExtraction
+    return current is None or current.runId != run_id or current.cancelRequested or current.status == "cancelled"
+
+
+def _publish_rule_stage(job: Job, run_id: str, stage: str) -> None:
+    with _lock:
+        current = job.ruleExtraction
+        if current is None or current.runId != run_id or current.cancelRequested or current.status not in ("queued", "running"):
+            return
+        current.stage = stage  # type: ignore[assignment]
+        if current.status == "queued":
+            current.mark_running()
+        try:
+            rx.save(_storage / job.id, current)
+        except OSError:
+            log.exception("could not store the rule extraction stage of job %s", job.id)
+
+
+def _extract_rules(job: Job, request: rx.RuleExtractionRequest, run_id: str) -> None:
+    """The worker: runs outside the HTTP request. A late result is published only while this run is still current."""
     directory = _storage / job.id
-    extraction = job.ruleExtraction.model_copy(deep=True)
-    extraction.mark_running()
-    rx.save(directory, extraction)
-    job.ruleExtraction = extraction
-    finished = rx.run(directory, request, extraction.model_copy(deep=True))  # never raises
+    with _lock:
+        current = job.ruleExtraction
+        if current is None or current.runId != run_id or current.cancelRequested or current.status == "cancelled":
+            if current is not None and current.runId == run_id and current.status != "cancelled":
+                current.mark_cancelled()
+                try:
+                    rx.save(directory, current)
+                except OSError:
+                    log.exception("could not store the cancelled rule extraction of job %s", job.id)
+            _rule_futures.pop(job.id, None)
+            return
+        current.mark_running()
+        current.stage = "finding"
+        try:
+            rx.save(directory, current)
+        except OSError:
+            log.exception("could not store the running rule extraction of job %s", job.id)
+        extraction = current.model_copy(deep=True)
+
+    client = rx.bedrock_client()
+    with _lock:
+        current = job.ruleExtraction
+        if current is None or current.runId != run_id or current.cancelRequested or current.status == "cancelled":
+            _rule_futures.pop(job.id, None)
+            return  # cancelled while the client was created; the model is not called
+        _rule_clients[job.id] = client
+
+    def should_stop() -> bool:
+        with _lock:
+            return _rule_stopped(job, run_id)
+
+    def on_request() -> None:
+        with _lock:
+            current = job.ruleExtraction
+            if current is None or current.runId != run_id:
+                return
+            current.externalRequestStarted = True
+            try:
+                rx.save(directory, current)
+            except OSError:
+                log.exception("could not store that a model request started for job %s", job.id)
+
     try:
-        rx.save(directory, finished)
-    except OSError:
-        log.exception("could not store the rule extraction status of job %s", job.id)
-    job.ruleExtraction = finished  # published last, as clients poll for it
+        result = rx.run(directory, request, extraction, client=client, should_stop=should_stop,
+                        on_stage=lambda stage: _publish_rule_stage(job, run_id, stage), on_request=on_request)
+    finally:
+        with _lock:
+            if _rule_clients.get(job.id) is client:
+                _rule_clients.pop(job.id, None)
+    with _lock:
+        current = job.ruleExtraction
+        _rule_futures.pop(job.id, None)
+        if current is None or current.runId != run_id:
+            return  # a different run owns the job
+        if current.cancelRequested or current.status == "cancelled" or extraction.status == "cancelled":
+            if current.status != "cancelled":
+                current.mark_cancelled()
+                try:
+                    rx.save(directory, current)
+                except OSError:
+                    log.exception("could not store the cancelled rule extraction of job %s", job.id)
+            return  # the answer is not written
+        if extraction.status == "completed" and result is not None:
+            try:
+                rx.save_rules(result, directory)
+            except OSError:
+                log.exception("could not store rules.json of job %s", job.id)
+                extraction.status, extraction.rulesFile = "failed", None
+                extraction.errorCode, extraction.message = "internal", "The rule extraction failed."
+        extraction.cancelRequested = current.cancelRequested
+        extraction.externalRequestStarted = current.externalRequestStarted or extraction.externalRequestStarted
+        extraction.runId = current.runId
+        try:
+            rx.save(directory, extraction)
+        except OSError:
+            log.exception("could not store the rule extraction status of job %s", job.id)
+        job.ruleExtraction = extraction  # published last, as clients poll for it
 
 
 # ── human review of the extracted rules (decisions are events in PostgreSQL; rules.json is never modified) ──────────────
@@ -418,23 +584,71 @@ def _save_pdf(file: UploadFile, dest: Path) -> None:
         raise HTTPException(415, "The file is not a PDF.")
 
 
-def _process(job: Job, pdf: Path) -> None:
-    if job.id not in _jobs:  # deleted while it waited
+def _discard_generated(directory: Path) -> None:
+    """Remove generated files of one job. The original PDF stays."""
+    if not directory.is_dir():
         return
+    for child in list(directory.iterdir()):
+        if child.name == SOURCE_PDF:
+            continue
+        if child.is_dir():
+            shutil.rmtree(child, ignore_errors=True)
+        else:
+            child.unlink(missing_ok=True)
 
-    job.status = "processing"
+
+def _settle_document_cancel(job: Job, pdf: Path) -> None:
+    """Terminal cancelled state for one document. Caller holds `_lock`. Other jobs are not touched."""
+    if job.status == "cancelled":
+        _doc_futures.pop(job.id, None)
+        return
+    _discard_generated(pdf.parent)
+    if _persistent():
+        try:
+            finish_document(job.id, "cancelled", {}, None, CANCELLED_DOCUMENT)
+        except psycopg.errors.CheckViolation:
+            # the database has not been updated with backend/db/003_cancelled_status.sql yet
+            log.warning("could not store status cancelled for job %s; storing it as failed", job.id)
+            try:
+                finish_document(job.id, "failed", {"cancelled": True}, None, CANCELLED_DOCUMENT)
+            except Exception:
+                log.exception("could not store the cancellation of job %s", job.id)
+        except Exception:
+            log.exception("could not store the cancellation of job %s", job.id)
+    else:
+        pdf.unlink(missing_ok=True)  # the browser keeps its own copy
+    job.stage, job.message, job.summary = None, CANCELLED_DOCUMENT, {}
+    job.cancelRequested = False
+    job.status = "cancelled"  # last: clients poll for it
+    _doc_futures.pop(job.id, None)
+
+
+def _process(job: Job, pdf: Path) -> None:
+    with _lock:
+        if job.id not in _jobs:  # deleted while it waited
+            return
+        if job.cancelRequested or job.status == "cancelled":
+            _settle_document_cancel(job, pdf)
+            return
+        job.status = "processing"
+
     status, message, summary, legal_json = "failed", FAILED_MESSAGE, job.summary, None
+    cancelled = False
 
     try:
         if _persistent():
             update_document_status(job.id, "processing")
 
         def on_progress(stage: str) -> None:
+            if job.cancelRequested:  # stop before the next stage; a stage already inside Docling cannot be killed
+                raise JobCancelled()
             job.stage = stage
             if _persistent():
                 update_document_status(job.id, "processing", stage)
 
         res = run_pipeline(pdf, pdf.parent, progress=on_progress)
+        if job.cancelRequested:
+            raise JobCancelled()
 
         # Docling's warnings may quote file paths: only their number leaves the server
         summary = res.summary | {
@@ -449,11 +663,20 @@ def _process(job: Job, pdf: Path) -> None:
         status = "completed" if res.outcome == Outcome.COMPLETED else "unsupported"
         message = res.message
 
+    except JobCancelled:
+        cancelled = True
     except Exception:
         log.exception("job %s failed", job.id)  # the details stay in the server log
         status, message = "failed", FAILED_MESSAGE
 
-    finally:
+    with _lock:
+        if job.id not in _jobs:  # deleted while it ran
+            shutil.rmtree(pdf.parent, ignore_errors=True)
+            return
+        if cancelled or job.cancelRequested or job.status == "cancelled":
+            _settle_document_cancel(job, pdf)  # a result produced after the cancel is not published
+            return
+
         if _persistent():
             try:
                 finish_document(job.id, status, summary, legal_json, message)
@@ -470,7 +693,6 @@ def _process(job: Job, pdf: Path) -> None:
 
         # published only now, after the database has the result; the status last, as clients poll for it
         job.stage, job.message, job.summary = None, message, summary
+        job.cancelRequested = False
         job.status = status
-
-        if job.id not in _jobs:  # deleted while it ran
-            shutil.rmtree(pdf.parent, ignore_errors=True)
+        _doc_futures.pop(job.id, None)

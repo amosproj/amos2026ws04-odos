@@ -16,6 +16,7 @@ from odos.llm.bedrock import (
     ENV_FILE_VAR,
     DEFAULT_MODEL_ID,
     DEFAULT_REGION,
+    BedrockAborted,
     BedrockAuthError,
     BedrockClient,
     BedrockConfig,
@@ -498,3 +499,23 @@ def test_the_command_says_when_the_env_file_has_no_key(tmp_path, capsys, monkeyp
     err = capsys.readouterr().err
     assert API_KEY_ENV in err and "is the file saved" in err
     assert "pw" not in err
+
+
+def test_abort_closes_the_connection_and_does_not_send_the_request_again():
+    sent: list[object] = []
+
+    class Fake:
+        def converse(self, **kwargs):
+            sent.append(kwargs)
+
+        def close(self):
+            sent.append("closed")
+
+    client = BedrockClient(config=BedrockConfig(), client=Fake())
+    assert client._stop_retry() is None  # a live request may still be retried
+    client.abort()
+    assert sent == ["closed"]
+    assert client._stop_retry() is False  # botocore must not send it again
+    with pytest.raises(BedrockAborted):
+        client.converse("system", "user")
+    assert sent == ["closed"]

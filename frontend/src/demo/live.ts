@@ -8,9 +8,11 @@ import type { DemoResult } from "./fixtures";
 export interface Job {
   id: string;
   filename: string;
-  status: "queued" | "processing" | "completed" | "unsupported" | "failed";
+  status: "queued" | "processing" | "completed" | "unsupported" | "failed" | "cancelled";
   stage: string | null;
   message: string | null;
+  /** Set while a running stage has been asked to stop. */
+  cancelRequested?: boolean;
   /** The backend keeps the job (database persistence, see Documentation/database-poc.md); absent from older backends. */
   persistent?: boolean;
 }
@@ -33,6 +35,9 @@ export interface StoredDocument {
   id: string;
   filename: string;
   status: Job["status"];
+  stage?: string | null;
+  /** Set when the database recorded one. A cancellation stored as failed begins with "Processing was cancelled". */
+  message?: string | null;
   created_at: string;
   /** The Legal JSON's documentType (e.g. "de_legislation"). Not part of GET /api/documents yet: shown when present. */
   document_type?: string | null;
@@ -41,20 +46,33 @@ export interface StoredDocument {
 /** User-facing wording for the stages the backend reports (Job.status / Job.stage) and the two the client adds itself
  *  ("uploading" before the job exists, "completed" once the backend has confirmed it and the results are loaded). */
 export const STAGE_LABELS: Record<string, string> = {
-  uploading: "Uploading document…",
-  queued: "Waiting for processing to start…",
-  processing: "Starting analysis…",
-  extracting: "Analyzing document structure…",
-  normalizing: "Preparing structured legal data…",
-  completed: "Document processing complete. Opening results…",
+  uploading: "Uploading document",
+  queued: "Waiting to start",
+  processing: "Reading your document",
+  extracting: "Reading your document",
+  normalizing: "Preparing results",
+  cancelling: "Stopping…",
+  completed: "Ready",
 };
 
-export const stageLabel = (stage: string) => STAGE_LABELS[stage] ?? "Processing document…";
+export const stageLabel = (stage: string) => STAGE_LABELS[stage] ?? "Processing document";
 
-/** Why a job ended without a result: "unsupported" (the structure was not recognized) or "failed". */
+/** The four document steps, in order. `current` is -1 when no step should be marked (for example while stopping). */
+export const DOCUMENT_STEPS = ["Uploading document", "Reading your document", "Preparing results", "Ready"] as const;
+
+export function documentStep(stage: string): number {
+  if (stage === "cancelling") return -1;
+  if (stage === "uploading" || stage === "queued") return 0;
+  if (stage === "extracting" || stage === "processing") return 1;
+  if (stage === "normalizing") return 2;
+  if (stage === "completed") return 3;
+  return -1;
+}
+
+/** Why a job ended without a result: "unsupported" (the structure was not recognized), "failed", or "cancelled". */
 export class ProcessingError extends Error {
-  kind: "unsupported" | "failed";
-  constructor(message: string, kind: "unsupported" | "failed") {
+  kind: "unsupported" | "failed" | "cancelled";
+  constructor(message: string, kind: "unsupported" | "failed" | "cancelled") {
     super(message);
     this.name = "ProcessingError";
     this.kind = kind;
@@ -125,6 +143,56 @@ async function callOptional<T>(url: string): Promise<T | null> {
 
 export const deleteJob = (id: string) => fetch(`${API}/jobs/${id}`, { method: "DELETE" }).catch(() => undefined);
 
+export const getJob = (id: string) => call<Job>(`${API}/jobs/${id}`);
+
+/** Asks the backend to stop this document. A stage that has already started finishes, then its result is discarded. */
+export const cancelJob = (id: string) => call<Job>(`${API}/jobs/${id}/cancel`, { method: "POST" });
+
+/** Waits `ms`. An abort during this wait returns at once, so the first cancel is not stuck behind the poll interval.
+ *  An abort that already happened does not skip later waits: the job is still polled until it has actually stopped. */
+const sleep = (ms: number, signal?: AbortSignal) => new Promise<void>((resolve) => {
+  const timer = setTimeout(() => { signal?.removeEventListener("abort", finish); resolve(); }, ms);
+  const finish = () => { clearTimeout(timer); resolve(); };
+  signal?.addEventListener("abort", finish, { once: true });
+});
+
+async function requestCancel(id: string): Promise<Job> {
+  try {
+    return await cancelJob(id);
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 409) return getJob(id); // it already finished
+    throw e;
+  }
+}
+
+/** Polls until the job leaves queued/processing. When `signal` aborts, asks the backend to cancel and keeps polling
+ *  until that cancellation is the stored status (or the job had already finished). Stage updates stop once a cancel
+ *  was asked for, so a late poll cannot put the processing view back on screen. A failed cancel does not end the wait:
+ *  the job may still be running, and `onCancelError` says so. */
+export async function waitForJob(job: Job, onStage: (stage: string) => void, signal?: AbortSignal, onCancelError?: (message: string) => void): Promise<Job> {
+  let stopping = false;
+  while (job.status === "queued" || job.status === "processing") {
+    if (signal?.aborted && !stopping) {
+      stopping = true;
+      try {
+        job = await requestCancel(job.id);
+      } catch (e) {
+        onCancelError?.(e instanceof Error ? e.message : String(e));
+      }
+      if (job.status !== "queued" && job.status !== "processing") break;
+      continue;
+    }
+    if (!stopping) onStage(job.stage ?? job.status);
+    await sleep(1000, signal);
+    try {
+      job = await getJob(job.id);
+    } catch (e) {
+      if (!stopping && !signal?.aborted) throw e; // while a cancel is settling, a missed poll is retried, not reported as a failure
+    }
+  }
+  return job;
+}
+
 /** Frees a job the frontend is done with; a job the backend keeps (database persistence) stays stored. */
 export function releaseJob(id: string, persistent = false): void {
   if (!persistent) void deleteJob(id);
@@ -152,15 +220,15 @@ export const listDocuments = () => call<StoredDocument[]>(`${API}/documents`);
 /** Uploads the PDF, polls its job until it ends and loads the results; `onStage` gets the current stage. The backend
  *  recognizes German or EU legislation itself. Throws an Error with the backend's explanation when the PDF is refused
  *  or the backend is unreachable, and a ProcessingError when its type is not recognised or processing fails. */
-export async function processPdf(file: File, onStage: (stage: string) => void): Promise<DemoResult> {
+export async function processPdf(file: File, onStage: (stage: string) => void, opts: { signal?: AbortSignal; onJob?: (job: Job) => void; onCancelError?: (message: string) => void } = {}): Promise<DemoResult> {
   onStage("uploading");
   const form = new FormData();
   form.append("file", file);
   let job = await call<Job>(`${API}/jobs`, { method: "POST", body: form });
-  while (job.status === "queued" || job.status === "processing") {
-    onStage(job.stage ?? job.status);
-    await new Promise((r) => setTimeout(r, 1000));
-    job = await call<Job>(`${API}/jobs/${job.id}`);
+  opts.onJob?.(job);
+  job = await waitForJob(job, onStage, opts.signal, opts.onCancelError);
+  if (job.status === "cancelled" || (job.status === "failed" && (job.message ?? "").startsWith("Processing was cancelled"))) {
+    throw new ProcessingError(job.message ?? "Processing was cancelled.", "cancelled");
   }
   if (job.status !== "completed") {
     releaseJob(job.id, job.persistent);
@@ -201,11 +269,18 @@ async function loadLiveResult(job: Job): Promise<DemoResult> {
 /** The backend's RuleExtraction (backend/src/odos/rule_extraction_jobs.py). Only `status` is guaranteed; the rest is
  *  what the backend reports for the run and is shown as given. */
 export interface RuleExtractionStatus {
-  status: "queued" | "running" | "completed" | "failed";
+  status: "queued" | "running" | "completed" | "failed" | "cancelled";
   scope?: string[] | "document";
   requestedAt?: string;
   startedAt?: string | null;
   finishedAt?: string | null;
+  /** preparing, then finding (the model request), then checking. Absent on older backends. */
+  stage?: "preparing" | "finding" | "checking" | null;
+  cancelRequested?: boolean;
+  /** True once a model request was sent. Cancelling after that may still cost money. */
+  externalRequestStarted?: boolean;
+  /** Present only when the backend actually counts sections. This build does not: extraction is one request. */
+  progress?: { completed?: number; total?: number } | null;
   message?: string | null;
   errorCode?: string | null;
   errorDetail?: Record<string, unknown>;
@@ -215,6 +290,50 @@ export interface RuleExtractionStatus {
   rulesFile?: string | null;
 }
 
+export const RULE_STEPS = ["Preparing document", "Finding rules", "Checking results", "Ready for review"] as const;
+
+/** Which rule step is current. -1 means stopping: no step is claimed as finished or in progress. */
+export function ruleStep(status: RuleExtractionStatus): number {
+  if (status.cancelRequested && (status.status === "queued" || status.status === "running")) return -1;
+  if (status.stage === "checking") return 2;
+  if (status.stage === "finding" || (status.status === "running" && status.stage !== "preparing")) return 1;
+  if (status.status === "completed") return 3;
+  return 0;
+}
+
+/** A real section count, or null. Never invents one. */
+export function sectionProgress(status: RuleExtractionStatus): string | null {
+  const completed = status.progress?.completed;
+  const total = status.progress?.total;
+  if (!Number.isInteger(completed) || !Number.isInteger(total) || total == null || completed == null) return null;
+  if (total < 1 || completed < 0 || completed > total) return null;
+  return `${completed} of ${total} sections`;
+}
+
+const EXTRACTION_ERRORS: Record<string, string> = {
+  not_configured: "Finding rules is not available right now.",
+  bedrock_auth: "Finding rules could not sign in. Try again later.",
+  bedrock_throttled: "The language service is busy. Try again later.",
+  bedrock_timeout: "The language service did not answer in time.",
+  bedrock_unavailable: "The language service is not available.",
+  too_large: "This document is too long to process in one pass.",
+  bedrock_request: "The language service rejected the request.",
+  model_response: "No usable answer came back. Nothing was saved.",
+  output_truncated: "The answer was too long to use. Nothing was saved.",
+  malformed_output: "The answer could not be read. Nothing was saved.",
+  invalid_scope: "The selected part of the document could not be used.",
+  interrupted: "Finding rules was interrupted. You can try again.",
+  internal: "Finding rules failed.",
+  bedrock_error: "Finding rules failed.",
+};
+
+/** Plain wording for a failed extraction. The code stays available separately for the advanced details. */
+export function friendlyExtractionMessage(message?: string | null, code?: string | null): string {
+  if (code && code !== "cancelled" && EXTRACTION_ERRORS[code]) return EXTRACTION_ERRORS[code];
+  const text = message?.trim() || "Finding rules failed.";
+  return text.replace(/Amazon Bedrock/g, "the language service");
+}
+
 export const extractionActive = (s: RuleExtractionStatus | null | undefined) => s?.status === "queued" || s?.status === "running";
 
 const ruleExtractionUrl = (job: string) => `${API}/jobs/${job}/rule-extraction`;
@@ -222,6 +341,9 @@ const ruleExtractionUrl = (job: string) => `${API}/jobs/${job}/rule-extraction`;
 /** Starts a rule extraction of the whole document (a paid Amazon Bedrock call; the backend refuses a second one while one
  *  is queued or running with 409). Resolves with the queued status at once; the extraction runs on the server. */
 export const startRuleExtraction = (jobId: string) => call<RuleExtractionStatus>(ruleExtractionUrl(jobId), { method: "POST" });
+
+/** Asks the backend to stop this job's rule extraction. Does not affect any other job. */
+export const cancelRuleExtraction = (jobId: string) => call<RuleExtractionStatus>(`${ruleExtractionUrl(jobId)}/cancel`, { method: "POST" });
 
 /** The latest extraction of the job; null when none was ever started. */
 export const getRuleExtraction = (jobId: string) => callOptional<RuleExtractionStatus>(ruleExtractionUrl(jobId));

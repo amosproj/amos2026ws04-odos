@@ -17,7 +17,7 @@ import pytest
 from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON
 from odos.pipeline import Outcome, PipelineResult
 
-SCHEMAS = [Path(__file__).resolve().parents[1] / "db" / name for name in ("001_documents.sql", "002_rule_reviews.sql")]
+SCHEMAS = [Path(__file__).resolve().parents[1] / "db" / name for name in ("001_documents.sql", "002_rule_reviews.sql", "003_cancelled_status.sql")]
 TEST_DATABASE = os.environ.get("ODOS_TEST_DATABASE", "odos_test")
 MINIMAL_PDF = b"%PDF-1.4\n%%EOF\n"
 LEGAL_DOCUMENT = {

@@ -128,7 +128,7 @@ def test_list_recent_documents_newest_first_and_limited(db):
             conn.execute("UPDATE documents SET created_at = NOW() + make_interval(mins => %s) WHERE id = %s", (n, doc))
     assert [row["id"] for row in list_recent_documents()] == ["c", "b", "a"]
     assert [row["id"] for row in list_recent_documents(limit=2)] == ["c", "b"]
-    assert set(list_recent_documents()[0]) == {"id", "filename", "status", "created_at"}
+    assert set(list_recent_documents()[0]) == {"id", "filename", "status", "stage", "message", "created_at"}
 
 
 def test_mark_interrupted_jobs(db):
@@ -211,7 +211,7 @@ def test_document_list_exposes_metadata_only(persistent):
             job = wait_for(client, upload(client, name="Muster.pdf").json()["id"])
             documents = client.get("/api/documents").json()
     assert [(d["id"], d["filename"], d["status"]) for d in documents] == [(job["id"], "Muster.pdf", "completed")]
-    assert set(documents[0]) == {"id", "filename", "status", "created_at"}  # no storage key, summary or Legal JSON
+    assert set(documents[0]) == {"id", "filename", "status", "stage", "message", "created_at"}  # no storage key, summary or Legal JSON
     assert "source.pdf" not in str(documents) and str(persistent) not in str(documents)
 
 

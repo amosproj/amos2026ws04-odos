@@ -659,7 +659,7 @@ describe("the more-actions menu", () => {
     expect(menu()).toBeNull();
     await click(trigger());
     expect(trigger().getAttribute("aria-expanded")).toBe("true");
-    expect(qa('[role="menuitem"]').map((i) => i.textContent)).toEqual(["Restart Extraction"]);
+    expect(qa('[role="menuitem"]').map((i) => i.textContent)).toEqual(["Find rules again"]);
     expect(document.activeElement).toBe(qa('[role="menuitem"]')[0]);
     await key("Escape", document.activeElement!);
     expect(menu()).toBeNull();
@@ -680,7 +680,7 @@ describe("the more-actions menu", () => {
     await click(trigger());
     await click(qa('[role="menuitem"]')[0]);
     expect(menu()).toBeNull();
-    expect(q('[role="alertdialog"]')?.textContent).toContain("paid request");
+    expect(q('[role="alertdialog"]')?.textContent).toContain("may cost money");
     expect(posts()).toEqual([]);
   });
 });

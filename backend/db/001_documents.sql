@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS documents (
             'processing',
             'completed',
             'unsupported',
-            'failed'
+            'failed',
+            'cancelled'
         )
     ),
     stage TEXT,

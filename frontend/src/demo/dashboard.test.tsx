@@ -28,12 +28,26 @@ function fakeBackend(docs: StoredDocument[], polls: Job[] = []) {
     calls: [] as string[],
     deleteAnswer: (_id: string): Promise<Response> | Response => new Response(null, { status: 204 }),
     pdfAnswer: (): Response => new Response("%PDF-1.7"),
+    cancelHolds: false,
+    cancelError: "",
+    pollFailures: 0,
+    finishCancelled: () => polls.splice(0, polls.length, jobOf("new1", "cancelled", { message: "Processing was cancelled." })),
     count: (prefix: string) => backend.calls.filter((c) => c.startsWith(prefix)).length,
   };
   vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
     const method = init?.method ?? "GET";
     backend.calls.push(`${method} ${url}`);
     if (url === "/api/documents") return json(backend.docs);
+    if (method === "POST" && url === "/api/jobs/new1/cancel") {
+      if (backend.cancelError) return json({ detail: backend.cancelError }, 500);
+      if (backend.cancelHolds) {
+        const held = jobOf("new1", "processing", { stage: "cancelling", cancelRequested: true });
+        polls.splice(0, polls.length, held);
+        return json(held);
+      }
+      polls.splice(0, polls.length, jobOf("new1", "cancelled", { message: "Processing was cancelled." }));
+      return json(jobOf("new1", "cancelled", { message: "Processing was cancelled." }));
+    }
     if (method === "POST" && url === "/api/jobs") return json(jobOf("new1", "queued"), 202);
     if (method === "DELETE") {
       const id = url.split("/").pop()!;
@@ -45,7 +59,10 @@ function fakeBackend(docs: StoredDocument[], polls: Job[] = []) {
     if (url.endsWith("/files/document_model.json")) return json(model);
     if (url.endsWith("/files/document.json")) return json(legal);
     const id = /\/api\/jobs\/([^/]+)$/.exec(url)?.[1];
-    if (id === "new1") return json(polls.length > 1 ? polls.shift() : polls[0]);
+    if (id === "new1") {
+      if (backend.pollFailures > 0) { backend.pollFailures -= 1; return json({ detail: "temporary" }, 500); }
+      return json(polls.length > 1 ? polls.shift() : polls[0]);
+    }
     const doc = backend.docs.find((d) => d.id === id);
     return doc ? json(jobOf(doc.id, doc.status, { filename: doc.filename })) : json({ detail: "Unknown job." }, 404);
   }));
@@ -63,8 +80,8 @@ const mount = async () => {
   await act(async () => { root.render(<DemoApp />); });
   await settle();
 };
-const text = () => host.textContent ?? "";
-const button = (name: string) => [...host.querySelectorAll("button")].find((b) => (b.getAttribute("aria-label") ?? b.textContent ?? "").trim() === name);
+const text = () => document.body.textContent ?? "";
+const button = (name: string) => [...document.querySelectorAll("button")].find((b) => (b.getAttribute("aria-label") ?? b.textContent ?? "").trim() === name);
 const must = (name: string) => { const b = button(name); if (!b) throw new Error(`no button "${name}" in: ${text()}`); return b; };
 const click = async (name: string) => { const b = must(name); await act(async () => { b.click(); }); await settle(); };
 const choose = async (file: File) => {
@@ -76,6 +93,7 @@ const pdf = (name = "Neu.pdf") => new File(["%PDF-1.7"], name, { type: "applicat
 const tick = async (ms = 1000) => { await act(async () => { await vi.advanceTimersByTimeAsync(ms); }); await settle(); };
 
 beforeEach(() => {
+  sessionStorage.clear();
   URL.createObjectURL = vi.fn(() => "blob:test");
   URL.revokeObjectURL = vi.fn();
 });
@@ -102,24 +120,172 @@ describe("processing an upload", () => {
     expect(host.querySelector('[role="progressbar"]')).not.toBeNull();
 
     await tick(); // the first poll: extracting
-    expect(text()).toContain("Analyzing document structure…");
+    expect(host.querySelector(".demo-processing-label")?.textContent).toBe("Reading your document");
     expect(text()).not.toContain("Back to documents"); // not complete: no result yet
     expect(host.querySelector(".pdf-stub")).toBeNull();
 
     await click("Refresh"); // reloads the list ...
     expect(backend.count("GET /api/documents")).toBe(2);
-    expect(text()).toContain("Analyzing document structure…"); // ... while the job runs on
+    expect(host.querySelector(".demo-processing-label")?.textContent).toBe("Reading your document"); // ... while the job runs on
     expect(host.querySelector('[role="progressbar"]')).not.toBeNull();
     expect(button("Open Alt.pdf")?.disabled).toBe(true); // nothing else can be opened meanwhile
 
     await tick(); // normalizing
-    expect(text()).toContain("Preparing structured legal data…");
+    expect(host.querySelector(".demo-processing-label")?.textContent).toBe("Preparing results");
     expect(text()).not.toContain("Back to documents");
     await tick(); // completed
     expect(text()).toContain("Back to documents");
     expect(host.querySelector(".pdf-stub")?.getAttribute("data-url")).toBe("blob:test");
     expect(backend.count("POST")).toBe(1);
     expect(backend.calls.findIndex((c) => c.includes("/files/"))).toBeGreaterThan(backend.calls.lastIndexOf("GET /api/jobs/new1")); // results only after the last poll
+  });
+
+  it("the logo does not cancel, and Cancel asks before it stops the job", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const backend = fakeBackend([], [jobOf("new1", "processing", { stage: "extracting" }), jobOf("new1", "processing", { stage: "extracting" }), jobOf("new1", "completed")]);
+    await mount();
+    await choose(pdf());
+    await click("Process document");
+    await tick();
+    await act(async () => { host.querySelector<HTMLAnchorElement>("a.brand-link")!.click(); });
+    await settle();
+    expect(backend.calls.some((c) => c.includes("/cancel"))).toBe(false);
+    await click("Cancel");
+    expect(text()).toContain("Stop processing?");
+    expect(text()).toContain("Your current progress won't be saved.");
+    await click("Keep processing");
+    expect(backend.calls.some((c) => c.includes("/cancel"))).toBe(false);
+    expect(host.querySelector(".demo-processing-label")?.textContent).toBe("Reading your document");
+    await click("Cancel");
+    await click("Stop");
+    await tick();
+    expect(backend.calls).toContain("POST /api/jobs/new1/cancel");
+    expect(text()).not.toContain("Processing was cancelled");
+    expect(text()).toContain("Choose a PDF or drop it here");
+    expect(text()).not.toContain("Neu.pdf");
+    expect(host.querySelector<HTMLInputElement>('input[type="file"]')?.value).toBe("");
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    expect(host.querySelector(".spinner")).toBeNull();
+    expect(backend.calls.some((c) => c.includes("/files/"))).toBe(false);
+    expect(must("Process document").disabled).toBe(true);
+    await choose(pdf());
+    expect(text()).toContain("Neu.pdf");
+    expect(must("Process document").disabled).toBe(false);
+  });
+
+  it("leaves the processing view as soon as a cancel is acknowledged, and does not start another job until it has stopped", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const backend = fakeBackend([stored("old", "Alt.pdf")], [jobOf("new1", "processing", { stage: "extracting" }), jobOf("new1", "processing", { stage: "extracting" })]);
+    backend.cancelHolds = true;
+    await mount();
+    await choose(pdf());
+    await click("Process document");
+    await tick();
+    expect(host.querySelector(".demo-processing-label")?.textContent).toBe("Reading your document");
+    await click("Cancel");
+    await click("Stop");
+    expect(backend.calls).toContain("POST /api/jobs/new1/cancel");
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    expect(host.querySelector(".spinner")).toBeNull();
+    expect(host.querySelector('[role="progressbar"]')).toBeNull();
+    expect(text()).toContain("Choose a PDF or drop it here");
+    expect(text()).not.toContain("Neu.pdf");
+    expect(text()).not.toContain("Processing was cancelled");
+    expect(text()).toContain("Alt.pdf");
+    expect(backend.count("DELETE")).toBe(0);
+    expect(must("Open Alt.pdf").disabled).toBe(false);
+    expect(must("Process document").disabled).toBe(true);
+    await choose(pdf());
+    expect(must("Process document").disabled).toBe(true); // the old job has not stopped yet
+    await tick(); // a later poll must not bring the processing view back
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    expect(text()).not.toContain("Reading your document");
+    expect(must("Process document").disabled).toBe(true);
+    backend.finishCancelled();
+    await tick();
+    expect(text()).not.toContain("Processing was cancelled");
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    expect(text()).toContain("Alt.pdf");
+    expect(must("Process document").disabled).toBe(false);
+    expect(backend.count("POST")).toBe(2); // the upload and the cancel, nothing new
+  });
+
+  it("keeps process disabled through missed status polls and enables it when the job has stopped", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const backend = fakeBackend([], [jobOf("new1", "processing", { stage: "extracting" })]);
+    backend.cancelHolds = true;
+    await mount();
+    await choose(pdf());
+    await click("Process document");
+    await tick();
+    await click("Cancel");
+    await click("Stop");
+    await choose(pdf());
+    expect(must("Process document").disabled).toBe(true);
+    backend.pollFailures = 2;
+    await tick();
+    await tick();
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    expect(text()).not.toContain("temporary");
+    expect(must("Process document").disabled).toBe(true);
+    backend.finishCancelled();
+    await tick();
+    expect(must("Process document").disabled).toBe(false);
+    expect(text()).not.toContain("Processing was cancelled");
+  });
+
+  it("shows a cancel failure without the processing view, and still refuses a second job", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const backend = fakeBackend([], [jobOf("new1", "processing", { stage: "extracting" })]);
+    backend.cancelError = "The server could not stop this document.";
+    await mount();
+    await choose(pdf());
+    await click("Process document");
+    await tick();
+    await click("Cancel");
+    await click("Stop");
+    expect(text()).toContain("The server could not stop this document.");
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    expect(host.querySelector(".spinner")).toBeNull();
+    expect(must("Process document").disabled).toBe(true);
+    backend.cancelError = "";
+    await click("Try again");
+    expect(backend.calls.filter((c) => c.includes("/cancel"))).toHaveLength(2);
+  });
+
+  it("a refresh shows a job that is still running, and a cancelled job stays cancelled", async () => {
+    sessionStorage.setItem("odos.workspace", JSON.stringify({ jobId: "new1", view: "processing" }));
+    const running = fakeBackend([], [jobOf("new1", "processing", { stage: "extracting" })]);
+    await mount();
+    expect(host.querySelector(".demo-processing-label")?.textContent).toBe("Reading your document");
+    expect(running.count("POST")).toBe(0);
+    act(() => root.unmount());
+    sessionStorage.setItem("odos.workspace", JSON.stringify({ jobId: "new1", view: "processing" }));
+    fakeBackend([], [jobOf("new1", "cancelled", { message: "Processing was cancelled." })]);
+    await mount();
+    expect(text()).not.toContain("Processing was cancelled");
+    expect(text()).toContain("Choose a PDF or drop it here");
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    expect(host.querySelector(".spinner")).toBeNull();
+  });
+
+  it("a refresh of a document that is stopping does not show the processing animation", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    sessionStorage.setItem("odos.workspace", JSON.stringify({ jobId: "new1", view: "processing" }));
+    fakeBackend([], [jobOf("new1", "processing", { stage: "cancelling", cancelRequested: true }), jobOf("new1", "cancelled", { message: "Processing was cancelled." })]);
+    await mount();
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    expect(host.querySelector(".spinner")).toBeNull();
+    expect(host.querySelector('[role="progressbar"]')).toBeNull();
+    expect(text()).toContain("Choose a PDF or drop it here");
+    expect(text()).not.toContain("Processing was cancelled");
+    expect(must("Process document").disabled).toBe(true);
+    await tick();
+    expect(text()).not.toContain("Processing was cancelled");
+    expect(text()).toContain("Choose a PDF or drop it here");
+    expect(host.querySelector(".demo-processing")).toBeNull();
+    await choose(pdf());
+    expect(must("Process document").disabled).toBe(false);
   });
 
   it("refuses a file that is not a PDF without creating a job", async () => {

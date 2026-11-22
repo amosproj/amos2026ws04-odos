@@ -108,6 +108,13 @@ describe("review header", () => {
     expect(back).toHaveBeenCalledTimes(1);
   });
 
+  it("the logo goes home the same way, and stays inside the app", async () => {
+    await mount();
+    await click(button("ODOS home"));
+    expect(back).toHaveBeenCalledTimes(1);
+    expect(host.querySelectorAll("a[href^='http']")).toHaveLength(0);
+  });
+
   it("falls back to the document title when the file name is not known", async () => {
     await mount({ ...result, filename: undefined });
     expect(q(".docbar h2")?.textContent).toBe("MUSTERBAUORDNUNG");

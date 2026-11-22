@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { highlightsOf } from "../structure";
 import { box, el, modelOf } from "../testing";
-import DemoApp, { ArtifactSwitch, Artifacts, ResultView, RuleJsonPreview, LlmInputViews } from "./DemoApp";
+import DemoApp, { Artifacts, ResultView, LlmInputViews } from "./DemoApp";
 import { ProcessingError, STAGE_LABELS, deleteStoredDocument, listDocuments, openStoredDocument, nodeJson, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, stageLabel, type Job } from "./live";
 
 vi.mock("../components/PdfViewer", () => ({
@@ -80,14 +80,6 @@ const ruleSet = [
 ];
 
 describe("Rule JSON source mapping", () => {
-  it("switches the selected artifact to Rule JSON", () => {
-    let selected: "legal" | "rule" = "legal";
-    const selector = ArtifactSwitch({ selected, onChange: (next) => { selected = next; } });
-    const ruleButton = selector.props.children[1];
-    ruleButton.props.onClick();
-    expect(selected).toBe("rule");
-  });
-
   it("maps every rule to its stable source element ID and returns multiple matches", () => {
     expect(rulesForElement(ruleSet, ABS).map((rule) => rule.id)).toEqual(["rule-a", "rule-b"]);
     expect(rulesForElement(ruleSet, "doc/par-1").map((rule) => rule.id)).toEqual(["rule-b", "rule-c"]);
@@ -177,11 +169,11 @@ describe("live processing through the backend", () => {
 
 describe("processing stage wording", () => {
   it("describes the stages the backend reports in user-facing words", () => {
-    expect(stageLabel("uploading")).toBe("Uploading document…");
-    expect(stageLabel("extracting")).toBe("Analyzing document structure…");
-    expect(stageLabel("normalizing")).toBe("Preparing structured legal data…");
-    expect(stageLabel("completed")).toContain("Document processing complete.");
-    expect(stageLabel("something-new")).toBe("Processing document…"); // an unknown stage still gets neutral wording
+    expect(stageLabel("uploading")).toBe("Uploading document");
+    expect(stageLabel("extracting")).toBe("Reading your document");
+    expect(stageLabel("normalizing")).toBe("Preparing results");
+    expect(stageLabel("completed")).toBe("Ready");
+    expect(stageLabel("something-new")).toBe("Processing document"); // an unknown stage still gets neutral wording
   });
 
   it("names no implementation detail and invents no progress", () => {
@@ -311,45 +303,16 @@ describe("live result view", async () => {
     expect(html).not.toMatch(/Preview:|shown as/); // no explanatory text above the JSON
   });
 
-  it("loads persisted Rule JSON for this job and prepares its collection download", async () => {
+  it("loads persisted rules for this job without showing them in Artifacts", async () => {
     const { result: loaded } = await run([done], { "document_model.json": model, "document.json": legal, "rules.json": ruleSet });
     const withRules = await loaded;
     expect(withRules.live?.ruleJson).toEqual(ruleSet);
     expect(withRules.live?.ruleDownload).toEqual({ href: "/api/jobs/j1/files/rules.json?download=true", name: "Gesetz.rules.json" });
     const html = renderToStaticMarkup(<Artifacts result={withRules} element={withRules.model.elements.find((e) => e.id === ABS)} full={false} onFull={() => {}} />);
     expect(html).toContain("Custom Legal JSON");
-    expect(html).toContain("Rule JSON");
-    expect(html).toContain('aria-label="Artifact type"');
-  });
-
-  it("shows all rules mapped to the selected element and keeps their source references", () => {
-    const html = renderToStaticMarkup(<RuleJsonPreview result={{ ...r, live: { ...r.live!, ruleJson: ruleSet } }} element={abs} full={false} />);
-    const shown = JSON.parse(/<pre[^>]*>([\s\S]*?)<\/pre>/.exec(html)![1].replace(/&quot;/g, '"'));
-    expect(shown.map((rule: { id: string }) => rule.id)).toEqual(["rule-a", "rule-b"]);
-    expect(shown[1].source).toEqual(ruleSet[1].source);
-  });
-
-  it("shows element and document empty states when rules are absent", () => {
-    const withRules = { ...r, live: { ...r.live!, ruleJson: ruleSet } };
-    expect(renderToStaticMarkup(<RuleJsonPreview result={withRules} element={el("doc/no-rules", "paragraph", "doc", [])} full={false} />)).toContain("No Rule JSON available for this element.");
-    expect(renderToStaticMarkup(<RuleJsonPreview result={r} element={abs} full={false} />)).toContain("No Rule JSON available for this document.");
-  });
-
-  it("shows all available rules in full-document mode", () => {
-    const html = renderToStaticMarkup(<RuleJsonPreview result={{ ...r, live: { ...r.live!, ruleJson: { rules: ruleSet } } }} element={abs} full />);
-    const shown = JSON.parse(/<pre[^>]*>([\s\S]*?)<\/pre>/.exec(html)![1].replace(/&quot;/g, '"'));
-    expect(shown.map((rule: { id: string }) => rule.id)).toEqual(["rule-a", "rule-b", "rule-c"]);
-    expect(shown[0].source).toEqual(ruleSet[0].source);
-  });
-
-  it("offers the Rule JSON download only when real rule entries are available", () => {
-    const withRules = { ...r, live: { ...r.live!, ruleJson: ruleSet } };
-    const available = renderToStaticMarkup(<Artifacts result={withRules} element={abs} full={false} onFull={() => {}} artifactView="rule" />);
-    expect(available).toContain('href="/api/jobs/j1/files/rules.json?download=true" download="Gesetz.rules.json"');
-    expect(available).toContain("rule-a");
-    const missing = renderToStaticMarkup(<Artifacts result={r} element={abs} full={false} onFull={() => {}} artifactView="rule" />);
-    expect(missing).not.toContain("rules.json?download=true");
-    expect(missing).toContain("No Rule JSON available for this document.");
+    expect(html).not.toContain("Rule JSON");
+    expect(html).not.toContain("rules.json?download=true");
+    expect(html).not.toContain("rule-a");
   });
 
   it("offers a switch between the selected element and the full document", () => {
@@ -368,7 +331,8 @@ describe("live result view", async () => {
 
   it("keeps selected-element and full-document controls limited to live jobs", () => {
     const html = renderToStaticMarkup(<Artifacts result={{ ...r, live: undefined }} />);
-    expect(html).toContain("Rule JSON");
+    expect(html).toContain("Custom Legal JSON");
+    expect(html).not.toContain("Rule JSON");
     expect(html).not.toContain("Selected element");
     expect(html).not.toContain("Full document");
   });

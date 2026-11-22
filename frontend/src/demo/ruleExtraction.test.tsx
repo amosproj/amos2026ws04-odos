@@ -25,20 +25,34 @@ interface Backend {
   post: { status: number; detail?: string } | null; // null: accepted, the extraction becomes queued
   down: boolean; // the backend does not answer at all
   calls: string[];
+  /** Cancel answers with a still-running status instead of a finished one. */
+  cancelHold: boolean;
+  cancelError: string;
 }
 let backend: Backend;
 const json = (body: unknown, code = 200) => new Response(JSON.stringify(body), { status: code, headers: { "Content-Type": "application/json" } });
 
 function installBackend(initial: Partial<Backend> = {}): Backend {
-  backend = { status: null, rules: null, post: null, down: false, calls: [], ...initial };
+  backend = { status: null, rules: null, post: null, down: false, calls: [], cancelHold: false, cancelError: "", ...initial };
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     const method = init?.method ?? "GET";
     backend.calls.push(`${method} ${url}`);
     if (backend.down) throw new TypeError("network down");
+    if (url.endsWith("/rule-extraction/cancel") && method === "POST") {
+      if (backend.cancelError) return json({ detail: backend.cancelError }, 500);
+      const current = backend.status ?? status("running");
+      backend.status = backend.cancelHold
+        ? { ...current, status: "running", cancelRequested: true, externalRequestStarted: true, stage: "finding" }
+        : { ...current, status: "cancelled", cancelRequested: true, message: "Finding rules was cancelled. A request that had already started may still be charged.", externalRequestStarted: true };
+      return json(backend.status);
+    }
     if (url.endsWith("/rule-extraction")) {
       if (method === "POST") {
         if (backend.post) return json({ detail: backend.post.detail }, backend.post.status);
+        if (backend.status && (backend.status.status === "queued" || backend.status.status === "running") && backend.status.cancelRequested) {
+          return json({ detail: "A rule extraction of this job is already queued or running." }, 409);
+        }
         backend.status = status("queued");
         return json(backend.status, 202);
       }
@@ -75,7 +89,7 @@ const text = () => document.body.textContent ?? "";
 /** The page's text without the review-progress ring (the one real percentage on the page: decisions of people). */
 const textWithoutRing = () => { const c = document.body.cloneNode(true) as HTMLElement; c.querySelectorAll(".rex-ring").forEach((r) => r.remove()); return c.textContent ?? ""; };
 /** Restart Extraction lives in the ⋯ menu: open it first. */
-const restart = async () => { await click(q('button[aria-label="More actions"]')); await click(button("Restart Extraction")); };
+const restart = async () => { await click(q('button[aria-label="More actions"]')); await click(button("Find rules again")); };
 const openOverview = () => click(button("All rules"));
 const closeOverview = () => click(q('.rex-dialog button[aria-label="Close"]'));
 /** The citation line of each rule in the overview, without the fixtures' "§ 1 " prefix: stands for the rule's id. */
@@ -97,7 +111,7 @@ describe("before an extraction", () => {
     expect(q(".rex-facts")?.textContent).toContain("MusterBauVerordnung.pdf");
     expect(q(".rex-facts")?.textContent).toContain("83");
     expect(q(".rex-facts")?.textContent).toContain("Ready");
-    const start = button("Start Rule Extraction");
+    const start = button("Find Rules");
     expect(start?.disabled).toBe(false);
     expect(start?.className).toContain("primary");
     expect(posts()).toEqual([]); // only the status of an earlier extraction was asked for
@@ -117,8 +131,8 @@ describe("before an extraction", () => {
   it("cannot start without Legal JSON structure or without the backend's job", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult(null, false)} onBack={() => {}} />);
-    expect(button("Start Rule Extraction")?.disabled).toBe(true);
-    expect(text()).toContain("not processed by the ODOS backend");
+    expect(button("Find Rules")?.disabled).toBe(true);
+    expect(text()).toContain("not available from the server");
     expect(backend.calls).toEqual([]);
   });
 
@@ -127,14 +141,16 @@ describe("before an extraction", () => {
     const onBack = vi.fn();
     await mount(<RuleExtractionView result={demoResult()} onBack={onBack} />);
     await click(q('button[aria-label="Back to Document Review"]')); // the "Document" step
-    expect(onBack).toHaveBeenCalledTimes(1);
+    await click(button("Back to document review"));
+    expect(onBack).toHaveBeenCalledTimes(2);
   });
 
   it("mentions the last extraction's failure without hiding the Start button", async () => {
     installBackend({ status: status("failed", { message: "Amazon Bedrock is not configured on the server.", errorCode: "not_configured" }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    expect(text()).toContain("The last extraction failed: Amazon Bedrock is not configured on the server.");
-    expect(button("Start Rule Extraction")).not.toBeUndefined();
+    expect(text()).toContain("The last attempt failed: Finding rules is not available right now.");
+    expect(text()).not.toContain("Amazon Bedrock");
+    expect(button("Find Rules")).not.toBeUndefined();
   });
 });
 
@@ -143,18 +159,18 @@ describe("starting an extraction", () => {
     installBackend();
     const onRulesLoaded = vi.fn();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} onRulesLoaded={onRulesLoaded} />);
-    const start = button("Start Rule Extraction")!;
+    const start = button("Find Rules")!;
     await act(async () => { start.click(); start.click(); });
     await flush();
     expect(posts()).toEqual(["POST /api/jobs/j1/rule-extraction"]);
     expect(q(".rex-progress")?.getAttribute("aria-busy")).toBe("true");
-    expect(q(".rex-progress-title")?.textContent).toBe("AI Rule Extraction in Progress");
-    expect(q(".rex-progress-facts")?.textContent).toContain("Queued");
+    expect(q(".rex-progress-title")?.textContent).toBe("Preparing your document");
+    expect(q(".rex-progress-facts")?.textContent).toContain("Elapsed");
 
-    backend.status = status("running", { startedAt: new Date().toISOString() });
+    backend.status = status("running", { startedAt: new Date().toISOString(), stage: "finding" });
     await flush(2000);
-    expect(q(".rex-progress-title")?.textContent).toBe("AI Rule Extraction in Progress");
-    expect(q(".rex-progress-facts")?.textContent).toContain("Running");
+    expect(q(".rex-progress-title")?.textContent).toBe("Finding rules");
+    expect(q(".flow .current")?.textContent).toBe("Finding rules");
     expect(q(".rex-progress")?.textContent).not.toContain("Amazon Bedrock"); // the heading is provider-neutral
     expect(q(".rex-indeterminate")).not.toBeNull();
     expect(q('[role="progressbar"]')).not.toBeNull();
@@ -163,7 +179,7 @@ describe("starting an extraction", () => {
     expect(q(".rex-elapsed")?.textContent).toMatch(/^0:0\d$/);
     await flush(5000);
     expect(q(".rex-elapsed")?.textContent).toBe("0:07"); // real time since the backend reported the start
-    expect(q(".rex-progress-facts")?.textContent).toContain("Started");
+    expect(q(".rex-progress-facts")?.textContent).not.toMatch(/\d+\s?%/);
 
     backend.rules = STORED;
     backend.status = status("completed", { rulesFile: "rules.json" });
@@ -180,16 +196,16 @@ describe("starting an extraction", () => {
     installBackend({ post: { status: 409, detail: "A rule extraction of this job is already queued or running." } });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     backend.status = status("running", { startedAt: new Date().toISOString() });
-    await click(button("Start Rule Extraction"));
-    expect(q(".rex-progress-facts")?.textContent).toContain("Running");
+    await click(button("Find Rules"));
+    expect(q(".rex-progress-title")?.textContent).toBe("Finding rules");
     expect(q(".alert.error")).toBeNull();
   });
 
   it("picks up an extraction that is still running when the page opens, without starting another", async () => {
     installBackend({ status: status("running", { startedAt: new Date().toISOString() }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    expect(q(".rex-progress-title")?.textContent).toBe("AI Rule Extraction in Progress");
-    expect(button("Start Rule Extraction")).toBeUndefined();
+    expect(q(".rex-progress-title")?.textContent).toBe("Finding rules");
+    expect(button("Find Rules")).toBeUndefined();
     expect(posts()).toEqual([]);
   });
 
@@ -207,8 +223,9 @@ describe("failures and timeouts", () => {
   it("shows the backend's refusal (e.g. Bedrock not configured) and allows trying again", async () => {
     installBackend({ post: { status: 503, detail: "Rule extraction is not available: Amazon Bedrock is not configured on the server." } });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    await click(button("Start Rule Extraction"));
-    expect(q(".alert.error")?.textContent).toContain("Amazon Bedrock is not configured on the server.");
+    await click(button("Find Rules"));
+    expect(q(".alert.error")?.textContent).toContain("the language service is not configured");
+    expect(q(".alert.error")?.textContent).not.toContain("Amazon Bedrock");
     expect(button("Try again")?.disabled).toBe(false);
     backend.post = null;
     await click(button("Try again"));
@@ -218,20 +235,20 @@ describe("failures and timeouts", () => {
   it("shows a failed extraction with the backend's message and code, and explains output-limit failures", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    await click(button("Start Rule Extraction"));
+    await click(button("Find Rules"));
     backend.status = status("failed", { message: "The answer exceeded the output limit. Select fewer provisions.", errorCode: "output_truncated" });
     await flush(2000);
     const alert = q(".alert.error")!;
-    expect(alert.textContent).toContain("The answer exceeded the output limit.");
+    expect(alert.textContent).toContain("The answer was too long to use.");
     expect(alert.textContent).toContain("output_truncated");
-    expect(alert.textContent).toContain("not available in this interface yet");
+    expect(alert.textContent).toContain("read in one pass");
     expect(q(".rex-progress")).toBeNull();
   });
 
   it("reports a Bedrock timeout as a failed extraction", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    await click(button("Start Rule Extraction"));
+    await click(button("Find Rules"));
     backend.status = status("failed", { message: "Amazon Bedrock did not answer in time.", errorCode: "bedrock_timeout" });
     await flush(2000);
     expect(q(".alert.error")?.textContent).toContain("did not answer in time");
@@ -241,7 +258,7 @@ describe("failures and timeouts", () => {
   it("keeps the interface usable when the connection is lost while waiting, and can check the status again", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    await click(button("Start Rule Extraction"));
+    await click(button("Find Rules"));
     backend.down = true;
     await flush(10000);
     expect(q(".alert.warn")?.textContent).toContain("Still waiting for the extraction");
@@ -257,7 +274,7 @@ describe("failures and timeouts", () => {
     installBackend({ rules: STORED, status: status("completed") });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
     await restart();
-    await click(button("Start new extraction"));
+    await click(button("Find rules again"));
     backend.status = status("failed", { message: "Amazon Bedrock is busy. Try again later.", errorCode: "bedrock_throttled" });
     await flush(2000);
     expect(q(".alert.error")?.textContent).toContain("busy");
@@ -271,7 +288,7 @@ describe("a stored rules.json", () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
     expect(current()).toBe(RULE_DOOR.classification.summary);
-    expect(button("Start Rule Extraction")).toBeUndefined();
+    expect(button("Find Rules")).toBeUndefined();
     expect(posts()).toEqual([]);
   });
 
@@ -287,16 +304,16 @@ describe("a stored rules.json", () => {
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
     await restart();
     const dialog = q('[role="alertdialog"]')!;
-    expect(dialog.textContent).toContain("paid request");
-    expect(dialog.textContent).toContain("stay in place until the new extraction has succeeded");
+    expect(dialog.textContent).toContain("may cost money");
+    expect(dialog.textContent).toContain("stay until a new result is ready");
     expect(posts()).toEqual([]);
     await click(button("Cancel"));
     expect(q('[role="alertdialog"]')).toBeNull();
     expect(posts()).toEqual([]);
     await restart();
-    await click(button("Start new extraction"));
+    await click(button("Find rules again"));
     expect(posts()).toHaveLength(1);
-    expect(q(".rex-progress-facts")?.textContent).toContain("Queued");
+    expect(q(".rex-progress-title")?.textContent).toBe("Preparing your document");
   });
 });
 
@@ -491,7 +508,7 @@ describe("PDF source navigation", () => {
   it("offers exactly one way into the document for the rule's passage", async () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} onShowInPdf={() => {}} />);
-    expect(qa("button").filter((b) => /document|PDF/i.test(`${b.textContent} ${b.getAttribute("aria-label") ?? ""}`) && !/Back to Document Review/.test(b.getAttribute("aria-label") ?? ""))).toHaveLength(1);
+    expect(qa("button").filter((b) => /document|PDF/i.test(`${b.textContent} ${b.getAttribute("aria-label") ?? ""}`) && !/Back to [Dd]ocument/.test(`${b.textContent} ${b.getAttribute("aria-label") ?? ""}`))).toHaveLength(1);
   });
 
   it("is unavailable for a rule whose source is not in the document, and never invents a page", async () => {
@@ -578,30 +595,166 @@ describe("source references", () => {
 });
 
 describe("the progress panel", () => {
-  it("offers no cancel button and says why, instead of pretending to cancel", async () => {
-    installBackend({ status: status("running", { startedAt: new Date().toISOString() }) });
-    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    expect(button(/cancel|stop|abort/i)).toBeUndefined();
-    expect(q(".rex-progress")?.textContent).toContain("cannot be cancelled yet");
+  it("asks before cancelling, and only then tells the backend to stop", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString(), stage: "finding" }) });
+    const onHome = vi.fn();
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} onHome={onHome} />);
+    await click(q('button[aria-label="ODOS home"]'));
+    expect(onHome).toHaveBeenCalledTimes(1);
+    expect(posts()).toEqual([]); // leaving does not cancel
+    await click(button("Cancel"));
+    expect(posts()).toEqual([]);
+    expect(text()).toContain("Your current progress won't be saved.");
+    expect(text()).not.toContain("may still be charged");
+    await click(button("Keep processing"));
+    expect(posts()).toEqual([]);
+    await click(button("Cancel"));
+    await click(button("Stop"));
+    expect(posts()).toEqual(["POST /api/jobs/j1/rule-extraction/cancel"]);
+    expect(q(".rex-start")).not.toBeNull();
+    expect(q(".rex-progress")).toBeNull();
+    expect(q(".rex-elapsed")).toBeNull();
+    expect(text()).not.toContain("Finding rules was cancelled");
+    expect(button("Find Rules")?.disabled).toBe(false);
   });
 
-  it("claims no stage or percentage: only the backend status and the real elapsed time", async () => {
-    installBackend({ status: status("running", { startedAt: new Date().toISOString() }) });
+  it("drops the progress view as soon as a cancel is acknowledged, and does not restart until the run has stopped", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString(), stage: "finding" }), cancelHold: true });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    expect(q(".rex-progress")).not.toBeNull();
+    await click(button("Cancel"));
+    await click(button("Stop"));
+    expect(q(".rex-start")).not.toBeNull();
+    expect(q(".rex-progress")).toBeNull();
+    expect(q(".rex-elapsed")).toBeNull();
+    expect(q(".rex-orb")).toBeNull();
+    expect(q('[role="progressbar"]')).toBeNull();
+    expect(text()).not.toContain("Finding rules was cancelled");
+    expect(button("Find Rules")?.disabled).toBe(false);
+    backend.status = status("running", { startedAt: new Date().toISOString(), stage: "finding" }); // a stale poll without the cancel flag
+    await flush(5000);
+    expect(q(".rex-progress")).toBeNull();
+    expect(q(".rex-elapsed")).toBeNull();
+    expect(q(".rex-start")).not.toBeNull();
+    expect(button("Find Rules")?.disabled).toBe(false);
+    backend.status = status("cancelled", { message: "Finding rules was cancelled.", externalRequestStarted: true });
+    await flush(2000);
+    expect(text()).not.toContain("Finding rules was cancelled");
+    expect(q(".rex-progress")).toBeNull();
+    expect(button("Find Rules")?.disabled).toBe(false);
+  });
+
+  it("keeps Find Rules clickable through missed polls after a cancel", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString(), stage: "finding" }), cancelHold: true });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    await click(button("Cancel"));
+    await click(button("Stop"));
+    expect(button("Find Rules")?.disabled).toBe(false);
+    backend.down = true;
+    await flush(8000);
+    expect(q(".rex-start")).not.toBeNull();
+    expect(q(".rex-progress")).toBeNull();
+    expect(button("Find Rules")?.disabled).toBe(false);
+    backend.down = false;
+    backend.status = status("cancelled", { message: "Finding rules was cancelled." });
+    await flush(2000);
+    expect(q(".rex-start")).not.toBeNull();
+    expect(q(".rex-progress")).toBeNull();
+    expect(button("Find Rules")?.disabled).toBe(false);
+  });
+
+  it("starts again when Find Rules is clicked while the cancelled run is still finishing", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString(), stage: "finding" }), cancelHold: true });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    await click(button("Cancel"));
+    await click(button("Stop"));
+    expect(button("Find Rules")?.disabled).toBe(false);
+    await click(button("Find Rules"));
+    expect(posts().filter((c) => c.endsWith("/rule-extraction"))).toEqual(["POST /api/jobs/j1/rule-extraction"]);
+    expect(q(".rex-progress")).not.toBeNull();
+    backend.status = status("cancelled", { message: "Finding rules was cancelled." });
+    await flush(1000);
+    expect(posts().filter((c) => c.endsWith("/rule-extraction"))).toHaveLength(2);
+    expect(q(".rex-progress-title")?.textContent).toBe("Preparing your document");
+  });
+
+  it("returns to the reviewed rules after a cancelled rerun and leaves them in place", async () => {
+    installBackend({ rules: STORED, status: status("running", { startedAt: new Date().toISOString(), stage: "finding" }), cancelHold: true });
+    await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
+    await click(button("Cancel"));
+    await click(button("Stop"));
+    expect(q(".rex-progress")).toBeNull();
+    expect(text()).toContain(RULE_DOOR.classification.summary);
+    expect(text()).not.toContain("Finding rules was cancelled");
+    await click(q('button[aria-label="More actions"]'));
+    expect(button("Find rules again")?.disabled).toBe(false);
+    backend.status = status("cancelled", { message: "Finding rules was cancelled." });
+    await flush(2000);
+    expect(text()).toContain(RULE_DOOR.classification.summary);
+    expect(text()).not.toContain("Finding rules was cancelled");
+    expect(q(".rex-progress")).toBeNull();
+    expect(button("Find rules again")?.disabled).toBe(false);
+    expect(posts().filter((c) => c.endsWith("/rule-extraction"))).toEqual([]);
+  });
+
+  it("opens a cancellation that is still finishing on the Find Rules screen", async () => {
+    installBackend({ status: status("running", { cancelRequested: true, stage: "finding", startedAt: new Date().toISOString() }) });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    expect(q(".rex-start")).not.toBeNull();
+    expect(q(".rex-progress")).toBeNull();
+    expect(q(".rex-elapsed")).toBeNull();
+    expect(q(".spinner")).toBeNull();
+    expect(text()).not.toContain("Finding rules was cancelled");
+    expect(button("Find Rules")?.disabled).toBe(false);
+    backend.status = status("cancelled", { message: "Finding rules was cancelled." });
+    await flush(2000);
+    expect(q(".rex-start")).not.toBeNull();
+    expect(q(".rex-progress")).toBeNull();
+    expect(text()).not.toContain("Finding rules was cancelled");
+    expect(button("Find Rules")?.disabled).toBe(false);
+  });
+
+  it("shows a cancel failure without the progress view and does not start another extraction", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString(), stage: "finding" }), cancelError: "The server could not stop finding rules." });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    await click(button("Cancel"));
+    await click(button("Stop"));
+    expect(text()).toContain("The server could not stop finding rules.");
+    expect(q(".rex-progress")).toBeNull();
+    expect(q(".rex-elapsed")).toBeNull();
+    expect(button("Find Rules")?.disabled).toBe(false);
+    expect(posts()).toEqual(["POST /api/jobs/j1/rule-extraction/cancel"]);
+    backend.cancelError = "";
+    backend.cancelHold = true;
+    await click(button("Try again"));
+    expect(posts().filter((c) => c.includes("/cancel"))).toHaveLength(2);
+    expect(q(".rex-progress")).toBeNull();
+  });
+
+  it("shows the real stage and no invented percentage or section count", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString(), stage: "checking" }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     const panel = q(".rex-progress")!;
-    expect(panel.textContent).toContain("reports only whether the extraction is queued or running");
+    expect(q(".rex-progress-title")?.textContent).toBe("Checking results");
     expect(panel.textContent).not.toMatch(/\d+\s?%/);
+    expect(panel.textContent).not.toContain("sections");
     expect(panel.querySelector('[role="progressbar"]')?.hasAttribute("aria-valuenow")).toBe(false);
     expect(panel.querySelector(".rex-orb")?.getAttribute("aria-hidden")).toBe("true");
   });
 
-  it("shows a queued extraction as queued, timed from the request", async () => {
-    installBackend({ status: status("queued", { requestedAt: new Date(Date.now() - 65_000).toISOString() }) });
+  it("shows a section count only when the backend actually reports one", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString(), stage: "finding", progress: { completed: 2, total: 5 } }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    expect(q(".rex-progress-facts")?.textContent).toContain("Queued");
-    expect(q(".rex-progress-facts")?.textContent).toContain("Requested");
+    expect(q(".rex-progress")?.textContent).toContain("2 of 5 sections");
+    expect(q(".rex-progress")?.textContent).not.toMatch(/\d+\s?%/);
+  });
+
+  it("shows a queued extraction as preparing, timed from the request", async () => {
+    installBackend({ status: status("queued", { requestedAt: new Date(Date.now() - 65_000).toISOString(), stage: "preparing" }) });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    expect(q(".rex-progress-title")?.textContent).toBe("Preparing your document");
     expect(q(".rex-elapsed")?.textContent).toBe("1:05");
-    expect(q(".rex-progress")?.textContent).toContain("queued on the server");
+    expect(q(".rex-progress")?.textContent).toContain("Next: finding rules.");
   });
 
   it("shows hours for a very long run", async () => {

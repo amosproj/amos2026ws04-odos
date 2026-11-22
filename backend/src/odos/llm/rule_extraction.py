@@ -1,8 +1,8 @@
 """LLM rule extraction: Custom Legal JSON 2.0 (`document.json`) -> Amazon Bedrock -> Rule JSON 2.0 (`rules.json`).
 
-The model receives the Legal JSON itself, unchanged (the whole document, or the selected provisions with their ancestors:
-`element_ids`). There is no chunking, filtering or token optimisation: a request that does not fit the model's context
-window, and an answer that is cut off, are reported as errors, never truncated silently.
+The model receives one applicability-filtered view of the Legal JSON (LLM input V2), or the selected provisions with
+their ancestors (`element_ids`). There is no chunking: the view is one request. A request that does not fit the model's
+context window, and an answer that is cut off, are reported as errors, never truncated silently.
 
 The model's answer is only a proposal. Every record is checked and its provenance is rewritten from the Legal JSON before
 it is accepted, so the model cannot invent a source:
@@ -40,6 +40,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from collections.abc import Callable
 from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker, ValidationError
@@ -447,8 +448,17 @@ class _ModelAnswer:
     partial: bool = False
 
 
+class ExtractionCancelled(Exception):
+    """The caller asked to stop. An in-flight model request may already have been sent; its answer is not used."""
+
+
+def _stopped(should_stop: Callable[[], bool] | None) -> bool:
+    return should_stop is not None and should_stop()
+
+
 def _ask_model(client: BedrockClient, request: PreparedRequest, *, diagnostics_dir: Path | None, accept_partial: bool,
-               document_id: str) -> _ModelAnswer:
+               document_id: str, should_stop: Callable[[], bool] | None = None,
+               on_request: Callable[[], None] | None = None) -> _ModelAnswer:
     """The model's answer, parsed; at most `client.config.output_retries` (0 or 1) correction requests when the answer is
     not valid JSON. Every unusable answer is kept as a diagnostic when `diagnostics_dir` is given."""
     responses: list[BedrockResponse] = []
@@ -457,7 +467,13 @@ def _ask_model(client: BedrockClient, request: PreparedRequest, *, diagnostics_d
     user = request.user
     retries = min(client.config.output_retries, 1)
     while True:
+        if _stopped(should_stop):  # do not start this request, including a correction retry
+            raise ExtractionCancelled()
+        if not responses and on_request:  # once, immediately before the first request and not before a retry
+            on_request()
         response = client.converse(request.system, user, history=history or None)
+        if _stopped(should_stop):  # the answer arrived after cancellation: it is not parsed and not returned
+            raise ExtractionCancelled()
         responses.append(response)
         attempt = len(responses)
 
@@ -499,20 +515,39 @@ def _ask_model(client: BedrockClient, request: PreparedRequest, *, diagnostics_d
 
 
 def extract_rules(legal_json: dict, *, client: BedrockClient | None = None, element_ids: list[str] | None = None,
-                  diagnostics_dir: Path | None = None, accept_partial: bool = False) -> ExtractionResult:
-    """Send the Legal JSON (or the selected provisions) to Bedrock and return the validated Rule JSON records.
+                  diagnostics_dir: Path | None = None, accept_partial: bool = False,
+                  should_stop: Callable[[], bool] | None = None, on_request: Callable[[], None] | None = None,
+                  on_stage: Callable[[str], None] | None = None) -> ExtractionResult:
+    """Send the applicability-filtered document (or the selected provisions) to Bedrock and return the validated records.
 
-    An answer that is not valid JSON is kept in `diagnostics_dir` (if given) and asked for once more if
-    `ODOS_BEDROCK_OUTPUT_RETRIES` allows (0 or 1; never more). With `accept_partial`, the complete records before a
+    One request, not chunks. An answer that is not valid JSON is kept in `diagnostics_dir` (if given) and asked for once
+    more if `ODOS_BEDROCK_OUTPUT_RETRIES` allows (0 or 1; never more). With `accept_partial`, the complete records before a
     defect of the last answer are used (and the result is marked partial); by default such an answer is rejected.
 
-    Raises `DocumentTooLargeError` before anything is sent, `OutputTruncatedError` / `MalformedOutputError` for an unusable
-    answer, and `odos.llm.bedrock.BedrockError` subclasses for API failures."""
+    `should_stop` is checked before every model request and before the answer is used. `on_request` runs once, immediately
+    before the first request. `on_stage` receives ``finding`` before that request and ``checking`` after a usable answer
+    comes back, before the records are validated.
+
+    Raises `DocumentTooLargeError` before anything is sent, `ExtractionCancelled` when `should_stop` asks to stop,
+    `OutputTruncatedError` / `MalformedOutputError` for an unusable answer, and `odos.llm.bedrock.BedrockError` subclasses
+    for API failures."""
+    if _stopped(should_stop):
+        raise ExtractionCancelled()
     client = client or BedrockClient()
     request = prepare_request(legal_json, client.config, element_ids)
     ctx = _context(legal_json, request.document)
+    if _stopped(should_stop):
+        raise ExtractionCancelled()
+    if on_stage:
+        on_stage("finding")
     answer = _ask_model(client, request, diagnostics_dir=diagnostics_dir, accept_partial=accept_partial,
-                        document_id=ctx.document_id)
+                        document_id=ctx.document_id, should_stop=should_stop, on_request=on_request)
+    if _stopped(should_stop):
+        raise ExtractionCancelled()
+    if on_stage:
+        on_stage("checking")
+    if _stopped(should_stop):
+        raise ExtractionCancelled()
     raw_rules = answer.parsed.rules
     response = answer.responses[-1]
 

@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import threading
 from collections.abc import Mapping, MutableMapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -108,6 +109,10 @@ class BedrockContextLimitError(BedrockRequestError):
 
 class BedrockResponseError(BedrockError):
     """The answer is malformed, empty, filtered, or cut off."""
+
+
+class BedrockAborted(BedrockError):
+    """The caller stopped the request. Nothing further is sent, and a retry is not allowed."""
 
 
 # ── .env ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -269,6 +274,7 @@ class BedrockClient:
         self.config = config or BedrockConfig.from_env(environ)
         self._environ = os.environ if environ is None else environ
         self._client = client
+        self._aborted = threading.Event()
 
     @property
     def client(self) -> Any:
@@ -289,7 +295,32 @@ class BedrockClient:
             retries={"total_max_attempts": cfg.max_attempts, "mode": "standard"},  # not "max_attempts": that counts retries, not requests
             user_agent_extra="odos",
         )
-        return boto3.client(SERVICE, config=boto_config)
+        client = boto3.client(SERVICE, config=boto_config)
+        events = getattr(getattr(client, "meta", None), "events", None)
+        if events is not None:  # a cancelled request must not be sent again
+            events.register_first("needs-retry.bedrock-runtime.Converse", self._stop_retry)
+        return client
+
+    def abort(self) -> None:
+        """Stop an in-flight `converse`. Closes the connection so the call returns, and blocks a retry."""
+        self._aborted.set()
+        client = self._client
+        close = getattr(client, "close", None)
+        if not callable(close):
+            return
+        try:
+            close()
+        except Exception:
+            log.warning("could not close the Bedrock connection after cancellation", exc_info=True)
+
+    def _stop_retry(self, **_kwargs: object) -> bool | None:
+        """Returning False tells botocore not to send the request again. None leaves the normal retry decision."""
+        return False if self._aborted.is_set() else None
+
+    def _stopped(self) -> bool:
+        if not self._aborted.is_set():
+            return False
+        raise BedrockAborted("The Bedrock request was stopped.")
 
     def converse(self, system: str, user: str, *, max_tokens: int | None = None, temperature: float | None = None,
                  history: list[tuple[str, str]] | None = None) -> BedrockResponse:
@@ -307,18 +338,24 @@ class BedrockClient:
             },
         }
         try:
+            self._stopped()
             raw = self.client.converse(**request)
+            self._stopped()
         except BedrockError:
             raise
         except ClientError as e:
+            self._stopped()
             raise self._map_client_error(e) from None
         except (ReadTimeoutError, ConnectTimeoutError) as e:
+            self._stopped()
             raise BedrockTimeoutError(
                 f"Bedrock did not answer in time ({type(e).__name__}) after {cfg.max_attempts} attempt(s); "
                 "raise ODOS_BEDROCK_READ_TIMEOUT_SECONDS for long answers.", cause=type(e).__name__) from None
         except EndpointConnectionError as e:
+            self._stopped()
             raise BedrockUnavailableError(f"Cannot connect to Bedrock in region {cfg.region}.", cause=type(e).__name__) from None
         except (BotoConnectionError, HTTPClientError) as e:
+            self._stopped()
             # The connection failed or was closed before a complete answer arrived (ConnectionClosedError, SSLError,
             # ProxyConnectionError, ResponseStreamingError). botocore retries these (see max_attempts) and treats them as
             # transient, so they are "unavailable", not a request that Bedrock rejected.
@@ -326,6 +363,7 @@ class BedrockClient:
                 f"The connection to Bedrock failed ({type(e).__name__}) after {cfg.max_attempts} attempt(s).",
                 cause=type(e).__name__) from None
         except BotoCoreError as e:  # e.g. NoRegionError, ParamValidationError: the request could not even be built
+            self._stopped()
             raise BedrockRequestError(self._redact(f"Bedrock request failed: {e}"), cause=type(e).__name__) from None
         response = self._parse(raw)
         log.info("bedrock converse model=%s stop=%s in=%s out=%s latency_ms=%s", response.model_id, response.stop_reason,

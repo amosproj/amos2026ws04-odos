@@ -80,6 +80,9 @@
 .rex-reviewinfo-h { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
 
 /* ---- progress: indeterminate, because the backend reports no percentage -------------------------------------------- */
+.rex-advanced { margin: 4px 0 8px; color: var(--muted); font-size: 13px; }
+.rex-advanced summary { cursor: pointer; color: var(--text); }
+.rex-advanced p { margin: 6px 0 0; }
 .rex-progress { gap: 18px; }
 .rex-progress-head { display: flex; align-items: center; gap: 14px; }
 .rex-progress-title { font-size: 19px; font-weight: 600; }
@@ -176,7 +179,9 @@ a.btn { text-decoration: none; }
 .rex-step-label { font-size: 15px; color: var(--muted); white-space: nowrap; }
 .rex-step.done .rex-step-label { color: var(--text); }
 .rex-step.current .rex-step-label { color: var(--text); font-weight: 700; }
-.rex-help-btn { justify-self: end; }
+.rex-top-actions { justify-self: end; display: flex; align-items: center; gap: 10px; }
+.rex-back { white-space: nowrap; padding: 9px 18px; border-radius: 12px; border-color: rgba(45, 212, 191, .45); font-size: clamp(14px, 1.15vw, 17px); }
+.rex-back:hover:not(:disabled) { border-color: var(--accent); background: rgba(45, 212, 191, .08); }
 .rex-icon-btn { display: inline-grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; }
 .rex-icon-btn:hover { color: var(--text); background: var(--hover); }
 .rex-icon-btn:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
