@@ -42,6 +42,8 @@ def build_legal_json_artifacts(model: DocumentModel, docling_json: Path | None, 
     (out_dir / LEGAL_JSON).write_bytes(data)
 
     parsed = json.loads(data)
+    from odos.llm_input.artifacts import write_input_artifacts
+    write_input_artifacts(parsed, out_dir)
     schema_errors = _schema_errors(parsed)
     structure_errors = validate_structure(doc)
     text = verify_export(model, doc)
