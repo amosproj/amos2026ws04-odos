@@ -21,6 +21,9 @@ export interface LiveData {
   jobId: string;
   persistent: boolean;
   legal: { title?: string | null; frontMatter: unknown[]; tableOfContents: unknown[]; structure: unknown[] };
+  llmInputV1?: unknown | null;
+  llmInputV2?: unknown | null;
+  llmInputReport?: { characters?: Record<string, number>; applicability?: { policy?: string | null; removed?: unknown[] } } | null;
   ruleJson: unknown | null;
   ruleDownload: { href: string; name: string };
 }
@@ -150,10 +153,13 @@ export async function processPdf(file: File, onStage: (stage: string) => void): 
 }
 
 async function loadLiveResult(job: Job): Promise<DemoResult> {
-  const [model, legal, ruleJson] = await Promise.all([
+  const [model, legal, ruleJson, llmInputV1, llmInputV2, llmInputReport] = await Promise.all([
     call<DocumentModel>(fileUrl(job.id, "document_model.json")),
     call<LiveData["legal"]>(fileUrl(job.id, "document.json")),
     callOptional<unknown>(fileUrl(job.id, "rules.json")),
+    callOptional<unknown>(fileUrl(job.id, "llm_input_v1.json")),
+    callOptional<unknown>(fileUrl(job.id, "llm_applicability_input_v2.json")),
+    callOptional<LiveData["llmInputReport"]>(fileUrl(job.id, "llm_input_report.json")),
   ]);
   const stem = job.filename.replace(/\.pdf$/i, "");
   return {
@@ -166,7 +172,7 @@ async function loadLiveResult(job: Job): Promise<DemoResult> {
       jobId: job.id,
       persistent: job.persistent ?? false,
       legal,
-      ruleJson,
+      ruleJson, llmInputV1, llmInputV2, llmInputReport,
       ruleDownload: { href: fileUrl(job.id, "rules.json", true), name: `${stem}.rules.json` },
     },
   };

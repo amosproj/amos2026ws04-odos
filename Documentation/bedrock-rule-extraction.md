@@ -6,7 +6,7 @@ ODOS can send a Custom Legal JSON 2.0 document (`document.json`) to Claude Sonne
 document.json (Legal JSON 2.0) ──► Bedrock Converse API ──► checks + provenance rewrite ──► rules.json (Rule JSON 2.0)
 ```
 
-It is a command-line step. The web API and the frontend are unchanged; the existing Rule JSON view shows `rules.json` when it exists next to a job's `document.json`. The parser, the Legal JSON 2.0 contract and the Rule JSON schema are not changed.
+It can be started through the CLI or API. The frontend shows the original Legal JSON, reduced LLM input V1 and applicability input V2 with separate downloads; its existing Rule JSON view shows `rules.json` after extraction. The original Legal JSON and Rule JSON schema stay unchanged. The model receives the derived V2 view; redundant native type labels and printed node markers are omitted while stable IDs, numbers, page references and sentence ranges remain.
 
 | Module | Responsibility |
 |---|---|
@@ -67,7 +67,7 @@ odos extract-rules storage/<job-id>/document.json
 
 * `--dry-run` shows the scope and the estimated size and sends nothing.
 * `--element-id ID` (repeatable) sends only that element with its whole subtree and its ancestors, so the hierarchy stays intact. The ID is an `id` from `document.json`.
-* Without `--element-id` the whole document is sent. MBO is about 200,000 and the EU Machinery Regulation about 230,000 estimated input tokens, within the 1M window. A whole-document answer is long: if it reaches `ODOS_BEDROCK_MAX_TOKENS` the command stops with an error and **uses none of it**.
+* Without `--element-id` the entire V2 view is sent. MBO is about 200,000 and the EU Machinery Regulation about 230,000 estimated input tokens, within the 1M window. A whole-document answer is long: if it reaches `ODOS_BEDROCK_MAX_TOKENS` the command stops with an error and **uses none of it**.
 * `rules.json` is written next to the input (`-o` changes that) and replaced atomically.
 
 Every call is a paid request. Use `--dry-run` and `--element-id` while trying things out.
@@ -86,7 +86,7 @@ The job ID is the one the web UI shows (also the directory name in the `backend_
 
 ## What goes to the model
 
-The system prompt holds the instructions, the complete Rule JSON schema (`backend/schemas/rule-json/rule.schema.json`) and one example. The user message holds the Legal JSON **unchanged** (whole document), or, with `--element-id`, the selected subtrees with their ancestors, the document's identity fields, and the sentences and footnotes that belong to the kept nodes. There is no chunking, filtering or token optimisation.
+The system prompt holds the instructions, the complete Rule JSON schema (`backend/schemas/rule-json/rule.schema.json`) and one example. The user message holds applicability input **V2** derived non-destructively from the original Legal JSON, or, with `--element-id`, selected V2 subtrees with ancestors and their surviving sentences/footnotes. The system prompt still includes the full Rule JSON schema and example. There is no chunking. See [llm-input-reduction.md](llm-input-reduction.md) for the exact reduction and Excel policy.
 
 If the estimated input plus the answer limit exceeds the context window, the command stops before sending anything (`DocumentTooLargeError`). The estimate uses 3 characters per token, which errs towards refusing; the real count is reported after a request.
 

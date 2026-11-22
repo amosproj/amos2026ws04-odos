@@ -40,7 +40,8 @@ from fastapi import Body, FastAPI, File, HTTPException, Response, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, computed_field
 
-from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON
+from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON, LLM_INPUT_V1, LLM_INPUT_V2, LLM_INPUT_REPORT
+from odos.llm_input.artifacts import write_input_artifacts
 from odos.pipeline import Outcome, run_pipeline
 from odos import rule_extraction_jobs as rx
 from odos.document_repository import (
@@ -74,7 +75,7 @@ _log_odos_messages()
 MAX_UPLOAD_BYTES = int(os.environ.get("ODOS_MAX_UPLOAD_MB", "50")) * 1024 * 1024
 MAX_JOBS = 10  # when a new job comes in, the oldest finished ones beyond this are deleted with their files
 # the job files the frontend reads; nothing else in a job directory is served
-RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON)
+RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON, LLM_INPUT_V1, LLM_INPUT_V2, LLM_INPUT_REPORT)
 SOURCE_PDF = "source.pdf"  # the uploaded PDF inside a job directory; kept only with database persistence
 FAILED_MESSAGE = "The PDF could not be processed. It may be damaged, encrypted or a scanned image without a text layer."
 NOT_STORED_MESSAGE = "The PDF was processed, but its result could not be stored in the database."
@@ -219,11 +220,17 @@ def get_file(job_id: str, name: str, download: bool = False) -> FileResponse:
     if job.status != "completed":
         raise HTTPException(409, "The job has no results.")
     path = _storage / job.id / name
+    if name in (LLM_INPUT_V1, LLM_INPUT_V2, LLM_INPUT_REPORT):
+        original = _storage / job.id / LEGAL_JSON
+        if original.is_file():
+            write_input_artifacts(json.loads(original.read_text(encoding="utf-8")), original.parent)
     if not path.is_file():  # e.g. a restored job whose files were removed or live under another ODOS_STORAGE_DIR
         raise HTTPException(404, "The result file is no longer available.")
     filename = None
     if download:
-        suffix = ".rules.json" if name == RULE_JSON else ".legal.json"
+        suffix = {RULE_JSON: ".rules.json", LLM_INPUT_V1: ".llm-input-v1.json",
+                  LLM_INPUT_V2: ".llm-applicability-input-v2.json",
+                  LLM_INPUT_REPORT: ".llm-input-report.json"}.get(name, ".legal.json")
         filename = f"{Path(job.filename).stem}{suffix}"
     return FileResponse(path, media_type="application/json", filename=filename)
 
