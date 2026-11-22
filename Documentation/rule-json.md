@@ -4,7 +4,7 @@ Rule JSON is a source-traceable representation of an interpreted requirement or 
 
 **Language policy:** Human-readable Rule JSON content follows the original document language by default. Schema keys and enum values remain language-neutral technical identifiers.
 
-The schema is document-neutral. Legal JSON 2.0 preserves source structure and text; Rule JSON records an interpretation and points back to exact Legal JSON element IDs. Rule JSON does not replace or amend Legal JSON. The schema does not extract rules: no Rule JSON is shipped as application data, and the Artifacts viewer displays an empty state until an extractor stores a job's `rules.json` artifact. The viewer shows records with `schemaVersion` `2.0` and maps them to the selected element through `source.elements[].elementId`.
+The schema is document-neutral. Legal JSON 2.0 preserves source structure and text; Rule JSON records an interpretation and points back to exact Legal JSON element IDs. Rule JSON does not replace or amend Legal JSON. The schema does not extract rules: no Rule JSON is shipped as application data. The LLM extractor ([bedrock-rule-extraction.md](bedrock-rule-extraction.md)) stores a job's `rules.json` artifact, which the **LLM Rule Extraction & Review** page and the Artifacts viewer display; both show an empty state until one exists. They show records with `schemaVersion` `2.0` and map them to the selected element through `source.elements[].elementId`.
 
 ## Objective
 

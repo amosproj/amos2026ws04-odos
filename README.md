@@ -198,3 +198,7 @@ Optional persistence: with a local PostgreSQL 17 database (Docker Compose) and `
 
 
 For command-line processing, parsing details and schema changes, see [Documentation/README.md](Documentation/README.md).
+
+## LLM input views
+
+ODOS now keeps the original Custom Legal JSON and generates Reduced LLM input JSON V1 and LLM applicability input JSON V2. All three are available in the frontend with separate downloads. LLM rule extraction uses V2. See [the reduction and applicability guide](Documentation/llm-input-reduction.md) for the exact Excel exclusions, running instructions and verification limits.

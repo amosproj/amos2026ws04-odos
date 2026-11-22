@@ -159,6 +159,8 @@ def run_extract_rules(args) -> int:
         return 1
     try:
         legal = json.loads(args.legal_json.read_text(encoding="utf-8"))
+        from odos.llm_input.artifacts import write_input_artifacts
+        write_input_artifacts(legal, args.legal_json.parent)
         if args.dry_run:
             config = BedrockConfig.from_env()
             _, chunks = plan_chunks(legal, args.element_id)

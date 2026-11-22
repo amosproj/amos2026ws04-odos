@@ -2,7 +2,7 @@
 
 ODOS extracts legal PDFs and converts them into Custom Legal JSON 2.0. A Python backend processes uploaded PDFs; a React frontend displays the PDF, recognized legal structure and JSON outputs.
 
-The current prototype does not interpret provisions as executable compliance rules. LLM rule extraction is available as an optional command-line step ([bedrock-rule-extraction.md](bedrock-rule-extraction.md)); digital-twin validation is a future step. Akoma Ntoso is not an output of this version.
+The current prototype does not interpret provisions as executable compliance rules. LLM rule extraction is available as an optional step, started from the frontend's Rule Extraction page, the API or the command line ([bedrock-rule-extraction.md](bedrock-rule-extraction.md)); digital-twin validation is a future step. Akoma Ntoso is not an output of this version.
 
 ## Components
 
@@ -29,7 +29,7 @@ The current prototype does not interpret provisions as executable compliance rul
 5. The exporter creates `document.json` and its validation report.
 6. The browser loads `document_model.json` and `document.json`. It uses model provenance for PDF highlights.
 7. Opening the Docling Raw JSON panel loads the complete `docling_raw.json` on demand.
-8. The browser also requests the optional `rules.json` (Rule JSON); it exists only after a rule extraction was run for the job (`odos extract-rules` or `POST /api/jobs/{id}/rule-extraction`), so the Rule JSON view is normally empty. The API keeps the extraction status in `rule_extraction.json` and unusable model answers in `llm-diagnostics/` in the job directory; neither is served.
+8. The browser also requests the optional `rules.json` (Rule JSON); it exists only after a rule extraction was run for the job (`odos extract-rules` or `POST /api/jobs/{id}/rule-extraction`), so the Artifacts Rule JSON view is empty until then. The Rule Extraction page reads the extraction status and `rules.json` and shows the stored rules without starting a new extraction. The API keeps the extraction status in `rule_extraction.json` and unusable model answers in `llm-diagnostics/` in the job directory; neither is served.
 
 The files form different views of one processing run. Raw Docling JSON describes extraction and layout. The internal model adds legal structure and diagnostics. Public Legal JSON contains legal content without technical source coordinates.
 

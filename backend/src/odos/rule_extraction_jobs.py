@@ -170,6 +170,8 @@ def load_legal_json(directory: Path) -> dict:
         raise HTTPException(422, "The Legal JSON of this job cannot be read.") from None
     if not isinstance(legal, dict) or not legal.get("structure"):
         raise HTTPException(422, "The Legal JSON of this job has no structure to extract rules from.")
+    from odos.llm_input.artifacts import write_input_artifacts
+    write_input_artifacts(legal, directory)
     return legal
 
 

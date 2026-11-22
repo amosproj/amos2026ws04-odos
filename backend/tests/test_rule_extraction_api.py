@@ -5,7 +5,7 @@ The Bedrock client is replaced by a fake in every test: no request reaches AWS, 
 import json
 import threading
 import time
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
 from conftest import fake_pipeline, upload, wait_for
@@ -324,3 +324,45 @@ def test_with_the_database_the_extraction_survives_a_restart_and_a_cut_off_run_i
         cut_off = client.get(f"/api/jobs/{other_id}").json()["ruleExtraction"]
         assert (cut_off["status"], cut_off["errorCode"]) == ("failed", "interrupted")
         assert client.delete(f"/api/jobs/{other_id}").status_code == 204
+
+
+# ── interaction: parallel extraction ↔ human review ──────────────────────────────────────────────────────────────────
+
+
+def test_posting_a_review_while_extraction_is_running_is_refused_with_409(api, monkeypatch):
+    """The Human Review POST endpoint must return 409 while a rule extraction is active (queued or running).
+
+    After extraction completes, the guard no longer fires. This test mocks require_storage so it runs without a
+    PostgreSQL database; the guard in api.py fires before any database call is made."""
+    import odos.rule_reviews as rv
+
+    client, job_id = api
+    gate = threading.Event()
+    use(monkeypatch, FakeBedrock(answer(RULE), gate=gate))
+    # bypass the database requirement so the extraction-active guard is reached
+    monkeypatch.setattr(rv, "require_storage", MagicMock())
+
+    start(client, job_id)
+    # extraction is queued/running while gate is closed
+    state = client.get(f"/api/jobs/{job_id}").json()
+    assert state["ruleExtraction"]["status"] in ("queued", "running")
+
+    review_body = {
+        "ruleId": "demo-bo-par-6-abs-1",
+        "extractionId": "x",  # a placeholder; the guard fires before the value is validated against the DB
+        "expectedRuleSha256": "0" * 64,
+        "expectedLastEventId": 0,
+        "action": "accept",
+        "reviewer": "Test Reviewer",
+    }
+    response = client.post(f"/api/jobs/{job_id}/rule-reviews", json=review_body)
+    assert response.status_code == 409
+    assert "running" in response.json()["detail"].lower()
+
+    gate.set()
+    done = wait_for_extraction(client, job_id)
+    assert done["status"] == "completed"
+    # Guard no longer fires: the extraction-active message is absent from the response.
+    # The call now reaches rv.record_review which rejects the placeholder hash — different 409 or 503.
+    response2 = client.post(f"/api/jobs/{job_id}/rule-reviews", json=review_body)
+    assert "running" not in response2.json().get("detail", "").lower()
