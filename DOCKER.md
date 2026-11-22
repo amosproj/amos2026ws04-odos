@@ -7,6 +7,8 @@ Install and start Docker Desktop. On Windows use Linux containers with the WSL 2
 Open http://localhost:5173 after the frontend starts. API docs: http://localhost:8000/docs.
 No local Python, venv or Node installation is needed. Internet access is required for image/dependency downloads and the first Docling model download. Allow several GB of disk space and sufficient Docker memory; 8 GB is a reasonable starting allocation, not a guaranteed minimum for every document.
 
+Optional LLM rule extraction (Amazon Bedrock): put your Bedrock API key into .env (see .env.example) and follow Documentation/bedrock-rule-extraction.md. Rule extraction is then available with `odos extract-rules` in the backend container and as `POST /api/jobs/{id}/rule-extraction` (a paid call per request). Without a key everything else works as before.
+
 Later starts: docker compose up
 Stop: Ctrl+C, then docker compose down
 Background: docker compose up -d

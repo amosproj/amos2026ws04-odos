@@ -1,0 +1,152 @@
+name: Nightly (slow tests)
+
+# Minimal GITHUB_TOKEN permissions.
+permissions:
+  contents: read
+
+# ── Trigger ───────────────────────────────────────────────────────────────────
+# Only workflow_dispatch for now.  A `schedule:` trigger is intentionally
+# omitted: the slow suite requires three partner-provided PDF files that are
+# not stored in this repository and cannot be provisioned on the standard
+# ubuntu-latest runner.  Enabling a nightly schedule without the PDFs would
+# produce a misleadingly green run where every slow test silently skips.
+#
+# To re-enable the schedule once PDF provisioning is in place:
+#   1. Upload the PDFs as assets of a private GitHub Release (or store them on
+#      a self-hosted runner).  See backend/data/input/SOURCE.md for SHA-256
+#      checksums and redistribution notes.
+#   2. Add a download step below that fetches the PDFs using GITHUB_TOKEN (for
+#      release assets) or a secret presigned URL (for cloud storage).
+#   3. Set ODOS_MBO_PDF, ODOS_EU_PDF, and ODOS_BDSG_PDF to the downloaded paths.
+#   4. Uncomment the schedule block below and merge to the default branch (main).
+#      GitHub runs scheduled workflows from the default branch only; a schedule
+#      in a feature or develop branch has no effect.
+#
+# schedule:
+#   - cron: '0 2 * * *'   # 02:00 UTC — restore after PDF provisioning is set up
+#
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or SHA to test'
+        required: false
+        default: 'develop'
+
+jobs:
+  slow-tests:
+    name: Slow regression tests (Docling + real PDFs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: odos_ci
+          POSTGRES_PASSWORD: odos_ci
+          POSTGRES_DB: odos_test
+        options: >-
+          --health-cmd "pg_isready -U odos_ci -d odos_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5433:5432
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.lock
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.lock
+          pip install --no-deps -e '.[dev]'
+
+      # ── PDF fixture check ──────────────────────────────────────────────────
+      # Fails explicitly when no partner PDFs are available, rather than letting
+      # pytest silently skip every slow test and report a misleading zero failures.
+      #
+      # PDF provisioning options (choose one):
+      #   A. Self-hosted runner: pre-stage the PDFs at known absolute paths and
+      #      configure ODOS_MBO_PDF / ODOS_EU_PDF / ODOS_BDSG_PDF as runner-level
+      #      environment variables in the runner's .env.
+      #   B. GitHub Release assets: upload each PDF as a release asset, then add
+      #      a step above this one that downloads them with:
+      #        gh release download <tag> --pattern "*.pdf" --dir /tmp/odos-pdfs
+      #      and sets ODOS_MBO_PDF=/tmp/odos-pdfs/MusterBauVerordnung.pdf etc.
+      #      Requires: `permissions: contents: read` (already set above).
+      #   C. Cloud storage: download via a presigned URL stored as a GitHub secret.
+      #
+      # Redistribution: the MBO and EU regulation are partner-provided; do NOT
+      # commit them to the repository.  See backend/data/input/SOURCE.md.
+      - name: Check required PDF fixtures
+        shell: bash
+        run: |
+          MBO_PATH="${ODOS_MBO_PDF:-data/input/private/MusterBauVerordnung.pdf}"
+          EU_PATH="${ODOS_EU_PDF:-data/input/private/eu_2023_1230.pdf}"
+          BDSG_PATH="${ODOS_BDSG_PDF:-data/input/BDSG.pdf}"
+
+          found=0
+          missing=()
+
+          for entry in "ODOS_MBO_PDF:$MBO_PATH" "ODOS_EU_PDF:$EU_PATH" "ODOS_BDSG_PDF:$BDSG_PATH"; do
+            var="${entry%%:*}"
+            path="${entry#*:}"
+            if [ -f "$path" ]; then
+              echo "OK  $var -> $path"
+              found=$((found + 1))
+            else
+              echo "NOT FOUND  $var -> $path"
+              missing+=("$var")
+            fi
+          done
+
+          echo ""
+          echo "$found/3 PDF fixtures available.  Missing: ${missing[*]:-none}"
+
+          if [ "$found" -eq 0 ]; then
+            echo ""
+            echo "ERROR: no partner PDF fixtures are available."
+            echo "Every slow test would skip silently, producing a misleadingly"
+            echo "green run.  See the provisioning options in this file's comments."
+            exit 1
+          fi
+        env:
+          ODOS_MBO_PDF: ${{ secrets.ODOS_MBO_PDF }}
+          ODOS_EU_PDF: ${{ secrets.ODOS_EU_PDF }}
+          ODOS_BDSG_PDF: ${{ secrets.ODOS_BDSG_PDF }}
+
+      - name: Run slow tests
+        run: |
+          pytest -m slow -v \
+            --cov=src/odos \
+            --cov-report=xml:coverage-slow.xml \
+            --cov-report=term-missing
+        env:
+          POSTGRES_USER: odos_ci
+          POSTGRES_PASSWORD: odos_ci
+          POSTGRES_DB: odos_test
+          POSTGRES_HOST: 127.0.0.1
+          ODOS_MBO_PDF: ${{ secrets.ODOS_MBO_PDF }}
+          ODOS_EU_PDF: ${{ secrets.ODOS_EU_PDF }}
+          ODOS_BDSG_PDF: ${{ secrets.ODOS_BDSG_PDF }}
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-slow
+          path: backend/coverage-slow.xml
+          retention-days: 30
