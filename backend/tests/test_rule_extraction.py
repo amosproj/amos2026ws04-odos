@@ -108,10 +108,13 @@ def _no_real_env_file(monkeypatch, tmp_path):
 # ── prompt and input ──────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-def test_the_whole_legal_json_is_sent_unchanged():
+def test_v2_is_sent_without_modifying_the_original_legal_json():
+    from odos.llm_input.artifacts import build_inputs
+    original = copy.deepcopy(LEGAL)
     request = prepare_request(LEGAL, BedrockConfig())
     sent = json.loads(re.search(r"<legal_json>\n(.*)\n</legal_json>", request.user, re.DOTALL).group(1))
-    assert sent == LEGAL  # nothing filtered, reordered or shortened
+    assert sent == build_inputs(LEGAL)[1]
+    assert LEGAL == original
     assert request.scope == "document"
 
 
@@ -452,3 +455,16 @@ def _walk(nodes):
     for n in nodes:
         yield n
         yield from _walk(n.get("children", []))
+
+
+def test_model_payload_excludes_excel_articles_and_their_scope_cannot_be_requested():
+    legal = {"id": "verordnung-2023-1230", "documentType": "eu_regulation", "title": "Machinery", "structure": [
+        {"id": "art-10", "type": "article", "number": "10", "text": "Keep technical duty."},
+        {"id": "art-50", "type": "article", "number": "50", "text": "Excluded penalties."},
+    ]}
+    request = prepare_request(legal, BedrockConfig())
+    assert [n["id"] for n in request.document["structure"]] == ["art-10"]
+    assert "Excluded penalties" not in request.user
+    assert len(legal["structure"]) == 2
+    with pytest.raises(InvalidScopeError):
+        prepare_request(legal, BedrockConfig(), ["art-50"])

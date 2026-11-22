@@ -139,7 +139,7 @@ EXAMPLE_RULE = {
 
 SYSTEM_PROMPT = """You are a legal-engineering assistant. You turn a normative document, given as ODOS Custom Legal JSON 2.0, into Rule JSON 2.0 records.
 
-INPUT. A JSON object with the document metadata and `structure`, a tree of nodes. A node has `id` (stable element ID), `type`, `germanType`, `marker`, `number`, `title`, `text`, `pages` and `children`. `text` is the node's OWN text only; the text of its children is in the children, so read the tree in order. `sentences` give sentence IDs and the element ranges they span.
+INPUT. A JSON object with the document metadata and `structure`, a tree of nodes. This is the reduced/applicability-filtered LLM input V2, not the full original. A node has `id` (stable element ID), `type`, `number`, `title`, `text`, `pages` and `children` where applicable. Redundant native-language type labels and printed node markers are omitted. Derive citation labels from the document type, node type, number and ancestor hierarchy; never change or invent an element ID. `text` is the node's OWN text only; the text of its children is in the children, so read the tree in order. `sentences` give sentence IDs and the element ranges they span.
 
 TASK. Extract every operative requirement, prohibition, permission, definition and procedural requirement as Rule JSON records.
 
@@ -231,10 +231,14 @@ def prepare_request(legal_json: dict, config: BedrockConfig, element_ids: list[s
     """Build the prompt and estimate its size. Raises `DocumentTooLargeError` if it cannot fit the context window."""
     if not legal_json.get("structure"):
         raise InvalidScopeError("The Legal JSON has no structure to extract rules from.")
-    document = scope_document(legal_json, element_ids) if element_ids else legal_json
+    from odos.llm_input.artifacts import build_inputs
+    _, effective, _ = build_inputs(legal_json)
+    if not effective.get("structure"):
+        raise InvalidScopeError("No provisions remain after LLM input reduction and applicability filtering.")
+    document = scope_document(effective, element_ids) if element_ids else effective
     body = json.dumps(document, ensure_ascii=False, separators=(",", ":"))
     scope: str | list[str] = list(element_ids) if element_ids else "document"
-    where = "the whole document" if scope == "document" else "the provisions " + ", ".join(element_ids or [])
+    where = "the applicability-filtered document (LLM input V2)" if scope == "document" else "the provisions " + ", ".join(element_ids or [])
     user = f"Legal JSON 2.0 of {where}:\n<legal_json>\n{body}\n</legal_json>\n\nExtract the Rule JSON records now."
     system = build_system_prompt(legal_json)
     request = PreparedRequest(system=system, user=user, scope=scope, document=document,
@@ -544,6 +548,7 @@ def extract_rules(legal_json: dict, *, client: BedrockClient | None = None, elem
     repairs = report.get("schemaRepairs", [])
     generation = {
         "provider": "aws-bedrock", "modelId": client.config.model_id, "region": client.config.region,
+        "inputView": "llm_applicability_input_v2.json",
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "documentId": ctx.document_id, "scope": request.scope, "stopReason": response.stop_reason,
         "inputTokens": sum(r.input_tokens for r in answer.responses),

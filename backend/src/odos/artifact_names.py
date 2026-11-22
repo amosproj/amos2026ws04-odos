@@ -16,3 +16,7 @@ VALIDATION_REPORT_MD = "validation_report.md"
 LEGAL_JSON = "document.json"  # public JSON serialization of the canonical model
 RULE_JSON = "rules.json"  # optional extracted Rule JSON collection; written by `odos extract-rules` (odos.llm), not by live processing
 LEGAL_JSON_REPORT = "legal_json_validation_report.json"
+
+LLM_INPUT_V1 = "llm_input_v1.json"
+LLM_INPUT_V2 = "llm_applicability_input_v2.json"
+LLM_INPUT_REPORT = "llm_input_report.json"

@@ -18,6 +18,10 @@ is part of the job (`ruleExtraction`, also `GET /api/jobs/{id}/rule-extraction`)
 job directory (`RULE_EXTRACTION_STATUS`, restored with the job; the database schema is unchanged). The result is the
 job's `rules.json` artifact, served like the other result files. Unusable model answers are kept for diagnosis in the
 job directory (`llm-diagnostics/`, never served).
+
+Human review of the extracted rules (needs the database and `backend/db/002_rule_reviews.sql`): `GET/POST /api/jobs/{id}/rule-reviews`,
+`GET .../rule-reviews/history` and `GET .../rule-reviews/approved-export`. Decisions are append-only events in PostgreSQL bound to one
+extraction and one record hash; `rules.json` is never modified (Documentation/review-state-design.md).
 """
 
 from __future__ import annotations
@@ -28,6 +32,7 @@ import os
 import shutil
 import tempfile
 import threading
+import urllib.parse
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
@@ -37,12 +42,14 @@ from typing import Literal
 
 import psycopg
 from fastapi import Body, FastAPI, File, HTTPException, Response, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field, computed_field
 
-from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON
+from odos.artifact_names import DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON, LLM_INPUT_V1, LLM_INPUT_V2, LLM_INPUT_REPORT
+from odos.llm_input.artifacts import write_input_artifacts
 from odos.pipeline import Outcome, run_pipeline
 from odos import rule_extraction_jobs as rx
+from odos import rule_reviews as rv
 from odos.document_repository import (
     create_document,
     delete_document,
@@ -74,7 +81,7 @@ _log_odos_messages()
 MAX_UPLOAD_BYTES = int(os.environ.get("ODOS_MAX_UPLOAD_MB", "50")) * 1024 * 1024
 MAX_JOBS = 10  # when a new job comes in, the oldest finished ones beyond this are deleted with their files
 # the job files the frontend reads; nothing else in a job directory is served
-RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON, "rule_extraction_report.json")
+RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON, LLM_INPUT_V1, LLM_INPUT_V2, LLM_INPUT_REPORT, "rule_extraction_report.json")
 SOURCE_PDF = "source.pdf"  # the uploaded PDF inside a job directory; kept only with database persistence
 FAILED_MESSAGE = "The PDF could not be processed. It may be damaged, encrypted or a scanned image without a text layer."
 NOT_STORED_MESSAGE = "The PDF was processed, but its result could not be stored in the database."
@@ -219,11 +226,18 @@ def get_file(job_id: str, name: str, download: bool = False) -> FileResponse:
     if job.status != "completed":
         raise HTTPException(409, "The job has no results.")
     path = _storage / job.id / name
+    if name in (LLM_INPUT_V1, LLM_INPUT_V2, LLM_INPUT_REPORT):
+        original = _storage / job.id / LEGAL_JSON
+        if original.is_file():
+            write_input_artifacts(json.loads(original.read_text(encoding="utf-8")), original.parent)
     if not path.is_file():  # e.g. a restored job whose files were removed or live under another ODOS_STORAGE_DIR
         raise HTTPException(404, "The result file is no longer available.")
     filename = None
     if download:
-        suffix = ".rules.json" if name == RULE_JSON else ".report.json" if name == "rule_extraction_report.json" else ".legal.json"
+        suffix = {RULE_JSON: ".rules.json", LLM_INPUT_V1: ".llm-input-v1.json",
+                  LLM_INPUT_V2: ".llm-applicability-input-v2.json",
+                  LLM_INPUT_REPORT: ".llm-input-report.json",
+                  "rule_extraction_report.json": ".report.json"}.get(name, ".legal.json")
         filename = f"{Path(job.filename).stem}{suffix}"
     return FileResponse(path, media_type="application/json", filename=filename)
 
@@ -285,6 +299,63 @@ def _extract_rules(job: Job, request: rx.RuleExtractionRequest) -> None:
     except OSError:
         log.exception("could not store the rule extraction status of job %s", job.id)
     job.ruleExtraction = finished  # published last, as clients poll for it
+
+
+# ── human review of the extracted rules (decisions are events in PostgreSQL; rules.json is never modified) ──────────────
+
+
+def _review_job(job_id: str) -> tuple[Job, Path]:
+    job = _job(job_id)
+    if job.status != "completed":
+        raise HTTPException(409, "The job has no results.")
+    rv.require_storage(_persistent())
+    return job, _storage / job.id
+
+
+def _review_db(call):
+    """Runs a review database operation; database errors become 503 (an unknown document, deleted meanwhile, 404)."""
+    try:
+        return call()
+    except psycopg.errors.ForeignKeyViolation:
+        raise HTTPException(404, "Unknown job.") from None
+    except psycopg.Error as e:
+        log.exception("review database error")
+        raise HTTPException(503, DATABASE_UNAVAILABLE) from e
+
+
+@app.get("/api/jobs/{job_id}/rule-reviews")
+def get_rule_reviews(job_id: str) -> dict:
+    """The review state of every rule of the job's current rules.json (see Documentation/review-state-design.md)."""
+    job, directory = _review_job(job_id)
+    return _review_db(lambda: rv.review_state(job.id, directory))
+
+
+@app.post("/api/jobs/{job_id}/rule-reviews", status_code=201)
+def post_rule_review(job_id: str, request: rv.ReviewRequest) -> dict:
+    """Append one review event (accept, reject, edit, reset) to one rule; returns the rule's new review entry."""
+    job, directory = _review_job(job_id)
+    if rx.active(job.ruleExtraction):
+        raise HTTPException(409, "A rule extraction of this job is running; rules can be reviewed when it has finished.")
+    return _review_db(lambda: rv.record_review(job.id, directory, request))
+
+
+@app.get("/api/jobs/{job_id}/rule-reviews/history")
+def get_rule_review_history(job_id: str, ruleId: str) -> list[dict]:
+    """The audit trail of one rule, oldest first."""
+    job, directory = _review_job(job_id)
+    return _review_db(lambda: rv.rule_history(job.id, directory, ruleId))
+
+
+@app.get("/api/jobs/{job_id}/rule-reviews/approved-export")
+def get_approved_rules(job_id: str, download: bool = False) -> JSONResponse:
+    """The accepted rules as Rule JSON 2.0 (`review.status: approved`); rejected and pending rules are not included."""
+    job, directory = _review_job(job_id)
+    body = _review_db(lambda: rv.approved_export(job.id, directory))
+    headers = {}
+    if download:
+        name = urllib.parse.quote(f"{Path(job.filename).stem}.approved.rules.json")
+        headers["Content-Disposition"] = f"attachment; filename*=UTF-8''{name}"
+    return JSONResponse(body, headers=headers)
 
 
 @app.delete("/api/jobs/{job_id}", status_code=204)

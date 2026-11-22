@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { highlightsOf } from "../structure";
 import { box, el, modelOf } from "../testing";
-import DemoApp, { ArtifactSwitch, Artifacts, ResultView, RuleJsonPreview } from "./DemoApp";
+import DemoApp, { ArtifactSwitch, Artifacts, ResultView, RuleJsonPreview, LlmInputViews } from "./DemoApp";
 import { ProcessingError, STAGE_LABELS, deleteStoredDocument, listDocuments, openStoredDocument, nodeJson, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, stageLabel, type Job } from "./live";
 
 vi.mock("../components/PdfViewer", () => ({
@@ -114,6 +114,7 @@ describe("live processing through the backend", () => {
     expect(calls).toEqual([
       "POST /api/jobs", "GET /api/jobs/j1", "GET /api/jobs/j1", "GET /api/jobs/j1",
       "GET /api/jobs/j1/files/document_model.json", "GET /api/jobs/j1/files/document.json", "GET /api/jobs/j1/files/rules.json",
+      "GET /api/jobs/j1/files/llm_input_v1.json", "GET /api/jobs/j1/files/llm_applicability_input_v2.json", "GET /api/jobs/j1/files/llm_input_report.json",
     ]);
     expect(r.title).toBe("Beispielgesetz");
     expect(r.download).toEqual({ href: "/api/jobs/j1/files/document.json?download=true", name: "Gesetz.legal.json" });
@@ -220,7 +221,7 @@ describe("stored documents", () => {
       if (route) return extra[route]();
       if (url.endsWith("/files/document_model.json")) return json(model);
       if (url.endsWith("/files/document.json")) return json(legal);
-      if (url.endsWith("/files/rules.json")) return new Response(null, { status: 404 }); // no extracted rules
+      if (/\/files\/(rules|llm_input_v1|llm_applicability_input_v2|llm_input_report)\.json$/.test(url)) return new Response(null, { status: 404 }); // optional artifacts
       if (url.endsWith("/pdf")) return new Response("%PDF-1.7");
       return json(jobState);
     }));
@@ -233,7 +234,9 @@ describe("stored documents", () => {
     expect(calls.filter((c) => c.startsWith("POST"))).toEqual([]); // no new job
     expect(calls[0]).toBe("GET /api/jobs/j1");
     expect(calls.slice(1).sort()).toEqual([
-      "GET /api/jobs/j1/files/document.json", "GET /api/jobs/j1/files/document_model.json", "GET /api/jobs/j1/files/rules.json", "GET /api/jobs/j1/pdf",
+      "GET /api/jobs/j1/files/document.json", "GET /api/jobs/j1/files/document_model.json",
+      "GET /api/jobs/j1/files/llm_applicability_input_v2.json", "GET /api/jobs/j1/files/llm_input_report.json",
+      "GET /api/jobs/j1/files/llm_input_v1.json", "GET /api/jobs/j1/files/rules.json", "GET /api/jobs/j1/pdf",
     ]);
     expect(result.title).toBe("Beispielgesetz");
     expect(result.live).toMatchObject({ jobId: "j1", persistent: true, legal, ruleJson: null });
@@ -411,5 +414,29 @@ describe.each(REAL)("live path on the real $dir pipeline output", ({ dir, id, pa
     expect([node.id, node.germanType]).toEqual([id, "Absatz"]);
     if (pages) expect(node.pages).toEqual(pages);
     expect(new Set(highlightsOf(element).boxes.map((b) => b.page_no))).toEqual(new Set(node.pages));
+  });
+});
+
+
+describe("LLM input views", () => {
+  it("loads both derived views and offers separate full JSON previews and downloads", async () => {
+    const v1 = { ...legal, title: "Reduced input" };
+    const v2 = { ...legal, title: "Applicable input" };
+    const { result } = await run([done], {
+      "document_model.json": model, "document.json": legal,
+      "llm_input_v1.json": v1, "llm_applicability_input_v2.json": v2,
+      "llm_input_report.json": { characters: { original: 100, v1: 80, v2: 60 }, applicability: { policy: "musterbauordnung" } },
+    });
+    const loaded = await result;
+    expect(loaded.live?.legal).toEqual(legal);
+    expect(loaded.live?.llmInputV1).toEqual(v1);
+    expect(loaded.live?.llmInputV2).toEqual(v2);
+    const html = renderToStaticMarkup(<LlmInputViews result={loaded} />);
+    expect(html).toContain("Reduced LLM input JSON V1");
+    expect(html).toContain("LLM applicability input JSON V2");
+    expect(html).toContain("llm_input_v1.json?download=true");
+    expect(html).toContain("llm_applicability_input_v2.json?download=true");
+    expect(html).toContain("Reduced input");
+    expect(html).toContain("Applicable input");
   });
 });
