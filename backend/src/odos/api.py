@@ -81,7 +81,7 @@ _log_odos_messages()
 MAX_UPLOAD_BYTES = int(os.environ.get("ODOS_MAX_UPLOAD_MB", "50")) * 1024 * 1024
 MAX_JOBS = 10  # when a new job comes in, the oldest finished ones beyond this are deleted with their files
 # the job files the frontend reads; nothing else in a job directory is served
-RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON, LLM_INPUT_V1, LLM_INPUT_V2, LLM_INPUT_REPORT)
+RESULT_FILES = (DOCUMENT_MODEL, LEGAL_JSON, DOCLING_RAW, RULE_JSON, LLM_INPUT_V1, LLM_INPUT_V2, LLM_INPUT_REPORT, "rule_extraction_report.json")
 SOURCE_PDF = "source.pdf"  # the uploaded PDF inside a job directory; kept only with database persistence
 FAILED_MESSAGE = "The PDF could not be processed. It may be damaged, encrypted or a scanned image without a text layer."
 NOT_STORED_MESSAGE = "The PDF was processed, but its result could not be stored in the database."
@@ -236,7 +236,8 @@ def get_file(job_id: str, name: str, download: bool = False) -> FileResponse:
     if download:
         suffix = {RULE_JSON: ".rules.json", LLM_INPUT_V1: ".llm-input-v1.json",
                   LLM_INPUT_V2: ".llm-applicability-input-v2.json",
-                  LLM_INPUT_REPORT: ".llm-input-report.json"}.get(name, ".legal.json")
+                  LLM_INPUT_REPORT: ".llm-input-report.json",
+                  "rule_extraction_report.json": ".report.json"}.get(name, ".legal.json")
         filename = f"{Path(job.filename).stem}{suffix}"
     return FileResponse(path, media_type="application/json", filename=filename)
 

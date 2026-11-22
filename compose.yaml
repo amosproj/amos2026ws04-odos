@@ -32,6 +32,8 @@ services:
     environment:
       ODOS_DATABASE_ENABLED: "1"
       ODOS_STORAGE_DIR: /data/odos-storage
+      ODOS_RULE_EXTRACTION_ARCHIVE_DIR: /data/rule-extraction-results
+      ODOS_RULE_EXTRACTION_REPORT_DIR: /data/rule-extraction-reports
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
       POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
@@ -48,6 +50,8 @@ services:
     volumes:
       - model-cache:/root/.cache
       - backend_storage:/data/odos-storage
+      - ./dev-fixtures/bedrock-extraction-results:/data/rule-extraction-results
+      - ./dev-fixtures/Reports_for_results:/data/rule-extraction-reports
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,5 +1,91 @@
 # LLM rule extraction with Amazon Bedrock
 
+## Current API and CLI workflow
+
+The API and `odos extract-rules` use `odos.llm.document_extraction`. The selected
+document, Teil, or other subtree is partitioned into § targets in source order.
+Each target runs `odos.llm.extraction_workflow` independently, with at most three
+Converse calls: initial extraction and up to two schema/JSON corrections. The
+budget is per target, not per whole document. Up to four worker threads process
+targets concurrently. A freed worker takes the next queued target. All workers
+finish before merging; results and report entries are merged in original source
+order, regardless of completion order. A failed target does not cancel its peers.
+The shared boto3 client is initialized before the workers start.
+
+Workflow version 4 reports `strategy: parallel_provisions` and `maxWorkers`. Each
+chunk records UTC start/end times, queue wait, preparation, workflow and elapsed
+seconds. The total report records extraction wall time, summed/max chunk time,
+local merge time and total processing time. Workflow time includes model calls,
+schema checks and corrections; it is not exclusively provider generation time.
+Concurrency reduces waiting time, not the number of tokens sent to the model.
+
+`elementIds` is unchanged. Omit it to process the document; select a Teil to process
+its § nodes. Selecting an Absatz retains that narrow selection rather than adding
+the other Absätze of its §. Overlapping selections are collapsed. Text outside §
+nodes and annexes receive explicit fallback targets instead of being silently
+skipped. Front matter and navigation tables are not extraction targets.
+
+Each request separates `target` from `context`. The target contains the selected
+§ subtree, document metadata, headings, sentence IDs, pages and relevant footnotes.
+Direct local citations such as `§ 2 Abs. 3` are resolved from the original Legal
+JSON and supplied as contextual provisions, with a 12,000 estimated-token context
+budget. Context citations are not followed recursively. Missing, ambiguous,
+external/compound citations and over-budget context are reported. This resolver
+does not infer implicit terminology dependencies or promise complete citation
+resolution. Source text must never override extraction instructions.
+
+The model is instructed to extract only target rules and use context as supporting
+material. Rules without a target primary source are retained and flagged. Citation
+coverage counts only targets, not contextual material.
+
+Schema compliance is the retry gate: save immediately once the response parses and
+all retained records conform to the schema. Content ambiguities, source checks and
+citation coverage remain in the report but do not trigger another model call.
+Only schema-invalid records are targeted for correction.
+
+Clear field repairs and all existing
+schema/source checks remain in use, but their findings are advisory: invalid and
+duplicate candidates stay in the final `rules` list for review. The low-level
+`odos.llm.rule_extraction.extract_rules` remains a strict single-round helper.
+
+Feedback targets specific schema-invalid record indexes. There is no
+delete operation, and omitted indexes stay unchanged. Each report retains raw
+responses and before/after changes. After the third check the workflow saves its
+result, even with validation issues. Unparseable/truncated output is explicitly
+marked partial and preserved in the report. A failed correction keeps prior
+output. A truncated response with schema-valid recovered records is saved as
+partial immediately: requesting a schema-only patch cannot recover omitted text.
+The report explicitly requests further splitting into Absatz targets; automatic
+subdivision of unusually long § nodes is not implemented yet.
+
+Each chunk is saved under the job's
+`extraction-runs/<runId>/chunks/<sequence>/{rules,report}.json`. `progress.json`
+records finished/failed chunks. A failed chunk does not prevent later chunks from
+running; if every chunk fails, the API reports failure and preserves the previous
+job result. Completed chunks and their reports remain on disk.
+
+Merging is deterministic and makes no model call. All candidates are retained in
+source order; ID conflicts are renamed with an origin map rather than discarded.
+The combined report includes each chunk report, a fresh merged schema/source/
+quantity/coverage check, possible exact duplicates, unknown/unresolved reference
+links, empty/failed/partial chunks and context-only source findings. These local
+checks do not constitute a semantic review. The final result is marked partial if
+any chunk failed or was truncated.
+
+The API's transport status may be `completed` while `workflow.outcome` is
+`completed_with_issues`. `counts.retained` is the number saved, `counts.invalid`
+counts records that failed validation, and `counts.rejected` is zero. Passing
+checks and citation coverage do not prove semantic completeness.
+
+Each job stores `rule_extraction_report.json`, served by
+`GET /api/jobs/{id}/files/rule_extraction_report.json`. Docker also saves paired,
+timestamped results and reports in `dev-fixtures/bedrock-extraction-results/` and
+`dev-fixtures/Reports_for_results/`. Their basenames and `runId` match.
+
+The sections below describe configuration and the underlying single-round
+components. Their older statements about rejecting candidates and malformed-output
+retries apply to the strict helper, not to the bounded API/CLI workflow above.
+
 ODOS can send a Custom Legal JSON 2.0 document (`document.json`) to Claude Sonnet 4.6 on Amazon Bedrock and store the answer as Rule JSON (`rules.json`):
 
 ```
@@ -10,6 +96,8 @@ It can be started through the CLI or API. The frontend's **LLM Rule Extraction &
 
 | Module | Responsibility |
 |---|---|
+| `backend/src/odos/llm/document_extraction.py` | Ordered § planning, direct-reference context, four-worker extraction, timing, per-chunk persistence and merged audit |
+| `backend/src/odos/llm/extraction_workflow.py` | Per-chunk schema feedback, three-call budget and candidate retention |
 | `backend/src/odos/llm/bedrock.py` | Reusable Bedrock client: configuration, authentication, timeouts, retries, typed errors |
 | `backend/src/odos/llm/rule_extraction.py` | Prompt, scope selection, size check, answer validation, provenance, `rules.json` |
 | `backend/src/odos/llm/profiles.py` | Extraction instructions: general rules, language glossaries, document-type profiles |
