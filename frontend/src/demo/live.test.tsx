@@ -318,8 +318,8 @@ describe("live result view", async () => {
     expect(withRules.live?.ruleDownload).toEqual({ href: "/api/jobs/j1/files/rules.json?download=true", name: "Gesetz.rules.json" });
     const html = renderToStaticMarkup(<Artifacts result={withRules} element={withRules.model.elements.find((e) => e.id === ABS)} full={false} onFull={() => {}} />);
     expect(html).toContain("Custom Legal JSON");
-    expect(html).toContain("Rule JSON");
-    expect(html).toContain('aria-label="Artifact type"');
+    expect(html).not.toContain("Rule JSON");
+    expect(html).not.toContain('aria-label="Artifact type"');
   });
 
   it("shows all rules mapped to the selected element and keeps their source references", () => {
@@ -342,14 +342,15 @@ describe("live result view", async () => {
     expect(shown[0].source).toEqual(ruleSet[0].source);
   });
 
-  it("offers the Rule JSON download only when real rule entries are available", () => {
+  it("keeps rule artifacts out of Document Review even when saved rules exist", () => {
     const withRules = { ...r, live: { ...r.live!, ruleJson: ruleSet } };
-    const available = renderToStaticMarkup(<Artifacts result={withRules} element={abs} full={false} onFull={() => {}} artifactView="rule" />);
-    expect(available).toContain('href="/api/jobs/j1/files/rules.json?download=true" download="Gesetz.rules.json"');
-    expect(available).toContain("rule-a");
-    const missing = renderToStaticMarkup(<Artifacts result={r} element={abs} full={false} onFull={() => {}} artifactView="rule" />);
-    expect(missing).not.toContain("rules.json?download=true");
-    expect(missing).toContain("No Rule JSON available for this document.");
+    const html = renderToStaticMarkup(<Artifacts result={withRules} element={abs} full={false} onFull={() => {}} />);
+    expect(html).not.toContain("Rule JSON");
+    expect(html).not.toContain('href="/api/jobs/j1/files/rules.json');
+    expect(html).toContain("Docling Raw JSON");
+    expect(html).not.toContain("anzeigen / ausblenden");
+    expect(html).toContain('href="/api/jobs/j1/files/docling_raw.json?download=true"');
+    expect(html).toContain('download="Gesetz.docling-raw.json"');
   });
 
   it("offers a switch between the selected element and the full document", () => {
@@ -368,7 +369,7 @@ describe("live result view", async () => {
 
   it("keeps selected-element and full-document controls limited to live jobs", () => {
     const html = renderToStaticMarkup(<Artifacts result={{ ...r, live: undefined }} />);
-    expect(html).toContain("Rule JSON");
+    expect(html).not.toContain("Rule JSON");
     expect(html).not.toContain("Selected element");
     expect(html).not.toContain("Full document");
   });

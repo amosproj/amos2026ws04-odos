@@ -18,12 +18,16 @@ from odos.llm.model_output import OutputParseError, parse_model_output, redact
 from odos.llm.profiles import PROMPT_VERSION, profile_for
 from odos.llm.rule_checks import add_flags, check_rule_set
 from odos.llm.rule_extraction import (
-    ExtractionCancelled, ExtractionResult, _context, _stopped, describe_schema_error, estimate_tokens, finalize_rule,
+    ExtractionResult, _context, describe_schema_error, estimate_tokens, finalize_rule,
     prepare_request, rule_schema, rule_validator, scoped_rule_id,
 )
 from odos.llm.source_checks import SourceText, check_quantities, coverage
 
-MAX_MODEL_CALLS = 3
+class ExtractionStopped(Exception):
+    """Cooperative stop before a new model request; completed responses remain usable."""
+
+
+DEFAULT_MODEL_CALLS = 1  # testing default; callers may explicitly allow 3
 
 
 def _expression_issues(rule) -> list[str]:
@@ -170,9 +174,9 @@ def _merge(candidates: list, patch: dict, targets: set[int]) -> tuple[list, list
 
 def extract_rules_workflow(legal_json: dict, *, client=None, element_ids=None,
                            diagnostics_dir: Path | None = None, accept_partial: bool = False,
-                           prepared_request=None, should_stop=None,
+                           prepared_request=None, max_model_calls: int = DEFAULT_MODEL_CALLS, should_stop=None,
                            on_stage=None, on_request=None) -> ExtractionResult:
-    """Generate, check and request at most two targeted revisions, then retain results with a report.
+    """Generate and check once by default; optionally allow two targeted revisions.
 
     Raw/unparseable and truncated responses survive in the report. Transport failures
     before any model response still raise normally; a failed correction retains earlier output.
@@ -180,20 +184,28 @@ def extract_rules_workflow(legal_json: dict, *, client=None, element_ids=None,
     """
     import os
 
+    if type(max_model_calls) is not int or max_model_calls not in (1, 3):
+        raise ValueError("max_model_calls must be 1 or 3")
     client = client or BedrockClient()
     request = prepared_request or prepare_request(legal_json, client.config, element_ids)
     run_id = uuid4().hex
     report = {"runId": run_id, "documentId": legal_json.get("id"), "scope": request.scope,
               "modelId": client.config.model_id, "region": client.config.region, "promptVersion": PROMPT_VERSION,
               "inputDocument": copy.deepcopy(request.document),
-              "workflowVersion": 2, "retryPolicy": "schema_only", "maxModelCalls": MAX_MODEL_CALLS,
-              "maxFeedbackRounds": 2, "rounds": [], "notVerified":
+              "workflowVersion": 2, "retryPolicy": "schema_only", "maxModelCalls": max_model_calls,
+              "maxFeedbackRounds": max_model_calls - 1, "rounds": [], "notVerified":
               "Schema and citation checks do not establish legal correctness or complete extraction."}
     candidates, responses, rounds = [], [], report["rounds"]
     user, history, mode, targets = request.user, [], "initial", set()
     inspection = None
     incomplete = False
-    for number in range(1, MAX_MODEL_CALLS + 1):
+    for number in range(1, max_model_calls + 1):
+        if should_stop and should_stop():
+            if not responses:
+                raise ExtractionStopped("Stopped before a model request")
+            report["stoppedBecause"] = "Stopped by user before a correction request"
+            report["stopped"] = True
+            break
         system = request.system
         if mode == "patch":
             system += ('\nREVISION MODE: for this request only, the response envelope is '
@@ -204,11 +216,10 @@ def extract_rules_workflow(legal_json: dict, *, client=None, element_ids=None,
         if estimated + request.max_output_tokens > request.context_tokens:
             report["stoppedBecause"] = "Feedback request would exceed the configured context window"
             break
-        if _stopped(should_stop):
-            raise ExtractionCancelled()
-        if number == 1:
-            if on_stage: on_stage("finding")
-            if on_request: on_request()
+        if on_stage:
+            on_stage("finding")
+        if on_request:
+            on_request()
         try:
             response = client.converse(system, user, history=history or None)
         except BedrockError as error:
@@ -250,10 +261,12 @@ def extract_rules_workflow(legal_json: dict, *, client=None, element_ids=None,
             if mode in ("initial", "json_repair"):
                 incomplete = False
         entry["candidatesAfter"] = copy.deepcopy(candidates)
+        if on_stage:
+            on_stage("checking")
         retained, inspection = inspect_candidates(candidates, legal_json, request, client)
         entry["checks"] = copy.deepcopy(inspection)
         needs_feedback = bool(parse_error or not inspection["schemaValid"])
-        if not needs_feedback or number == MAX_MODEL_CALLS:
+        if not needs_feedback or number == max_model_calls:
             break
         if parse_error:
             if response.truncated and candidates and inspection["schemaValid"]:
@@ -288,7 +301,7 @@ def extract_rules_workflow(legal_json: dict, *, client=None, element_ids=None,
                    "modelCalls": len(rounds), "feedbackRounds": max(0, len(rounds) - 1)})
     # Reports contain raw answers, never credentials from environment settings.
     report = json.loads(redact(json.dumps(report, ensure_ascii=False), secrets=(os.environ.get(API_KEY_ENV, ""),)))
-    generation = {"provider": "aws-bedrock", "modelId": client.config.model_id, "region": client.config.region,
+    generation = {"inputView": "llm_applicability_input_v2.json", "provider": "aws-bedrock", "modelId": client.config.model_id, "region": client.config.region,
                   "documentId": legal_json.get("id"), "scope": request.scope, "runId": run_id,
                   "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                   "stopReason": responses[-1].stop_reason if responses else None,

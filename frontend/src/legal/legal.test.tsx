@@ -170,7 +170,7 @@ describe("composite components and extracted licenses", () => {
 describe("project license", () => {
   const license = readFileSync(new URL("../../../LICENSE", import.meta.url), "utf8");
   it("is the license in the repository's LICENSE file", () => {
-    expect(license.split("\n")[0]).toBe(LICENSE_NAME); // the first line of LICENSE names the license
+    expect(license.split(/\r?\n/)[0]).toBe(LICENSE_NAME);
     expect(LICENSE_URL).toBe(`${REPO_URL}/blob/HEAD/LICENSE`);
   });
 });

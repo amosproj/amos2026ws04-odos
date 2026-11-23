@@ -269,6 +269,27 @@ def get_pdf(job_id: str) -> FileResponse:
     return FileResponse(path, media_type="application/pdf", filename=job.filename, content_disposition_type="inline")
 
 
+@app.post("/api/jobs/{job_id}/rule-extraction/preview")
+def preview_rule_extraction(job_id: str, request: rx.RuleExtractionRequest | None = Body(default=None)) -> dict:
+    """Prepare the V2 extraction estimate without starting or charging for inference."""
+    with _lock:
+        job = _job(job_id)
+        if job.status != "completed":
+            raise HTTPException(409, "Rules can only be previewed for a completed job.")
+        directory = _storage / job.id
+    # Do not regenerate/write artifacts or change extraction status for a preview.
+    path = directory / LEGAL_JSON
+    if not path.is_file():
+        raise HTTPException(404, "The Legal JSON of this job is no longer available.")
+    try:
+        legal = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        raise HTTPException(422, "The Legal JSON of this job cannot be read.") from None
+    if not isinstance(legal, dict) or not legal.get("structure"):
+        raise HTTPException(422, "The Legal JSON of this job has no structure to extract rules from.")
+    return _review_db(lambda: rx.preview_request(legal, request or rx.RuleExtractionRequest(), directory))
+
+
 @app.post("/api/jobs/{job_id}/rule-extraction", status_code=202)
 def start_rule_extraction(job_id: str, request: rx.RuleExtractionRequest | None = Body(default=None)) -> rx.RuleExtraction:
     """Start an LLM rule extraction (Amazon Bedrock, paid) from the job's Legal JSON; poll the job or
@@ -284,13 +305,29 @@ def start_rule_extraction(job_id: str, request: rx.RuleExtractionRequest | None 
             raise HTTPException(429, "Too many rule extractions are waiting. Try again when one has finished.")
         directory = _storage / job.id
         legal = rx.load_legal_json(directory)  # HTTPException 404/422
+        request._context = _review_db(lambda: rx.plan_request(legal, request, directory))
         rx.check_request(legal, request)  # scope, size and configuration before anything is queued (HTTPException)
+        (directory / rx.STOP_FILE).unlink(missing_ok=True)
         extraction = rx.RuleExtraction.queued(request)
         rx.save(directory, extraction)
         job.ruleExtraction = extraction
     queued = extraction.model_copy(deep=True)
     _rule_executor.submit(_extract_rules, job, request)
     return queued
+
+
+@app.post("/api/jobs/{job_id}/rule-extraction/stop", status_code=202)
+def stop_rule_extraction(job_id: str) -> rx.RuleExtraction:
+    """Cooperative stop: finish in-flight responses, schedule no more chunks/corrections."""
+    with _lock:
+        job = _job(job_id)
+        if not rx.active(job.ruleExtraction):
+            raise HTTPException(409, "There is no queued or running extraction to stop.")
+        (_storage / job.id / rx.STOP_FILE).touch()
+        job.ruleExtraction.stopRequested = True
+        job.ruleExtraction.message = "Stopping: waiting for requests already sent to Bedrock."
+        rx.save(_storage / job.id, job.ruleExtraction)
+        return job.ruleExtraction.model_copy(deep=True)
 
 
 @app.get("/api/jobs/{job_id}/rule-extraction")
@@ -361,9 +398,10 @@ def _extract_rules(job: Job, request: rx.RuleExtractionRequest) -> None:
         extraction = job.ruleExtraction.model_copy(deep=True)
         run_id = extraction.runId
         _rule_run_ids[job.id] = run_id
-    extraction.mark_running()
-    rx.save(directory, extraction)
-    job.ruleExtraction = extraction
+        extraction.mark_running()
+        extraction.stopRequested = (directory / rx.STOP_FILE).exists()
+        rx.save(directory, extraction)
+        job.ruleExtraction = extraction
 
     def should_stop() -> bool:
         with _lock:
@@ -409,16 +447,18 @@ def _extract_rules(job: Job, request: rx.RuleExtractionRequest) -> None:
                 rx.save_rules(result, directory)
             except OSError:
                 log.exception("could not write rules.json for job %s", job.id)
+                work.status, work.rulesFile = "failed", None
+                work.errorCode, work.message = rx.FAILED
         elif (result is not None and cancelled) or work.status == "cancelled":
             work.mark_cancelled()  # (again) with the merged flags, so a possible charge is reported
         _rule_run_ids.pop(job.id, None)
 
-    finished = work
-    try:
-        rx.save(directory, finished)
-    except OSError:
-        log.exception("could not store the rule extraction status of job %s", job.id)
-    job.ruleExtraction = finished  # published last, as clients poll for it
+        finished = work
+        try:
+            rx.save(directory, finished)
+        except OSError:
+            log.exception("could not store the rule extraction status of job %s", job.id)
+        job.ruleExtraction = finished  # publish under the same lock as the cancellation check and artifact save
 
 
 # ── human review of the extracted rules (decisions are events in PostgreSQL; rules.json is never modified) ──────────────
@@ -453,10 +493,12 @@ def get_rule_reviews(job_id: str) -> dict:
 @app.post("/api/jobs/{job_id}/rule-reviews", status_code=201)
 def post_rule_review(job_id: str, request: rv.ReviewRequest) -> dict:
     """Append one review event (accept, reject, edit, reset) to one rule; returns the rule's new review entry."""
-    job, directory = _review_job(job_id)
-    if rx.active(job.ruleExtraction):
-        raise HTTPException(409, "A rule extraction of this job is running; rules can be reviewed when it has finished.")
-    return _review_db(lambda: rv.record_review(job.id, directory, request))
+    # Serialize the last human decision with taking an incremental-run snapshot.
+    with _lock:
+        job, directory = _review_job(job_id)
+        if rx.active(job.ruleExtraction):
+            raise HTTPException(409, "A rule extraction of this job is running; rules can be reviewed when it has finished.")
+        return _review_db(lambda: rv.record_review(job.id, directory, request))
 
 
 @app.get("/api/jobs/{job_id}/rule-reviews/history")
@@ -614,4 +656,3 @@ def _process(job: Job, pdf: Path) -> None:
         job.stage, job.message, job.summary = None, message, summary
         job.cancelRequested = False
         job.status = status
-

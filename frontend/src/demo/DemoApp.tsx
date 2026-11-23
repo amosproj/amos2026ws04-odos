@@ -12,11 +12,12 @@ import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
 import { fileUrl, ProcessingCancelled, ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
 import { RuleExtractionView, type RulesNav } from "./RuleExtraction";
+import { DigitalTwinValidation } from "./DigitalTwinValidation";
 import "./demo.css";
 
 
 /** `focusId`: a Legal JSON element the result view opens with selected and highlighted (from "Show in PDF" of a rule). */
-type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string; focusId?: string } | { kind: "rules"; result: DemoResult; pdfUrl: string };
+type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string; focusId?: string } | { kind: "rules"; result: DemoResult; pdfUrl: string } | { kind: "validation"; result: DemoResult; pdfUrl: string };
 /** What went wrong: the file cannot be used ("invalid"), its structure was not recognized, or the upload/processing failed. */
 type Problem = { kind: "invalid" | "unsupported" | "failed"; message: string };
 
@@ -42,7 +43,7 @@ export default function DemoApp() {
   const running = useRef(false); // processing or opening; set synchronously: the disabled state only follows after the next render
   const processAbort = useRef<AbortController | null>(null);
 
-  const pdfUrl = phase.kind === "done" || phase.kind === "rules" ? phase.pdfUrl : null;
+  const pdfUrl = phase.kind === "done" || phase.kind === "rules" || phase.kind === "validation" ? phase.pdfUrl : null;
   useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
 
   const choose = (f: File | undefined) => {
@@ -132,7 +133,7 @@ export default function DemoApp() {
 
   const reset = () => {
     rulesNav.current = null;
-    if ((phase.kind === "done" || phase.kind === "rules") && phase.result.live) releaseJob(phase.result.live.jobId, phase.result.live.persistent);
+    if ((phase.kind === "done" || phase.kind === "rules" || phase.kind === "validation") && phase.result.live) releaseJob(phase.result.live.jobId, phase.result.live.persistent);
     setPhase({ kind: "idle" });
     setFile(null);
     setProblem(null);
@@ -144,12 +145,18 @@ export default function DemoApp() {
     const { result, pdfUrl, focusId } = phase;
     return <ResultView result={result} pdfUrl={pdfUrl} initialSelectedId={focusId} onReset={reset} onContinueToRules={() => setPhase({ kind: "rules", result, pdfUrl })} />;
   }
+  if (phase.kind === "validation") {
+    const { result, pdfUrl } = phase;
+    return <DigitalTwinValidation documentName={result.filename ?? result.title} ruleSourceName={result.live?.ruleDownload.name}
+                                  onBack={() => setPhase({ kind: "rules", result, pdfUrl })} />;
+  }
   if (phase.kind === "rules") {
     const { result, pdfUrl } = phase;
-    // the rules of this job as the backend last stored them: kept on the result, so Document Review's Artifacts tab shows the same
+    // Keep the stored rules on the result so reopening Rule Extraction reuses them without a new model call.
     const rulesLoaded = (ruleJson: unknown) => setPhase((p) => (p.kind === "rules" && p.result.live ? { ...p, result: { ...p.result, live: { ...p.result.live, ruleJson } } } : p));
     return <RuleExtractionView result={result} onBack={() => setPhase({ kind: "done", result, pdfUrl })} onHome={reset}
-                               onShowInPdf={(focusId) => setPhase({ kind: "done", result, pdfUrl, focusId })} onRulesLoaded={rulesLoaded} nav={rulesNav} />;
+                               onShowInPdf={(focusId) => setPhase({ kind: "done", result, pdfUrl, focusId })} onRulesLoaded={rulesLoaded} nav={rulesNav}
+                               onContinueToValidation={() => setPhase({ kind: "validation", result, pdfUrl })} />;
   }
 
   const busy = phase.kind === "busy";
@@ -227,7 +234,6 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
   const [selected, setSelected] = useState<string | null>(initial?.id ?? null);
   const [page, setPage] = useState(firstPage(initial) ?? 1);
   const [full, setFull] = useState(false); // live Artifacts: the complete document instead of the selected element
-  const [artifactView, setArtifactView] = useState<"legal" | "rule">("legal");
   const [split, setSplit] = useState(DEFAULT_SPLIT); // the PDF panel's share of the width
   const splitRef = useRef<HTMLDivElement>(null);
   const element = useMemo(() => model.elements.find((e) => e.id === selected) ?? null, [model, selected]);
@@ -267,7 +273,7 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
                 <SourceDetail element={element} page={page} onGoToPage={setPage} />
               </div>
             )}
-            {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} artifactView={artifactView} onArtifactViewChange={setArtifactView} />}
+            {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} />}
           </div>
         </section>
       </div>
@@ -295,7 +301,7 @@ export function SourceDetail({ element: e, page, onGoToPage }: { element: DocEle
   );
 }
 
-function DoclingRaw({ jobId }: { jobId: string }) {
+function DoclingRaw({ jobId, filename }: { jobId: string; filename: string }) {
   const [json, setJson] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -333,8 +339,13 @@ function DoclingRaw({ jobId }: { jobId: string }) {
         }
       }}
     >
-      <summary style={{ cursor: "pointer", padding: "12px" }}>
-        Docling Raw JSON anzeigen / ausblenden
+      <summary style={{ cursor: "pointer", padding: "10px 12px" }}>
+        <span style={{ display: "inline-flex", width: "calc(100% - 20px)", justifyContent: "space-between", alignItems: "center", gap: "12px", verticalAlign: "middle" }}>
+          <h3 style={{ display: "inline", fontSize: "14px", margin: 0 }}>Docling Raw JSON</h3>
+          <a className="btn small" href={fileUrl(jobId, "docling_raw.json", true)}
+             download={`${filename.replace(/\.pdf$/i, "")}.docling-raw.json`}
+             onClick={event => event.stopPropagation()}>Download</a>
+        </span>
       </summary>
 
       {loading && <p>Wird geladen …</p>}
@@ -362,7 +373,7 @@ function DoclingRaw({ jobId }: { jobId: string }) {
 }
 
 
-export function Artifacts({ result, element = null, full, onFull, artifactView, onArtifactViewChange }: {
+export function Artifacts({ result, element = null, full, onFull }: {
   result: DemoResult;
   element?: DocElement | null;
   full?: boolean;
@@ -370,42 +381,31 @@ export function Artifacts({ result, element = null, full, onFull, artifactView, 
   artifactView?: "legal" | "rule";
   onArtifactViewChange?: (artifact: "legal" | "rule") => void;
 }) {
-  const [internalArtifact, setInternalArtifact] = useState<"legal" | "rule">("legal");
-  const artifact = artifactView ?? internalArtifact;
-  const selectArtifact = (next: "legal" | "rule") => {
-    setInternalArtifact(next);
-    onArtifactViewChange?.(next);
-  };
   const json = (!full && result.live && nodeJson(result.live, element)) || result.json;
-  const availableRules = result.live ? ruleEntries(result.live.ruleJson) : [];
   return (
     <div className="demo-artifacts">
-      <ArtifactSwitch selected={artifact} onChange={selectArtifact} />
       <section className="demo-artifact">
         <div className="demo-artifact-head">
-          <h3>{artifact === "legal" ? "Custom Legal JSON" : "Rule JSON"}</h3>
+          <h3>Custom Legal JSON</h3>
           {onFull && (
-            <div className="demo-toggle" role="group" aria-label={`${artifact === "legal" ? "Custom Legal JSON" : "Rule JSON"} preview`}>
+            <div className="demo-toggle" role="group" aria-label="Custom Legal JSON preview">
               {[false, true].map((f) => (
                 <button key={String(f)} className="btn small" aria-pressed={!!full === f} onClick={() => onFull(f)}>{f ? "Full document" : "Selected element"}</button>
               ))}
             </div>
           )}
-          {artifact === "legal" && <a className="btn small" href={result.download.href} download={result.download.name}>Download</a>}
-          {artifact === "rule" && availableRules.length > 0 && result.live && (
-            <a className="btn small" href={result.live.ruleDownload.href} download={result.live.ruleDownload.name}>Download</a>
-          )}
+          <a className="btn small" href={result.download.href} download={result.download.name}>Download</a>
+
         </div>
-        {artifact === "legal"
-          ? <pre className="preview demo-code" tabIndex={0}>{json.replace(/\n$/, "")}</pre>
-          : <RuleJsonPreview result={result} element={element} full={!!full} />}
+        <pre className="preview demo-code" tabIndex={0}>{json.replace(/\n$/, "")}</pre>
       </section>
       
-      {artifact === "legal" && result.live && <LlmInputViews result={result} />}
+      {result.live && <LlmInputViews result={result} />}
       {result.live && (
         <DoclingRaw
           key={result.live.jobId}
           jobId={result.live.jobId}
+          filename={result.filename ?? result.title}
         />
       )}
     </div>

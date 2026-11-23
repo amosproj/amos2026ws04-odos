@@ -63,6 +63,12 @@ def api(monkeypatch):
     monkeypatch.delenv("ODOS_DATABASE_ENABLED", raising=False)
     monkeypatch.delenv("ODOS_STORAGE_DIR", raising=False)
     monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "test-key-not-real")
+    def pending_reviews(document_id, directory):
+        identity, rules = odos.api.rv.load_rules(directory)
+        return {"extractionId": identity, "rules": {key: odos.api.rv._entry(rule, None) for key, rule in rules.items()}}
+    # This fixture deliberately has no database. Review carry-over has dedicated
+    # repository-mocked and integration tests in test_extraction_controls.py.
+    monkeypatch.setattr(odos.api.rv, "review_state", pending_reviews)
     with patch("odos.api.run_pipeline", side_effect=fake_pipeline(legal=LEGAL)):
         with TestClient(app) as client:
             job = wait_for(client, upload(client).json()["id"])
@@ -95,7 +101,7 @@ def test_extraction_returns_at_once_runs_in_the_background_and_saves_the_rules_a
     client, job_id = api
     gate = threading.Event()
     fake = use(monkeypatch, FakeBedrock(answer(RULE, UNUSABLE), gate=gate))
-    response = start(client, job_id)
+    response = start(client, job_id, {"maxModelCalls": 3})
     assert response.status_code == 202
     queued = response.json()
     assert queued["status"] in ("queued", "running") and queued["scope"] == "document" and queued["rulesFile"] is None
@@ -206,7 +212,7 @@ def test_malformed_answers_are_preserved_after_the_three_call_budget(api, monkey
     client, job_id = api
     fake = use(monkeypatch, FakeBedrock(answer(text='{"rules": [{"id": "x" "y"}]}'),
                                        answer(text="still not JSON {"), answer(text="not JSON")))
-    start(client, job_id)
+    start(client, job_id, {"maxModelCalls": 3})
     failed = wait_for_extraction(client, job_id)
     assert fake.calls == 3
     assert failed["status"] == "completed" and failed["workflow"]["outcome"] == "completed_with_issues"
@@ -221,7 +227,7 @@ def test_malformed_answers_are_preserved_after_the_three_call_budget(api, monkey
 def test_a_malformed_first_answer_and_a_valid_correction_complete(api, monkeypatch):
     client, job_id = api
     use(monkeypatch, FakeBedrock(answer(text="Here: {not json"), answer(RULE)))
-    start(client, job_id)
+    start(client, job_id, {"maxModelCalls": 3})
     done = wait_for_extraction(client, job_id)
     assert done["status"] == "completed" and done["modelOutput"] == {"requests": 2, "parse": "workflow", "partial": False, "diagnostics": 0}
 
@@ -366,3 +372,33 @@ def test_posting_a_review_while_extraction_is_running_is_refused_with_409(api, m
     # The call now reaches rv.record_review which rejects the placeholder hash — different 409 or 503.
     response2 = client.post(f"/api/jobs/{job_id}/rule-reviews", json=review_body)
     assert "running" not in response2.json().get("detail", "").lower()
+
+
+def test_preview_is_free_and_does_not_queue_or_write_extraction_state(api, monkeypatch):
+    client, job_id = api
+    fake = use(monkeypatch, FakeBedrock(answer(RULE)))
+    response = client.post(f"/api/jobs/{job_id}/rule-extraction/preview", json={"maxModelCalls": 3})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["inputView"] == "llm_applicability_input_v2.json"
+    assert data["maximumModelCalls"] == data["readyChunks"] * 3
+    assert data["estimatedInitialInputTokens"] > 0
+    assert fake.calls == 0
+    assert client.get(f"/api/jobs/{job_id}/rule-extraction").status_code == 404
+
+
+def test_api_defaults_to_one_call_and_can_keep_invalid_candidates_without_retry(api, monkeypatch):
+    client, job_id = api
+    fake = use(monkeypatch, FakeBedrock(answer(RULE, UNUSABLE)))
+    assert start(client, job_id).status_code == 202
+    done = wait_for_extraction(client, job_id)
+    assert done["maxModelCalls"] == 1
+    assert fake.calls == 1
+    assert done["workflow"]["maxModelCallsPerChunk"] == 1
+
+
+@pytest.mark.parametrize("limit", [0, 2, 4, True, "3", 1.0])
+def test_preview_and_start_reject_invalid_call_limits(api, limit):
+    client, job_id = api
+    assert start(client, job_id, {"maxModelCalls": limit}).status_code == 422
+    assert client.post(f"/api/jobs/{job_id}/rule-extraction/preview", json={"maxModelCalls": limit}).status_code == 422

@@ -37,6 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     rules.add_argument("legal_json", type=Path, help="document.json (Custom Legal JSON 2.0)")
     rules.add_argument("-o", "--output", type=Path, default=None, help="default: rules.json next to the input")
     rules.add_argument("--element-id", action="append", default=None, metavar="ID", help="only this element with its subtree (repeatable); default: the whole document")  # fmt: skip
+    rules.add_argument("--max-model-calls", type=int, choices=(1, 3), default=1, help="maximum calls per chunk, including the initial response (default: 1)")
     rules.add_argument("--dry-run", action="store_true", help="show the scope and the estimated size, do not call Bedrock")
     rules.add_argument("--accept-partial", action="store_true",
                        help="if the answer is still not valid JSON after the allowed retry, use the complete records before the defect (marked partial)")
@@ -169,12 +170,12 @@ def run_extract_rules(args) -> int:
             print(f"chunks:     {len(chunks)} provision/fallback targets, up to 4 concurrent workers")
             print(f"model:      {config.model_id} ({config.region})")
             print(f"input:      about {sum(r.estimated_input_tokens for r in requests):,} initial tokens across all chunks")
-            print(f"output:     up to {config.max_tokens:,} tokens per call, at most 3 model calls per chunk")
+            print(f"output:     up to {config.max_tokens:,} tokens per call, at most {args.max_model_calls} model calls per chunk")
             print("dry run:    nothing was sent")
             return 0
         diagnostics = default_diagnostics_dir()
         result = extract_rules(legal, client=BedrockClient(), element_ids=args.element_id, diagnostics_dir=diagnostics,
-                               accept_partial=args.accept_partial)
+                               accept_partial=args.accept_partial, max_model_calls=args.max_model_calls)
     except (RuleExtractionError, BedrockError) as e:
         print(f"error: {e}", file=sys.stderr)
         if getattr(e, "diagnostic_ids", None):

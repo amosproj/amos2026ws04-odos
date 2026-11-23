@@ -66,8 +66,9 @@ describe("workspace page", () => {
     expect(header).toContain('aria-label="ODOS, ontology-driven operating system"');
     expect(header).toMatch(/<span class="logo-mark"[^>]*><span><b>O<\/b>D<\/span><span><b>O<\/b>S<\/span><\/span>/); // the stacked O D / O S
     expect(header).toContain("ONTOLOGY-DRIVEN<br/>OPERATING SYSTEM");
-    expect(header.match(/<a /g)).toHaveLength(2); // logo, Documents: internal links only
+    expect(header.match(/<a /g)).toHaveLength(2); // logo and Documents; Validation is disabled
     expect(header).toMatch(/<a [^>]*href="#library"[^>]*aria-current="page"[^>]*>Documents<\/a>/);
+    expect(header).toMatch(/<button [^>]*disabled=""[^>]*>Validation<\/button>/);
     expect(header).toContain('href="#top"'); // the logo stays on this page
   });
   it("links nowhere outside the application: no external website link anywhere on the page", () => {
@@ -122,7 +123,7 @@ describe("result view", () => {
 describe("Custom Legal JSON preview and downloads", () => {
   const html = renderToStaticMarkup(<Artifacts result={result} />);
   it("shows only the heading, the download and the preview", () => {
-    expect(html.replace(/<pre[\s\S]*<\/pre>/, "<pre/>").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Custom Legal JSON", "Rule JSON", "Custom Legal JSON", "Download"]);
+    expect(html.replace(/<pre[\s\S]*<\/pre>/, "<pre/>").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Custom Legal JSON", "Download"]);
   });
   it("previews the Legal JSON 2.0 excerpt exactly as the downloaded file: Zweiter Teil, § 6, Absatz 1 with both Nummern, Absatz 2", () => {
     const { text } = preview(html, "Custom Legal JSON");

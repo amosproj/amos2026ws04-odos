@@ -16,14 +16,14 @@ import json
 import logging
 import os
 import time
-import uuid
+from uuid import uuid4
 from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
 from fastapi import HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, PrivateAttr
 
 from odos.artifact_names import LEGAL_JSON, RULE_JSON
 from odos.llm.bedrock import (
@@ -51,7 +51,7 @@ from odos.llm.rule_extraction import (
     OutputTruncatedError,
     write_rules_json,
 )
-from odos.llm.document_extraction import extract_document as extract_rules, check_document_request
+from odos.llm.document_extraction import extract_document as extract_rules, check_document_request, plan_chunks, prepare_chunk
 
 log = logging.getLogger("odos.rule_extraction_jobs")
 
@@ -95,6 +95,22 @@ class RuleExtractionRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
     elementIds: list[str] | None = Field(default=None, min_length=1, max_length=MAX_ELEMENT_IDS)
+    maxModelCalls: Literal[1, 3] = 1
+    articleIds: list[str] | None = Field(default=None, max_length=MAX_ELEMENT_IDS)
+    sampleChunks: Literal[1, 3] | None = None
+    sampleSeed: int | None = Field(default=None, ge=0, le=2147483647, strict=True)
+    sampleArticleIds: list[str] | None = Field(default=None, min_length=1, max_length=12)
+    preserveReviewed: Literal[True] = True
+    _context: object = PrivateAttr(default=None)
+
+    @field_validator("maxModelCalls", "sampleChunks", mode="before")
+    @classmethod
+    def valid_call_limit(cls, value):
+        if value is None:
+            return value
+        if type(value) is not int or value not in (1, 3):
+            raise ValueError("maxModelCalls must be the integer 1 or 3")
+        return value
 
 
 class RuleExtraction(BaseModel):
@@ -103,6 +119,9 @@ class RuleExtraction(BaseModel):
 
     status: Literal["queued", "running", "completed", "failed", "cancelled"]
     scope: list[str] | Literal["document"] = "document"
+    maxModelCalls: Literal[1, 3] | None = None  # unknown for status files from earlier versions
+    stopRequested: bool = False
+    sampleChunks: Literal[1, 3] | None = None
     requestedAt: str
     startedAt: str | None = None
     finishedAt: str | None = None
@@ -125,8 +144,11 @@ class RuleExtraction(BaseModel):
 
     @classmethod
     def queued(cls, request: RuleExtractionRequest) -> RuleExtraction:
-        return cls(status="queued", scope=request.elementIds or "document", requestedAt=_now(),
-                   runId=uuid.uuid4().hex, stage="preparing")
+        scope = request.elementIds or "document"
+        if request._context is not None and (request.articleIds is not None or request.sampleChunks is not None or request._context["skipped"]):
+            scope = [chunk.id for chunk in request._context["chunks"]]
+        return cls(status="queued", scope=scope, maxModelCalls=request.maxModelCalls,
+                   sampleChunks=request.sampleChunks, requestedAt=_now(), runId=uuid4().hex, stage="preparing")
 
     def mark_running(self) -> None:
         self.status, self.startedAt = "running", self.startedAt or _now()
@@ -149,7 +171,7 @@ def active(extraction: RuleExtraction | None) -> bool:
 def save(directory: Path, extraction: RuleExtraction) -> None:
     """Write the status file atomically."""
     path = directory / RULE_EXTRACTION_STATUS
-    tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.{uuid4().hex}.tmp")
     try:
         tmp.write_text(extraction.model_dump_json(indent=2), encoding="utf-8")
         os.replace(tmp, path)
@@ -212,13 +234,111 @@ def bedrock_settings() -> BedrockConfig:
     return config
 
 
+STOP_FILE = "rule-extraction.stop"
+
+
+def plan_request(legal, request, directory=None):
+    from odos.llm.incremental import eligible_chunks
+    if request._context is not None:
+        return request._context
+    try:
+        scoped, chunks = plan_chunks(legal, request.elementIds)
+    except NotApplicableError as error:
+        log.warning("rule extraction refused, nothing to extract: %s", error)
+        raise HTTPException(422, "This document has no provisions left to find rules in after filtering.", headers=_code("nothing_to_extract")) from None
+    except InvalidScopeError as error:
+        log.warning("rule extraction refused, invalid scope: %s", error)
+        raise HTTPException(422, "The requested parts are not part of this document.", headers=_code("invalid_scope")) from None
+    previous, reviews, skipped = {}, {}, []
+    if directory is not None and (directory / RULE_JSON).is_file():
+        from odos import rule_reviews
+        try:
+            previous = json.loads((directory / RULE_JSON).read_text(encoding="utf-8"))
+            if not isinstance(previous, dict) or not isinstance(previous.get("rules"), list):
+                raise ValueError("Invalid rules")
+        except (ValueError, OSError):
+            raise HTTPException(422, "Saved rules cannot be read. They were left unchanged.") from None
+        reviews = rule_reviews.review_state(directory.name, directory)
+    sample_articles, available_articles = [], []
+    if request.articleIds is not None:
+        if request.sampleChunks is not None or request.sampleArticleIds is not None:
+            raise HTTPException(422, "Choose either explicit articles or the legacy sample scope.")
+        from odos.llm.sampling import selected_groups
+        chunks, skipped, eligible, sample_articles, available_articles = selected_groups(
+            scoped, previous, reviews, request.articleIds)
+    elif request.sampleChunks is not None:
+        from odos.llm.sampling import sample_groups
+        chunks, skipped, eligible, sample_articles = sample_groups(
+            scoped, previous, reviews, request.sampleChunks, request.sampleSeed, request.sampleArticleIds)
+    else:
+        if request.sampleArticleIds is not None:
+            raise HTTPException(422, "Article sample IDs require a sample scope.")
+        chunks, skipped = eligible_chunks(chunks, previous, reviews)
+        eligible = len(chunks)
+    return {"chunks": chunks, "previous": previous, "reviews": reviews, "skipped": skipped,
+            "eligible": eligible, "sampleArticles": sample_articles, "availableArticles": available_articles}
+
+
+def preview_request(legal: dict, request: RuleExtractionRequest, directory=None) -> dict:
+    """Local prompt preparation only: no client, credentials, inference or result writes."""
+    load_bedrock_env()
+    try:
+        config = BedrockConfig.from_env()
+        context = plan_request(legal, request, directory)
+        chunks = context["chunks"]
+        details = []
+        for chunk in chunks:
+            try:
+                prepared, _ = prepare_chunk(legal, chunk, config)
+                details.append({"elementId": chunk.id, "estimatedInputTokens": prepared.estimated_input_tokens,
+                                "ready": True})
+            except DocumentTooLargeError:
+                details.append({"elementId": chunk.id, "estimatedInputTokens": None, "ready": False})
+    except InvalidScopeError:
+        raise HTTPException(422, "The selected element IDs are not part of the reduced V2 input.") from None
+    except BedrockConfigError:
+        raise HTTPException(503, "Amazon Bedrock model settings are not configured correctly.") from None
+    ready = sum(d["ready"] for d in details)
+    return {"inputView": "llm_applicability_input_v2.json", "modelId": config.model_id,
+            "scope": request.articleIds if request.articleIds is not None else request.elementIds or "document", "chunks": len(chunks),
+            "sampleChunks": request.sampleChunks, "sampleSeed": request.sampleSeed,
+            "sampleArticles": context.get("sampleArticles", []),
+            "availableArticles": context.get("availableArticles", []),
+            "articleIds": request.articleIds,
+            "selectedArticleIds": [a["id"] for a in context.get("sampleArticles", [])],
+            "protectedChunksSkipped": len(context["skipped"]),
+            "eligibleChunks": context["eligible"], "preservedRules": len(context["previous"].get("rules", [])), "readyChunks": ready,
+            "blockedChunks": len(chunks) - ready, "canStart": ready > 0,
+            "maxModelCalls": request.maxModelCalls, "maximumModelCalls": ready * request.maxModelCalls,
+            "estimatedInitialInputTokens": sum(d["estimatedInputTokens"] or 0 for d in details),
+            "maximumOutputTokens": ready * request.maxModelCalls * config.max_tokens,
+            "outputTokensPerCall": config.max_tokens, "details": details,
+            "estimateNote": "Input is an estimate for initial requests, including repeated prompts and reference context. "
+                            "Correction input and generated output are unknown."}
+
+
 def check_request(legal: dict, request: RuleExtractionRequest) -> None:
     """Scope, size and configuration, so that a request that cannot succeed is refused before it is queued."""
     if request.elementIds and any(not isinstance(i, str) or not i or len(i) > 300 for i in request.elementIds):
         raise HTTPException(422, "Element IDs must be non-empty strings.", headers=_code("invalid_scope"))
     config = bedrock_settings()
     try:
-        check_document_request(legal, config, request.elementIds)
+        if request._context is None:
+            check_document_request(legal, config, request.elementIds)
+        else:
+            chunks = request._context["chunks"]
+            ready = 0
+            oversized = []
+            for chunk in chunks:
+                try:
+                    prepare_chunk(legal, chunk, config)
+                    ready += 1
+                except DocumentTooLargeError as error:
+                    oversized.append(error)
+            if not ready and oversized:
+                raise oversized[0]
+            if not ready:
+                raise HTTPException(422, "No eligible targets remain in this selection. Accepted/edited provisions are protected; choose another sample or keep the saved results.")
     except NotApplicableError as e:
         log.warning("rule extraction refused, nothing to extract: %s", e)
         raise HTTPException(422, "This document has no provisions left to find rules in after filtering.",
@@ -264,10 +384,71 @@ def run(directory: Path, request: RuleExtractionRequest, extraction: RuleExtract
         if should_stop is not None and should_stop():
             raise ExtractionCancelled()
         legal = json.loads((directory / LEGAL_JSON).read_text(encoding="utf-8"))
-        result = extract_rules(legal, client=client or bedrock_client(), element_ids=request.elementIds,
-                               diagnostics_dir=directory / DIAGNOSTICS_DIR,
+        from odos.llm.incremental import merge_previous
+        from odos.llm.extraction_workflow import inspect_candidates
+        from odos.llm.rule_extraction import PreparedRequest, _write_report, scope_document, _walk
+        context = plan_request(legal, request, directory)
+        stopped = lambda: (directory / STOP_FILE).exists() or (should_stop is not None and should_stop())
+        if stopped():
+            extraction.stopRequested = (directory / STOP_FILE).exists()
+            extraction.mark_cancelled()
+            return None
+        client = client or bedrock_client()
+        result = extract_rules(legal, client=client, element_ids=request.elementIds,
+                               planned_chunks=context["chunks"], should_stop=stopped,
+                               diagnostics_dir=directory / DIAGNOSTICS_DIR, max_model_calls=request.maxModelCalls,
                                accept_partial=os.environ.get("ODOS_RULE_EXTRACTION_ACCEPT_PARTIAL") == "1",
-                               should_stop=should_stop, on_stage=on_stage, on_request=on_request)
+                               on_stage=on_stage, on_request=on_request)
+        if context["previous"]:
+            snapshot = directory / "extraction-runs" / result.generation["runId"]
+            _write_report(context["previous"], snapshot / "previous-rules.json")
+            _write_report(context["reviews"], snapshot / "previous-reviews.json")
+            result = merge_previous(result, context["previous"], context["reviews"])
+        # Recompute combined checks on effective human-edited content. Originals
+        # stay unchanged so carried decisions remain bound to the right hashes.
+        effective = [result.generation.get("carriedReviews", {}).get(rule.get("id"), {}).get("effectiveRule") or rule
+                     for rule in result.rules]
+        from odos.llm_input.artifacts import build_inputs
+        combined_target = build_inputs(legal)[1]
+        # Coverage describes the requested work plus retained earlier rules. A narrow
+        # Absatz/article selection must not acquire the whole document's uncovered text.
+        selected = request.elementIds
+        if selected is None:
+            selected = request.articleIds
+        if selected is None and request.sampleChunks is not None:
+            selected = [article["id"] for article in context.get("sampleArticles", [])]
+        if selected is not None:
+            retained_sources = [element["elementId"]
+                                for rule in context["previous"].get("rules", [])
+                                if isinstance(rule, dict)
+                                for element in (rule.get("source") or {}).get("elements", [])
+                                if isinstance(element, dict) and element.get("elementId")
+                                and element.get("role", "primary") == "primary"]
+            known = {node["id"] for node in _walk(combined_target["structure"])}
+            coverage_ids = list(dict.fromkeys(identifier for identifier in [*selected, *retained_sources]
+                                              if identifier in known))
+            combined_target = scope_document(combined_target, coverage_ids)
+        prepared = PreparedRequest("", "", "document", legal, 0, client.config.max_tokens, client.config.context_tokens,
+                                   target_document=combined_target)
+        _, checks = inspect_candidates(effective, legal, prepared, client)
+        invalid = [c for c in checks["records"] if c["errors"] or not c["schemaValid"]]
+        result.generation["coverage"] = checks["coverage"]
+        result.generation["rulesWithIssues"] = invalid
+        result.generation["counts"].update({"retained": len(result.rules), "accepted": len(result.rules)-len(invalid),
+            "invalid": len(invalid), "flagged": sum(bool(c["flags"]) for c in checks["records"])})
+        result.report["combinedChecks"] = checks
+        result.generation["workflow"]["schemaValid"] = checks["schemaValid"]
+        selection = {"articleIds": request.articleIds, "sampleChunks": request.sampleChunks, "sampleSeed": request.sampleSeed,
+                     "sampleArticles": context.get("sampleArticles", []), "selectedChunkIds": [c.id for c in context["chunks"]],
+                     "protectedChunkIds": context["skipped"]}
+        result.generation["selection"] = result.report["selection"] = selection
+        result.generation["workflow"]["sampleChunks"] = request.sampleChunks
+        result.generation["workflow"]["protectedChunksSkipped"] = context["skipped"]
+        result.generation["modelOutput"]["partial"] |= bool(stopped() or request.sampleChunks is not None or request.articleIds is not None)
+        result.report["partial"] = result.generation["modelOutput"]["partial"]
+        if result.report["partial"]:
+            result.report["outcome"] = result.generation["workflow"]["outcome"] = "completed_with_issues"
+        extraction.stopRequested = (directory / STOP_FILE).exists()
         if should_stop is not None and should_stop():
             raise ExtractionCancelled()
     except ExtractionCancelled:
@@ -313,4 +494,6 @@ def run(directory: Path, request: RuleExtractionRequest, extraction: RuleExtract
     extraction.message = (f"{extraction.counts.get('retained', extraction.counts['accepted'])} candidate rules retained as drafts, "
                           f"{extraction.counts.get('invalid', 0)} with validation issues, "
                           f"{extraction.counts['flagged']} flagged for review.")
+    if extraction.stopRequested:
+        extraction.message = "Stopped. Completed responses and previous rules were saved; this extraction is partial."
     return result

@@ -43,6 +43,8 @@ def api(monkeypatch):
     monkeypatch.delenv("ODOS_DATABASE_ENABLED", raising=False)
     monkeypatch.delenv("ODOS_STORAGE_DIR", raising=False)
     monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "test-key-not-real")
+    # Incremental extraction loads decisions for previous rules; these cancellation tests use no database.
+    monkeypatch.setattr(odos.api.rv, "review_state", lambda *args: {"rules": {}})
     with patch("odos.api.run_pipeline", side_effect=fake_pipeline(legal=LEGAL)):
         with TestClient(app) as client:
             job = wait_for(client, upload(client).json()["id"])
