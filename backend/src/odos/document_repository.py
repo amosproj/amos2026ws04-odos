@@ -6,6 +6,31 @@ from psycopg.types.json import Jsonb
 from odos.database import connect
 
 
+# Same statement as backend/db/003_cancelled_status.sql (the image does not contain backend/db); idempotent.
+ALLOW_CANCELLED_SQL = """
+DO $$
+BEGIN
+    IF to_regclass('documents') IS NOT NULL AND EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conrelid = 'documents'::regclass AND contype = 'c'
+          AND pg_get_constraintdef(oid) LIKE '%status%'
+          AND pg_get_constraintdef(oid) NOT LIKE '%cancelled%'
+    ) THEN
+        ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_status_check;
+        ALTER TABLE documents ADD CONSTRAINT documents_status_check CHECK (
+            status IN ('queued', 'processing', 'completed', 'unsupported', 'failed', 'cancelled')
+        );
+    END IF;
+END $$;
+"""
+
+
+def ensure_cancelled_status():
+    """Let an existing database accept status 'cancelled' (additive, idempotent, no row is touched)."""
+    with connect() as conn:
+        conn.execute(ALLOW_CANCELLED_SQL)
+
+
 def create_document(
     document_id: str,
     filename: str,

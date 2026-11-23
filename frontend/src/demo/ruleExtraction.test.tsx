@@ -22,7 +22,7 @@ vi.mock("../components/PdfViewer", () => ({
 interface Backend {
   status: RuleExtractionStatus | null;
   rules: unknown | null;
-  post: { status: number; detail?: string } | null; // null: accepted, the extraction becomes queued
+  post: { status: number; detail?: string; code?: string } | null; // null: accepted, the extraction becomes queued
   down: boolean; // the backend does not answer at all
   calls: string[];
 }
@@ -53,7 +53,11 @@ function installBackend(initial: Partial<Backend> = {}): Backend {
     }
     if (url.endsWith("/rule-extraction")) {
       if (method === "POST") {
-        if (backend.post) return json({ detail: backend.post.detail }, backend.post.status);
+        if (backend.post) {
+          const refused = json({ detail: backend.post.detail }, backend.post.status);
+          if (backend.post.code) refused.headers.set("X-ODOS-Error", backend.post.code);
+          return refused;
+        }
         backend.status = status("queued");
         return json(backend.status, 202);
       }
@@ -155,10 +159,37 @@ describe("before an extraction", () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
+  it("the ODOS logo goes home, the Back to Document button goes one step back, and neither starts an extraction", async () => {
+    installBackend();
+    const onBack = vi.fn();
+    const onHome = vi.fn();
+    await mount(<RuleExtractionView result={demoResult()} onBack={onBack} onHome={onHome} />);
+    await click(q('button[aria-label="ODOS home"]'));
+    expect(onHome).toHaveBeenCalledTimes(1);
+    expect(onBack).not.toHaveBeenCalled();
+    await click(button("Back to Document"));
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(onHome).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(fetch).mock.calls.filter(([, i]) => i?.method === "POST")).toHaveLength(0); // nothing was started
+  });
+
+  it("uses the shared header: branding left, steps in the centre, Back to Document right before Help", async () => {
+    installBackend();
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    const header = q(".rex-top")!;
+    const [brand, center, end] = [...header.children];
+    expect(brand.getAttribute("aria-label")).toBe("ODOS home");
+    expect(brand.textContent).toContain("ONTOLOGY-DRIVEN"); // the same branding as the workspace, once
+    expect(header.querySelectorAll(".logo-mark")).toHaveLength(1);
+    expect(center.querySelector(".rex-steps")).not.toBeNull();
+    const controls = [...end.querySelectorAll("button")].map((b) => b.getAttribute("aria-label") ?? b.textContent);
+    expect(controls).toEqual(["Back to Document", "Help"]);
+  });
+
   it("mentions the last extraction's failure without hiding the Start button", async () => {
     installBackend({ status: status("failed", { message: "Amazon Bedrock is not configured on the server.", errorCode: "not_configured" }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    expect(text()).toContain("The last extraction failed: Amazon Bedrock is not configured on the server.");
+    expect(text()).toContain("The last attempt to find rules did not work. Finding rules is not available right now.");
     expect(button("Preview Rule Extraction")).not.toBeUndefined();
   });
 });
@@ -285,7 +316,7 @@ describe("failures and timeouts", () => {
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     await click(button("Preview Rule Extraction"));
     await click(button("Start paid extraction"));
-    expect(q(".alert.error")?.textContent).toContain("Amazon Bedrock is not configured on the server.");
+    expect(q(".alert.error")?.textContent).toContain("Finding rules is not available right now.");
     expect(button("Try again")?.disabled).toBe(false);
     backend.post = null;
     await click(button("Try again"));
@@ -293,7 +324,7 @@ describe("failures and timeouts", () => {
     expect(posts()).toHaveLength(2);
   });
 
-  it("shows a failed extraction with the backend's message and code, and explains output-limit failures", async () => {
+  it("explains an output-limit failure in plain words, without the backend's message or code", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     await click(button("Preview Rule Extraction"));
@@ -301,9 +332,9 @@ describe("failures and timeouts", () => {
     backend.status = status("failed", { message: "The answer exceeded the output limit. Select fewer provisions.", errorCode: "output_truncated" });
     await flush(2000);
     const alert = q(".alert.error")!;
-    expect(alert.textContent).toContain("The answer exceeded the output limit.");
-    expect(alert.textContent).toContain("output_truncated");
-    expect(alert.textContent).toContain("not available in this interface yet");
+    expect(alert.textContent).toContain("This document is too large to find all of its rules in one go.");
+    expect(alert.textContent).not.toMatch(/output_truncated|output limit|provisions/);
+    expect(button("Try again")).toBeDefined();
     expect(q(".rex-progress")).toBeNull();
   });
 
@@ -315,7 +346,46 @@ describe("failures and timeouts", () => {
     backend.status = status("failed", { message: "Amazon Bedrock did not answer in time.", errorCode: "bedrock_timeout" });
     await flush(2000);
     expect(q(".alert.error")?.textContent).toContain("did not answer in time");
-    expect(q(".alert.error")?.textContent).toContain("bedrock_timeout");
+    expect(q(".alert.error")?.textContent).not.toMatch(/bedrock_timeout|Bedrock/);
+  });
+
+  it("never shows the internal element-ID message: a refused document gets a plain explanation and can be retried", async () => {
+    installBackend({ post: { status: 422, detail: "The requested parts are not part of this document.", code: "invalid_scope" } });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    await click(button("Preview Rule Extraction"));
+    await click(button("Start paid extraction"));
+    const alert = q(".alert.error")!;
+    expect(alert.textContent).toContain("This document could not be prepared for finding rules.");
+    expect(alert.textContent).not.toMatch(/element ID|not part of this document|invalid_scope|422/);
+    backend.post = null;
+    await click(button("Try again"));
+    await click(button("Start paid extraction"));
+    expect(posts()).toHaveLength(2);
+    expect(q(".rex-progress")).not.toBeNull();
+  });
+
+  it("explains a document with nothing to check and offers the way back instead of a pointless retry", async () => {
+    installBackend({ post: { status: 422, detail: "This document has no provisions left to find rules in after filtering.", code: "nothing_to_extract" } });
+    const onBack = vi.fn();
+    await mount(<RuleExtractionView result={demoResult()} onBack={onBack} />);
+    await click(button("Preview Rule Extraction"));
+    await click(button("Start paid extraction"));
+    expect(q(".alert.error")?.textContent).toContain("There are no rules to find in this document.");
+    expect(button("Try again")).toBeUndefined();
+    await click(q(".rex-statuspanel .btn.primary"));
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(posts()).toHaveLength(1);
+  });
+
+  it("explains a failure reported by the worker by its code, without the raw message", async () => {
+    installBackend();
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    await click(button("Preview Rule Extraction"));
+    await click(button("Start paid extraction"));
+    backend.status = status("failed", { message: "The requested parts are not part of this document.", errorCode: "invalid_scope" });
+    await flush(2000);
+    expect(q(".alert.error")?.textContent).toContain("This document could not be prepared for finding rules.");
+    expect(q(".alert.error")?.textContent).not.toMatch(/not part of this document|invalid_scope/);
   });
 
   it("keeps the interface usable when the connection is lost while waiting, and can check the status again", async () => {
@@ -574,7 +644,7 @@ describe("PDF source navigation", () => {
   it("offers exactly one way into the document for the rule's passage", async () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} onShowInPdf={() => {}} />);
-    expect(qa("button").filter((b) => /document|PDF/i.test(`${b.textContent} ${b.getAttribute("aria-label") ?? ""}`) && !/Back to Document Review/.test(b.getAttribute("aria-label") ?? ""))).toHaveLength(1);
+    expect(qa("button").filter((b) => /document|PDF/i.test(`${b.textContent} ${b.getAttribute("aria-label") ?? ""}`) && !/Back to Document/i.test(b.textContent ?? "") && !/Back to Document Review/.test(b.getAttribute("aria-label") ?? ""))).toHaveLength(1);
   });
 
   it("is unavailable for a rule whose source is not in the document, and never invents a page", async () => {
@@ -661,14 +731,35 @@ describe("source references", () => {
 });
 
 describe("the progress panel", () => {
-  it("requests a cooperative stop and explains in-flight requests", async () => {
+  it("confirms a partial stop and calls the endpoint that keeps completed responses", async () => {
     installBackend({ status: status("running", { startedAt: new Date().toISOString() }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    expect(button("Stop extraction")?.disabled).toBe(false);
     await click(button("Stop extraction"));
-    expect(button("Stopping after current requests…")?.disabled).toBe(true);
+    expect(q('[role="alertdialog"]')?.textContent).toContain("kept as a partial result");
+    await click(q('[role="alertdialog"] .btn.primary'));
     expect(backend.calls).toContain("POST /api/jobs/j1/rule-extraction/stop");
-    expect(q(".rex-progress")?.textContent).toContain("already in progress");
+    expect(q(".rex-progress")?.textContent).toContain("Stopping");
+    expect(button("Stop extraction")).toBeUndefined();
+  });
+
+  it("shows a stop-extraction button that opens a cancellation confirmation dialog", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString() }) });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    const stopBtn = button(/stop extraction/i);
+    expect(stopBtn).toBeDefined();
+    await click(stopBtn);
+    expect(q('[role="alertdialog"]')).not.toBeNull();
+    expect(text()).toContain("Stop the extraction?");
+    await click(button(/keep running/i));
+    expect(q('[role="alertdialog"]')).toBeNull();
+    expect(button(/stop extraction/i)).toBeDefined();
+  });
+
+  it("shows a stopping indicator and no cancel button when cancelRequested is true", async () => {
+    installBackend({ status: status("running", { startedAt: new Date().toISOString(), cancelRequested: true }) });
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    expect(q(".rex-progress")?.textContent).toContain("Stopping");
+    expect(button(/stop|cancel|abort/i)).toBeUndefined();
   });
 
   it("claims no stage or percentage: only the backend status and the real elapsed time", async () => {

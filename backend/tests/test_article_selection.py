@@ -102,7 +102,10 @@ class ArticleSelectionTests(unittest.TestCase):
             request=rx.RuleExtractionRequest(articleIds=ids);request._context=rx.plan_request(eu(),request,directory)
             model=Model()
             with patch.object(rx,'bedrock_client',return_value=model):
-                finished=rx.run(directory,request,rx.RuleExtraction.queued(request))
+                finished=rx.RuleExtraction.queued(request)
+                result=rx.run(directory,request,finished)
+                self.assertFalse((directory/RULE_JSON).exists())
+                rx.save_rules(result,directory)
             self.assertEqual(finished.status,'completed');self.assertEqual(len(model.payloads),1)
             actual=[n['id'] for n in _walk(model.payloads[0]['target']['structure']) if n['type']=='article']
             self.assertEqual(actual,ids)

@@ -104,9 +104,9 @@ describe("result view", () => {
     expect(html).toContain('aria-label="Recognized legal structure"');
     // the docbar: no "precomputed result" chip since the prepared example mode was removed, every result is live
     const docbar = /<div class="docbar">([\s\S]*?)<\/div>/.exec(html)![1];
-    expect(docbar).toContain('aria-label="ODOS, ontology-driven operating system"'); // the compact logo, without the subtitle
-    expect(docbar).not.toContain("ONTOLOGY-DRIVEN");
-    expect(docbar.replace(/<span class="logo-mark"[\s\S]*?<\/span><\/span>/, "").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Musterbauordnung (MBO)", "Completed", "Back to documents"]);
+    expect(docbar).toContain('aria-label="ODOS home"'); // the same clickable branding as on every page: logo and subtitle
+    expect(docbar).toContain("ONTOLOGY-DRIVEN<br/>OPERATING SYSTEM");
+    expect(docbar.replace(/<span class="logo-mark"[\s\S]*?<\/span><\/span>/, "").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["ONTOLOGY-DRIVEN", "OPERATING SYSTEM", "Musterbauordnung (MBO)", "Completed", "Back to documents"]);
     expect(html).toContain("Legal structure");
     expect(html).toContain("Artifacts");
     expect(html.match(/role="tab"/g)).toHaveLength(2); // Legal structure and Artifacts only

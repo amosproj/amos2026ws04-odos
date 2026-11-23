@@ -99,7 +99,8 @@ class PreviewTests(unittest.TestCase):
             request._context = {"chunks": plan_chunks(document())[1], "previous": {}, "reviews": {}, "skipped": [], "eligible": 2}
             with patch.object(rx, 'bedrock_client', return_value=object()), \
                  patch.object(rx, 'extract_rules', side_effect=BedrockUnavailableError('offline')) as extract:
-                state = rx.run(directory, request, rx.RuleExtraction.queued(request))
+                state = rx.RuleExtraction.queued(request)
+                self.assertIsNone(rx.run(directory, request, state))
             self.assertEqual(extract.call_args.kwargs['max_model_calls'], 3)
             self.assertEqual(state.status, 'failed')
             self.assertEqual((directory / RULE_JSON).read_text(), 'previous rules')

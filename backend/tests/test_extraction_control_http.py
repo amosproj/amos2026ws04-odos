@@ -47,7 +47,8 @@ class ControlHttpTests(unittest.TestCase):
                 self.assertEqual(stop.status_code,202,stop.text)
                 self.assertTrue(stop.json()['stopRequested'])
                 self.assertTrue((directory/rx.STOP_FILE).exists())
-                final=rx.run(directory,submitted[0],job.ruleExtraction)
+                final=job.ruleExtraction.model_copy(deep=True)
+                self.assertIsNone(rx.run(directory,submitted[0],final))
                 self.assertEqual(final.status,'cancelled')
                 self.assertFalse((directory/'rules.json').exists())
                 job.ruleExtraction=final

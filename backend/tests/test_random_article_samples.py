@@ -82,7 +82,6 @@ class RandomSampleTests(unittest.TestCase):
         self.assertEqual(raised.exception.status_code,409)
 
     def test_all_four_articles_are_sent_together_in_one_model_call(self):
-        from odos.llm.document_extraction import plan_chunks
         class Model:
             config=BedrockConfig()
             def __init__(self):self.payloads=[]
