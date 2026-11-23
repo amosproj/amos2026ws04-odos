@@ -66,9 +66,8 @@ describe("workspace page", () => {
     expect(header).toContain('aria-label="ODOS, ontology-driven operating system"');
     expect(header).toMatch(/<span class="logo-mark"[^>]*><span><b>O<\/b>D<\/span><span><b>O<\/b>S<\/span><\/span>/); // the stacked O D / O S
     expect(header).toContain("ONTOLOGY-DRIVEN<br/>OPERATING SYSTEM");
-    expect(header.match(/<a /g)).toHaveLength(3); // logo, Documents, Processing: internal links only
+    expect(header.match(/<a /g)).toHaveLength(2); // logo, Documents: internal links only
     expect(header).toMatch(/<a [^>]*href="#library"[^>]*aria-current="page"[^>]*>Documents<\/a>/);
-    expect(header).toMatch(/<a [^>]*href="#upload"[^>]*>Processing<\/a>/);
     expect(header).toContain('href="#top"'); // the logo stays on this page
   });
   it("links nowhere outside the application: no external website link anywhere on the page", () => {
@@ -104,9 +103,9 @@ describe("result view", () => {
     expect(html).toContain('aria-label="Recognized legal structure"');
     // the docbar: no "precomputed result" chip since the prepared example mode was removed, every result is live
     const docbar = /<div class="docbar">([\s\S]*?)<\/div>/.exec(html)![1];
-    expect(docbar).toContain('aria-label="ODOS, ontology-driven operating system"'); // the compact logo, without the subtitle
-    expect(docbar).not.toContain("ONTOLOGY-DRIVEN");
-    expect(docbar.replace(/<span class="logo-mark"[\s\S]*?<\/span><\/span>/, "").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["Musterbauordnung (MBO)", "Completed", "Back to documents"]);
+    expect(docbar).toContain('aria-label="ODOS home"'); // the same clickable branding as on every page: logo and subtitle
+    expect(docbar).toContain("ONTOLOGY-DRIVEN<br/>OPERATING SYSTEM");
+    expect(docbar.replace(/<span class="logo-mark"[\s\S]*?<\/span><\/span>/, "").replace(/<[^>]+>/g, "|").split("|").filter((t) => t.trim())).toEqual(["ONTOLOGY-DRIVEN", "OPERATING SYSTEM", "Musterbauordnung (MBO)", "Completed", "Back to documents"]);
     expect(html).toContain("Legal structure");
     expect(html).toContain("Artifacts");
     expect(html.match(/role="tab"/g)).toHaveLength(2); // Legal structure and Artifacts only

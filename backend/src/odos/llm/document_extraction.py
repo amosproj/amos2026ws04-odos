@@ -19,7 +19,7 @@ from uuid import uuid4
 from odos.llm.bedrock import BedrockClient
 from odos.llm.extraction_workflow import extract_rules_workflow, inspect_candidates
 from odos.llm.rule_extraction import (
-    DocumentTooLargeError, ExtractionResult, InvalidScopeError, _walk, _write_report,
+    DocumentTooLargeError, ExtractionCancelled, ExtractionResult, InvalidScopeError, NotApplicableError, _stopped, _walk, _write_report,
     estimate_tokens, prepare_request, scope_document,
 )
 
@@ -203,20 +203,30 @@ def prepare_chunk(legal: dict, chunk: Chunk, config):
 def check_document_request(legal, config, element_ids=None):
     """Validate the selection per chunk, rather than rejecting a large whole document."""
     _, chunks = plan_chunks(legal, element_ids)
-    failures = []
+    failures, applicable = [], 0
     for chunk in chunks:
         try:
             prepare_chunk(legal, chunk, config)
+            applicable += 1
+        except NotApplicableError:
+            continue  # filtered out (procedural, annex, ...): nothing is sent for it, which is not a failure
         except DocumentTooLargeError as error:
+            applicable += 1
             failures.append(error)
-    if len(failures) == len(chunks):
+    if not applicable:
+        raise NotApplicableError("No part of the selection has provisions left to extract rules from.")
+    if len(failures) == applicable:
         raise failures[0]
 
 
 def extract_document(legal_json: dict, *, client=None, element_ids=None,
                      diagnostics_dir: Path | None = None, accept_partial=False,
-                     max_workers: int | None = None) -> ExtractionResult:
-    """Extract concurrently, wait for every chunk, then merge strictly in source order."""
+                     max_workers: int | None = None, should_stop=None,
+                     on_stage=None, on_request=None) -> ExtractionResult:
+    """Extract concurrently, wait for every chunk, then merge strictly in source order.
+
+    When `should_stop` returns True, no new chunks are submitted and already-running chunks check it at Bedrock
+    request boundaries. When every chunk was cancelled, raises `ExtractionCancelled`."""
     began = time.perf_counter()
     client = client or BedrockClient()
     scoped, chunks = plan_chunks(legal_json, element_ids)
@@ -241,12 +251,23 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
                  "queueSeconds": round(started - submitted, 4)}
         chunk_rules, failure = [], None
         try:
-            request, findings = prepare_chunk(legal_json, chunk, client.config)
+            if _stopped(should_stop):
+                raise ExtractionCancelled()
+            try:
+                request, findings = prepare_chunk(legal_json, chunk, client.config)
+            except NotApplicableError:
+                entry.update({"status": "not_applicable", "ruleCount": None,
+                              "reason": "Removed by LLM input reduction and applicability filtering; nothing was sent."})
+                entry["finishedAt"] = datetime.now(timezone.utc).isoformat()
+                entry["elapsedSeconds"] = round(time.perf_counter() - started, 4)
+                return entry, [], None
             entry["contextFindings"] = findings
             entry["preparationSeconds"] = round(time.perf_counter() - started, 4)
             workflow_started = time.perf_counter()
             result = extract_rules_workflow(legal_json, client=client, element_ids=[chunk.id],
-                                           prepared_request=request, accept_partial=accept_partial)
+                                           prepared_request=request, accept_partial=accept_partial,
+                                           should_stop=should_stop, on_stage=on_stage,
+                                           on_request=on_request)
             entry["workflowSeconds"] = round(time.perf_counter() - workflow_started, 4)
             child = result.report
             entry.update({"status": "completed", "ruleCount": len(result.rules), "report": child})
@@ -279,20 +300,47 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
         return entry, chunk_rules, failure
 
     finished = {}
+    cancelled_count = 0
     # Only the coordinator writes progress. Workers write separate chunk directories.
     with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="rule-chunk") as pool:
-        futures = {pool.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
+        futures = {}
+        for i, chunk in enumerate(chunks):
+            if _stopped(should_stop):
+                break  # stop scheduling new chunks; already-submitted ones finish cooperatively
+            futures[pool.submit(process_chunk, i, chunk)] = i
         for future in as_completed(futures):
             position = futures[future]
-            finished[position] = future.result()
+            entry, chunk_rules, failure = future.result()
+            if isinstance(failure, ExtractionCancelled):
+                cancelled_count += 1
+            finished[position] = (entry, chunk_rules, failure)
             if run_dir:
                 _write_report({"runId": run_id, "status": "running", "maxWorkers": workers,
                                "plannedChunks": len(chunks), "completedChunks": len(finished),
                                "chunks": [finished[i][0] for i in sorted(finished)]}, run_dir / "progress.json")
 
+    # Chunks not submitted because should_stop fired are treated as cancelled.
+    not_submitted = set(range(len(chunks))) - set(futures.values())
+    cancelled_count += len(not_submitted)
+    not_applicable = sum(1 for entry, _, _ in finished.values() if entry["status"] == "not_applicable")
+    if cancelled_count and cancelled_count + not_applicable == len(chunks):
+        raise ExtractionCancelled()
+    if not_applicable == len(chunks):
+        raise NotApplicableError("No part of the selection has provisions left to extract rules from.")
+
     extraction_seconds = time.perf_counter() - submitted
     # Completion order is deliberately ignored for both rules and report entries.
     for position in range(len(chunks)):
+        if position not in finished:
+            # Not submitted; treat as a failed chunk so the merge proceeds with the rest.
+            entries.append({"index": position, "targetId": chunks[position].id, "kind": chunks[position].kind,
+                            "status": "cancelled", "errorType": "ExtractionCancelled",
+                            "startedAt": datetime.now(timezone.utc).isoformat(),
+                            "finishedAt": datetime.now(timezone.utc).isoformat(), "elapsedSeconds": 0.0,
+                            "actionRequired": "Extraction was cancelled before this chunk started."})
+            errors.append(ExtractionCancelled())
+            partial = True
+            continue
         entry, chunk_rules, failure = finished[position]
         entries.append(entry)
         if failure:
@@ -306,7 +354,7 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
         records.extend(chunk_rules)
         origins.extend({"chunkIndex": position, "targetId": entry["targetId"], "localIndex": i}
                        for i in range(len(chunk_rules)))
-    if errors and len(errors) == len(chunks):
+    if errors and len(errors) == len(chunks) - not_applicable:
         if run_dir:
             _write_report({"runId": run_id, "status": "failed", "chunks": entries}, run_dir / "progress.json")
         raise errors[0]
@@ -315,8 +363,11 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
     # Reuse all existing checks at the selected-document level, without a paid request.
     # The whole input need not fit in a model window just to run local validation.
     from odos.llm.rule_extraction import PreparedRequest
+    # coverage is measured over the parts that were extraction targets, not over the filtered-out ones
+    skipped = {e["targetId"] for e in entries if e["status"] == "not_applicable"}
+    covered = scope_document(scoped, [c.id for c in chunks if c.id not in skipped]) if skipped else scoped
     merged_request = PreparedRequest("", "", element_ids or "document", legal_json, 0, client.config.max_tokens,
-                                     client.config.context_tokens, target_document=scoped)
+                                     client.config.context_tokens, target_document=covered)
     merged, checks = inspect_candidates(records, legal_json, merged_request, client)
     renames = [{**origin, "oldId": before.get("id"), "newId": after.get("id")}
                for origin, before, after in zip(origins, records, merged)
@@ -355,6 +406,7 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
                    "excludedDocumentFields": {"frontMatter": "Not extraction targets; retained in the original Legal JSON",
                                               "tableOfContents": "Navigation, not extraction targets"},
                    "failedChunks": [e["targetId"] for e in entries if e["status"] == "failed"],
+                   "notApplicableChunks": [e["targetId"] for e in entries if e["status"] == "not_applicable"],
                    "partialChunks": [e["targetId"] for e in entries if e.get("partial")],
                    "chunksWithIssues": [e["targetId"] for e in entries
                                         if e.get("report", {}).get("outcome") == "completed_with_issues"],
@@ -391,7 +443,7 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
     generation = {"provider": "aws-bedrock", "modelId": client.config.model_id, "region": client.config.region,
                   "documentId": legal_json.get("id"), "scope": element_ids or "document", "runId": run_id,
                   "generatedAt": datetime.now(timezone.utc).isoformat(),
-                  "promptVersion": entries[0].get("report", {}).get("promptVersion", "4"),
+                  "promptVersion": next((e["report"].get("promptVersion", "4") for e in entries if "report" in e), "4"),
                   "inputTokens": input_tokens, "outputTokens": output_tokens, "workflow": workflow,
                   "rulesWithIssues": invalid,
                   "counts": {"proposed": len(records), "accepted": len(merged) - len(invalid), "retained": len(merged),

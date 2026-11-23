@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Icon } from "../components/Icon";
-import { Logo } from "../components/Logo";
+import { WorkflowHeader } from "../components/WorkflowHeader";
 import type { DemoResult } from "./fixtures";
 import {
-  ExtractionWaitError, HttpError, downloadApprovedRules, extractionActive, getRuleExtraction, loadRules, startRuleExtraction, watchRuleExtraction,
+  ExtractionWaitError, HttpError, UnreachableError, cancelRuleExtraction, downloadApprovedRules, extractionActive, getRuleExtraction, loadRules, startRuleExtraction, watchRuleExtraction,
   type RuleExtractionStatus,
 } from "./live";
 import type { DocElement } from "../types";
@@ -18,7 +18,33 @@ import {
 import { useReviewerName, useRuleReviews, type ReviewApi } from "./useRuleReviews";
 import "./rule-extraction.css";
 
-const TOO_LARGE_CODES = new Set(["too_large", "output_truncated"]);
+/** What a failure means for the user and whether trying again can help. Keyed by the backend's stable error code; the
+ *  technical reason stays in the server log and the job's status, never on screen. */
+interface Explained { message: string; hint: string; retry: boolean }
+const UNAVAILABLE: Explained = { message: "Finding rules is not available right now.", hint: "Please ask your administrator to check the ODOS setup, then try again.", retry: true };
+const BUSY: Explained = { message: "The rule-finding service is busy or did not answer in time.", hint: "Nothing was saved. Please try again in a few minutes.", retry: true };
+const TOO_LARGE: Explained = { message: "This document is too large to find all of its rules in one go.", hint: "Nothing was saved. Please try again; if it keeps happening, contact your administrator.", retry: true };
+const EXPLAINED: Record<string, Explained> = {
+  not_configured: UNAVAILABLE, bedrock_auth: UNAVAILABLE,
+  bedrock_throttled: BUSY, bedrock_unavailable: BUSY, bedrock_timeout: BUSY, bedrock_error: BUSY, bedrock_request: BUSY, model_response: BUSY,
+  too_large: TOO_LARGE, output_truncated: TOO_LARGE,
+  malformed_output: { message: "Something went wrong while reading the results.", hint: "No rules were saved. Please try again.", retry: true },
+  nothing_to_extract: { message: "There are no rules to find in this document.", hint: "ODOS only checks the parts of a document that contain requirements in its scope, and this document has none.", retry: false },
+  invalid_scope: { message: "This document could not be prepared for finding rules.", hint: "Go back to the document and try again. If it keeps happening, upload the PDF again.", retry: true },
+  result_missing: { message: "The rules were found, but they could not be loaded.", hint: "Please try again.", retry: true },
+  not_found: { message: "This document is no longer available.", hint: "Go back to your documents and open it again.", retry: false },
+  unreachable: { message: "ODOS could not reach the server.", hint: "Check your connection and try again.", retry: true },
+};
+const GENERIC: Explained = { message: "Finding rules did not work.", hint: "No rules were saved. Please try again.", retry: true };
+const BY_STATUS: Record<number, string> = { 404: "not_found", 413: "too_large", 422: "invalid_scope", 503: "not_configured" };
+
+export function explainFailure(code?: string | null, status?: number): Explained {
+  return EXPLAINED[code ?? ""] ?? EXPLAINED[BY_STATUS[status ?? 0] ?? ""] ?? GENERIC;
+}
+
+/** The code of a thrown error from the API layer. */
+const codeOf = (e: unknown): { code?: string; status?: number } =>
+  e instanceof HttpError ? { code: e.code, status: e.status } : e instanceof UnreachableError ? { code: "unreachable" } : {};
 
 /** Where the page is. `results` shows the job's stored `rules.json`; every other stage is about getting one. */
 type Stage =
@@ -26,7 +52,7 @@ type Stage =
   | { kind: "ready"; notice?: string }
   | { kind: "active"; status: RuleExtractionStatus }
   | { kind: "waiting"; error: ExtractionWaitError }
-  | { kind: "failed"; message: string; code?: string }
+  | { kind: "failed"; code?: string; status?: number }
   | { kind: "results"; notice?: string };
 
 /** Where the reviewer was on the results: kept by the app while the page is left for Document Review ("Show in PDF") and restored
@@ -47,6 +73,8 @@ export interface RulesNav {
 interface Props {
   result: DemoResult;
   onBack: () => void;
+  /** The ODOS logo: back to the document workspace (falls back to `onBack`). */
+  onHome?: () => void;
   /** Back to Document Review with this Legal JSON element selected and highlighted in the PDF. */
   onShowInPdf?: (elementId: string) => void;
   /** The job's `rules.json` as just loaded from the backend (after an extraction), so the rest of the app shows the same rules. */
@@ -58,12 +86,13 @@ interface Props {
 /** LLM Rule Extraction & Review: starts the backend's Amazon Bedrock extraction for the processed document, shows its
  *  progress as the backend reports it and then the Rule JSON it stored. Nothing on this page is simulated: a stored
  *  `rules.json` is shown at once without a request to the model, and an extraction only starts on an explicit click. */
-export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded, nav }: Props) {
+export function RuleExtractionView({ result, onBack, onHome, onShowInPdf, onRulesLoaded, nav }: Props) {
   const live = result.live;
   const [stored, setStored] = useState<unknown>(live?.ruleJson ?? null); // the job's rules.json: from opening, or loaded after an extraction
   const results = useMemo(() => toRuleResults(stored), [stored]);
   const [stage, setStage] = useState<Stage>(results ? { kind: "results" } : live ? { kind: "checking" } : { kind: "ready" });
   const [confirmRestart, setConfirmRestart] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const starting = useRef(false); // set synchronously: a second click must not start a second paid request
   const watching = useRef<AbortController | null>(null);
   const hasStored = results !== null;
@@ -80,14 +109,18 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
     try {
       const final = await watchRuleExtraction(jobId, (status) => { if (!ctrl.signal.aborted) setStage({ kind: "active", status }); }, { signal: ctrl.signal });
       if (ctrl.signal.aborted || !final) return;
+      if (final.status === "cancelled") {
+        setStage({ kind: "ready", notice: final.message ?? "The extraction was cancelled." });
+        return;
+      }
       if (final.status !== "completed") {
-        setStage({ kind: "failed", message: final.message ?? "The rule extraction failed.", code: final.errorCode ?? undefined });
+        setStage({ kind: "failed", code: final.errorCode ?? undefined });
         return;
       }
       const rules = await loadRules(jobId);
       if (ctrl.signal.aborted) return;
       if (rules === null) {
-        setStage({ kind: "failed", message: "The extraction finished, but its result file is not available on the server." });
+        setStage({ kind: "failed", code: "result_missing" });
         return;
       }
       rulesLoaded(rules);
@@ -95,7 +128,7 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
     } catch (e) {
       if (ctrl.signal.aborted) return;
       if (e instanceof ExtractionWaitError) setStage({ kind: "waiting", error: e });
-      else setStage({ kind: "failed", message: e instanceof Error ? e.message : String(e) });
+      else setStage({ kind: "failed", ...codeOf(e) });
     }
   }, [rulesLoaded]);
 
@@ -123,11 +156,14 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
             return;
           }
         }
-        const notice = status?.status === "failed" ? `The last extraction failed: ${status.message ?? "no reason reported."}` : undefined;
+        const notice = status?.status === "failed" ? `The last attempt to find rules did not work. ${explainFailure(status.errorCode).message}`
+          : status?.status === "cancelled" ? (status.message ?? "The last extraction was cancelled.")
+          : undefined;
         setStage(hasStored ? { kind: "results", notice } : { kind: "ready", notice });
       } catch (e) {
         if (dead) return;
-        const notice = e instanceof Error ? e.message : undefined;
+        const { code, status } = codeOf(e);
+        const notice = explainFailure(code, status).message;
         setStage(hasStored ? { kind: "results", notice } : { kind: "ready", notice });
       }
     })();
@@ -160,35 +196,49 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
       setStage({ kind: "active", status });
       await watch(live.jobId);
     } catch (e) {
-      setStage({ kind: "failed", message: e instanceof Error ? e.message : String(e) });
+      setStage({ kind: "failed", ...codeOf(e) });
     } finally {
       starting.current = false;
     }
   };
 
+  const cancel = async () => {
+    if (!live) return;
+    setConfirmCancel(false);
+    try {
+      const status = await cancelRuleExtraction(live.jobId);
+      if (stage.kind === "active") setStage({ kind: "active", status });
+    } catch {
+      // ignore: extraction may have finished between the click and the request
+    }
+  };
+
   return (
     <main className="workspace rex">
-      <TopBar step={stage.kind === "results" ? 3 : 2} onBack={onBack} />
+      <TopBar step={stage.kind === "results" ? 3 : 2} onBack={onBack} onHome={onHome ?? onBack} />
 
       <div className="rex-body">
         <div className="rex-fade" key={stage.kind}>
           {stage.kind === "checking" && <p className="rex-checking" role="status"><span className="spinner" aria-hidden="true" /> Checking for an earlier extraction…</p>}
           {stage.kind === "ready" && <StartPanel result={result} notice={stage.notice} onStart={() => void start()} />}
-          {stage.kind === "active" && <ProgressPanel status={stage.status} />}
+          {stage.kind === "active" && <ProgressPanel status={stage.status} onCancel={live ? () => setConfirmCancel(true) : undefined} confirmCancel={confirmCancel} onConfirmCancel={() => void cancel()} onDismissCancel={() => setConfirmCancel(false)} />}
           {stage.kind === "waiting" && (
             <StatusPanel tone="warn" title="Still waiting for the extraction" message={stage.error.message}>
               <button type="button" className="btn primary" onClick={() => live && void watch(live.jobId)}><Icon name="refresh" size={16} />Check status</button>
               {hasStored && <button type="button" className="btn" onClick={() => setStage({ kind: "results" })}>Show previous results</button>}
             </StatusPanel>
           )}
-          {stage.kind === "failed" && (
-            <StatusPanel tone="error" title="Rule extraction failed" message={stage.message} code={stage.code}
-                         hint={stage.code && TOO_LARGE_CODES.has(stage.code) ? "The whole document is sent in one request. Choosing individual provisions is not available in this interface yet." : undefined}>
-              <button type="button" className="btn primary" onClick={() => (hasStored ? setConfirmRestart(true) : void start())}><Icon name="refresh" size={16} />Try again</button>
-              {hasStored && <button type="button" className="btn" onClick={() => setStage({ kind: "results" })}>Show previous results</button>}
-              {hasStored && confirmRestart && <RestartConfirm onConfirm={() => void start()} onCancel={() => setConfirmRestart(false)} />}
-            </StatusPanel>
-          )}
+          {stage.kind === "failed" && (() => {
+            const why = explainFailure(stage.code, stage.status);
+            return (
+              <StatusPanel tone="error" title="Finding rules did not work" message={why.message} hint={why.hint}>
+                {why.retry && <button type="button" className="btn primary" onClick={() => (hasStored ? setConfirmRestart(true) : void start())}><Icon name="refresh" size={16} />Try again</button>}
+                {!why.retry && <button type="button" className="btn primary" onClick={onBack}><Icon name="back" size={16} />Back to Document</button>}
+                {hasStored && <button type="button" className="btn" onClick={() => setStage({ kind: "results" })}>Show previous results</button>}
+                {hasStored && confirmRestart && <RestartConfirm onConfirm={() => void start()} onCancel={() => setConfirmRestart(false)} />}
+              </StatusPanel>
+            );
+          })()}
           {stage.kind === "results" && results && (
             <ResultsPanel result={result} results={results} notice={stage.notice} confirmRestart={confirmRestart} canRestart={!!live}
                           onAskRestart={() => setConfirmRestart(true)} onCancelRestart={() => setConfirmRestart(false)} onRestart={() => void start()} onShowInPdf={onShowInPdf}
@@ -201,7 +251,7 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
 }
 
 /** The page's header: the logo, the three steps of the workflow and help. "Document" leads back to Document Review. */
-function TopBar({ step, onBack }: { step: 2 | 3; onBack: () => void }) {
+function TopBar({ step, onBack, onHome }: { step: 2 | 3; onBack: () => void; onHome: () => void }) {
   const [help, setHelp] = useState(false);
   const steps: Array<{ label: string; state: "done" | "current" | "upcoming" }> = [
     { label: "Document", state: "done" },
@@ -209,8 +259,11 @@ function TopBar({ step, onBack }: { step: 2 | 3; onBack: () => void }) {
     { label: "Review", state: step === 3 ? "current" : "upcoming" },
   ];
   return (
-    <header className="rex-top">
-      <Logo compact />
+    <WorkflowHeader onHome={onHome} onBack={onBack}
+                    end={<>
+                      <button type="button" className="rex-icon-btn rex-help-btn" onClick={() => setHelp(true)} aria-label="Help" title="How reviewing works"><Icon name="help" size={26} /></button>
+                      {help && <Dialog title="How reviewing works" onClose={() => setHelp(false)} className="small"><HelpContent /></Dialog>}
+                    </>}>
       <nav className="rex-steps" aria-label="Rule extraction workflow">
         <ol>
           {steps.map((s, i) => {
@@ -225,9 +278,7 @@ function TopBar({ step, onBack }: { step: 2 | 3; onBack: () => void }) {
           })}
         </ol>
       </nav>
-      <button type="button" className="rex-icon-btn rex-help-btn" onClick={() => setHelp(true)} aria-label="Help" title="How reviewing works"><Icon name="help" size={26} /></button>
-      {help && <Dialog title="How reviewing works" onClose={() => setHelp(false)} className="small"><HelpContent /></Dialog>}
-    </header>
+    </WorkflowHeader>
   );
 }
 
@@ -243,23 +294,23 @@ function StartPanel({ result, notice, onStart }: { result: DemoResult; notice?: 
       <div className="rex-card-head">
         <Icon name="sparkle" size={20} />
         <div>
-          <p className="rex-card-title">LLM Rule Extraction</p>
-          <p className="rex-card-sub">Extract draft compliance rules from this document with Amazon Bedrock.</p>
+          <p className="rex-card-title">Find Rules</p>
+          <p className="rex-card-sub">Find requirements and rules in your document.</p>
         </div>
       </div>
       <dl className="rex-facts">
         <div><dt>Document</dt><dd title={filename}>{filename}</dd></div>
         <div><dt>Pages</dt><dd>{pages}</dd></div>
         <div>
-          <dt>Legal JSON</dt>
+          <dt>Document ready</dt>
           <dd>{legalReady ? <span className="rex-status ok"><Icon name="check" size={12} />Ready</span> : <span className="rex-status review">{legal ? "No structure to extract from" : "Not available"}</span>}</dd>
         </div>
       </dl>
       {notice && <div className="alert warn" role="status"><Icon name="info" size={14} />{notice}</div>}
-      <p className="rex-note"><Icon name="info" size={14} />The Legal JSON of the whole document is sent to Amazon Bedrock. This is a paid request and can take several minutes. The result is a set of drafts that a person has to review.</p>
+      <p className="rex-note"><Icon name="info" size={14} />ODOS will find the rules in your document. This may take a few minutes. The results are drafts that a person needs to review.</p>
       <div>
         <button type="button" className="btn primary rex-start-btn" onClick={onStart} disabled={!legalReady}>
-          <Icon name="sparkle" size={18} />Start Rule Extraction
+          <Icon name="sparkle" size={18} />Find Rules
         </button>
       </div>
       {!result.live && <p className="rex-note"><Icon name="info" size={14} />This document was not processed by the ODOS backend, so rules cannot be extracted from it.</p>}
@@ -276,8 +327,15 @@ const clock = (total: number) => {
 /** The backend reports only queued / running, so the indicator is indeterminate and the numbers shown are the ones that are
  *  real: the status as the backend states it and the time since it accepted (queued) or started (running) the extraction.
  *  No stage or percentage is shown because none is reported. */
-function ProgressPanel({ status }: { status: RuleExtractionStatus }) {
+function ProgressPanel({ status, onCancel, confirmCancel, onConfirmCancel, onDismissCancel }: {
+  status: RuleExtractionStatus;
+  onCancel?: () => void;
+  confirmCancel?: boolean;
+  onConfirmCancel?: () => void;
+  onDismissCancel?: () => void;
+}) {
   const queued = status.status === "queued";
+  const stopping = status.cancelRequested === true;
   const since = Date.parse((queued ? status.requestedAt : status.startedAt) ?? "");
   const known = Number.isFinite(since);
   const [now, setNow] = useState(() => Date.now());
@@ -292,7 +350,9 @@ function ProgressPanel({ status }: { status: RuleExtractionStatus }) {
         <div>
           <h3 className="rex-progress-title">AI Rule Extraction in Progress</h3>
           <p className="rex-card-sub">
-            {queued
+            {stopping
+              ? "Stopping — waiting for the current model request to finish before the extraction ends."
+              : queued
               ? "Your request is queued on the server and will start shortly."
               : "The document's Legal JSON has been sent to the language model, which drafts the rules. Large documents can take several minutes."}
           </p>
@@ -302,26 +362,45 @@ function ProgressPanel({ status }: { status: RuleExtractionStatus }) {
       <dl className="rex-progress-facts">
         <div>
           <dt>Status</dt>
-          <dd><span className="rex-pulse" aria-hidden="true" />{queued ? "Queued" : "Running"}</dd>
+          <dd><span className="rex-pulse" aria-hidden="true" />{stopping ? "Stopping…" : queued ? "Queued" : "Running"}</dd>
         </div>
         <div><dt>Elapsed</dt><dd className="rex-elapsed">{known ? clock(seconds(now - since)) : "—"}</dd></div>
         {known && <div><dt>{queued ? "Requested" : "Started"}</dt><dd>{new Date(since).toLocaleTimeString()}</dd></div>}
       </dl>
-      <span className="sr-only" role="status">Extraction status: {queued ? "queued" : "running"}.</span>
+      <span className="sr-only" role="status">Extraction status: {stopping ? "stopping" : queued ? "queued" : "running"}.</span>
       <p className="rex-note"><Icon name="info" size={14} />The server reports only whether the extraction is queued or running, so no percentage or processing stage is shown. You can leave this page; the extraction keeps running on the server and is picked up again when you return.</p>
-      <p className="rex-note"><Icon name="lock" size={14} />A running extraction cannot be cancelled yet: the backend has no safe way to stop a request that is already with the model.</p>
+      {!stopping && onCancel && (
+        <div className="rex-actions">
+          <button type="button" className="btn" onClick={onCancel}><Icon name="x" size={16} />Stop extraction</button>
+        </div>
+      )}
+      {confirmCancel && onConfirmCancel && onDismissCancel && (
+        <CancelConfirm onConfirm={onConfirmCancel} onCancel={onDismissCancel} />
+      )}
     </section>
   );
 }
 
-function StatusPanel({ tone, title, message, code, hint, children }: { tone: "error" | "warn"; title: string; message: string; code?: string; hint?: string; children: React.ReactNode }) {
+function CancelConfirm({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div className="alert warn rex-confirm" role="alertdialog" aria-labelledby="rex-cancel-title" aria-describedby="rex-cancel-text">
+      <strong id="rex-cancel-title">Stop the extraction?</strong>
+      <p id="rex-cancel-text">The extraction will stop after the current model request finishes. Cancelled extractions do not save any results; previous results for this document are unaffected. If a request was already sent to Amazon Bedrock, it may still be charged.</p>
+      <div className="rex-actions">
+        <button type="button" className="btn primary" onClick={onConfirm}>Stop extraction</button>
+        <button type="button" className="btn" onClick={onCancel}>Keep running</button>
+      </div>
+    </div>
+  );
+}
+
+function StatusPanel({ tone, title, message, hint, children }: { tone: "error" | "warn"; title: string; message: string; hint?: string; children: React.ReactNode }) {
   return (
     <section className="rex-panel rex-statuspanel" aria-label={title}>
       <div className={`alert ${tone}`} role="alert">
         <strong>{title}</strong>
         <p>{message}</p>
         {hint && <p>{hint}</p>}
-        {code && <p className="rex-code">Code: <code>{code}</code></p>}
       </div>
       <div className="rex-actions">{children}</div>
     </section>

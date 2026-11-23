@@ -39,6 +39,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -67,6 +68,11 @@ class InvalidScopeError(RuleExtractionError):
     """An element ID given for `element_ids` is not in the document, or the Legal JSON has no structure."""
 
 
+class NotApplicableError(InvalidScopeError):
+    """The requested part exists, but LLM input reduction and applicability filtering left nothing to extract from it
+    (for example procedural provisions or an annex). Not an error of the IDs: nothing is sent for it."""
+
+
 class DocumentTooLargeError(RuleExtractionError):
     """The request would not fit the model's context window. Nothing was sent."""
 
@@ -82,6 +88,14 @@ class MalformedOutputError(RuleExtractionError):
     def __init__(self, message: str, diagnostic_ids: list[str] | None = None):
         super().__init__(message)
         self.diagnostic_ids = diagnostic_ids or []
+
+
+class ExtractionCancelled(Exception):
+    """The caller asked to stop. An in-flight model request may already have been sent; its answer is not used."""
+
+
+def _stopped(should_stop: Callable[[], bool] | None) -> bool:
+    return should_stop is not None and should_stop()
 
 
 # ── schema ────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -232,9 +246,20 @@ def prepare_request(legal_json: dict, config: BedrockConfig, element_ids: list[s
     if not legal_json.get("structure"):
         raise InvalidScopeError("The Legal JSON has no structure to extract rules from.")
     from odos.llm_input.artifacts import build_inputs
+    if element_ids:  # strict: an ID that is not in the document is refused before anything is filtered
+        known = {n["id"] for n in _walk(legal_json["structure"])}
+        unknown = [i for i in element_ids if i not in known]
+        if unknown:
+            raise InvalidScopeError(f"Not an element ID of this document: {', '.join(unknown)}")
     _, effective, _ = build_inputs(legal_json)
     if not effective.get("structure"):
-        raise InvalidScopeError("No provisions remain after LLM input reduction and applicability filtering.")
+        raise NotApplicableError("No provisions remain after LLM input reduction and applicability filtering.")
+    if element_ids:
+        # known IDs that the applicability filter removed are not applicable, not unknown
+        remaining = {n["id"] for n in _walk(effective["structure"])}
+        element_ids = [i for i in element_ids if i in remaining]
+        if not element_ids:
+            raise NotApplicableError("The selected provisions were removed by applicability filtering.")
     document = scope_document(effective, element_ids) if element_ids else effective
     body = json.dumps(document, ensure_ascii=False, separators=(",", ":"))
     scope: str | list[str] = list(element_ids) if element_ids else "document"
@@ -450,7 +475,8 @@ class _ModelAnswer:
 
 
 def _ask_model(client: BedrockClient, request: PreparedRequest, *, diagnostics_dir: Path | None, accept_partial: bool,
-               document_id: str) -> _ModelAnswer:
+               document_id: str, should_stop: Callable[[], bool] | None = None,
+               on_request: Callable[[], None] | None = None) -> _ModelAnswer:
     """The model's answer, parsed; at most `client.config.output_retries` (0 or 1) correction requests when the answer is
     not valid JSON. Every unusable answer is kept as a diagnostic when `diagnostics_dir` is given."""
     responses: list[BedrockResponse] = []
@@ -459,7 +485,13 @@ def _ask_model(client: BedrockClient, request: PreparedRequest, *, diagnostics_d
     user = request.user
     retries = min(client.config.output_retries, 1)
     while True:
+        if _stopped(should_stop):  # do not start this request, including a correction retry
+            raise ExtractionCancelled()
+        if not responses and on_request:  # once, immediately before the first request and not before a retry
+            on_request()
         response = client.converse(request.system, user, history=history or None)
+        if _stopped(should_stop):  # the answer arrived after cancellation: it is not parsed and not returned
+            raise ExtractionCancelled()
         responses.append(response)
         attempt = len(responses)
 
@@ -501,20 +533,38 @@ def _ask_model(client: BedrockClient, request: PreparedRequest, *, diagnostics_d
 
 
 def extract_rules(legal_json: dict, *, client: BedrockClient | None = None, element_ids: list[str] | None = None,
-                  diagnostics_dir: Path | None = None, accept_partial: bool = False) -> ExtractionResult:
+                  diagnostics_dir: Path | None = None, accept_partial: bool = False,
+                  should_stop: Callable[[], bool] | None = None, on_request: Callable[[], None] | None = None,
+                  on_stage: Callable[[str], None] | None = None) -> ExtractionResult:
     """Send the Legal JSON (or the selected provisions) to Bedrock and return the validated Rule JSON records.
 
     An answer that is not valid JSON is kept in `diagnostics_dir` (if given) and asked for once more if
     `ODOS_BEDROCK_OUTPUT_RETRIES` allows (0 or 1; never more). With `accept_partial`, the complete records before a
     defect of the last answer are used (and the result is marked partial); by default such an answer is rejected.
 
-    Raises `DocumentTooLargeError` before anything is sent, `OutputTruncatedError` / `MalformedOutputError` for an unusable
-    answer, and `odos.llm.bedrock.BedrockError` subclasses for API failures."""
+    `should_stop` is checked before every model request and before the answer is used. `on_request` runs once,
+    immediately before the first request. `on_stage` receives ``finding`` before that request and ``checking`` after.
+
+    Raises `DocumentTooLargeError` before anything is sent, `ExtractionCancelled` when `should_stop` asks to stop,
+    `OutputTruncatedError` / `MalformedOutputError` for an unusable answer, and `odos.llm.bedrock.BedrockError`
+    subclasses for API failures."""
+    if _stopped(should_stop):
+        raise ExtractionCancelled()
     client = client or BedrockClient()
     request = prepare_request(legal_json, client.config, element_ids)
     ctx = _context(legal_json, request.document)
+    if _stopped(should_stop):
+        raise ExtractionCancelled()
+    if on_stage:
+        on_stage("finding")
     answer = _ask_model(client, request, diagnostics_dir=diagnostics_dir, accept_partial=accept_partial,
-                        document_id=ctx.document_id)
+                        document_id=ctx.document_id, should_stop=should_stop, on_request=on_request)
+    if _stopped(should_stop):
+        raise ExtractionCancelled()
+    if on_stage:
+        on_stage("checking")
+    if _stopped(should_stop):
+        raise ExtractionCancelled()
     raw_rules = answer.parsed.rules
     response = answer.responses[-1]
 
