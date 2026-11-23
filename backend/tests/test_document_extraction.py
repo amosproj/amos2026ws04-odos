@@ -118,7 +118,7 @@ def test_all_transport_failures_raise_and_progress_remains_available(tmp_path):
 def test_each_chunk_has_its_own_schema_budget_and_invalid_content_survives():
     client = SequenceClient({"rules": [broken_rule()]}, {"replacements": [], "additions": []},
                             {"replacements": [], "additions": []}, {"rules": [other_rule()]})
-    result = extract_document(LEGAL, client=client)
+    result = extract_document(LEGAL, client=client, max_model_calls=3)
     assert len(client.calls) == 4
     assert len(result.rules) == 2
     assert result.report["chunks"][0]["report"]["modelCalls"] == 3

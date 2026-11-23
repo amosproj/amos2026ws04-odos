@@ -3,8 +3,8 @@ import { Icon } from "../components/Icon";
 import { Logo } from "../components/Logo";
 import type { DemoResult } from "./fixtures";
 import {
-  ExtractionWaitError, HttpError, downloadApprovedRules, extractionActive, getRuleExtraction, loadRules, startRuleExtraction, watchRuleExtraction,
-  type RuleExtractionStatus,
+  ExtractionWaitError, HttpError, downloadApprovedRules, extractionActive, getRuleExtraction, loadRules, previewRuleExtraction, startRuleExtraction, stopRuleExtraction, watchRuleExtraction,
+  type RuleExtractionStatus, type RuleExtractionPreview,
 } from "./live";
 import type { DocElement } from "../types";
 import type { RuleReviewEntry } from "./live";
@@ -47,6 +47,7 @@ export interface RulesNav {
 interface Props {
   result: DemoResult;
   onBack: () => void;
+  onContinueToValidation?: () => void;
   /** Back to Document Review with this Legal JSON element selected and highlighted in the PDF. */
   onShowInPdf?: (elementId: string) => void;
   /** The job's `rules.json` as just loaded from the backend (after an extraction), so the rest of the app shows the same rules. */
@@ -58,12 +59,13 @@ interface Props {
 /** LLM Rule Extraction & Review: starts the backend's Amazon Bedrock extraction for the processed document, shows its
  *  progress as the backend reports it and then the Rule JSON it stored. Nothing on this page is simulated: a stored
  *  `rules.json` is shown at once without a request to the model, and an extraction only starts on an explicit click. */
-export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded, nav }: Props) {
+export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded, nav, onContinueToValidation }: Props) {
   const live = result.live;
   const [stored, setStored] = useState<unknown>(live?.ruleJson ?? null); // the job's rules.json: from opening, or loaded after an extraction
   const results = useMemo(() => toRuleResults(stored), [stored]);
   const [stage, setStage] = useState<Stage>(results ? { kind: "results" } : live ? { kind: "checking" } : { kind: "ready" });
   const [confirmRestart, setConfirmRestart] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const starting = useRef(false); // set synchronously: a second click must not start a second paid request
   const watching = useRef<AbortController | null>(null);
   const hasStored = results !== null;
@@ -80,6 +82,10 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
     try {
       const final = await watchRuleExtraction(jobId, (status) => { if (!ctrl.signal.aborted) setStage({ kind: "active", status }); }, { signal: ctrl.signal });
       if (ctrl.signal.aborted || !final) return;
+      if (final.status === "cancelled") {
+        setStage({ kind: "ready", notice: final.message ?? "Extraction stopped. No new requests were sent." });
+        return;
+      }
       if (final.status !== "completed") {
         setStage({ kind: "failed", message: final.message ?? "The rule extraction failed.", code: final.errorCode ?? undefined });
         return;
@@ -91,7 +97,7 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
         return;
       }
       rulesLoaded(rules);
-      setStage({ kind: "results" });
+      setStage({ kind: "results", notice: final.stopRequested ? final.message ?? "Stopped; partial results saved." : undefined });
     } catch (e) {
       if (ctrl.signal.aborted) return;
       if (e instanceof ExtractionWaitError) setStage({ kind: "waiting", error: e });
@@ -144,15 +150,16 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
     rulesLoaded(rules);
   }, [live, rulesLoaded]);
 
-  const start = async () => {
+  const start = async (maxModelCalls: 1 | 3, articleIds: string[] | null) => {
     if (!live || starting.current) return;
     starting.current = true;
+    setPreviewOpen(false);
     setConfirmRestart(false);
     setStage({ kind: "active", status: { status: "queued" } });
     try {
       let status: RuleExtractionStatus;
       try {
-        status = await startRuleExtraction(live.jobId);
+        status = await startRuleExtraction(live.jobId, maxModelCalls, articleIds);
       } catch (e) {
         if (!(e instanceof HttpError && e.status === 409)) throw e;
         status = (await getRuleExtraction(live.jobId)) ?? { status: "queued" }; // one is already queued or running: follow that one
@@ -171,10 +178,22 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
       <TopBar step={stage.kind === "results" ? 3 : 2} onBack={onBack} />
 
       <div className="rex-body">
+        {stage.kind === "results" && <div className="rex-actions" style={{ justifyContent: "flex-end", marginBottom: "16px" }}>
+          {live && stored !== null && <a className="btn" href={live.ruleDownload.href} download={live.ruleDownload.name}>
+            <Icon name="download" size={16} />Download Rule JSON
+          </a>}
+          {onContinueToValidation && <button className="btn primary" type="button" onClick={onContinueToValidation}>
+            Continue to Validation<Icon name="chevron-right" size={16} />
+          </button>}
+        </div>}
+        {previewOpen && live && (
+          <ExtractionPreview jobId={live.jobId} onCancel={() => setPreviewOpen(false)}
+                             onStart={(calls, articleIds) => void start(calls, articleIds)} />
+        )}
         <div className="rex-fade" key={stage.kind}>
           {stage.kind === "checking" && <p className="rex-checking" role="status"><span className="spinner" aria-hidden="true" /> Checking for an earlier extraction…</p>}
-          {stage.kind === "ready" && <StartPanel result={result} notice={stage.notice} onStart={() => void start()} />}
-          {stage.kind === "active" && <ProgressPanel status={stage.status} />}
+          {stage.kind === "ready" && !previewOpen && <StartPanel result={result} notice={stage.notice} onStart={() => setPreviewOpen(true)} />}
+          {stage.kind === "active" && <ProgressPanel status={stage.status} jobId={live?.jobId} />}
           {stage.kind === "waiting" && (
             <StatusPanel tone="warn" title="Still waiting for the extraction" message={stage.error.message}>
               <button type="button" className="btn primary" onClick={() => live && void watch(live.jobId)}><Icon name="refresh" size={16} />Check status</button>
@@ -183,15 +202,15 @@ export function RuleExtractionView({ result, onBack, onShowInPdf, onRulesLoaded,
           )}
           {stage.kind === "failed" && (
             <StatusPanel tone="error" title="Rule extraction failed" message={stage.message} code={stage.code}
-                         hint={stage.code && TOO_LARGE_CODES.has(stage.code) ? "The whole document is sent in one request. Choosing individual provisions is not available in this interface yet." : undefined}>
-              <button type="button" className="btn primary" onClick={() => (hasStored ? setConfirmRestart(true) : void start())}><Icon name="refresh" size={16} />Try again</button>
+                         hint={stage.code && TOO_LARGE_CODES.has(stage.code) ? "The document is processed in chunks. Choosing individual provisions is not available in this interface yet." : undefined}>
+              <button type="button" className="btn primary" onClick={() => setPreviewOpen(true)}><Icon name="refresh" size={16} />Try again</button>
               {hasStored && <button type="button" className="btn" onClick={() => setStage({ kind: "results" })}>Show previous results</button>}
-              {hasStored && confirmRestart && <RestartConfirm onConfirm={() => void start()} onCancel={() => setConfirmRestart(false)} />}
+              {hasStored && confirmRestart && <RestartConfirm onConfirm={() => { setConfirmRestart(false); setPreviewOpen(true); }} onCancel={() => setConfirmRestart(false)} />}
             </StatusPanel>
           )}
           {stage.kind === "results" && results && (
             <ResultsPanel result={result} results={results} notice={stage.notice} confirmRestart={confirmRestart} canRestart={!!live}
-                          onAskRestart={() => setConfirmRestart(true)} onCancelRestart={() => setConfirmRestart(false)} onRestart={() => void start()} onShowInPdf={onShowInPdf}
+                          onAskRestart={() => setConfirmRestart(true)} onCancelRestart={() => setConfirmRestart(false)} onRestart={() => { setConfirmRestart(false); setPreviewOpen(true); }} onShowInPdf={onShowInPdf}
                           onReloadRules={reloadRules} nav={nav} />
           )}
         </div>
@@ -233,6 +252,113 @@ function TopBar({ step, onBack }: { step: 2 | 3; onBack: () => void }) {
 
 // ── before and during an extraction ──────────────────────────────────────────────────────────────────────────────────────
 
+function ExtractionPreview({ jobId, onCancel, onStart }: {
+  jobId: string; onCancel: () => void; onStart: (calls: 1 | 3, articleIds: string[] | null) => void;
+}) {
+  const [calls, setCalls] = useState<1 | 3>(1);
+  const [mode, setMode] = useState<"selected" | "whole">("selected");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [available, setAvailable] = useState<NonNullable<RuleExtractionPreview["availableArticles"]>>([]);
+  const [search, setSearch] = useState("");
+  const [preview, setPreview] = useState<RuleExtractionPreview | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const scopeKey = JSON.stringify(mode === "selected" ? selected : null);
+  useEffect(() => {
+    let cancelled = false;
+    setPreview(null); setError(null);
+    void previewRuleExtraction(jobId, calls, JSON.parse(scopeKey) as string[] | null).then(
+      value => {
+        if (cancelled) return;
+        setPreview(value);
+        if (value.availableArticles) setAvailable(value.availableArticles);
+      },
+      reason => { if (!cancelled) setError(reason instanceof Error ? reason.message : String(reason)); },
+    );
+    return () => { cancelled = true; };
+  }, [jobId, calls, scopeKey]);
+  const format = (n: number) => n.toLocaleString();
+  const ready = preview && preview.maxModelCalls === calls && JSON.stringify(preview.articleIds ?? null) === scopeKey;
+  const invalidate = () => { setPreview(null); setError(null); };
+  const query = search.trim().toLocaleLowerCase();
+  const visible = available.filter(article => `${article.number} ${article.title}`.toLocaleLowerCase().includes(query));
+  const label = (article: { type: string; number: string; title: string }) =>
+    `${article.type === "article" ? "Article" : "§"} ${article.number}${article.title ? ` — ${article.title}` : ""}`;
+  return (
+    <section className="rex-panel rex-start rex-preview" aria-label="Extraction preview">
+      <h2>Extraction preview</h2>
+      <p className="rex-note">This preview does not call the LLM. Extraction uses the reduced applicability input V2.</p>
+      <label htmlFor="rex-scope">Document scope</label>
+      <select id="rex-scope" value={mode} onChange={event => {
+        invalidate(); setMode(event.target.value as "selected" | "whole");
+      }}>
+        <option value="selected">Choose articles / § provisions</option>
+        <option value="whole">Whole document</option>
+      </select>
+      {mode === "selected" && <fieldset className="rex-article-picker">
+        <legend>Choose articles / § provisions</legend>
+        <label htmlFor="rex-article-search">Find by number or title</label>
+        <input id="rex-article-search" type="search" value={search} onChange={event => setSearch(event.target.value)} />
+        <div className="rex-actions">
+          <button className="btn small" type="button" disabled={!available.some(a => a.eligible)} onClick={() => {
+            invalidate(); setSelected(available.filter(a => a.eligible).slice(0, 100).map(a => a.id));
+          }}>{available.filter(a => a.eligible).length > 100 ? "Select first 100" : "Select all eligible"}</button>
+          <button className="btn small" type="button" disabled={!selected.length} onClick={() => { invalidate(); setSelected([]); }}>Clear selection</button>
+          <span>{selected.length} selected</span>
+        </div>
+        <div className="rex-article-list">
+          {visible.map(article => <label className="rex-article-option" key={article.id}>
+            <input type="checkbox" checked={selected.includes(article.id)}
+                   disabled={!article.eligible || (selected.length >= 100 && !selected.includes(article.id))}
+                   onChange={event => {
+                     const checked = event.target.checked;
+                     invalidate();
+                     setSelected(previous => checked ? previous.includes(article.id) ? previous : [...previous, article.id] : previous.filter(id => id !== article.id));
+                   }} />
+            <span>{label(article)}{!article.eligible && <small>Already accepted or manually edited; kept from previous results.</small>}</span>
+          </label>)}
+          {preview && !available.length && <p>No article or § provisions are available. Use Whole document for other document structures.</p>}
+          {!!available.length && !visible.length && <p>No articles match your search.</p>}
+        </div>
+        <p className="rex-note">Only checked provisions are extraction targets. Separate requests are used when needed. Direct references may be included as context. Choose up to 100, or use Whole document.</p>
+      </fieldset>}
+      {mode === "whole" && <p className="rex-note">Process the whole V2 document using its normal chunks. Accepted rules and manual edits are kept, and protected parts are skipped.</p>}
+      <label htmlFor="rex-call-limit">LLM calls</label>
+      <select id="rex-call-limit" value={calls} onChange={event => {
+        invalidate(); setCalls(Number(event.target.value) as 1 | 3);
+      }}>
+        <option value={1}>1 call - no corrections</option>
+        <option value={3}>3 calls - up to 2 corrections</option>
+      </select>
+      {!preview && !error && <p role="status">Preparing preview…</p>}
+      {error && <p className="alert error" role="alert">{error}</p>}
+      {ready && <>
+        <dl className="rex-facts">
+          <div><dt>Model</dt><dd>{preview.modelId}</dd></div>
+          <div><dt>Estimated initial input tokens</dt><dd>{format(preview.estimatedInitialInputTokens)}</dd></div>
+          <div><dt>Previous rules kept</dt><dd>{format(preview.preservedRules ?? 0)}</dd></div>
+          <div><dt>Protected targets skipped</dt><dd>{format(preview.protectedChunksSkipped ?? 0)}</dd></div>
+          <div><dt>Output token ceiling for this run</dt><dd>{format(preview.maximumOutputTokens)}</dd></div>
+        </dl>
+        {!!preview.sampleArticles?.length && <div aria-label="Selected extraction articles">
+          <h3>Selected articles / § provisions</h3>
+          <ul>{preview.sampleArticles.map(article => <li key={article.id}>{label(article)}</li>)}</ul>
+          <p className="rex-note">Starting extraction uses these same checked provisions.</p>
+        </div>}
+        <p className="rex-note">{preview.estimateNote}</p>
+        {preview.blockedChunks > 0 && <p className="alert warn" role="status">Some selected text exceeds the model input limit and cannot be extracted in this run.</p>}
+        <p className="rex-note">Starting extraction incurs Bedrock usage charges. Previous rules and manual edits are kept; new candidates require human review.</p>
+      </>}
+      {mode === "selected" && !selected.length && <p role="status">Check at least one article or § provision to start.</p>}
+      {ready && !preview.canStart && (mode === "whole" || selected.length > 0) && <p role="status">This selection cannot be processed. Check protected provisions or choose a different scope.</p>}
+      <div className="rex-actions">
+        <button className="btn primary" type="button" disabled={!ready || !preview.canStart}
+                onClick={() => onStart(calls, mode === "selected" ? selected : null)}>Start paid extraction</button>
+        <button className="btn" type="button" onClick={onCancel}>Cancel</button>
+      </div>
+    </section>
+  );
+}
+
 function StartPanel({ result, notice, onStart }: { result: DemoResult; notice?: string; onStart: () => void }) {
   const filename = result.filename ?? result.title;
   const pages = result.model.source.num_pages;
@@ -256,10 +382,10 @@ function StartPanel({ result, notice, onStart }: { result: DemoResult; notice?: 
         </div>
       </dl>
       {notice && <div className="alert warn" role="status"><Icon name="info" size={14} />{notice}</div>}
-      <p className="rex-note"><Icon name="info" size={14} />The Legal JSON of the whole document is sent to Amazon Bedrock. This is a paid request and can take several minutes. The result is a set of drafts that a person has to review.</p>
+      <p className="rex-note"><Icon name="info" size={14} />The reduced V2 input is split into chunks and sent to Amazon Bedrock. You can preview the size and choose the correction limit before starting this paid extraction. The result is a set of drafts that a person has to review.</p>
       <div>
         <button type="button" className="btn primary rex-start-btn" onClick={onStart} disabled={!legalReady}>
-          <Icon name="sparkle" size={18} />Start Rule Extraction
+          <Icon name="sparkle" size={18} />Preview Rule Extraction
         </button>
       </div>
       {!result.live && <p className="rex-note"><Icon name="info" size={14} />This document was not processed by the ODOS backend, so rules cannot be extracted from it.</p>}
@@ -276,7 +402,15 @@ const clock = (total: number) => {
 /** The backend reports only queued / running, so the indicator is indeterminate and the numbers shown are the ones that are
  *  real: the status as the backend states it and the time since it accepted (queued) or started (running) the extraction.
  *  No stage or percentage is shown because none is reported. */
-function ProgressPanel({ status }: { status: RuleExtractionStatus }) {
+function ProgressPanel({ status, jobId }: { status: RuleExtractionStatus; jobId?: string }) {
+  const [stopping, setStopping] = useState(false);
+  const [stopError, setStopError] = useState<string | null>(null);
+  const stop = async () => {
+    if (!jobId || stopping || status.stopRequested) return;
+    setStopping(true); setStopError(null);
+    try { await stopRuleExtraction(jobId); }
+    catch (error) { setStopping(false); setStopError(error instanceof Error ? error.message : String(error)); }
+  };
   const queued = status.status === "queued";
   const since = Date.parse((queued ? status.requestedAt : status.startedAt) ?? "");
   const known = Number.isFinite(since);
@@ -309,7 +443,11 @@ function ProgressPanel({ status }: { status: RuleExtractionStatus }) {
       </dl>
       <span className="sr-only" role="status">Extraction status: {queued ? "queued" : "running"}.</span>
       <p className="rex-note"><Icon name="info" size={14} />The server reports only whether the extraction is queued or running, so no percentage or processing stage is shown. You can leave this page; the extraction keeps running on the server and is picked up again when you return.</p>
-      <p className="rex-note"><Icon name="lock" size={14} />A running extraction cannot be cancelled yet: the backend has no safe way to stop a request that is already with the model.</p>
+      {jobId && <button className="btn" type="button" disabled={stopping || status.stopRequested} onClick={() => void stop()}>
+        {stopping || status.stopRequested ? "Stopping after current requests…" : "Stop extraction"}
+      </button>}
+      {stopError && <p className="alert error" role="alert">{stopError}</p>}
+      <p className="rex-note">Stop prevents new chunks and correction calls. Up to four requests already in progress may finish and incur charges. Completed responses and existing rules are saved as a partial result.</p>
     </section>
   );
 }
@@ -332,7 +470,7 @@ function RestartConfirm({ onConfirm, onCancel }: { onConfirm: () => void; onCanc
   return (
     <div className="alert warn rex-confirm" role="alertdialog" aria-labelledby="rex-confirm-title" aria-describedby="rex-confirm-text">
       <strong id="rex-confirm-title">Start a new extraction?</strong>
-      <p id="rex-confirm-text">The document is sent to Amazon Bedrock again, which is a paid request. The results below stay in place until the new extraction has succeeded; a failed one does not replace them.</p>
+      <p id="rex-confirm-text">This is a paid request for the selected remaining scope. Existing rules, accepted decisions and manual edits are kept. Protected provisions are skipped and novel candidates are added as drafts. The previous results stay in place until this revision is saved.</p>
       <div className="rex-actions">
         <button type="button" className="btn primary" onClick={onConfirm}>Start new extraction</button>
         <button type="button" className="btn" onClick={onCancel}>Cancel</button>

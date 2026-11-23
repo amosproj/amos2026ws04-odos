@@ -36,6 +36,21 @@ function installBackend(initial: Partial<Backend> = {}): Backend {
     const method = init?.method ?? "GET";
     backend.calls.push(`${method} ${url}`);
     if (backend.down) throw new TypeError("network down");
+    if (url.endsWith("/rule-extraction/preview")) {
+      const { maxModelCalls: limit, articleIds } = JSON.parse(String(init?.body));
+      const count = articleIds === null ? 2 : Math.ceil(articleIds.length / 4);
+      const availableArticles = [1, 2, 3, 4].map(n => ({ id: `doc/article-${n}`, type: "article", number: String(n), title: `Article title ${n}`, eligible: true }));
+      return json({ inputView: "llm_applicability_input_v2.json", modelId: "test-model", chunks: count, articleIds,
+        availableArticles, selectedArticleIds: articleIds ?? [],
+        sampleArticles: availableArticles.filter(a => articleIds?.includes(a.id)).map(a => ({ ...a, group: 1 })),
+        readyChunks: count, blockedChunks: 0, canStart: count > 0, maxModelCalls: limit,
+        maximumModelCalls: count * limit, estimatedInitialInputTokens: count * 600,
+        maximumOutputTokens: 32000 * count * limit, outputTokensPerCall: 32000, estimateNote: "Estimate only." });
+    }
+    if (url.endsWith("/rule-extraction/stop")) {
+      backend.status = { ...status("running"), stopRequested: true };
+      return json(backend.status, 202);
+    }
     if (url.endsWith("/rule-extraction")) {
       if (method === "POST") {
         if (backend.post) return json({ detail: backend.post.detail }, backend.post.status);
@@ -49,7 +64,7 @@ function installBackend(initial: Partial<Backend> = {}): Backend {
   }));
   return backend;
 }
-const posts = () => backend.calls.filter((c) => c.startsWith("POST"));
+const posts = () => backend.calls.filter((c) => c.startsWith("POST") && !c.endsWith("/preview"));
 
 let host: HTMLElement;
 let root: Root;
@@ -65,7 +80,17 @@ const mount = async (node: React.ReactElement) => {
 const q = <T extends Element = HTMLElement>(sel: string) => document.body.querySelector<T>(sel);
 const qa = <T extends Element = HTMLElement>(sel: string) => [...document.body.querySelectorAll<T>(sel)];
 const button = (name: string | RegExp) => qa<HTMLButtonElement>("button").find((b) => { const t = (b.textContent ?? "").trim(); return typeof name === "string" ? t === name : name.test(t); });
-const click = async (target: Element | null | undefined) => { if (!target) throw new Error("nothing to click"); await act(async () => { (target as HTMLElement).click(); }); await flush(); };
+const click = async (target: Element | null | undefined) => {
+  if (target instanceof HTMLButtonElement && target.textContent?.trim() === "Start paid extraction" && target.disabled) {
+    const first = q<HTMLInputElement>('.rex-article-picker input[type="checkbox"]:not(:disabled)');
+    if (first && !first.checked) {
+      await act(async () => { first.click(); }); await flush();
+      target = button("Start paid extraction");
+    }
+  }
+  if (!target) throw new Error("nothing to click");
+  await act(async () => { (target as HTMLElement).click(); }); await flush();
+};
 const type = async (input: HTMLInputElement, value: string) => {
   const setValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
   await act(async () => { setValue.call(input, value); input.dispatchEvent(new Event("input", { bubbles: true })); });
@@ -97,7 +122,7 @@ describe("before an extraction", () => {
     expect(q(".rex-facts")?.textContent).toContain("MusterBauVerordnung.pdf");
     expect(q(".rex-facts")?.textContent).toContain("83");
     expect(q(".rex-facts")?.textContent).toContain("Ready");
-    const start = button("Start Rule Extraction");
+    const start = button("Preview Rule Extraction");
     expect(start?.disabled).toBe(false);
     expect(start?.className).toContain("primary");
     expect(posts()).toEqual([]); // only the status of an earlier extraction was asked for
@@ -117,7 +142,7 @@ describe("before an extraction", () => {
   it("cannot start without Legal JSON structure or without the backend's job", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult(null, false)} onBack={() => {}} />);
-    expect(button("Start Rule Extraction")?.disabled).toBe(true);
+    expect(button("Preview Rule Extraction")?.disabled).toBe(true);
     expect(text()).toContain("not processed by the ODOS backend");
     expect(backend.calls).toEqual([]);
   });
@@ -134,7 +159,55 @@ describe("before an extraction", () => {
     installBackend({ status: status("failed", { message: "Amazon Bedrock is not configured on the server.", errorCode: "not_configured" }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     expect(text()).toContain("The last extraction failed: Amazon Bedrock is not configured on the server.");
-    expect(button("Start Rule Extraction")).not.toBeUndefined();
+    expect(button("Preview Rule Extraction")).not.toBeUndefined();
+  });
+});
+
+describe("extraction preview", () => {
+  it("defaults to one call, allows three, and keeps call details hidden", async () => {
+    installBackend();
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    await click(button("Preview Rule Extraction"));
+    expect(posts()).toEqual([]);
+    expect(q<HTMLSelectElement>("#rex-call-limit")?.value).toBe("1");
+    expect(text()).not.toContain("Maximum workflow calls");
+    expect(text()).not.toContain("Output token ceiling per call");
+    expect(button("Start paid extraction")?.disabled).toBe(true);
+    expect(q<HTMLSelectElement>("#rex-scope")?.value).toBe("selected");
+    await click(q('input[type="checkbox"]'));
+    expect(text()).toContain("600");
+    const calls = q<HTMLSelectElement>("#rex-call-limit")!;
+    await act(async () => { calls.value = "3"; calls.dispatchEvent(new Event("change", { bubbles: true })); });
+    await flush();
+    expect(text()).toContain("600");
+    expect(text()).not.toContain("Maximum workflow calls");
+    await click(button("Start paid extraction"));
+    const fetchMock = vi.mocked(fetch);
+    const extraction = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith("/rule-extraction") && init?.method === "POST");
+    expect(JSON.parse(String(extraction?.[1]?.body))).toEqual({ maxModelCalls: 3, articleIds: ["doc/article-1"] });
+    expect(posts()).toHaveLength(1);
+  });
+
+  it("allows whole document instead of a checklist and passes the whole scope", async () => {
+    installBackend();
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    await click(button("Preview Rule Extraction"));
+    const scope = q<HTMLSelectElement>("#rex-scope")!;
+    await act(async () => { scope.value = "whole"; scope.dispatchEvent(new Event("change", { bubbles: true })); });
+    await flush();
+    expect(q(".rex-article-picker")).toBeNull();
+    await click(button("Start paid extraction"));
+    const request = vi.mocked(fetch).mock.calls.find(([url, init]) => String(url).endsWith("/rule-extraction") && init?.method === "POST");
+    expect(JSON.parse(String(request?.[1]?.body))).toEqual({ maxModelCalls: 1, articleIds: null });
+  });
+
+  it("cancel leaves the extraction unstarted", async () => {
+    installBackend();
+    await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
+    await click(button("Preview Rule Extraction"));
+    await click(button("Cancel"));
+    expect(posts()).toEqual([]);
+    expect(q('[aria-label="Extraction preview"]')).toBeNull();
   });
 });
 
@@ -143,7 +216,9 @@ describe("starting an extraction", () => {
     installBackend();
     const onRulesLoaded = vi.fn();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} onRulesLoaded={onRulesLoaded} />);
-    const start = button("Start Rule Extraction")!;
+    await click(button("Preview Rule Extraction"));
+    await click(q('input[type="checkbox"]'));
+    const start = button("Start paid extraction")!;
     await act(async () => { start.click(); start.click(); });
     await flush();
     expect(posts()).toEqual(["POST /api/jobs/j1/rule-extraction"]);
@@ -180,7 +255,8 @@ describe("starting an extraction", () => {
     installBackend({ post: { status: 409, detail: "A rule extraction of this job is already queued or running." } });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     backend.status = status("running", { startedAt: new Date().toISOString() });
-    await click(button("Start Rule Extraction"));
+    await click(button("Preview Rule Extraction"));
+    await click(button("Start paid extraction"));
     expect(q(".rex-progress-facts")?.textContent).toContain("Running");
     expect(q(".alert.error")).toBeNull();
   });
@@ -189,7 +265,7 @@ describe("starting an extraction", () => {
     installBackend({ status: status("running", { startedAt: new Date().toISOString() }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     expect(q(".rex-progress-title")?.textContent).toBe("AI Rule Extraction in Progress");
-    expect(button("Start Rule Extraction")).toBeUndefined();
+    expect(button("Preview Rule Extraction")).toBeUndefined();
     expect(posts()).toEqual([]);
   });
 
@@ -207,18 +283,21 @@ describe("failures and timeouts", () => {
   it("shows the backend's refusal (e.g. Bedrock not configured) and allows trying again", async () => {
     installBackend({ post: { status: 503, detail: "Rule extraction is not available: Amazon Bedrock is not configured on the server." } });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    await click(button("Start Rule Extraction"));
+    await click(button("Preview Rule Extraction"));
+    await click(button("Start paid extraction"));
     expect(q(".alert.error")?.textContent).toContain("Amazon Bedrock is not configured on the server.");
     expect(button("Try again")?.disabled).toBe(false);
     backend.post = null;
     await click(button("Try again"));
+    await click(button("Start paid extraction"));
     expect(posts()).toHaveLength(2);
   });
 
   it("shows a failed extraction with the backend's message and code, and explains output-limit failures", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    await click(button("Start Rule Extraction"));
+    await click(button("Preview Rule Extraction"));
+    await click(button("Start paid extraction"));
     backend.status = status("failed", { message: "The answer exceeded the output limit. Select fewer provisions.", errorCode: "output_truncated" });
     await flush(2000);
     const alert = q(".alert.error")!;
@@ -231,7 +310,8 @@ describe("failures and timeouts", () => {
   it("reports a Bedrock timeout as a failed extraction", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    await click(button("Start Rule Extraction"));
+    await click(button("Preview Rule Extraction"));
+    await click(button("Start paid extraction"));
     backend.status = status("failed", { message: "Amazon Bedrock did not answer in time.", errorCode: "bedrock_timeout" });
     await flush(2000);
     expect(q(".alert.error")?.textContent).toContain("did not answer in time");
@@ -241,7 +321,8 @@ describe("failures and timeouts", () => {
   it("keeps the interface usable when the connection is lost while waiting, and can check the status again", async () => {
     installBackend();
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    await click(button("Start Rule Extraction"));
+    await click(button("Preview Rule Extraction"));
+    await click(button("Start paid extraction"));
     backend.down = true;
     await flush(10000);
     expect(q(".alert.warn")?.textContent).toContain("Still waiting for the extraction");
@@ -258,6 +339,7 @@ describe("failures and timeouts", () => {
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
     await restart();
     await click(button("Start new extraction"));
+    await click(button("Start paid extraction"));
     backend.status = status("failed", { message: "Amazon Bedrock is busy. Try again later.", errorCode: "bedrock_throttled" });
     await flush(2000);
     expect(q(".alert.error")?.textContent).toContain("busy");
@@ -271,7 +353,7 @@ describe("a stored rules.json", () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
     expect(current()).toBe(RULE_DOOR.classification.summary);
-    expect(button("Start Rule Extraction")).toBeUndefined();
+    expect(button("Preview Rule Extraction")).toBeUndefined();
     expect(posts()).toEqual([]);
   });
 
@@ -288,13 +370,14 @@ describe("a stored rules.json", () => {
     await restart();
     const dialog = q('[role="alertdialog"]')!;
     expect(dialog.textContent).toContain("paid request");
-    expect(dialog.textContent).toContain("stay in place until the new extraction has succeeded");
+    expect(dialog.textContent).toContain("stay in place until this revision is saved");
     expect(posts()).toEqual([]);
     await click(button("Cancel"));
     expect(q('[role="alertdialog"]')).toBeNull();
     expect(posts()).toEqual([]);
     await restart();
     await click(button("Start new extraction"));
+    await click(button("Start paid extraction"));
     expect(posts()).toHaveLength(1);
     expect(q(".rex-progress-facts")?.textContent).toContain("Queued");
   });
@@ -578,11 +661,14 @@ describe("source references", () => {
 });
 
 describe("the progress panel", () => {
-  it("offers no cancel button and says why, instead of pretending to cancel", async () => {
+  it("requests a cooperative stop and explains in-flight requests", async () => {
     installBackend({ status: status("running", { startedAt: new Date().toISOString() }) });
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
-    expect(button(/cancel|stop|abort/i)).toBeUndefined();
-    expect(q(".rex-progress")?.textContent).toContain("cannot be cancelled yet");
+    expect(button("Stop extraction")?.disabled).toBe(false);
+    await click(button("Stop extraction"));
+    expect(button("Stopping after current requests…")?.disabled).toBe(true);
+    expect(backend.calls).toContain("POST /api/jobs/j1/rule-extraction/stop");
+    expect(q(".rex-progress")?.textContent).toContain("already in progress");
   });
 
   it("claims no stage or percentage: only the backend status and the real elapsed time", async () => {

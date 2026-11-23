@@ -1,7 +1,7 @@
 """Ordered provision extraction with bounded context and deterministic, lossless merging.
 
-Execution uses at most four concurrent workers. Each provision has its own three-call schema
-repair budget. Cross-provision semantic correctness is not established by these checks.
+Execution uses at most four concurrent workers. Each provision has a one-call budget by default, optionally three calls
+including schema corrections. Cross-provision semantic correctness is not established by these checks.
 """
 
 from __future__ import annotations
@@ -10,14 +10,15 @@ import copy
 import json
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
 from odos.llm.bedrock import BedrockClient
-from odos.llm.extraction_workflow import extract_rules_workflow, inspect_candidates
+from odos.llm_input.artifacts import build_inputs
+from odos.llm.extraction_workflow import extract_rules_workflow, inspect_candidates, ExtractionStopped
 from odos.llm.rule_extraction import (
     DocumentTooLargeError, ExtractionResult, InvalidScopeError, _walk, _write_report,
     estimate_tokens, prepare_request, scope_document,
@@ -35,6 +36,7 @@ class Chunk:
     kind: str
     target: dict
     path: list[dict]
+    selected_ids: list[str] | None = None
 
 
 def _is_provision(node: dict) -> bool:
@@ -87,11 +89,14 @@ def plan_chunks(legal: dict, element_ids: list[str] | None = None) -> tuple[dict
     """
     if not legal.get("structure"):
         raise InvalidScopeError("The Legal JSON has no structure to extract rules from.")
-    scoped = scope_document(legal, element_ids) if element_ids else copy.deepcopy(legal)
+    _, effective, _ = build_inputs(legal)
+    if not effective.get("structure"):
+        raise InvalidScopeError("No provisions remain in LLM input V2.")
+    scoped = scope_document(effective, element_ids) if element_ids else effective
     chunks: list[Chunk] = []
 
     def visit(node, ancestors):
-        path = ancestors + [{k: node[k] for k in ("id", "marker", "title") if k in node}]
+        path = ancestors + [{k: node[k] for k in ("id", "type", "number", "title") if k in node}]
         if _is_provision(node):
             chunks.append(Chunk(node["id"], "provision", _target_scope(scoped, node), path))
             return
@@ -105,7 +110,7 @@ def plan_chunks(legal: dict, element_ids: list[str] | None = None) -> tuple[dict
         # An annex without § nodes is a single explicit fallback target.
         if not any(_is_provision(n) for n in _walk([top])):
             chunks.append(Chunk(top["id"], "non_provision", scope_document(scoped, [top["id"]]),
-                                [{k: top[k] for k in ("id", "marker", "title") if k in top}]))
+                                [{k: top[k] for k in ("id", "type", "number", "title") if k in top}]))
         else:
             visit(top, [])
     if not chunks:
@@ -122,7 +127,11 @@ def _number(node: dict) -> str | None:
 def prepare_chunk(legal: dict, chunk: Chunk, config):
     """Attach only directly cited local provisions. Do not follow citations recursively."""
     # Build against the already pruned target, preserving a selected Absatz boundary.
-    request = prepare_request(chunk.target, config, [chunk.id])
+    request = prepare_request(chunk.target, config, chunk.selected_ids or [chunk.id])
+    # The request target is authoritative: never put the original unfiltered chunk back.
+    _, legal, _ = build_inputs(legal)
+    chunk = replace(chunk, target=request.document,
+                    path=[{k: v for k, v in part.items() if k in ("id", "type", "number", "title")} for part in chunk.path])
     target_ids = {n["id"] for n in _walk(chunk.target["structure"])}
     index: dict[str, list[dict]] = {}
     for node in _walk(legal["structure"]):
@@ -215,11 +224,18 @@ def check_document_request(legal, config, element_ids=None):
 
 def extract_document(legal_json: dict, *, client=None, element_ids=None,
                      diagnostics_dir: Path | None = None, accept_partial=False,
-                     max_workers: int | None = None) -> ExtractionResult:
+                     max_workers: int | None = None, max_model_calls: int = 1,
+                     planned_chunks=None, should_stop=None) -> ExtractionResult:
     """Extract concurrently, wait for every chunk, then merge strictly in source order."""
+    if type(max_model_calls) is not int or max_model_calls not in (1, 3):
+        raise ValueError("max_model_calls must be 1 or 3")
     began = time.perf_counter()
     client = client or BedrockClient()
     scoped, chunks = plan_chunks(legal_json, element_ids)
+    if planned_chunks is not None:
+        chunks = list(planned_chunks)
+    if not chunks:
+        raise InvalidScopeError("No extraction targets remain")
     workers = MAX_PARALLEL_CHUNKS if max_workers is None else max_workers
     if type(workers) is not int or workers < 1:
         raise ValueError("max_workers must be a positive integer")
@@ -246,7 +262,7 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
             entry["preparationSeconds"] = round(time.perf_counter() - started, 4)
             workflow_started = time.perf_counter()
             result = extract_rules_workflow(legal_json, client=client, element_ids=[chunk.id],
-                                           prepared_request=request, accept_partial=accept_partial)
+                                           prepared_request=request, accept_partial=accept_partial, max_model_calls=max_model_calls, should_stop=should_stop)
             entry["workflowSeconds"] = round(time.perf_counter() - workflow_started, 4)
             child = result.report
             entry.update({"status": "completed", "ruleCount": len(result.rules), "report": child})
@@ -270,6 +286,8 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
                 _write_report(result.to_json_dict(), run_dir / relative / "rules.json")
                 _write_report(child, run_dir / relative / "report.json")
                 entry["artifacts"] = {"rules": str(relative / "rules.json"), "report": str(relative / "report.json")}
+        except ExtractionStopped:
+            entry.update({"status": "stopped", "partial": True, "ruleCount": 0})
         except Exception as error:  # Each future is isolated; all other chunks must finish.
             failure = error
             entry.update({"status": "failed", "errorType": type(error).__name__,
@@ -281,15 +299,30 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
     finished = {}
     # Only the coordinator writes progress. Workers write separate chunk directories.
     with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="rule-chunk") as pool:
-        futures = {pool.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
-        for future in as_completed(futures):
-            position = futures[future]
-            finished[position] = future.result()
+        futures = {}
+        next_position = 0
+        def dispatch():
+            nonlocal next_position
+            while len(futures) < workers and next_position < len(chunks) and not (should_stop and should_stop()):
+                i = next_position
+                futures[pool.submit(process_chunk, i, chunks[i])] = i
+                next_position += 1
+        dispatch()
+        while futures:
+            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+            for future in done:
+                position = futures.pop(future)
+                finished[position] = future.result()
+            dispatch()
             if run_dir:
-                _write_report({"runId": run_id, "status": "running", "maxWorkers": workers,
-                               "plannedChunks": len(chunks), "completedChunks": len(finished),
+                _write_report({"runId": run_id, "status": "stopping" if should_stop and should_stop() else "running",
+                               "maxWorkers": workers, "plannedChunks": len(chunks), "completedChunks": len(finished),
                                "chunks": [finished[i][0] for i in sorted(finished)]}, run_dir / "progress.json")
+        for position in range(next_position, len(chunks)):
+            finished[position] = ({"index": position, "targetId": chunks[position].id, "status": "stopped",
+                                   "partial": True, "ruleCount": 0, "elapsedSeconds": 0}, [], None)
 
+    partial = bool(should_stop and should_stop())
     extraction_seconds = time.perf_counter() - submitted
     # Completion order is deliberately ignored for both rules and report entries.
     for position in range(len(chunks)):
@@ -354,6 +387,7 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
     integration = {"plannedChunks": len(chunks), "completedChunks": sum(e["status"] == "completed" for e in entries),
                    "excludedDocumentFields": {"frontMatter": "Not extraction targets; retained in the original Legal JSON",
                                               "tableOfContents": "Navigation, not extraction targets"},
+                   "stoppedChunks": [e["targetId"] for e in entries if e["status"] == "stopped"],
                    "failedChunks": [e["targetId"] for e in entries if e["status"] == "failed"],
                    "partialChunks": [e["targetId"] for e in entries if e.get("partial")],
                    "chunksWithIssues": [e["targetId"] for e in entries
@@ -371,6 +405,8 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
                   or cov["uncitedSentences"] or cov["uncitedElements"])
     outcome = "completed_with_issues" if issues else "completed"
     report = {"runId": run_id, "documentId": legal_json.get("id"), "scope": element_ids or "document",
+              "maxModelCallsPerChunk": max_model_calls, "maxFeedbackRoundsPerChunk": max_model_calls - 1,
+              "stopped": bool(should_stop and should_stop()),
               "workflowVersion": 4, "retryPolicy": "schema_only", "strategy": "parallel_provisions", "maxWorkers": workers,
               "chunks": entries, "checks": checks, "integration": integration, "ruleOrigins": origins,
               "partial": partial, "outcome": outcome, "modelCalls": calls,
@@ -384,11 +420,13 @@ def extract_document(legal_json: dict, *, client=None, element_ids=None,
                         "mergeSeconds": round(time.perf_counter() - merge_started, 4),
                         "totalSeconds": round(time.perf_counter() - began, 4)}
     workflow = {"outcome": outcome, "modelCalls": calls, "schemaValid": checks["schemaValid"],
-                "workflowVersion": 4, "retryPolicy": "schema_only", "strategy": "parallel_provisions", "maxWorkers": workers,
+                "maxModelCallsPerChunk": max_model_calls, "maxFeedbackRoundsPerChunk": max_model_calls - 1,
+              "stopped": bool(should_stop and should_stop()),
+              "workflowVersion": 4, "retryPolicy": "schema_only", "strategy": "parallel_provisions", "maxWorkers": workers,
                 "timing": report["timing"],
                 "feedbackRounds": report["feedbackRounds"], "reportFile": "rule_extraction_report.json",
                 "plannedChunks": len(chunks), "failedChunks": len(integration["failedChunks"])}
-    generation = {"provider": "aws-bedrock", "modelId": client.config.model_id, "region": client.config.region,
+    generation = {"inputView": "llm_applicability_input_v2.json", "provider": "aws-bedrock", "modelId": client.config.model_id, "region": client.config.region,
                   "documentId": legal_json.get("id"), "scope": element_ids or "document", "runId": run_id,
                   "generatedAt": datetime.now(timezone.utc).isoformat(),
                   "promptVersion": entries[0].get("report", {}).get("promptVersion", "4"),

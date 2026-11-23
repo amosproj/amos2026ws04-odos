@@ -423,3 +423,18 @@ button.rex-side-row.warn:hover { box-shadow: 0 0 0 1px var(--warn-line) inset; }
   .rex-choice { min-height: 68px; justify-content: flex-start; }
   .rex-name { flex-wrap: wrap; justify-content: center; }
 }
+
+/* Local extraction preview, before any paid model request. */
+.rex-preview { margin-bottom: 24px; }
+.rex-preview select { display: block; width: 100%; margin: 8px 0 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); color: var(--text); background: var(--bg); font: inherit; }
+.rex-preview .rex-facts { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.rex-preview .rex-facts dd { white-space: normal; overflow-wrap: anywhere; }
+
+.rex-article-picker { min-width: 0; margin: 12px 0; padding: 12px; border: 1px solid var(--border); border-radius: var(--r-sm); }
+.rex-article-picker input[type="search"] { display: block; width: 100%; box-sizing: border-box; margin: 6px 0 12px; padding: 8px 10px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-sm); font: inherit; }
+.rex-article-list { max-height: 280px; overflow: auto; margin-top: 10px; }
+.rex-article-option { display: flex; align-items: flex-start; gap: 10px; padding: 8px 4px; cursor: pointer; }
+.rex-article-option input { flex: 0 0 auto; margin-top: 3px; accent-color: var(--accent); }
+.rex-article-option span { min-width: 0; overflow-wrap: anywhere; }
+.rex-article-option small { display: block; color: var(--muted); }
+.rex-article-option:has(input:disabled) { opacity: .6; cursor: default; }

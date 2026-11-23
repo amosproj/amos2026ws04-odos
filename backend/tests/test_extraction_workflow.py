@@ -35,7 +35,7 @@ def no_live_archive(monkeypatch):
 
 
 def run(client):
-    return extract_rules_workflow(copy.deepcopy(LEGAL), client=client, element_ids=[ABS1])
+    return extract_rules_workflow(copy.deepcopy(LEGAL), client=client, element_ids=[ABS1], max_model_calls=3)
 
 
 def broken_rule():

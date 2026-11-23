@@ -132,3 +132,7 @@
 .demo-toggle .btn[aria-pressed="true"] { border-color: var(--accent); }
 .demo-code { max-height: 300px; min-height: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .demo-artifact-empty { margin: 0; padding: 18px 14px; color: var(--muted); }
+
+/* Reserved navigation for the upcoming validation step. */
+.nav-links .nav-future { display: inline-flex; align-items: center; padding: 0 16px; border: 0; background: transparent; color: var(--muted); font: inherit; opacity: .55; cursor: not-allowed; }
+@media (max-width: 640px) { .nav-links .nav-future { padding: 10px 16px 12px; } }

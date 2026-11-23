@@ -201,8 +201,10 @@ async function loadLiveResult(job: Job): Promise<DemoResult> {
 /** The backend's RuleExtraction (backend/src/odos/rule_extraction_jobs.py). Only `status` is guaranteed; the rest is
  *  what the backend reports for the run and is shown as given. */
 export interface RuleExtractionStatus {
-  status: "queued" | "running" | "completed" | "failed";
+  status: "queued" | "running" | "completed" | "failed" | "cancelled";
   scope?: string[] | "document";
+  maxModelCalls?: 1 | 3 | null;
+  stopRequested?: boolean;
   requestedAt?: string;
   startedAt?: string | null;
   finishedAt?: string | null;
@@ -221,7 +223,28 @@ const ruleExtractionUrl = (job: string) => `${API}/jobs/${job}/rule-extraction`;
 
 /** Starts a rule extraction of the whole document (a paid Amazon Bedrock call; the backend refuses a second one while one
  *  is queued or running with 409). Resolves with the queued status at once; the extraction runs on the server. */
-export const startRuleExtraction = (jobId: string) => call<RuleExtractionStatus>(ruleExtractionUrl(jobId), { method: "POST" });
+export interface RuleExtractionPreview {
+  inputView: string; modelId: string; chunks: number; readyChunks: number; blockedChunks: number;
+  canStart: boolean; maxModelCalls: 1 | 3; maximumModelCalls: number;
+  estimatedInitialInputTokens: number; maximumOutputTokens: number; outputTokensPerCall: number;
+  estimateNote: string;
+  articleIds?: string[] | null;
+  availableArticles?: Array<{ id: string; type: string; number: string; title: string; eligible: boolean }>;
+  sampleSeed?: number | null; selectedArticleIds?: string[];
+  sampleArticles?: Array<{ id: string; type: string; number: string; title: string; group: number }>;
+  sampleChunks?: 1 | 3 | null; protectedChunksSkipped?: number; preservedRules?: number; eligibleChunks?: number;
+}
+export const previewRuleExtraction = (jobId: string, maxModelCalls: 1 | 3, articleIds: string[] | null = null) =>
+  call<RuleExtractionPreview>(`${ruleExtractionUrl(jobId)}/preview`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ maxModelCalls, articleIds }),
+  });
+export const startRuleExtraction = (jobId: string, maxModelCalls: 1 | 3 = 1, articleIds: string[] | null = null) =>
+  call<RuleExtractionStatus>(ruleExtractionUrl(jobId), {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ maxModelCalls, articleIds }),
+  });
+
+export const stopRuleExtraction = (jobId: string) =>
+  call<RuleExtractionStatus>(`${ruleExtractionUrl(jobId)}/stop`, { method: "POST" });
 
 /** The latest extraction of the job; null when none was ever started. */
 export const getRuleExtraction = (jobId: string) => callOptional<RuleExtractionStatus>(ruleExtractionUrl(jobId));

@@ -132,10 +132,33 @@ def _entry(rule: dict, event: dict | None) -> dict:
     }
 
 
+def effective_events(document_id: str, directory: Path, extraction_id: str, rules: dict) -> dict:
+    """Carry exact prior decisions into an additive revision; new events override them.
+
+    Synthetic baseline IDs are zero, so append_event's optimistic concurrency
+    check starts at zero for the new extraction. No new approval is invented.
+    """
+    raw = json.loads((directory / RULE_JSON).read_text(encoding="utf-8"))
+    carried = raw.get("_generation", {}).get("carriedReviews", {}) if isinstance(raw, dict) else {}
+    events = {}
+    for rule_id, entry in carried.items():
+        if rule_id not in rules or entry.get("ruleSha256") != canonical_sha256(rules[rule_id]):
+            continue
+        if entry.get("state") not in ("accepted", "pending", "rejected"):
+            continue
+        if not entry.get("at"):
+            continue
+        events[rule_id] = {"id": 0, "decision": entry["state"], "edited_rule": entry.get("effectiveRule"),
+            "reviewer": entry.get("reviewer"), "reason": entry.get("reason"),
+            "created_at": datetime.fromisoformat(entry["at"]), "rule_sha256": entry["ruleSha256"]}
+    events.update(repo.latest_events(document_id, extraction_id))
+    return events
+
+
 def review_state(document_id: str, directory: Path) -> dict:
     """The review state of every rule of the job's current rules.json."""
     extraction_id, rules = load_rules(directory)
-    events = repo.latest_events(document_id, extraction_id)
+    events = effective_events(document_id, directory, extraction_id, rules)
     entries = {rule_id: _entry(rule, events.get(rule_id)) for rule_id, rule in rules.items()}
     counts = {state: sum(e["state"] == state for e in entries.values()) for state in ("pending", "accepted", "rejected")}
     counts["edited"] = sum(e["edited"] for e in entries.values())
@@ -187,7 +210,7 @@ def record_review(document_id: str, directory: Path, request: ReviewRequest) -> 
         raise HTTPException(404, "Unknown rule.")
     if request.extractionId != extraction_id or request.expectedRuleSha256 != canonical_sha256(original):
         raise HTTPException(409, "The rules of this job changed since they were loaded. Reload the page.")
-    current = repo.latest_events(document_id, extraction_id).get(request.ruleId)
+    current = effective_events(document_id, directory, extraction_id, rules).get(request.ruleId)
     current_edit = current["edited_rule"] if current else None
     if request.action == "edit":
         edited: dict | None = validate_edit(original, request.editedRule)
@@ -220,7 +243,7 @@ def approved_export(document_id: str, directory: Path) -> dict:
     """The effective record of every accepted rule of the current extraction, each with `review.status: "approved"`.
     Rejected and pending rules are left out. Built on request; rules.json is not modified."""
     extraction_id, rules = load_rules(directory)
-    events = repo.latest_events(document_id, extraction_id)
+    events = effective_events(document_id, directory, extraction_id, rules)
     out = []
     for rule_id, original in rules.items():
         event = events.get(rule_id)
