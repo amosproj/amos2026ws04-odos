@@ -10,7 +10,7 @@ import time
 from unittest.mock import patch
 
 import pytest
-from conftest import MINIMAL_PDF, fake_pipeline, upload, wait_for
+from conftest import fake_pipeline, upload, wait_for
 from fastapi.testclient import TestClient
 
 import odos.api

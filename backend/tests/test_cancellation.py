@@ -132,7 +132,7 @@ def test_cancellation_before_model_is_called_sets_no_external_request(api, monke
     """Cancelling before any Bedrock call → externalRequestStarted stays False."""
     client, job_id = api
     gate = threading.Event()
-    fake = use(monkeypatch, FakeBedrock(answer(RULE), answer(RULE), gate=gate))
+    use(monkeypatch, FakeBedrock(answer(RULE), answer(RULE), gate=gate))
     try:
         assert start(client, job_id).status_code == 202
         # Upload a second job and cancel its extraction before the gate releases
