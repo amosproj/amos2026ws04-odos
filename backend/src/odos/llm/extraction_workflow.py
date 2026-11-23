@@ -18,7 +18,8 @@ from odos.llm.model_output import OutputParseError, parse_model_output, redact
 from odos.llm.profiles import PROMPT_VERSION, profile_for
 from odos.llm.rule_checks import add_flags, check_rule_set
 from odos.llm.rule_extraction import (
-    ExtractionResult, _context, describe_schema_error, estimate_tokens, finalize_rule, prepare_request, rule_schema, rule_validator, scoped_rule_id,
+    ExtractionCancelled, ExtractionResult, _context, _stopped, describe_schema_error, estimate_tokens, finalize_rule,
+    prepare_request, rule_schema, rule_validator, scoped_rule_id,
 )
 from odos.llm.source_checks import SourceText, check_quantities, coverage
 
@@ -169,7 +170,8 @@ def _merge(candidates: list, patch: dict, targets: set[int]) -> tuple[list, list
 
 def extract_rules_workflow(legal_json: dict, *, client=None, element_ids=None,
                            diagnostics_dir: Path | None = None, accept_partial: bool = False,
-                           prepared_request=None) -> ExtractionResult:
+                           prepared_request=None, should_stop=None,
+                           on_stage=None, on_request=None) -> ExtractionResult:
     """Generate, check and request at most two targeted revisions, then retain results with a report.
 
     Raw/unparseable and truncated responses survive in the report. Transport failures
@@ -202,6 +204,11 @@ def extract_rules_workflow(legal_json: dict, *, client=None, element_ids=None,
         if estimated + request.max_output_tokens > request.context_tokens:
             report["stoppedBecause"] = "Feedback request would exceed the configured context window"
             break
+        if _stopped(should_stop):
+            raise ExtractionCancelled()
+        if number == 1:
+            if on_stage: on_stage("finding")
+            if on_request: on_request()
         try:
             response = client.converse(system, user, history=history or None)
         except BedrockError as error:

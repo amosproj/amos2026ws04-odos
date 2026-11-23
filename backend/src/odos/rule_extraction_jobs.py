@@ -16,6 +16,8 @@ import json
 import logging
 import os
 import time
+import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
@@ -41,8 +43,11 @@ from odos.llm.bedrock import (
 )
 from odos.llm.rule_extraction import (
     DocumentTooLargeError,
+    ExtractionCancelled,
+    ExtractionResult,
     InvalidScopeError,
     MalformedOutputError,
+    NotApplicableError,
     OutputTruncatedError,
     write_rules_json,
 )
@@ -55,6 +60,8 @@ DIAGNOSTICS_DIR = "llm-diagnostics"
 MAX_QUEUED_RULE_EXTRACTIONS = int(os.environ.get("ODOS_RULE_EXTRACTION_MAX_QUEUED", "3"))  # each one is a paid call
 MAX_ELEMENT_IDS = 100
 INTERRUPTED = "The rule extraction was interrupted by a server restart."
+CANCELLED = "Finding rules was cancelled."
+CANCELLED_CHARGED = "Finding rules was cancelled. A request that had already started may still be charged."
 REVIEW = {"status": "draft", "humanReviewRequired": True,
           "reason": "LLM-generated drafts; no rule is a legal compliance decision until a person has reviewed it."}
 
@@ -72,7 +79,8 @@ ERRORS: tuple[tuple[type[Exception], str, str], ...] = (
     (OutputTruncatedError, "output_truncated", "The answer exceeded the output limit. Select fewer provisions."),
     (MalformedOutputError, "malformed_output",
      "The model's answer was not valid JSON (also after the allowed retry); nothing was used. It was kept for diagnosis on the server."),
-    (InvalidScopeError, "invalid_scope", "The selected element IDs are not part of this document."),
+    (NotApplicableError, "nothing_to_extract", "This document has no provisions left to find rules in after filtering."),
+    (InvalidScopeError, "invalid_scope", "The requested parts are not part of this document."),
     (BedrockError, "bedrock_error", "The Amazon Bedrock request failed."),
 )
 FAILED = ("internal", "The rule extraction failed.")
@@ -93,11 +101,15 @@ class RuleExtraction(BaseModel):
     """What the client sees of a rule extraction. Counts, coverage and review hints come from `_generation` of the
     job's `rules.json`, which holds the full detail (rejected candidates, repairs, flags on each rule)."""
 
-    status: Literal["queued", "running", "completed", "failed"]
+    status: Literal["queued", "running", "completed", "failed", "cancelled"]
     scope: list[str] | Literal["document"] = "document"
     requestedAt: str
     startedAt: str | None = None
     finishedAt: str | None = None
+    runId: str = ""  # identifies this run; a late result cannot overwrite a newer one
+    stage: Literal["preparing", "finding", "checking"] | None = None
+    cancelRequested: bool = False
+    externalRequestStarted: bool = False  # true only after a model request has actually been sent
     message: str | None = None
     errorCode: str | None = None
     errorDetail: dict = Field(default_factory=dict)  # failed only: awsCode, httpStatus, cause, retryAttempts, elapsedSeconds
@@ -113,10 +125,18 @@ class RuleExtraction(BaseModel):
 
     @classmethod
     def queued(cls, request: RuleExtractionRequest) -> RuleExtraction:
-        return cls(status="queued", scope=request.elementIds or "document", requestedAt=_now())
+        return cls(status="queued", scope=request.elementIds or "document", requestedAt=_now(),
+                   runId=uuid.uuid4().hex, stage="preparing")
 
     def mark_running(self) -> None:
-        self.status, self.startedAt = "running", _now()
+        self.status, self.startedAt = "running", self.startedAt or _now()
+
+    def mark_cancelled(self) -> None:
+        """Terminal cancelled state. Does not touch `rules.json` or any other job's files."""
+        self.status, self.stage, self.finishedAt = "cancelled", None, _now()
+        self.rulesFile = None
+        self.errorCode = "cancelled"
+        self.message = CANCELLED_CHARGED if self.externalRequestStarted else CANCELLED
 
 
 def active(extraction: RuleExtraction | None) -> bool:
@@ -148,8 +168,11 @@ def restore(directory: Path) -> RuleExtraction | None:
         log.warning("unreadable rule extraction status in %s", path.parent.name)
         return None
     if active(extraction):
-        extraction.status, extraction.finishedAt = "failed", _now()
-        extraction.errorCode, extraction.message = "interrupted", INTERRUPTED
+        if extraction.cancelRequested:
+            extraction.mark_cancelled()  # a restart finished the cancellation; nothing new is written
+        else:
+            extraction.status, extraction.finishedAt = "failed", _now()
+            extraction.errorCode, extraction.message = "interrupted", INTERRUPTED
         try:
             save(directory, extraction)
         except OSError:
@@ -182,26 +205,44 @@ def bedrock_settings() -> BedrockConfig:
         config = BedrockConfig.from_env()
     except BedrockConfigError as e:
         log.warning("Bedrock configuration rejected: %s", e)
-        raise HTTPException(503, "Amazon Bedrock is not configured correctly on the server.") from None
+        raise HTTPException(503, "Amazon Bedrock is not configured correctly on the server.", headers=_code("not_configured")) from None
     if not (os.environ.get(API_KEY_ENV) or "").strip():
-        raise HTTPException(503, "Rule extraction is not available: Amazon Bedrock is not configured on the server.")
+        raise HTTPException(503, "Rule extraction is not available: Amazon Bedrock is not configured on the server.",
+                            headers=_code("not_configured"))
     return config
 
 
 def check_request(legal: dict, request: RuleExtractionRequest) -> None:
     """Scope, size and configuration, so that a request that cannot succeed is refused before it is queued."""
     if request.elementIds and any(not isinstance(i, str) or not i or len(i) > 300 for i in request.elementIds):
-        raise HTTPException(422, "Element IDs must be non-empty strings.")
+        raise HTTPException(422, "Element IDs must be non-empty strings.", headers=_code("invalid_scope"))
     config = bedrock_settings()
     try:
         check_document_request(legal, config, request.elementIds)
-    except InvalidScopeError:
-        raise HTTPException(422, "The selected element IDs are not part of this document.") from None
-    except DocumentTooLargeError:
-        raise HTTPException(413, "The selected text is too large for the model. Select fewer provisions.") from None
+    except NotApplicableError as e:
+        log.warning("rule extraction refused, nothing to extract: %s", e)
+        raise HTTPException(422, "This document has no provisions left to find rules in after filtering.",
+                            headers=_code("nothing_to_extract")) from None
+    except InvalidScopeError as e:  # the technical reason (e.g. the unknown IDs) stays in the server log
+        log.warning("rule extraction refused, invalid scope: %s", e)
+        raise HTTPException(422, "The requested parts are not part of this document.", headers=_code("invalid_scope")) from None
+    except DocumentTooLargeError as e:
+        log.warning("rule extraction refused, too large: %s", e)
+        raise HTTPException(413, "The selected text is too large for the model. Select fewer provisions.",
+                            headers=_code("too_large")) from None
+
+
+def _code(code: str) -> dict[str, str]:
+    """A stable machine-readable reason for the client (the JSON `detail` stays a plain message)."""
+    return {"X-ODOS-Error": code}
 
 
 # ── the worker step ───────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+def save_rules(result: ExtractionResult, directory: Path) -> None:
+    """Write `rules.json` atomically. Callers do this only for a run they have just accepted."""
+    write_rules_json(result, directory / RULE_JSON)
 
 
 def bedrock_client() -> BedrockClient:
@@ -210,16 +251,28 @@ def bedrock_client() -> BedrockClient:
     return BedrockClient()
 
 
-def run(directory: Path, request: RuleExtractionRequest, extraction: RuleExtraction) -> RuleExtraction:
-    """Extract, write `rules.json`, and return the finished status. Never raises; an existing `rules.json` is replaced
-    only by a successful extraction."""
+def run(directory: Path, request: RuleExtractionRequest, extraction: RuleExtraction, *,
+        client: BedrockClient | None = None, should_stop: Callable[[], bool] | None = None,
+        on_stage: Callable[[str], None] | None = None, on_request: Callable[[], None] | None = None) -> ExtractionResult | None:
+    """Extract and return the records to write, or None when the run failed or was cancelled.
+
+    Does not write `rules.json`: the caller writes it only after it has checked, under its own lock, that the run was
+    not cancelled. Never raises. An existing `rules.json` is therefore replaced only by a successful extraction the
+    caller still accepts."""
     began = time.monotonic()
     try:
+        if should_stop is not None and should_stop():
+            raise ExtractionCancelled()
         legal = json.loads((directory / LEGAL_JSON).read_text(encoding="utf-8"))
-        result = extract_rules(legal, client=bedrock_client(), element_ids=request.elementIds,
+        result = extract_rules(legal, client=client or bedrock_client(), element_ids=request.elementIds,
                                diagnostics_dir=directory / DIAGNOSTICS_DIR,
-                               accept_partial=os.environ.get("ODOS_RULE_EXTRACTION_ACCEPT_PARTIAL") == "1")
-        write_rules_json(result, directory / RULE_JSON)
+                               accept_partial=os.environ.get("ODOS_RULE_EXTRACTION_ACCEPT_PARTIAL") == "1",
+                               should_stop=should_stop, on_stage=on_stage, on_request=on_request)
+        if should_stop is not None and should_stop():
+            raise ExtractionCancelled()
+    except ExtractionCancelled:
+        extraction.mark_cancelled()
+        return None
     except Exception as e:  # noqa: BLE001 - every failure becomes a reported status
         code, message = next(((c, m) for cls, c, m in ERRORS if isinstance(e, cls)), FAILED)
         detail = {**(e.diagnostics() if isinstance(e, BedrockError) else {}), "elapsedSeconds": round(time.monotonic() - began)}
@@ -232,12 +285,13 @@ def run(directory: Path, request: RuleExtractionRequest, extraction: RuleExtract
         extraction.errorDetail = detail
         if isinstance(e, MalformedOutputError):
             extraction.modelOutput = {"diagnostics": len(e.diagnostic_ids)}
-        extraction.finishedAt = _now()
-        return extraction
+        extraction.stage, extraction.finishedAt = None, _now()
+        return None
 
     g = result.generation
     cov = g["coverage"]
-    extraction.status, extraction.finishedAt, extraction.rulesFile = "completed", _now(), RULE_JSON
+    extraction.status, extraction.stage, extraction.finishedAt = "completed", None, _now()
+    extraction.rulesFile = RULE_JSON
     extraction.workflow = dict(g.get("workflow", {}))
     extraction.reportFile = extraction.workflow.get("reportFile")
     extraction.modelId, extraction.promptVersion = g["modelId"], g["promptVersion"]
@@ -259,4 +313,4 @@ def run(directory: Path, request: RuleExtractionRequest, extraction: RuleExtract
     extraction.message = (f"{extraction.counts.get('retained', extraction.counts['accepted'])} candidate rules retained as drafts, "
                           f"{extraction.counts.get('invalid', 0)} with validation issues, "
                           f"{extraction.counts['flagged']} flagged for review.")
-    return extraction
+    return result

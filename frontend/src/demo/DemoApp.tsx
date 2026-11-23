@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "../components/AppHeader";
 import { Icon } from "../components/Icon";
-import { Logo } from "../components/Logo";
+import { BrandButton } from "../components/BrandButton";
 import { PdfViewer } from "../components/PdfViewer";
 import { ProcessingStatus } from "../components/ProcessingStatus";
 import { RecentDocuments, type DocumentProblem } from "../components/RecentDocuments";
@@ -10,7 +10,7 @@ import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, fullText, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
-import { fileUrl, ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
+import { fileUrl, ProcessingCancelled, ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
 import { RuleExtractionView, type RulesNav } from "./RuleExtraction";
 import "./demo.css";
 
@@ -36,9 +36,11 @@ export default function DemoApp() {
   const [refreshKey, setRefreshKey] = useState(0); // reloads the recent documents after a run ended without a result
   const [opening, setOpening] = useState<string | null>(null); // the stored document being opened
   const [openProblem, setOpenProblem] = useState<DocumentProblem | null>(null);
+  const [confirmStopDoc, setConfirmStopDoc] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const rulesNav = useRef<RulesNav | null>(null); // the reviewer's place on the Rule Extraction page while it is left for Document Review
   const running = useRef(false); // processing or opening; set synchronously: the disabled state only follows after the next render
+  const processAbort = useRef<AbortController | null>(null);
 
   const pdfUrl = phase.kind === "done" || phase.kind === "rules" ? phase.pdfUrl : null;
   useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
@@ -63,20 +65,52 @@ export default function DemoApp() {
   const process = async () => {
     if (!file || running.current) return;
     running.current = true;
+    const abort = new AbortController();
+    processAbort.current = abort;
     setProblem(null);
     setPhase({ kind: "busy", stage: "uploading" });
     try {
       const result = await processPdf(file, (stage) => {
+        if (processAbort.current !== abort) return; // abandoned by confirm-cancel
         setPhase({ kind: "busy", stage });
-      });
+      }, abort.signal);
+      if (processAbort.current !== abort) {
+        // finished before the cancellation took effect: nobody will open it, so the temporary job is released
+        if (result.live) releaseJob(result.live.jobId, result.live.persistent);
+        setRefreshKey((k) => k + 1);
+        return;
+      }
       setPhase({ kind: "done", result, pdfUrl: URL.createObjectURL(file) });
     } catch (e) {
+      if (processAbort.current !== abort) {
+        // abandoned: the user confirmed cancel and the UI is already idle; refresh the library
+        // once the backend has settled the cancellation (this catch runs ~1-2 s after confirm)
+        setRefreshKey((k) => k + 1);
+        return;
+      }
       setPhase({ kind: "idle" });
-      setProblem({ kind: e instanceof ProcessingError ? e.kind : "failed", message: e instanceof Error ? e.message : String(e) });
-      setRefreshKey((k) => k + 1);
+      if (!(e instanceof ProcessingCancelled)) {
+        setProblem({ kind: e instanceof ProcessingError ? e.kind : "failed", message: e instanceof Error ? e.message : String(e) });
+        setRefreshKey((k) => k + 1);
+      }
     } finally {
-      running.current = false;
+      if (processAbort.current === abort) {
+        running.current = false;
+        processAbort.current = null;
+      }
+      setConfirmStopDoc(false);
     }
+  };
+
+  /** Confirm document processing cancellation: immediately return to idle; let processPdf settle in the background. */
+  const confirmCancelDoc = () => {
+    const abort = processAbort.current;
+    abort?.abort();
+    processAbort.current = null; // detach: process()'s catch/finally will not touch state
+    running.current = false;     // allow a new process to start immediately
+    setConfirmStopDoc(false);
+    setPhase({ kind: "idle" });
+    setRefreshKey((k) => k + 1); // best-effort early refresh; a second refresh fires when processPdf settles
   };
 
   /** Opens a stored document in the result view. Nothing is uploaded or processed: the backend serves what it stored. */
@@ -114,7 +148,7 @@ export default function DemoApp() {
     const { result, pdfUrl } = phase;
     // the rules of this job as the backend last stored them: kept on the result, so Document Review's Artifacts tab shows the same
     const rulesLoaded = (ruleJson: unknown) => setPhase((p) => (p.kind === "rules" && p.result.live ? { ...p, result: { ...p.result, live: { ...p.result.live, ruleJson } } } : p));
-    return <RuleExtractionView result={result} onBack={() => setPhase({ kind: "done", result, pdfUrl })}
+    return <RuleExtractionView result={result} onBack={() => setPhase({ kind: "done", result, pdfUrl })} onHome={reset}
                                onShowInPdf={(focusId) => setPhase({ kind: "done", result, pdfUrl, focusId })} onRulesLoaded={rulesLoaded} nav={rulesNav} />;
   }
 
@@ -157,7 +191,26 @@ export default function DemoApp() {
             <button type="button" className="btn primary demo-process" onClick={() => void process()} disabled={!file || locked} aria-busy={busy}>
               {busy ? <><span className="spinner" aria-hidden="true" /> Processing…</> : "Process document"}
             </button>
-            {phase.kind === "busy" && <ProcessingStatus stage={phase.stage} />}
+            {phase.kind === "busy" && (
+              <>
+                <ProcessingStatus stage={phase.stage} />
+                {phase.stage !== "cancelling" && (
+                  <button type="button" className="btn small" onClick={() => setConfirmStopDoc(true)}>
+                    Stop processing
+                  </button>
+                )}
+              </>
+            )}
+            {confirmStopDoc && (
+              <div role="alertdialog" aria-modal="true" aria-labelledby="stop-doc-title" className="cancel-confirm">
+                <strong id="stop-doc-title">Stop document processing?</strong>
+                <p>The pipeline will finish its current stage, then stop. No result will be saved. Any previous result for this document is unaffected.</p>
+                <div className="cancel-confirm-actions">
+                  <button type="button" className="btn danger" onClick={confirmCancelDoc}>Stop processing</button>
+                  <button type="button" className="btn" onClick={() => setConfirmStopDoc(false)}>Keep running</button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
         <RecentDocuments refreshKey={refreshKey} onOpen={(doc) => void open(doc)} openingId={opening} openError={openProblem} openDisabled={busy} />
@@ -189,7 +242,7 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
   return (
     <main className="workspace demo-result">
       <div className="docbar">
-        <Logo compact />
+        <BrandButton onClick={onReset} />
         <span className="docbar-sep" aria-hidden="true" />
         <h2 title={result.filename ? `${result.filename} · ${result.title}` : result.title}>{result.filename ?? result.title}</h2>
         <span className="demo-status ok">Completed</span>{/* a result is only ever shown for a completed document */}
