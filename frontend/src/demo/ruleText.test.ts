@@ -48,7 +48,15 @@ describe("values, operators and units", () => {
 
   it("shows the record's own description beside the exact statement, never instead of it", () => {
     const rule = base({ requirements: [{ kind: "numeric", fact: "fire_wall_height_above_roof", operator: ">=", value: 0.3, unit: "m", description: "Brandwand 0,30 m über die Bedachung geführt" }] });
-    expect(lines(rule, "requires")[0]).toEqual({ text: "fire wall height above roof is at least 0.3 m", note: "Brandwand 0,30 m über die Bedachung geführt" });
+    expect(lines(rule, "requires")[0]).toEqual({ text: "fire wall height above roof is at least 0.3 m", note: "Brandwand 0,30 m über die Bedachung geführt",
+      threshold: { fact: "fire_wall_height_above_roof", operator: ">=", value: 0.3, unit: "m" } });
+  });
+
+  it("gives a numeric requirement its stored fields as a threshold, with no unit when the record has none", () => {
+    const rule = base({ requirements: [{ kind: "numeric", fact: "anzahl_geschosse", operator: "<=", value: 2 }, { kind: "boolean", fact: "x", value: true }] });
+    const [numeric, flag] = lines(rule, "requires");
+    expect(numeric.threshold).toEqual({ fact: "anzahl_geschosse", operator: "<=", value: 2 });
+    expect(flag.threshold).toBeUndefined(); // nothing is invented for a requirement without an operator and value
   });
 });
 

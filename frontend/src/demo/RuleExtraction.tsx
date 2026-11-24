@@ -9,11 +9,16 @@ import {
 import type { DocElement } from "../types";
 import type { RuleReviewEntry } from "./live";
 import { useReviewActions } from "./ReviewControls";
-import { FILTER_LABEL, RuleQueue } from "./RuleQueue";
-import { AdvancedDetails, Dialog, HelpContent, MoreMenu, ReviewMain, ReviewSidebar } from "./RuleReview";
+import { RuleQueue } from "./RuleQueue";
+import { Dialog, HelpContent, MoreMenu, ReviewMain, ReviewSidebar, STATUS_LABEL, ValidationFooter, ValidationHeader, reviewProgress } from "./RuleReview";
+import { RuleContextPanel, type ContextTab } from "./RuleContext";
+import { planHighlights, type SourceHighlight } from "./sourceMap";
+import { ComponentNavContext, exceptionElements, matchComponent, type ComponentNav, type ComponentSource } from "./componentSource";
+import type { HighlightGroup } from "../components/PdfViewer";
+import { markOf } from "./reviewMarks";
 import {
-  applyReview, generatedAt, isPending, isReviewed, matchesFilter, matchesSearch, overviewOf, provisionCoverage, provisionOf, queueOrder, toRuleResults,
-  type QueueOrder, type ReviewFilter, type RuleItem, type RuleResults,
+  applyReview, generatedAt, isPending, isReviewed, matchesCategory, matchesFilter, matchesSearch, overviewOf, provisionOf, queueOrder, toRuleResults,
+  type QueueOrder, type ReviewFilter, type RuleCategory, type RuleItem, type RuleResults,
 } from "./ruleResults";
 import { useReviewerName, useRuleReviews, type ReviewApi } from "./useRuleReviews";
 import "./rule-extraction.css";
@@ -65,13 +70,17 @@ export interface RulesNav {
   /** Order of the rules and "next open rule after a decision"; absent in a place saved before they existed. */
   order?: QueueOrder;
   advance?: boolean;
-  /** Advanced details open. */
-  advanced?: boolean;
+  /** Rule type or structural facet chosen in the left panel; absent in a place saved before it existed. */
+  category?: RuleCategory;
+  /** The tab of the right panel. */
+  tab?: ContextTab;
   pageScroll: number;
 }
 
 interface Props {
   result: DemoResult;
+  /** The original PDF (object URL held by the app), shown beside the rules. Absent: the PDF panel says so. */
+  pdfUrl?: string;
   onBack: () => void;
   onContinueToValidation?: () => void;
   /** The ODOS logo: back to the document workspace (falls back to `onBack`). */
@@ -87,7 +96,7 @@ interface Props {
 /** LLM Rule Extraction & Review: starts the backend's Amazon Bedrock extraction for the processed document, shows its
  *  progress as the backend reports it and then the Rule JSON it stored. Nothing on this page is simulated: a stored
  *  `rules.json` is shown at once without a request to the model, and an extraction only starts on an explicit click. */
-export function RuleExtractionView({ result, onBack, onHome, onShowInPdf, onRulesLoaded, nav, onContinueToValidation }: Props) {
+export function RuleExtractionView({ result, pdfUrl, onBack, onHome, onShowInPdf, onRulesLoaded, nav, onContinueToValidation }: Props) {
   const live = result.live;
   const [stored, setStored] = useState<unknown>(live?.ruleJson ?? null); // the job's rules.json: from opening, or loaded after an extraction
   const results = useMemo(() => toRuleResults(stored), [stored]);
@@ -221,14 +230,6 @@ export function RuleExtractionView({ result, onBack, onHome, onShowInPdf, onRule
       <TopBar step={stage.kind === "results" ? 3 : 2} onBack={onBack} onHome={onHome ?? onBack} />
 
       <div className="rex-body">
-        {stage.kind === "results" && <div className="rex-actions" style={{ justifyContent: "flex-end", marginBottom: "16px" }}>
-          {live && stored !== null && <a className="btn" href={live.ruleDownload.href} download={live.ruleDownload.name}>
-            <Icon name="download" size={16} />Download Rule JSON
-          </a>}
-          {onContinueToValidation && <button className="btn primary" type="button" onClick={onContinueToValidation}>
-            Continue to Validation<Icon name="chevron-right" size={16} />
-          </button>}
-        </div>}
         {previewOpen && live && (
           <ExtractionPreview jobId={live.jobId} onCancel={() => setPreviewOpen(false)}
                              onStart={(calls, articleIds) => void start(calls, articleIds)} />
@@ -257,7 +258,8 @@ export function RuleExtractionView({ result, onBack, onHome, onShowInPdf, onRule
           {stage.kind === "results" && results && (
             <ResultsPanel result={result} results={results} notice={stage.notice} confirmRestart={confirmRestart} canRestart={!!live}
                           onAskRestart={() => setConfirmRestart(true)} onCancelRestart={() => setConfirmRestart(false)} onRestart={() => { setConfirmRestart(false); setPreviewOpen(true); }} onShowInPdf={onShowInPdf}
-                          onReloadRules={reloadRules} nav={nav} />
+                          onReloadRules={reloadRules} nav={nav} pdfUrl={pdfUrl} onBack={onBack} onContinueToValidation={onContinueToValidation}
+                          ruleDownload={live && stored !== null ? live.ruleDownload : undefined} />
           )}
         </div>
       </div>
@@ -271,7 +273,7 @@ function TopBar({ step, onBack, onHome }: { step: 2 | 3; onBack: () => void; onH
   const steps: Array<{ label: string; state: "done" | "current" | "upcoming" }> = [
     { label: "Document", state: "done" },
     { label: "Rules extracted", state: step === 3 ? "done" : "current" },
-    { label: "Review", state: step === 3 ? "current" : "upcoming" },
+    { label: "Rule validation", state: step === 3 ? "current" : "upcoming" },
   ];
   return (
     <WorkflowHeader onHome={onHome} onBack={onBack}
@@ -544,10 +546,11 @@ function RestartConfirm({ onConfirm, onCancel }: { onConfirm: () => void; onCanc
 
 // ── results ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onAskRestart, onCancelRestart, onRestart, onShowInPdf, onReloadRules, nav }: {
+function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onAskRestart, onCancelRestart, onRestart, onShowInPdf, onReloadRules, nav, pdfUrl, onBack, onContinueToValidation, ruleDownload }: {
   result: DemoResult; results: RuleResults; notice?: string; confirmRestart: boolean; canRestart: boolean;
   onAskRestart: () => void; onCancelRestart: () => void; onRestart: () => void; onShowInPdf?: (elementId: string) => void;
   onReloadRules: () => Promise<void>; nav?: MutableRefObject<RulesNav | null>;
+  pdfUrl?: string; onBack: () => void; onContinueToValidation?: () => void; ruleDownload?: { href: string; name: string };
 }) {
   const jobId = result.live?.jobId;
   const saved = nav?.current && nav.current.jobId === jobId ? nav.current : null; // the place this reviewer left (same job only)
@@ -555,8 +558,10 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
   const [search, setSearch] = useState(saved?.search ?? "");
   const [order, setOrder] = useState<QueueOrder>(saved?.order ?? "flagged"); // rules with a potential issue first
   const [advance, setAdvance] = useState(saved?.advance ?? true);
-  const [advanced, setAdvanced] = useState(saved?.advanced ?? false);
   const [overview, setOverview] = useState(false);
+  const [category, setCategory] = useState<RuleCategory>(saved?.category ?? "all");
+  const [tab, setTab] = useState<ContextTab>(saved?.tab ?? "pdf");
+  const [page, setPage] = useState(1); // the PDF panel's page
   const [selectedId, setSelectedId] = useState<string | null>(saved?.selectedId ?? null);
   // a rule that was just decided (with "next open rule" off) or that met a conflict stays in the sequence until the reviewer moves
   // on, so its new state and any message about it do not vanish with it when a filter is on
@@ -570,16 +575,15 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
   const view = useMemo<RuleResults>(() => (api.kind === "ready" ? { ...results, items: results.items.map((r) => applyReview(r, api.data.rules[r.id])) } : results), [results, api]);
   const ov = useMemo(() => overviewOf(view), [view]);
   const elements = useMemo(() => new Map(result.model.elements.map((e) => [e.id, e])), [result.model]);
-  const provisions = useMemo(() => provisionCoverage(elements, view.items), [elements, view.items]);
   const provisionById = useMemo(() => new Map(view.items.map((r) => [r.id, provisionOf(r, elements)])), [view.items, elements]);
 
   const reviewedCount = view.items.filter(isReviewed).length;
-  const filters: ReviewFilter[] = api.kind === "ready" ? ["all", "pending", "flagged", "accepted", "rejected"]
+  const filters: ReviewFilter[] = api.kind === "ready" ? ["all", "pending", "accepted", "rejected", "edited", "flagged"]
     : reviewedCount ? ["all", "pending", "flagged", "reviewed"] : ["all", "pending", "flagged"];
   const activeFilter = filters.includes(filter) ? filter : "all"; // a filter that is not offered now (e.g. a saved "Accepted") does not hide everything
   // the order in which Previous / Next walk the rules: all rules (or those of the filter chosen in the overview)
-  const sequence = useMemo(() => queueOrder(view.items.filter((r) => (matchesFilter(r, activeFilter) || r.id === pinned) && matchesSearch(r, search)), order),
-                           [view, activeFilter, search, order, pinned]);
+  const sequence = useMemo(() => queueOrder(view.items.filter((r) => ((matchesFilter(r, activeFilter) && matchesCategory(r, category)) || r.id === pinned) && matchesSearch(r, search)), order),
+                           [view, activeFilter, category, search, order, pinned]);
 
   // the selection: on opening, the first rule that waits for a decision (once the decisions are known); when the selected rule
   // leaves the sequence (a filter is on), the rule that now stands at its place
@@ -627,8 +631,48 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
   // remember the place (the page scroll position is kept by the listener below)
   useEffect(() => {
     if (!nav || !jobId) return;
-    nav.current = { pageScroll: 0, ...(nav.current?.jobId === jobId ? nav.current : {}), jobId, filter, search, selectedId, order, advance, advanced };
-  }, [nav, jobId, filter, search, selectedId, order, advance, advanced]);
+    nav.current = { pageScroll: 0, ...(nav.current?.jobId === jobId ? nav.current : {}), jobId, filter, search, selectedId, order, advance, category, tab };
+  }, [nav, jobId, filter, search, selectedId, order, advance, category, tab]);
+
+  // the PDF panel follows the selected rule: every passage it cites, highlighted by what it means and outlined by the rule's review
+  // state, starting on the first page of its primary passage. The viewer stays mounted, so the document is not loaded again; a rule
+  // that names no passage of this document leaves the page where it is.
+  const numPages = result.model.source.num_pages;
+  const plan = useMemo(() => (selected ? planHighlights(selected, result.model) : []), [selected, result.model]);
+  const showSource = useCallback((elementId: string) => {
+    const h = plan.find((x) => x.elementId === elementId);
+    if (h?.page) setPage(h.page);
+  }, [plan]);
+  const selectedKey = selected?.id ?? null;
+  useEffect(() => {
+    const first = plan.find((h) => h.role === "primary" && h.element) ?? plan.find((h) => h.element);
+    if (first?.page) setPage(first.page);
+    // only when another rule is selected: a decision on the same rule must not move the PDF
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedKey]);
+  const mark = selected ? markOf(selected) : null;
+  // a part of the rule (requirement, exception, definition …) whose wording verifiably matches one cited passage
+  const [focused, setFocused] = useState<ComponentSource | null>(null);
+  useEffect(() => setFocused(null), [selectedKey]);
+  const excIds = useMemo(() => (selected ? exceptionElements(selected, result.model) : new Set<string>()), [selected, result.model]);
+  const componentNav = useMemo<ComponentNav>(() => {
+    const cache = new Map<string, ComponentSource | null>();
+    return {
+      resolve: (text) => {
+        if (!selected || !text) return null;
+        if (!cache.has(text)) cache.set(text, matchComponent(text, selected, result.model));
+        return cache.get(text) ?? null;
+      },
+      go: (src) => { setTab("pdf"); if (src.page) setPage(src.page); setFocused(src); },
+      focused,
+    };
+  }, [selected, result.model, focused]);
+  const groups = useMemo<HighlightGroup[]>(() => plan.filter((h) => h.element && h.boxes.length).map((h) => ({
+    boxes: h.boxes, tone: h.role === "primary" && excIds.has(h.elementId) ? "exception" : h.tone, focus: focused?.elementId === h.elementId, approximate: h.approximate || h.precision === "fallback", status: h.role === "context" || h.role === "cross_reference" ? undefined : mark?.state,
+    edited: !!mark?.edited && h.role === "primary",
+    title: `${h.label}${h.sentenceLabel ? ` · ${h.sentenceLabel}` : ""}: ${h.precision === "element" ? "exactly the cited text" : "whole element (the cited sentence's position is not in the document data)"}`,
+  })), [plan, mark?.state, mark?.edited, excIds, focused]);
+  const goToSource = useCallback((elementId: string) => { setTab("pdf"); setFocused(null); showSource(elementId); }, [showSource]);
   useEffect(() => {
     if (!nav || !jobId) return;
     const onScroll = () => { if (nav.current?.jobId === jobId) nav.current.pageScroll = window.scrollY; };
@@ -649,12 +693,19 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
     catch (e) { setExportState({ busy: false, error: e instanceof Error ? e.message : String(e) }); }
   };
 
-  const countOf = (f: ReviewFilter) => view.items.filter((r) => matchesFilter(r, f)).length;
-  const scope = activeFilter !== "all" || search.trim() ? [activeFilter !== "all" ? FILTER_LABEL[activeFilter] : null, search.trim() ? `“${search.trim()}”` : null].filter(Boolean).join(", ") : null;
+  const countOf = (f: ReviewFilter) => view.items.filter((r) => matchesFilter(r, f) && matchesCategory(r, category)).length;
+  const countAll = (f: ReviewFilter) => view.items.filter((r) => matchesFilter(r, f)).length;
+  const categoryLabel = category === "all" ? null : category.startsWith("type:") ? category.slice(5).replace(/_/g, " ") : category.slice(4);
+  const scope = activeFilter !== "all" || search.trim() || categoryLabel
+    ? [categoryLabel, activeFilter !== "all" ? STATUS_LABEL[activeFilter] : null, search.trim() ? `“${search.trim()}”` : null].filter(Boolean).join(", ") : null;
   const filename = result.filename ?? result.title;
+  const progress = reviewProgress(ov, api);
+  const onFilter = (f: ReviewFilter) => { setPinned(null); setFilter(f); };
+  const onCategory = (c: RuleCategory) => { setPinned(null); setCategory(c); };
 
   return (
-    <section className="rex-results" aria-label="Extracted rules">
+    <section className="rex-results rv" aria-label="Extracted rules">
+      <ValidationHeader filename={filename} numPages={numPages} total={ov.total} decided={progress.decided} />
       {confirmRestart && <RestartConfirm onConfirm={onRestart} onCancel={onCancelRestart} />}
       {exportState.error && <div className="alert error" role="alert">The approved rules were not downloaded: {exportState.error}</div>}
       {api.kind === "stale" && !api.unidentified && <StaleBanner onReload={onReloadRules} />}
@@ -666,8 +717,9 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
           <Icon name="info" size={20} /><span>The extraction completed but produced no rules for this document.</span>
         </div>
       ) : (
-        <div className="rex-layout">
-          <ReviewSidebar filename={filename} ov={ov} api={api} onOverview={() => setOverview(true)} exporting={exportState.busy} onDownload={() => void download()}
+        <div className="rex-layout rv-layout">
+          <ReviewSidebar ov={ov} api={api} items={view.items} category={category} onCategory={onCategory} filters={filters} filter={activeFilter} onFilter={onFilter} countOf={countOf}
+                         onOverview={() => setOverview(true)} exporting={exportState.busy} onDownload={() => void download()} ruleDownload={ruleDownload}
                          menu={(
                            <MoreMenu>
                              {(close) => (
@@ -679,22 +731,25 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
                            </MoreMenu>
                          )} />
           {selected ? (
+            <ComponentNavContext.Provider value={componentNav}>
             <RuleView key={selected.id} rule={selected} position={position} count={sequence.length} scope={scope} onPrevious={() => move(-1)} onNext={() => move(1)}
-                      elements={elements} numPages={result.model.source.num_pages} onShowInPdf={onShowInPdf} jobId={jobId} api={api} reviewer={reviewer} onReviewer={setReviewer}
-                      onEntry={setEntry} onReload={reload} onDecided={onDecided} onConflict={setPinned} results={view} ov={ov} provisions={provisions}
-                      advanced={advanced} onAdvanced={setAdvanced} />
+                      elements={elements} numPages={numPages} onShowInPdf={onShowInPdf} onGoToSource={goToSource} jobId={jobId} api={api} reviewer={reviewer} onReviewer={setReviewer}
+                      onEntry={setEntry} onReload={reload} onDecided={onDecided} onConflict={setPinned} highlights={plan} />
+            </ComponentNavContext.Provider>
           ) : (
             <div className="rex-main rex-empty-detail" role="status">
-              <Icon name="info" size={20} /><span>No rules match the chosen filter. <button type="button" className="btn small" onClick={() => { setFilter("all"); setSearch(""); }}>Show all rules</button></span>
+              <Icon name="info" size={20} /><span>No rules match the chosen filter. <button type="button" className="btn small" onClick={() => { setFilter("all"); setCategory("all"); setSearch(""); }}>Show all rules</button></span>
             </div>
           )}
+          <RuleContextPanel tab={tab} onTab={setTab} pdfUrl={pdfUrl} page={page} onPage={setPage} groups={groups} plan={plan} mark={mark} rule={selected} exceptionIds={excIds} focused={focused} />
         </div>
       )}
+      <ValidationFooter decided={progress.decided} total={progress.total} percent={progress.percent} onBack={onBack} onContinue={onContinueToValidation} />
 
       {overview && (
-        <Dialog title="All rules" onClose={() => setOverview(false)} className="wide">
+        <Dialog title="Rule list" onClose={() => setOverview(false)} className="wide">
           <RuleQueue items={sequence} selectedId={selected?.id ?? null} onSelect={(id) => { select(id); setOverview(false); }} filters={filters} activeFilter={activeFilter}
-                     onFilter={(f) => { setPinned(null); setFilter(f); }} countOf={countOf} search={search} onSearch={(q) => { setPinned(null); setSearch(q); }}
+                     onFilter={onFilter} countOf={countAll} search={search} onSearch={(q) => { setPinned(null); setSearch(q); }}
                      order={order} onOrder={setOrder} advance={advance} onAdvance={setAdvance} canAdvance={api.kind === "ready"} provisionOf={(r) => provisionById.get(r.id) ?? null} />
         </Dialog>
       )}
@@ -703,18 +758,15 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
 }
 
 /** One rule on screen: its review state (the hook belongs to the rule, so nothing typed for one rule reaches another). */
-function RuleView({ rule, jobId, api, reviewer, onEntry, onReload, onDecided, onConflict, results, ov, provisions, advanced, onAdvanced, ...card }: {
+function RuleView({ rule, jobId, api, reviewer, onEntry, onReload, onDecided, onConflict, ...card }: {
   rule: RuleItem; position: number; count: number; scope: string | null; onPrevious: () => void; onNext: () => void;
-  elements: Map<string, DocElement>; numPages: number; onShowInPdf?: (elementId: string) => void;
+  elements: Map<string, DocElement>; numPages: number; onShowInPdf?: (elementId: string) => void; onGoToSource?: (elementId: string) => void;
+  highlights: SourceHighlight[];
   jobId: string | undefined; api: ReviewApi; reviewer: string; onReviewer: (name: string) => void;
   onEntry: (ruleId: string, entry: RuleReviewEntry) => void; onReload: () => Promise<void>; onDecided: (ruleId: string) => void; onConflict: (ruleId: string) => void;
-  results: RuleResults; ov: ReturnType<typeof overviewOf>; provisions: { total: number; withRules: number } | null; advanced: boolean; onAdvanced: (open: boolean) => void;
 }) {
   const review = useReviewActions({ jobId: jobId ?? "", rule, api: jobId ? api : { kind: "unavailable", reason: null }, reviewer: jobId ? reviewer : "", onEntry, onReload, onDecided, onConflict });
-  return (
-    <ReviewMain rule={rule} review={review} reviewer={reviewer} {...card}
-                advanced={<AdvancedDetails rule={rule} results={results} ov={ov} review={review} provisions={provisions} open={advanced} onOpen={onAdvanced} />} />
-  );
+  return <ReviewMain rule={rule} review={review} reviewer={reviewer} {...card} />;
 }
 
 /** The rules on screen are not the job's current extraction (another run replaced `rules.json`): review is off until they are reloaded. */

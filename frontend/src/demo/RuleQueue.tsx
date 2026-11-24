@@ -3,12 +3,12 @@ import { Icon } from "../components/Icon";
 import { type Provision, type QueueOrder, type ReviewFilter, type RuleItem } from "./ruleResults";
 import { isReviewed } from "./ruleResults";
 
-export const FILTER_LABEL: Record<ReviewFilter, string> = { all: "All", pending: "To review", accepted: "Accepted", rejected: "Rejected", flagged: "Potential issues", reviewed: "Reviewed" };
+export const FILTER_LABEL: Record<ReviewFilter, string> = { all: "All", pending: "Pending", accepted: "Accepted", rejected: "Rejected", flagged: "Potential issues", reviewed: "Reviewed", edited: "Edited" };
 
 /** The reviewer's decision (or, without stored decisions, the status written in the file) as one word. */
 export function stateOf(rule: RuleItem): { key: "pending" | "accepted" | "rejected" | "reviewed"; label: string } {
-  if (rule.human) return { key: rule.human === "pending" ? "pending" : rule.human, label: ({ pending: "Open", accepted: "Accepted", rejected: "Rejected" } as const)[rule.human] };
-  return isReviewed(rule) ? { key: "reviewed", label: rule.reviewStatus === "approved" ? "Approved" : "Reviewed" } : { key: "pending", label: "Open" };
+  if (rule.human) return { key: rule.human === "pending" ? "pending" : rule.human, label: ({ pending: "Pending", accepted: "Accepted", rejected: "Rejected" } as const)[rule.human] };
+  return isReviewed(rule) ? { key: "reviewed", label: rule.reviewStatus === "approved" ? "Approved" : "Reviewed" } : { key: "pending", label: "Pending" };
 }
 
 /** Status of one rule: the decision as a labelled dot, plus "Edited" and "Flagged" when they apply. Not colour alone: every state has a text. */
@@ -20,7 +20,7 @@ export function RuleStatus({ rule, compact = false }: { rule: RuleItem; compact?
         <span className="rex-dot" aria-hidden="true" />
         <span className={compact ? "sr-only" : undefined}>{label}</span>
       </span>
-      {rule.edited && <span className="rex-tag edited" title="A reviewer adjusted this rule; the extracted record is kept unchanged">Adjusted</span>}
+      {rule.edited && <span className="rex-tag edited" title="A reviewer edited this rule; the extracted record is kept unchanged">Edited</span>}
       {rule.checkFlags.length > 0 && <span className="rex-tag flag" title="ODOS's automatic checks noticed a potential issue">Potential issue</span>}
     </span>
   );

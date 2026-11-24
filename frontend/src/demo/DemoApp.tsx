@@ -13,6 +13,10 @@ import type { DemoResult } from "./fixtures";
 import { fileUrl, ProcessingCancelled, ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
 import { RuleExtractionView, type RulesNav } from "./RuleExtraction";
 import { DigitalTwinValidation } from "./DigitalTwinValidation";
+import { applyReview, toRuleResults } from "./ruleResults";
+import { STATE_LABEL, marksByElement, type ElementMarks } from "./reviewMarks";
+import { toneOf } from "./sourceMap";
+import { useRuleReviews } from "./useRuleReviews";
 import "./demo.css";
 
 
@@ -143,7 +147,12 @@ export default function DemoApp() {
 
   if (phase.kind === "done") {
     const { result, pdfUrl, focusId } = phase;
-    return <ResultView result={result} pdfUrl={pdfUrl} initialSelectedId={focusId} onReset={reset} onContinueToRules={() => setPhase({ kind: "rules", result, pdfUrl })} />;
+    // "Open rule": Rule Validation with that rule selected (the reviewer's earlier filters are replaced, so the rule is certainly in view)
+    const openRule = (ruleId: string) => {
+      if (result.live) rulesNav.current = { jobId: result.live.jobId, filter: "all", search: "", selectedId: ruleId, category: "all", pageScroll: 0 };
+      setPhase({ kind: "rules", result, pdfUrl });
+    };
+    return <ResultView result={result} pdfUrl={pdfUrl} initialSelectedId={focusId} onReset={reset} onContinueToRules={() => setPhase({ kind: "rules", result, pdfUrl })} onOpenRule={openRule} />;
   }
   if (phase.kind === "validation") {
     const { result, pdfUrl } = phase;
@@ -154,7 +163,7 @@ export default function DemoApp() {
     const { result, pdfUrl } = phase;
     // Keep the stored rules on the result so reopening Rule Extraction reuses them without a new model call.
     const rulesLoaded = (ruleJson: unknown) => setPhase((p) => (p.kind === "rules" && p.result.live ? { ...p, result: { ...p.result, live: { ...p.result.live, ruleJson } } } : p));
-    return <RuleExtractionView result={result} onBack={() => setPhase({ kind: "done", result, pdfUrl })} onHome={reset}
+    return <RuleExtractionView result={result} pdfUrl={pdfUrl} onBack={() => setPhase({ kind: "done", result, pdfUrl })} onHome={reset}
                                onShowInPdf={(focusId) => setPhase({ kind: "done", result, pdfUrl, focusId })} onRulesLoaded={rulesLoaded} nav={rulesNav}
                                onContinueToValidation={() => setPhase({ kind: "validation", result, pdfUrl })} />;
   }
@@ -226,7 +235,7 @@ export default function DemoApp() {
   );
 }
 
-export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onContinueToRules }: { result: DemoResult; pdfUrl: string; initialSelectedId?: string; onReset: () => void; onContinueToRules?: () => void }) {
+export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onContinueToRules, onOpenRule }: { result: DemoResult; pdfUrl: string; initialSelectedId?: string; onReset: () => void; onContinueToRules?: () => void; onOpenRule?: (ruleId: string) => void }) {
   const { model } = result;
   const [tab, setTab] = useState<"structure" | "artifacts">("structure");
   // opened from a rule's "Show in PDF": that element is selected (the PDF shows its page and highlights it)
@@ -237,7 +246,19 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
   const [split, setSplit] = useState(DEFAULT_SPLIT); // the PDF panel's share of the width
   const splitRef = useRef<HTMLDivElement>(null);
   const element = useMemo(() => model.elements.find((e) => e.id === selected) ?? null, [model, selected]);
+  // the persisted review decisions of the document's rules (loaded again whenever the document is opened); nothing without review storage
+  const ruleResults = useMemo(() => toRuleResults(result.live?.ruleJson ?? null), [result.live?.ruleJson]);
+  const reviewJob = result.live && ruleResults && ruleResults.items.length ? result.live.jobId : undefined;
+  const { api: reviewApi } = useRuleReviews(reviewJob, ruleResults?.generation?.generatedAt ?? null);
+  const elementsById = useMemo(() => new Map(model.elements.map((e) => [e.id, e])), [model]);
+  const marks = useMemo(() => (ruleResults && reviewApi.kind === "ready"
+    ? marksByElement(ruleResults.items.map((r) => applyReview(r, reviewApi.data.rules[r.id])), elementsById) : undefined), [ruleResults, reviewApi, elementsById]);
+  const elementMarks = element ? marks?.get(element.id) : undefined;
   const hl = highlightsOf(element);
+  // one rule on the element: its meaning (fill) and review state (outline); several rules: the plain highlight, each rule listed beside
+  const single = elementMarks?.rules.length === 1 ? elementMarks.rules[0] : null;
+  const groups = useMemo(() => (single && hl.boxes.length ? [{ boxes: hl.boxes, approximate: hl.approximate, tone: toneOf(single.rule.type, single.role),
+    status: single.role === "primary" || single.role === "definition" ? single.mark.state : undefined, edited: single.mark.edited }] : undefined), [single, hl.boxes, hl.approximate]);
 
   const select = useCallback((id: string) => {
     setSelected(id);
@@ -258,7 +279,7 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
       </div>
       <div className="split" ref={splitRef} style={splitVars(split)}>
         <section className="pane left" aria-label="Original PDF">
-          <PdfViewer url={pdfUrl} page={page} onPageChange={setPage} highlights={hl.boxes} approximate={hl.approximate} />
+          <PdfViewer url={pdfUrl} page={page} onPageChange={setPage} highlights={hl.boxes} approximate={hl.approximate} groups={groups} />
         </section>
         <SplitDivider containerRef={splitRef} value={split} onCommit={setSplit} />
         <section className="pane right" aria-label="Recognized legal structure">
@@ -269,8 +290,8 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
           <div className="tabbody">
             {tab === "structure" && (
               <div className="structure">
-                <StructureTree model={model} selectedId={selected} onSelect={select} />
-                <SourceDetail element={element} page={page} onGoToPage={setPage} />
+                <StructureTree model={model} selectedId={selected} onSelect={select} marks={marks} />
+                <SourceDetail element={element} page={page} onGoToPage={setPage} marks={elementMarks} onOpenRule={onOpenRule} />
               </div>
             )}
             {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} />}
@@ -281,7 +302,7 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
   );
 }
 
-export function SourceDetail({ element: e, page, onGoToPage }: { element: DocElement | null; page: number; onGoToPage: (page: number) => void }) {
+export function SourceDetail({ element: e, page, onGoToPage, marks, onOpenRule }: { element: DocElement | null; page: number; onGoToPage: (page: number) => void; marks?: ElementMarks; onOpenRule?: (ruleId: string) => void }) {
   if (!e) return <div className="detail empty"><Icon name="info" size={20} /><span>Select an element to highlight its source text in the PDF.</span></div>;
   return (
     <div className="detail">
@@ -297,6 +318,22 @@ export function SourceDetail({ element: e, page, onGoToPage }: { element: DocEle
         <dt>Source</dt><dd><code>{e.source_refs.join(", ") || "—"}</code></dd>
         <dt>Element id</dt><dd><code>{e.id}</code></dd>
       </dl>
+      {marks && marks.rules.length > 0 && (
+        <section className="elrules" aria-label="Rules citing this element">
+          <h4>Rules ({marks.rules.length})</h4>
+          <ul>
+            {marks.rules.map(({ rule, mark, sentenceIds }) => (
+              <li key={rule.id}>
+                <span className={`rm-chip ${mark.state}`}>{STATE_LABEL[mark.state]}</span>
+                {mark.edited && <span className="rm-chip edited">Edited</span>}
+                <span className="elrules-title">{rule.title}</span>
+                {sentenceIds.length > 0 && <span className="muted"> · {sentenceIds.map((id) => `Satz ${id.split("/").pop()?.replace(/^satz-/, "") ?? id}`).join(", ")}</span>}
+                {onOpenRule && <button type="button" className="btn small" onClick={() => onOpenRule(rule.id)} aria-label={`Open rule ${rule.id} in Rule Validation`}>Open rule</button>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
