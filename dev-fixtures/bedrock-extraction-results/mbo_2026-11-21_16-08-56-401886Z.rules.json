@@ -1,0 +1,2763 @@
+{
+  "_generation": {
+    "provider": "aws-bedrock",
+    "modelId": "eu.anthropic.claude-sonnet-4-6",
+    "region": "eu-central-1",
+    "generatedAt": "2026-11-21T16:08:56+00:00",
+    "documentId": "mbo",
+    "scope": [
+      "doc/teil-2"
+    ],
+    "stopReason": "end_turn",
+    "inputTokens": 19752,
+    "outputTokens": 16976,
+    "rulesProposed": 31,
+    "profile": "german_legislation",
+    "promptVersion": "4",
+    "rulesFlagged": 1,
+    "counts": {
+      "proposed": 31,
+      "accepted": 28,
+      "rejected": 3,
+      "repaired": 0,
+      "flagged": 1
+    },
+    "modelOutput": {
+      "requests": 1,
+      "parse": "exact",
+      "partial": false,
+      "ignoredCharacters": 0,
+      "notes": [],
+      "diagnostics": []
+    },
+    "ruleIdScheme": "<documentId>-<local id>",
+    "factRenames": {},
+    "factTranslations": {},
+    "selfReferencesRemoved": 2,
+    "schemaRepairs": [],
+    "coverage": {
+      "sentences": 38,
+      "sentencesCited": 32,
+      "uncitedSentences": [
+        {
+          "id": "doc/teil-2/par-6/abs-1/satz-3",
+          "text": "Satz 2 gilt nicht für Antennen im Außenbereich einschließlich der Masten mit einer maximalen Breite des Mastes von 1,50 m und einer Gesamthöhe von nicht mehr al…"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-1/satz-4",
+          "text": "Eine Abstandsfläche ist nicht erforderlich vor Außenwänden, die an Grundstücksgrenzen errichtet werden, wenn nach planungsrechtlichen Vorschriften an die Grenze…"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-2/satz-2",
+          "text": "Nr. 1 und § 32 Abs. 2 müssen auf dem Grundstück selbst liegen. 2 Sie dürfen auch auf öffentlichen Verkehrs-, Grün- und Wasserflächen liegen, jedoch nur bis zu d…"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-2/satz-3",
+          "text": "Abstandsflächen sowie Abstände im Sinne des Satzes 1 dürfen sich ganz oder teilweise auf andere Grundstücke erstrecken, wenn öffentlich-rechtlich gesichert ist,…"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-6/s1",
+          "text": "Bei der Bemessung der Abstandsflächen bleiben außer Betracht vor die Außenwand vortretende Bauteile wie Gesimse und Dachüberstände, Vorbauten, wenn sie insgesam…"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-8/satz-1",
+          "text": "In den Abstandsflächen eines Gebäudes sowie ohne eigene Abstandsflächen sind, auch wenn sie nicht an die Grundstücksgrenze oder an das Gebäude angebaut werden, …"
+        }
+      ],
+      "elements": 37,
+      "elementsCited": 24,
+      "uncitedElements": [
+        {
+          "id": "doc/teil-2/par-6/abs-1/nr-1",
+          "text": "die an Grundstücksgrenzen errichtet werden, wenn nach planungsrechtlichen Vorschriften an die Grenze gebaut werden muss oder gebaut werden darf, oder"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-1/nr-2",
+          "text": "soweit nach der umgebenden Bebauung im Sinne des § 34 Abs. 1 Satz 1 BauGB abweichende Gebäudeabstände zulässig sind."
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-6",
+          "text": "Bei der Bemessung der Abstandsflächen bleiben außer Betracht"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-6/nr-1",
+          "text": "vor die Außenwand vortretende Bauteile wie Gesimse und Dachüberstände,"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-6/nr-2",
+          "text": "Vorbauten, wenn sie"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-6/nr-2/lit-a",
+          "text": "insgesamt nicht mehr als ein Drittel der Breite der jeweiligen Außenwand in Anspruch nehmen,"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-6/nr-2/lit-b",
+          "text": "nicht mehr als 1,50 m vor diese Außenwand vortreten und"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-6/nr-2/lit-c",
+          "text": "mindestens 2 m von der gegenüberliegenden Nachbargrenze entfernt bleiben,"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-6/nr-3",
+          "text": "bei Gebäuden an der Grundstücksgrenze die Seitenwände von Vorbauten und Dachaufbauten, auch wenn sie nicht an der Grundstücksgrenze errichtet werden."
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-8",
+          "text": "1 In den Abstandsflächen eines Gebäudes sowie ohne eigene Abstandsflächen sind, auch wenn sie nicht an die Grundstücksgrenze oder an das Gebäude angebaut werden…"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-8/nr-1",
+          "text": "Garagen und Gebäude ohne Aufenthaltsräume und Feuerstätten mit einer mittleren Wandhöhe bis zu 3 m und einer Gesamtlänge je Grundstücksgrenze von 9 m,"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-8/nr-2",
+          "text": "gebäudeunabhängige Solaranlagen mit einer Höhe bis zu 3 m und einer Gesamtlänge je Grundstücksgrenze von 9 m,"
+        },
+        {
+          "id": "doc/teil-2/par-6/abs-8/nr-3",
+          "text": "Stützmauern und geschlossene Einfriedungen in Gewerbe- und Industriegebieten, außerhalb dieser Baugebiete mit einer Höhe bis zu 2 m."
+        }
+      ],
+      "citedOnlyByRejected": [
+        "doc/teil-2/par-6/abs-6",
+        "doc/teil-2/par-6/abs-6/nr-1",
+        "doc/teil-2/par-6/abs-6/nr-2",
+        "doc/teil-2/par-6/abs-6/nr-2/lit-a",
+        "doc/teil-2/par-6/abs-6/nr-2/lit-b",
+        "doc/teil-2/par-6/abs-6/nr-2/lit-c",
+        "doc/teil-2/par-6/abs-6/nr-3",
+        "doc/teil-2/par-6/abs-6/s1",
+        "doc/teil-2/par-6/abs-8",
+        "doc/teil-2/par-6/abs-8/nr-1",
+        "doc/teil-2/par-6/abs-8/nr-2",
+        "doc/teil-2/par-6/abs-8/nr-3",
+        "doc/teil-2/par-6/abs-8/satz-1"
+      ],
+      "coveredByExceptionText": [
+        {
+          "id": "doc/teil-2/par-6/abs-1/satz-3",
+          "matchedBy": [
+            {
+              "ruleId": "mbo-par-6-abs-1-satz-2",
+              "exception": 0
+            }
+          ],
+          "verified": false
+        }
+      ]
+    },
+    "review": {
+      "status": "draft",
+      "humanReviewRequired": true,
+      "reason": "LLM-generated drafts; no record is a legal compliance decision until a person has reviewed it."
+    },
+    "note": "Generated by an LLM from the Legal JSON; a draft that needs human review.",
+    "rulesRejected": [
+      {
+        "index": 20,
+        "id": "mbo-par-6-abs-6-s1",
+        "reasons": [
+          "requirementExpression: unexpected property 'requirements'"
+        ],
+        "candidate": {
+          "schemaVersion": "2.0",
+          "id": "mbo-par-6-abs-6-s1",
+          "source": {
+            "documentId": "mbo",
+            "documentTitle": "MUSTERBAUORDNUNG",
+            "documentVersion": "2002-11",
+            "language": "de",
+            "citation": "§ 6 Abs. 6",
+            "elements": [
+              {
+                "elementId": "doc/teil-2/par-6/abs-6",
+                "sentenceId": "doc/teil-2/par-6/abs-6/s1",
+                "role": "primary",
+                "pdfPages": [
+                  10,
+                  11
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-6/nr-1",
+                "sentenceId": "doc/teil-2/par-6/abs-6/s1",
+                "role": "primary",
+                "pdfPages": [
+                  10
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-6/nr-2",
+                "sentenceId": "doc/teil-2/par-6/abs-6/s1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-6/nr-2/lit-a",
+                "sentenceId": "doc/teil-2/par-6/abs-6/s1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-6/nr-2/lit-b",
+                "sentenceId": "doc/teil-2/par-6/abs-6/s1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-6/nr-2/lit-c",
+                "sentenceId": "doc/teil-2/par-6/abs-6/s1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-6/nr-3",
+                "sentenceId": "doc/teil-2/par-6/abs-6/s1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              }
+            ]
+          },
+          "classification": {
+            "type": "obligation",
+            "normativeCategory": "substantive",
+            "summary": "Bei der Bemessung der Abstandsflächen bleiben vor die Außenwand vortretende Bauteile wie Gesimse und Dachüberstände außer Betracht; ebenso Vorbauten, wenn sie insgesamt nicht mehr als ein Drittel der Breite der jeweiligen Außenwand in Anspruch nehmen, nicht mehr als 1,50 m vortreten und mindestens 2 m von der gegenüberliegenden Nachbargrenze entfernt bleiben; sowie bei Gebäuden an der Grundstücksgrenze die Seitenwände von Vorbauten und Dachaufbauten."
+          },
+          "applicability": {
+            "targets": [
+              {
+                "entity": "Abstandsfläche",
+                "entityType": "setback_area",
+                "description": "Bemessung der Abstandsfläche"
+              }
+            ]
+          },
+          "requirementExpression": {
+            "kind": "any",
+            "requirements": [
+              {
+                "kind": "requirement",
+                "requirement": {
+                  "kind": "boolean",
+                  "fact": "projecting_building_component.excluded_from_setback_calculation",
+                  "value": true,
+                  "description": "Vor die Außenwand vortretende Bauteile wie Gesimse und Dachüberstände bleiben bei der Bemessung der Abstandsflächen außer Betracht (Nr. 1)"
+                }
+              },
+              {
+                "kind": "requirement",
+                "requirement": {
+                  "kind": "all",
+                  "requirements": [
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "boolean",
+                        "fact": "projection.excluded_from_setback_calculation",
+                        "value": true,
+                        "description": "Vorbauten bleiben außer Betracht, wenn alle drei Bedingungen erfüllt sind"
+                      }
+                    },
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "formula",
+                        "fact": "projection.total_width",
+                        "operator": "<=",
+                        "unit": "m",
+                        "expression": {
+                          "kind": "operation",
+                          "operator": "multiply",
+                          "operands": [
+                            {
+                              "kind": "operation",
+                              "operator": "divide",
+                              "operands": [
+                                {
+                                  "kind": "literal",
+                                  "value": 1
+                                },
+                                {
+                                  "kind": "literal",
+                                  "value": 3
+                                }
+                              ]
+                            },
+                            {
+                              "kind": "fact",
+                              "name": "exterior_wall.width",
+                              "unit": "m"
+                            }
+                          ]
+                        },
+                        "description": "Vorbauten nehmen insgesamt nicht mehr als ein Drittel der Breite der jeweiligen Außenwand in Anspruch"
+                      }
+                    },
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "numeric",
+                        "fact": "projection.protrusion_depth",
+                        "operator": "<=",
+                        "value": 1.5,
+                        "unit": "m",
+                        "description": "Vorbauten treten nicht mehr als 1,50 m vor die Außenwand"
+                      }
+                    },
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "numeric",
+                        "fact": "projection.distance_to_neighbouring_boundary",
+                        "operator": ">=",
+                        "value": 2,
+                        "unit": "m",
+                        "description": "Vorbauten bleiben mindestens 2 m von der gegenüberliegenden Nachbargrenze entfernt"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "requirement",
+                "requirement": {
+                  "kind": "boolean",
+                  "fact": "projection_sidewall.excluded_from_setback_calculation_at_plot_boundary",
+                  "value": true,
+                  "description": "Bei Gebäuden an der Grundstücksgrenze bleiben die Seitenwände von Vorbauten und Dachaufbauten außer Betracht, auch wenn sie nicht an der Grundstücksgrenze errichtet werden (Nr. 3)"
+                }
+              }
+            ]
+          },
+          "review": {
+            "status": "draft",
+            "machineCheckable": true,
+            "checkMethods": [
+              "ids"
+            ],
+            "ambiguities": [
+              "Die drei Nummern sind unabhängige Tatbestände; Nr. 1 gilt immer, Nr. 2 nur bei Erfüllung aller drei Unterbedingungen, Nr. 3 nur bei Gebäuden an der Grundstücksgrenze. Die requirementExpression mit 'any' bildet die Unabhängigkeit der Tatbestände ab, nicht eine Wahlmöglichkeit."
+            ]
+          }
+        }
+      },
+      {
+        "index": 23,
+        "id": "mbo-par-6-abs-8-satz-1",
+        "reasons": [
+          "requirementExpression: unexpected property 'requirements'"
+        ],
+        "candidate": {
+          "schemaVersion": "2.0",
+          "id": "mbo-par-6-abs-8-satz-1",
+          "source": {
+            "documentId": "mbo",
+            "documentTitle": "MUSTERBAUORDNUNG",
+            "documentVersion": "2002-11",
+            "language": "de",
+            "citation": "§ 6 Abs. 8 Satz 1",
+            "elements": [
+              {
+                "elementId": "doc/teil-2/par-6/abs-8",
+                "sentenceId": "doc/teil-2/par-6/abs-8/satz-1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-8/nr-1",
+                "sentenceId": "doc/teil-2/par-6/abs-8/satz-1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-8/nr-2",
+                "sentenceId": "doc/teil-2/par-6/abs-8/satz-1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              },
+              {
+                "elementId": "doc/teil-2/par-6/abs-8/nr-3",
+                "sentenceId": "doc/teil-2/par-6/abs-8/satz-1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              }
+            ]
+          },
+          "classification": {
+            "type": "permission",
+            "normativeCategory": "substantive",
+            "summary": "In den Abstandsflächen eines Gebäudes sowie ohne eigene Abstandsflächen sind zulässig: Garagen und Gebäude ohne Aufenthaltsräume und Feuerstätten mit mittlerer Wandhöhe bis 3 m und Gesamtlänge je Grundstücksgrenze von 9 m; gebäudeunabhängige Solaranlagen mit Höhe bis 3 m und Gesamtlänge je Grundstücksgrenze von 9 m; Stützmauern und geschlossene Einfriedungen in Gewerbe- und Industriegebieten, außerhalb dieser Baugebiete mit einer Höhe bis zu 2 m."
+          },
+          "applicability": {
+            "actors": [
+              {
+                "role": "beneficiary",
+                "entity": "Bauherr"
+              }
+            ]
+          },
+          "requirementExpression": {
+            "kind": "any",
+            "requirements": [
+              {
+                "kind": "requirement",
+                "requirement": {
+                  "kind": "all",
+                  "requirements": [
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "boolean",
+                        "fact": "structure.is_garage_or_building_without_habitable_rooms_and_fireplaces",
+                        "value": true
+                      }
+                    },
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "numeric",
+                        "fact": "structure.mean_wall_height",
+                        "operator": "<=",
+                        "value": 3,
+                        "unit": "m"
+                      }
+                    },
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "numeric",
+                        "fact": "structure.total_length_per_plot_boundary",
+                        "operator": "<=",
+                        "value": 9,
+                        "unit": "m"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "requirement",
+                "requirement": {
+                  "kind": "all",
+                  "requirements": [
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "boolean",
+                        "fact": "structure.is_building_independent_solar_installation",
+                        "value": true
+                      }
+                    },
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "numeric",
+                        "fact": "structure.height",
+                        "operator": "<=",
+                        "value": 3,
+                        "unit": "m"
+                      }
+                    },
+                    {
+                      "kind": "requirement",
+                      "requirement": {
+                        "kind": "numeric",
+                        "fact": "structure.total_length_per_plot_boundary",
+                        "operator": "<=",
+                        "value": 9,
+                        "unit": "m"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "requirement",
+                "requirement": {
+                  "kind": "boolean",
+                  "fact": "structure.is_retaining_wall_or_closed_enclosure_permitted_in_zone",
+                  "value": true,
+                  "description": "Stützmauern und geschlossene Einfriedungen in Gewerbe- und Industriegebieten ohne Höhenbeschränkung, außerhalb dieser Baugebiete mit einer Höhe bis zu 2 m"
+                }
+              }
+            ]
+          },
+          "review": {
+            "status": "draft",
+            "machineCheckable": true,
+            "checkMethods": [
+              "ids"
+            ],
+            "ambiguities": [
+              "Nr. 3: Stützmauern und geschlossene Einfriedungen in Gewerbe- und Industriegebieten sind ohne Höhenbeschränkung zulässig; außerhalb dieser Gebiete nur bis 2 m Höhe. Diese Fallunterscheidung ist in der requirementExpression vereinfacht dargestellt."
+            ]
+          }
+        }
+      },
+      {
+        "index": 24,
+        "id": "mbo-par-6-abs-8-nr-3-height",
+        "reasons": [
+          "requirementExpression: unexpected property 'requirements'"
+        ],
+        "candidate": {
+          "schemaVersion": "2.0",
+          "id": "mbo-par-6-abs-8-nr-3-height",
+          "source": {
+            "documentId": "mbo",
+            "documentTitle": "MUSTERBAUORDNUNG",
+            "documentVersion": "2002-11",
+            "language": "de",
+            "citation": "§ 6 Abs. 8 Nr. 3",
+            "elements": [
+              {
+                "elementId": "doc/teil-2/par-6/abs-8/nr-3",
+                "sentenceId": "doc/teil-2/par-6/abs-8/satz-1",
+                "role": "primary",
+                "pdfPages": [
+                  11
+                ]
+              }
+            ]
+          },
+          "classification": {
+            "type": "permission",
+            "normativeCategory": "substantive",
+            "summary": "Stützmauern und geschlossene Einfriedungen sind in den Abstandsflächen zulässig: in Gewerbe- und Industriegebieten ohne Höhenbeschränkung, außerhalb dieser Baugebiete mit einer Höhe bis zu 2 m."
+          },
+          "applicability": {
+            "targets": [
+              {
+                "entity": "Stützmauer oder geschlossene Einfriedung",
+                "entityType": "retaining_wall_or_enclosure"
+              }
+            ],
+            "actors": [
+              {
+                "role": "beneficiary",
+                "entity": "Bauherr"
+              }
+            ]
+          },
+          "requirementExpression": {
+            "kind": "any",
+            "requirements": [
+              {
+                "kind": "requirement",
+                "requirement": {
+                  "kind": "comparison",
+                  "fact": "building_zone.type",
+                  "operator": "in",
+                  "value": [
+                    "commercial_zone",
+                    "industrial_zone"
+                  ],
+                  "valueType": "string_array"
+                }
+              },
+              {
+                "kind": "requirement",
+                "requirement": {
+                  "kind": "numeric",
+                  "fact": "structure.height",
+                  "operator": "<=",
+                  "value": 2,
+                  "unit": "m"
+                }
+              }
+            ]
+          },
+          "review": {
+            "status": "draft",
+            "machineCheckable": true,
+            "checkMethods": [
+              "ids"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "rules": [
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-4-abs-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 4 Abs. 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-4/abs-1",
+            "sentenceId": "doc/teil-2/par-4/abs-1/s1",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "conditional_requirement",
+        "normativeCategory": "substantive",
+        "summary": "Gebäude dürfen nur errichtet werden, wenn das Grundstück an einer befahrbaren öffentlichen Verkehrsfläche liegt oder eine befahrbare, öffentlich-rechtlich gesicherte Zufahrt dazu hat."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Gebäude",
+            "entityType": "building"
+          }
+        ]
+      },
+      "requirementExpression": {
+        "kind": "any",
+        "requirements": [
+          {
+            "kind": "requirement",
+            "requirement": {
+              "kind": "boolean",
+              "fact": "plot.adjoins_drivable_public_traffic_area",
+              "value": true,
+              "description": "Das Grundstück liegt in angemessener Breite an einer befahrbaren öffentlichen Verkehrsfläche"
+            }
+          },
+          {
+            "kind": "requirement",
+            "requirement": {
+              "kind": "boolean",
+              "fact": "plot.has_secured_drivable_access_to_public_traffic_area",
+              "value": true,
+              "description": "Das Grundstück hat eine befahrbare, öffentlich-rechtlich gesicherte Zufahrt zu einer befahrbaren öffentlichen Verkehrsfläche"
+            }
+          }
+        ]
+      },
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "ambiguities": [
+          "'angemessener Breite' ist unbestimmt und bedarf einer Einzelfallbewertung"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-4-abs-2",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 4 Abs. 2",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-4/abs-2",
+            "sentenceId": "doc/teil-2/par-4/abs-2/s1",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "conditional_requirement",
+        "normativeCategory": "substantive",
+        "summary": "Ein Gebäude auf mehreren Grundstücken ist nur zulässig, wenn öffentlich-rechtlich gesichert ist, dass keine diesem Gesetz widersprechenden Verhältnisse eintreten können."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Gebäude auf mehreren Grundstücken",
+            "entityType": "building",
+            "description": "Gebäude, das sich über mehrere Grundstücke erstreckt"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "building.multi_plot_compliance_legally_secured",
+          "value": true,
+          "description": "Es ist öffentlich-rechtlich gesichert, dass durch die Bebauung auf mehreren Grundstücken keine Verhältnisse eintreten können, die Vorschriften dieses Gesetzes oder aufgrund dieses Gesetzes widersprechen"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-5-abs-1-satz-1-a",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 5 Abs. 1 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-5/abs-1",
+            "sentenceId": "doc/teil-2/par-5/abs-1/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Von öffentlichen Verkehrsflächen ist für die Feuerwehr ein geradliniger Zu- oder Durchgang zu rückwärtigen Gebäuden zu schaffen."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "rückwärtiges Gebäude",
+            "entityType": "building",
+            "description": "Gebäude, das von der öffentlichen Verkehrsfläche aus nicht direkt zugänglich ist"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "access.straight_pedestrian_access_from_public_road_provided",
+          "value": true,
+          "description": "Von öffentlichen Verkehrsflächen ist ein geradliniger Zu- oder Durchgang zu rückwärtigen Gebäuden vorhanden"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-5-abs-1-satz-1-b",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 5 Abs. 1 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-5/abs-1",
+            "sentenceId": "doc/teil-2/par-5/abs-1/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Zu anderen Gebäuden ist ein geradliniger Zu- oder Durchgang zu schaffen, wenn der zweite Rettungsweg über Rettungsgeräte der Feuerwehr führt."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Gebäude",
+            "entityType": "building",
+            "description": "Gebäude, deren zweiter Rettungsweg über Rettungsgeräte der Feuerwehr führt"
+          }
+        ],
+        "conditions": {
+          "kind": "comparison",
+          "fact": "building.second_escape_route_via_fire_brigade_equipment",
+          "operator": "==",
+          "value": true,
+          "valueType": "boolean"
+        }
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "access.straight_pedestrian_access_from_public_road_provided",
+          "value": true,
+          "description": "Von öffentlichen Verkehrsflächen ist ein geradliniger Zu- oder Durchgang zu dem Gebäude vorhanden"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-5-abs-1-satz-2",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 5 Abs. 1 Satz 2",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-5/abs-1",
+            "sentenceId": "doc/teil-2/par-5/abs-1/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Zu Gebäuden, bei denen die Brüstungsoberkante der zum Anleitern bestimmten Fenster oder Stellen mehr als 8 m über Gelände liegt, ist anstelle eines Zu- oder Durchgangs eine Zu- oder Durchfahrt zu schaffen."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Gebäude",
+            "entityType": "building",
+            "description": "Gebäude, bei denen die Oberkante der Brüstung von zum Anleitern bestimmten Fenstern oder Stellen mehr als 8 m über Gelände liegt, in den Fällen des Satzes 1"
+          }
+        ],
+        "conditions": {
+          "kind": "comparison",
+          "fact": "building.ladder_access_parapet_height",
+          "operator": ">",
+          "value": 8,
+          "valueType": "number",
+          "unit": "m"
+        }
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "access.drivable_access_from_public_road_provided",
+          "value": true,
+          "description": "Anstelle eines Zu- oder Durchgangs ist eine Zu- oder Durchfahrt zu schaffen"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-5-abs-1-satz-3",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 5 Abs. 1 Satz 3",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-5/abs-1",
+            "sentenceId": "doc/teil-2/par-5/abs-1/satz-3",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Ist für die Personenrettung der Einsatz von Hubrettungsfahrzeugen erforderlich, sind die dafür erforderlichen Aufstell- und Bewegungsflächen vorzusehen."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Grundstück",
+            "entityType": "plot"
+          }
+        ],
+        "conditions": {
+          "kind": "comparison",
+          "fact": "building.aerial_rescue_vehicle_required",
+          "operator": "==",
+          "value": true,
+          "valueType": "boolean"
+        }
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "plot.aerial_vehicle_positioning_areas_provided",
+          "value": true,
+          "description": "Die für den Einsatz von Hubrettungsfahrzeugen erforderlichen Aufstell- und Bewegungsflächen sind vorgesehen"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-5-abs-1-satz-4",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 5 Abs. 1 Satz 4",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-5/abs-1",
+            "sentenceId": "doc/teil-2/par-5/abs-1/satz-4",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Bei Gebäuden, die ganz oder mit Teilen mehr als 50 m von einer öffentlichen Verkehrsfläche entfernt sind, sind Zufahrten oder Durchfahrten zu den vor und hinter den Gebäuden gelegenen Grundstücksteilen und Bewegungsflächen herzustellen, wenn sie aus Gründen des Feuerwehreinsatzes erforderlich sind."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Gebäude",
+            "entityType": "building",
+            "description": "Gebäude, die ganz oder mit Teilen mehr als 50 m von einer öffentlichen Verkehrsfläche entfernt sind"
+          }
+        ],
+        "conditions": {
+          "kind": "all",
+          "conditions": [
+            {
+              "kind": "comparison",
+              "fact": "building.distance_to_public_traffic_area",
+              "operator": ">",
+              "value": 50,
+              "valueType": "number",
+              "unit": "m"
+            },
+            {
+              "kind": "comparison",
+              "fact": "access.required_for_fire_brigade_operations",
+              "operator": "==",
+              "value": true,
+              "valueType": "boolean"
+            }
+          ]
+        }
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "access.drivable_access_to_plot_areas_around_building_provided",
+          "value": true,
+          "description": "Zufahrten oder Durchfahrten nach Satz 2 zu den vor und hinter den Gebäuden gelegenen Grundstücksteilen und Bewegungsflächen sind hergestellt"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-5-abs-2-satz-1-a",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 5 Abs. 2 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-5/abs-2",
+            "sentenceId": "doc/teil-2/par-5/abs-2/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Zu- und Durchfahrten, Aufstellflächen und Bewegungsflächen müssen für Feuerwehrfahrzeuge ausreichend befestigt und tragfähig sein."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Zu- und Durchfahrten, Aufstellflächen und Bewegungsflächen",
+            "entityType": "access_area",
+            "description": "Flächen nach § 5 Abs. 1"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "access_area.sufficiently_paved_and_load_bearing",
+          "value": true,
+          "description": "Ausreichend befestigt und tragfähig für Feuerwehrfahrzeuge"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-5-abs-2-satz-1-b",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 5 Abs. 2 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-5/abs-2",
+            "sentenceId": "doc/teil-2/par-5/abs-2/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Zu- und Durchfahrten, Aufstellflächen und Bewegungsflächen sind als solche zu kennzeichnen und ständig frei zu halten; die Kennzeichnung von Zufahrten muss von der öffentlichen Verkehrsfläche aus sichtbar sein."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Zu- und Durchfahrten, Aufstellflächen und Bewegungsflächen",
+            "entityType": "access_area"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "access_area.marked_and_kept_clear",
+          "value": true,
+          "description": "Als Feuerwehrflächen gekennzeichnet und ständig freigehalten"
+        },
+        {
+          "kind": "boolean",
+          "fact": "access_area.marking_visible_from_public_road",
+          "value": true,
+          "description": "Die Kennzeichnung von Zufahrten ist von der öffentlichen Verkehrsfläche aus sichtbar"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-5-abs-2-satz-2",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 5 Abs. 2 Satz 2",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-5/abs-2",
+            "sentenceId": "doc/teil-2/par-5/abs-2/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              9
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "prohibition",
+        "normativeCategory": "substantive",
+        "summary": "Fahrzeuge dürfen auf den Feuerwehrflächen nach Satz 1 nicht abgestellt werden."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Zu- und Durchfahrten, Aufstellflächen und Bewegungsflächen",
+            "entityType": "access_area"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "access_area.vehicles_parked",
+          "value": false,
+          "description": "Auf den Flächen nach Satz 1 dürfen keine Fahrzeuge abgestellt werden"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-1-satz-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 1 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-1",
+            "sentenceId": "doc/teil-2/par-6/abs-1/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              9,
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Vor den Außenwänden von Gebäuden sind Abstandsflächen von oberirdischen Gebäuden freizuhalten."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Abstandsfläche",
+            "entityType": "setback_area",
+            "description": "Fläche vor den Außenwänden von Gebäuden"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "setback_area.kept_free_of_above_ground_buildings",
+          "value": true,
+          "description": "Die Abstandsfläche vor den Außenwänden ist von oberirdischen Gebäuden freizuhalten"
+        }
+      ],
+      "exceptions": [
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Eine Abstandsfläche ist nicht erforderlich vor Außenwänden, die an Grundstücksgrenzen errichtet werden, wenn nach planungsrechtlichen Vorschriften an die Grenze gebaut werden muss oder gebaut werden darf.",
+          "condition": {
+            "kind": "all",
+            "conditions": [
+              {
+                "kind": "comparison",
+                "fact": "exterior_wall.built_at_plot_boundary",
+                "operator": "==",
+                "value": true,
+                "valueType": "boolean"
+              },
+              {
+                "kind": "comparison",
+                "fact": "exterior_wall.building_at_boundary_required_or_permitted_by_planning_law",
+                "operator": "==",
+                "value": true,
+                "valueType": "boolean"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Eine Abstandsfläche ist nicht erforderlich, soweit nach der umgebenden Bebauung im Sinne des § 34 Abs. 1 Satz 1 BauGB abweichende Gebäudeabstände zulässig sind.",
+          "condition": {
+            "kind": "comparison",
+            "fact": "exterior_wall.deviating_building_distances_permitted_by_surrounding_development",
+            "operator": "==",
+            "value": true,
+            "valueType": "boolean"
+          },
+          "references": [
+            {
+              "citation": "§ 34 Abs. 1 Satz 1 BauGB",
+              "resolution": "unresolved",
+              "relationship": "defined_by"
+            }
+          ]
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-1-satz-2",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 1 Satz 2",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-1",
+            "sentenceId": "doc/teil-2/par-6/abs-1/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              9,
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Satz 1 gilt entsprechend für andere Anlagen, von denen Wirkungen wie von Gebäuden ausgehen, gegenüber Gebäuden und Grundstücksgrenzen."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "andere Anlage mit gebäudeähnlicher Wirkung",
+            "entityType": "structure",
+            "description": "Anlagen, von denen Wirkungen wie von Gebäuden ausgehen"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "setback_area.kept_free_of_above_ground_buildings",
+          "value": true,
+          "description": "Abstandsflächen sind entsprechend § 6 Abs. 1 Satz 1 freizuhalten"
+        }
+      ],
+      "exceptions": [
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Satz 2 gilt nicht für Antennen im Außenbereich einschließlich der Masten mit einer maximalen Breite des Mastes von 1,50 m und einer Gesamthöhe von nicht mehr als 50 m gegenüber anderen Grundstücken im Außenbereich.",
+          "condition": {
+            "kind": "all",
+            "conditions": [
+              {
+                "kind": "comparison",
+                "fact": "structure.is_antenna_with_mast_in_outer_area",
+                "operator": "==",
+                "value": true,
+                "valueType": "boolean"
+              },
+              {
+                "kind": "comparison",
+                "fact": "structure.mast_width",
+                "operator": "<=",
+                "value": 1.5,
+                "valueType": "number",
+                "unit": "m"
+              },
+              {
+                "kind": "comparison",
+                "fact": "structure.total_height",
+                "operator": "<=",
+                "value": 50,
+                "valueType": "number",
+                "unit": "m"
+              },
+              {
+                "kind": "comparison",
+                "fact": "neighbouring_plot.is_in_outer_area",
+                "operator": "==",
+                "value": true,
+                "valueType": "boolean"
+              }
+            ]
+          }
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-2-satz-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 2 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-2",
+            "sentenceId": "doc/teil-2/par-6/abs-2/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Abstandsflächen sowie Abstände nach § 30 Abs. 2 Nr. 1 und § 32 Abs. 2 müssen auf dem Grundstück selbst liegen."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Abstandsfläche",
+            "entityType": "setback_area"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "setback_area.located_on_own_plot",
+          "value": true,
+          "description": "Die Abstandsfläche liegt auf dem Grundstück selbst"
+        }
+      ],
+      "exceptions": [
+        {
+          "kind": "alternative",
+          "effect": "modifies_rule",
+          "description": "Abstandsflächen dürfen auch auf öffentlichen Verkehrs-, Grün- und Wasserflächen liegen, jedoch nur bis zu deren Mitte.",
+          "requirements": [
+            {
+              "kind": "boolean",
+              "fact": "setback_area.located_on_public_traffic_green_or_water_area_up_to_midline",
+              "value": true,
+              "description": "Die Abstandsfläche liegt auf öffentlichen Verkehrs-, Grün- oder Wasserflächen bis zu deren Mitte"
+            }
+          ]
+        },
+        {
+          "kind": "alternative",
+          "effect": "modifies_rule",
+          "description": "Abstandsflächen dürfen sich ganz oder teilweise auf andere Grundstücke erstrecken, wenn öffentlich-rechtlich gesichert ist, dass sie nicht überbaut werden; sie dürfen auf die auf diesen Grundstücken erforderlichen Abstandsflächen nicht angerechnet werden.",
+          "condition": {
+            "kind": "comparison",
+            "fact": "setback_area.non_development_legally_secured_on_other_plot",
+            "operator": "==",
+            "value": true,
+            "valueType": "boolean"
+          },
+          "requirements": [
+            {
+              "kind": "boolean",
+              "fact": "setback_area.counted_towards_other_plot_setback",
+              "value": false,
+              "description": "Die Abstandsfläche darf nicht auf die auf dem anderen Grundstück erforderlichen Abstandsflächen angerechnet werden"
+            }
+          ]
+        }
+      ],
+      "references": [
+        {
+          "citation": "§ 30 Abs. 2 Nr. 1 MBO",
+          "resolution": "unresolved",
+          "relationship": "related_to"
+        },
+        {
+          "citation": "§ 32 Abs. 2 MBO",
+          "resolution": "unresolved",
+          "relationship": "related_to"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-3",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 3",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-3",
+            "sentenceId": "doc/teil-2/par-6/abs-3/s1",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-3/nr-1",
+            "sentenceId": "doc/teil-2/par-6/abs-3/s1",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-3/nr-2",
+            "sentenceId": "doc/teil-2/par-6/abs-3/s1",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-3/nr-3",
+            "sentenceId": "doc/teil-2/par-6/abs-3/s1",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "prohibition",
+        "normativeCategory": "substantive",
+        "summary": "Abstandsflächen dürfen sich nicht überdecken; dies gilt nicht für Außenwände in einem Winkel von mehr als 75 Grad zueinander, für Außenwände zu einem fremder Sicht entzogenen Gartenhof bei Wohngebäuden der Gebäudeklassen 1 und 2, sowie für Gebäude und andere bauliche Anlagen, die in den Abstandsflächen zulässig sind."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Abstandsfläche",
+            "entityType": "setback_area"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "setback_areas.overlap",
+          "value": false,
+          "description": "Abstandsflächen dürfen sich nicht überdecken"
+        }
+      ],
+      "exceptions": [
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Das Überdeckungsverbot gilt nicht für Außenwände, die in einem Winkel von mehr als 75 Grad zueinander stehen.",
+          "condition": {
+            "kind": "comparison",
+            "fact": "exterior_walls.angle_between",
+            "operator": ">",
+            "value": 75,
+            "valueType": "number",
+            "unit": "deg"
+          }
+        },
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Das Überdeckungsverbot gilt nicht für Außenwände zu einem fremder Sicht entzogenen Gartenhof bei Wohngebäuden der Gebäudeklassen 1 und 2.",
+          "condition": {
+            "kind": "all",
+            "conditions": [
+              {
+                "kind": "comparison",
+                "fact": "building.use_type",
+                "operator": "==",
+                "value": "residential",
+                "valueType": "string"
+              },
+              {
+                "kind": "comparison",
+                "fact": "building.building_class",
+                "operator": "in",
+                "value": [
+                  1,
+                  2
+                ],
+                "valueType": "integer_array"
+              },
+              {
+                "kind": "comparison",
+                "fact": "exterior_wall.faces_private_garden_courtyard",
+                "operator": "==",
+                "value": true,
+                "valueType": "boolean"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Das Überdeckungsverbot gilt nicht für Gebäude und andere bauliche Anlagen, die in den Abstandsflächen zulässig sind.",
+          "condition": {
+            "kind": "comparison",
+            "fact": "structure.permitted_within_setback_area",
+            "operator": "==",
+            "value": true,
+            "valueType": "boolean"
+          }
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-4-satz-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 4 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-4",
+            "sentenceId": "doc/teil-2/par-6/abs-4/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "definition",
+        "normativeCategory": "definitional",
+        "summary": "Die Tiefe der Abstandsfläche bemisst sich nach der Wandhöhe und wird senkrecht zur Wand gemessen."
+      },
+      "definition": {
+        "term": "Abstandsflächentiefe",
+        "text": "Die Tiefe der Abstandsfläche bemisst sich nach der Wandhöhe; sie wird senkrecht zur Wand gemessen."
+      },
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-4-satz-2",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 4 Satz 2",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-4",
+            "sentenceId": "doc/teil-2/par-6/abs-4/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "definition",
+        "normativeCategory": "definitional",
+        "summary": "Wandhöhe ist das Maß von der Geländeoberfläche bis zum Schnittpunkt der Wand mit der Dachhaut oder bis zum oberen Abschluss der Wand."
+      },
+      "definition": {
+        "term": "Wandhöhe",
+        "text": "Wandhöhe ist das Maß von der Geländeoberfläche bis zum Schnittpunkt der Wand mit der Dachhaut oder bis zum oberen Abschluss der Wand."
+      },
+      "review": {
+        "status": "draft",
+        "machineCheckable": true,
+        "checkMethods": [
+          "ids"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-4-satz-3-4",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 4 Sätze 3 und 4",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-4",
+            "sentenceId": "doc/teil-2/par-6/abs-4/satz-3",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-4",
+            "sentenceId": "doc/teil-2/par-6/abs-4/satz-4",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "definition",
+        "normativeCategory": "definitional",
+        "summary": "Die Höhe von Dächern mit einer Neigung von weniger als 70 Grad wird zu einem Drittel der Wandhöhe hinzugerechnet; andernfalls wird die Höhe des Daches voll hinzugerechnet."
+      },
+      "definition": {
+        "term": "Dachhöhenanteil an der Wandhöhe",
+        "text": "Die Höhe von Dächern mit einer Neigung von weniger als 70 Grad wird zu einem Drittel der Wandhöhe hinzugerechnet. Andernfalls wird die Höhe des Daches voll hinzugerechnet.",
+        "condition": {
+          "kind": "comparison",
+          "fact": "roof_pitch",
+          "operator": "<",
+          "value": 70,
+          "valueType": "number",
+          "unit": "deg"
+        }
+      },
+      "review": {
+        "status": "draft",
+        "machineCheckable": true,
+        "checkMethods": [
+          "ids"
+        ],
+        "ambiguities": [
+          "Satz 4 (Dachneigung >= 70 Grad: volle Dachhöhe) ist als Ausnahme zu Satz 3 formuliert; beide Fälle sind in der Definition zusammengefasst",
+          "ODOS check: the source text of 'doc/teil-2/par-6/abs-4/satz-3' states 'einem Drittel', which no condition, requirement, duration or deadline of the records citing it contains; a threshold only in a description cannot be checked."
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-4-satz-6",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 4 Satz 6",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-4",
+            "sentenceId": "doc/teil-2/par-6/abs-4/satz-6",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-4",
+            "sentenceId": "doc/teil-2/par-6/abs-4/satz-3",
+            "role": "context",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-4",
+            "sentenceId": "doc/teil-2/par-6/abs-4/satz-4",
+            "role": "context",
+            "pdfPages": [
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "definition",
+        "normativeCategory": "definitional",
+        "summary": "Das sich aus Wandhöhe und anteiliger Dachhöhe ergebende Maß ist H."
+      },
+      "definition": {
+        "term": "H",
+        "text": "Das sich ergebende Maß ist H. H ergibt sich aus der Wandhöhe zuzüglich des nach Sätzen 3 und 4 anzurechnenden Dachhöhenanteils."
+      },
+      "review": {
+        "status": "draft",
+        "machineCheckable": true,
+        "checkMethods": [
+          "ids"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-4-satz-5",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 4 Satz 5",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-4",
+            "sentenceId": "doc/teil-2/par-6/abs-4/satz-5",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Die Sätze 1 bis 4 gelten für Dachaufbauten entsprechend."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Dachaufbau",
+            "entityType": "roof_structure"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "roof_structure.setback_depth_calculated_per_par6_abs4_satz1_to_4",
+          "value": true,
+          "description": "Die Sätze 1 bis 4 des § 6 Abs. 4 gelten für Dachaufbauten entsprechend"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-5-satz-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 5 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-5",
+            "sentenceId": "doc/teil-2/par-6/abs-5/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-5",
+            "sentenceId": "doc/teil-2/par-6/abs-5/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-5",
+            "sentenceId": "doc/teil-2/par-6/abs-5/satz-3",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-5",
+            "sentenceId": "doc/teil-2/par-6/abs-5/satz-4",
+            "role": "primary",
+            "pdfPages": [
+              10
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Die Tiefe der Abstandsflächen beträgt 0,4 H, mindestens 3 m. In Gewerbe- und Industriegebieten genügt 0,2 H, mindestens 3 m. Vor Wohngebäuden der Gebäudeklassen 1 und 2 mit nicht mehr als drei oberirdischen Geschossen genügt 3 m. Städtebauliche Satzungen können abweichende Tiefen vorschreiben."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Abstandsfläche",
+            "entityType": "setback_area"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "formula",
+          "fact": "setback_area.depth",
+          "operator": "==",
+          "unit": "m",
+          "expression": {
+            "kind": "operation",
+            "operator": "max",
+            "operands": [
+              {
+                "kind": "operation",
+                "operator": "multiply",
+                "operands": [
+                  {
+                    "kind": "literal",
+                    "value": 0.4
+                  },
+                  {
+                    "kind": "fact",
+                    "name": "measure_h",
+                    "unit": "m"
+                  }
+                ]
+              },
+              {
+                "kind": "literal",
+                "value": 3,
+                "unit": "m"
+              }
+            ]
+          },
+          "description": "Die Tiefe der Abstandsfläche beträgt 0,4 H, mindestens 3 m"
+        }
+      ],
+      "exceptions": [
+        {
+          "kind": "alternative",
+          "effect": "modifies_rule",
+          "description": "In Gewerbe- und Industriegebieten genügt eine Tiefe von 0,2 H, mindestens 3 m.",
+          "condition": {
+            "kind": "comparison",
+            "fact": "building_zone.type",
+            "operator": "in",
+            "value": [
+              "commercial_zone",
+              "industrial_zone"
+            ],
+            "valueType": "string_array"
+          },
+          "requirements": [
+            {
+              "kind": "formula",
+              "fact": "setback_area.depth",
+              "operator": "==",
+              "unit": "m",
+              "expression": {
+                "kind": "operation",
+                "operator": "max",
+                "operands": [
+                  {
+                    "kind": "operation",
+                    "operator": "multiply",
+                    "operands": [
+                      {
+                        "kind": "literal",
+                        "value": 0.2
+                      },
+                      {
+                        "kind": "fact",
+                        "name": "measure_h",
+                        "unit": "m"
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "literal",
+                    "value": 3,
+                    "unit": "m"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "kind": "alternative",
+          "effect": "modifies_rule",
+          "description": "Vor den Außenwänden von Wohngebäuden der Gebäudeklassen 1 und 2 mit nicht mehr als drei oberirdischen Geschossen genügt als Tiefe der Abstandsfläche 3 m.",
+          "condition": {
+            "kind": "all",
+            "conditions": [
+              {
+                "kind": "comparison",
+                "fact": "building.use_type",
+                "operator": "==",
+                "value": "residential",
+                "valueType": "string"
+              },
+              {
+                "kind": "comparison",
+                "fact": "building.building_class",
+                "operator": "in",
+                "value": [
+                  1,
+                  2
+                ],
+                "valueType": "integer_array"
+              },
+              {
+                "kind": "comparison",
+                "fact": "building.above_ground_storey_count",
+                "operator": "<=",
+                "value": 3,
+                "valueType": "integer"
+              }
+            ]
+          },
+          "requirements": [
+            {
+              "kind": "numeric",
+              "fact": "setback_area.depth",
+              "operator": "==",
+              "value": 3,
+              "unit": "m"
+            }
+          ]
+        },
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Werden von einer städtebaulichen Satzung oder einer Satzung nach § 86 Außenwände zugelassen oder vorgeschrieben, vor denen Abstandsflächen größerer oder geringerer Tiefe als nach den Sätzen 1 bis 3 liegen müssten, finden die Sätze 1 bis 3 keine Anwendung, es sei denn, die Satzung ordnet die Geltung dieser Vorschriften an.",
+          "condition": {
+            "kind": "all",
+            "conditions": [
+              {
+                "kind": "comparison",
+                "fact": "urban_development_statute.prescribes_deviating_setback_depth",
+                "operator": "==",
+                "value": true,
+                "valueType": "boolean"
+              },
+              {
+                "kind": "comparison",
+                "fact": "urban_development_statute.orders_application_of_par6_abs5_satz1_to_3",
+                "operator": "==",
+                "value": false,
+                "valueType": "boolean"
+              }
+            ]
+          },
+          "references": [
+            {
+              "citation": "§ 86 MBO",
+              "resolution": "unresolved",
+              "relationship": "related_to"
+            }
+          ]
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": true,
+        "checkMethods": [
+          "ids"
+        ],
+        "ambiguities": [
+          "Die Ausnahme für städtebauliche Satzungen (Satz 4) enthält eine Rückausnahme ('es sei denn'), die die Anwendung der Sätze 1–3 wiederherstellt"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-7-satz-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 7 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-7",
+            "sentenceId": "doc/teil-2/par-6/abs-7/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              11
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-7/nr-1",
+            "sentenceId": "doc/teil-2/par-6/abs-7/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              11
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-6/abs-7/nr-2",
+            "sentenceId": "doc/teil-2/par-6/abs-7/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              11
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Maßnahmen zum Zwecke der Energieeinsparung und Solaranlagen an bestehenden Gebäuden bleiben bei der Bemessung der Abstandsflächen außer Betracht, wenn sie eine Stärke von nicht mehr als 0,25 m aufweisen und mindestens 2,50 m von der Nachbargrenze zurückbleiben."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Maßnahme zur Energieeinsparung oder Solaranlage an bestehendem Gebäude",
+            "entityType": "energy_saving_measure_or_solar_installation",
+            "description": "Maßnahmen zum Zwecke der Energieeinsparung und Solaranlagen an bestehenden Gebäuden, unabhängig davon, ob sie den Anforderungen der Absätze 2 bis 6 entsprechen"
+          }
+        ],
+        "conditions": {
+          "kind": "all",
+          "conditions": [
+            {
+              "kind": "comparison",
+              "fact": "measure.thickness",
+              "operator": "<=",
+              "value": 0.25,
+              "valueType": "number",
+              "unit": "m"
+            },
+            {
+              "kind": "comparison",
+              "fact": "measure.distance_to_neighbouring_boundary",
+              "operator": ">=",
+              "value": 2.5,
+              "valueType": "number",
+              "unit": "m"
+            }
+          ]
+        }
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "measure.excluded_from_setback_calculation",
+          "value": true,
+          "description": "Die Maßnahme bleibt bei der Bemessung der Abstandsflächen außer Betracht"
+        }
+      ],
+      "references": [
+        {
+          "citation": "§ 67 Abs. 1 Satz 1 MBO",
+          "resolution": "unresolved",
+          "relationship": "subject_to"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": true,
+        "checkMethods": [
+          "ids"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-7-satz-2",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 7 Satz 2",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-7/txt-1",
+            "sentenceId": "doc/teil-2/par-6/abs-7/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              11
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "procedural",
+        "summary": "§ 67 Abs. 1 Satz 1 bleibt unberührt."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Maßnahme zur Energieeinsparung oder Solaranlage an bestehendem Gebäude",
+            "entityType": "energy_saving_measure_or_solar_installation"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "par67_abs1_satz1_applies",
+          "value": true,
+          "description": "§ 67 Abs. 1 Satz 1 bleibt unberührt"
+        }
+      ],
+      "references": [
+        {
+          "citation": "§ 67 Abs. 1 Satz 1 MBO",
+          "resolution": "unresolved",
+          "relationship": "subject_to"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-6-abs-8-satz-2",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 6 Abs. 8 Satz 2",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-6/abs-8/txt-1",
+            "sentenceId": "doc/teil-2/par-6/abs-8/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              11
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Die Länge der die Abstandsflächentiefe gegenüber den Grundstücksgrenzen nicht einhaltenden Bebauung nach Nummern 1 und 2 darf auf einem Grundstück insgesamt 15 m nicht überschreiten."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Bebauung nach § 6 Abs. 8 Nr. 1 und 2",
+            "entityType": "structure",
+            "description": "Garagen, Gebäude ohne Aufenthaltsräume und Feuerstätten sowie gebäudeunabhängige Solaranlagen, die die Abstandsflächentiefe nicht einhalten"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "numeric",
+          "fact": "structure.total_length_not_complying_with_setback_depth_per_plot",
+          "operator": "<=",
+          "value": 15,
+          "unit": "m",
+          "description": "Die Gesamtlänge der die Abstandsflächentiefe nicht einhaltenden Bebauung nach Nummern 1 und 2 darf auf einem Grundstück insgesamt 15 m nicht überschreiten"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": true,
+        "checkMethods": [
+          "ids"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-7-abs-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 7 Abs. 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-7/abs-1",
+            "sentenceId": "doc/teil-2/par-7/abs-1/s1",
+            "role": "primary",
+            "pdfPages": [
+              11
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "prohibition",
+        "normativeCategory": "substantive",
+        "summary": "Durch die Teilung eines bebauten oder zur Bebauung genehmigten Grundstücks dürfen keine Verhältnisse geschaffen werden, die Vorschriften dieses Gesetzes oder aufgrund dieses Gesetzes widersprechen."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Grundstücksteilung",
+            "entityType": "plot_division",
+            "description": "Teilung eines Grundstücks, das bebaut oder dessen Bebauung genehmigt ist"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "plot_division.creates_non_compliant_conditions",
+          "value": false,
+          "description": "Durch die Teilung dürfen keine Verhältnisse geschaffen werden, die Vorschriften dieses Gesetzes oder aufgrund dieses Gesetzes widersprechen"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-7-abs-2",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 7 Abs. 2",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-7/abs-2",
+            "sentenceId": "doc/teil-2/par-7/abs-2/s1",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "procedural_requirement",
+        "normativeCategory": "procedural",
+        "summary": "Soll bei einer Teilung nach Absatz 1 von Vorschriften dieses Gesetzes oder aufgrund dieses Gesetzes abgewichen werden, ist § 67 entsprechend anzuwenden."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Grundstücksteilung mit Abweichung",
+            "entityType": "plot_division",
+            "description": "Teilung nach § 7 Abs. 1, bei der von Vorschriften abgewichen werden soll"
+          }
+        ],
+        "conditions": {
+          "kind": "comparison",
+          "fact": "plot_division.deviation_from_statutory_provisions_intended",
+          "operator": "==",
+          "value": true,
+          "valueType": "boolean"
+        }
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "plot_division.par67_applied_accordingly",
+          "value": true,
+          "description": "§ 67 ist entsprechend anzuwenden"
+        }
+      ],
+      "references": [
+        {
+          "citation": "§ 67 MBO",
+          "resolution": "unresolved",
+          "relationship": "depends_on"
+        },
+        {
+          "citation": "§ 7 Abs. 1 MBO",
+          "resolution": "resolved",
+          "elementId": "doc/teil-2/par-7/abs-1",
+          "relationship": "related_to"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-8-abs-1-satz-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 8 Abs. 1 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-8/abs-1",
+            "sentenceId": "doc/teil-2/par-8/abs-1/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-8/abs-1/nr-1",
+            "sentenceId": "doc/teil-2/par-8/abs-1/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-8/abs-1/nr-2",
+            "sentenceId": "doc/teil-2/par-8/abs-1/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-8/abs-1/txt-1",
+            "sentenceId": "doc/teil-2/par-8/abs-1/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-8/abs-1/txt-1",
+            "sentenceId": "doc/teil-2/par-8/abs-1/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Die nicht mit Gebäuden oder vergleichbaren baulichen Anlagen überbauten Flächen der bebauten Grundstücke sind wasseraufnahmefähig zu belassen oder herzustellen und zu begrünen oder zu bepflanzen, soweit dem nicht die Erfordernisse einer anderen zulässigen Verwendung entgegenstehen. Satz 1 findet keine Anwendung, soweit Bebauungspläne oder andere Satzungen Festsetzungen zu den nicht überbauten Flächen treffen."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "nicht überbaute Fläche des bebauten Grundstücks",
+            "entityType": "unbuilt_plot_area",
+            "description": "Flächen der bebauten Grundstücke, die nicht mit Gebäuden oder vergleichbaren baulichen Anlagen überbaut sind"
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "unbuilt_area.water_permeable",
+          "value": true,
+          "description": "Wasseraufnahmefähig belassen oder hergestellt"
+        },
+        {
+          "kind": "boolean",
+          "fact": "unbuilt_area.greened_or_planted",
+          "value": true,
+          "description": "Begrünt oder bepflanzt"
+        }
+      ],
+      "exceptions": [
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Die Anforderungen gelten nicht, soweit die Erfordernisse einer anderen zulässigen Verwendung der Flächen entgegenstehen.",
+          "condition": {
+            "kind": "comparison",
+            "fact": "unbuilt_area.other_permitted_use_required",
+            "operator": "==",
+            "value": true,
+            "valueType": "boolean"
+          }
+        },
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Satz 1 findet keine Anwendung, soweit Bebauungspläne oder andere Satzungen Festsetzungen zu den nicht überbauten Flächen treffen.",
+          "condition": {
+            "kind": "comparison",
+            "fact": "unbuilt_area.covered_by_development_plan_or_statute",
+            "operator": "==",
+            "value": true,
+            "valueType": "boolean"
+          }
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-8-abs-2-satz-1",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 8 Abs. 2 Satz 1",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-8/abs-2",
+            "sentenceId": "doc/teil-2/par-8/abs-2/satz-1",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          },
+          {
+            "elementId": "doc/teil-2/par-8/abs-2",
+            "sentenceId": "doc/teil-2/par-8/abs-2/satz-2",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "obligation",
+        "normativeCategory": "substantive",
+        "summary": "Bei der Errichtung von Gebäuden mit mehr als drei Wohnungen ist ein ausreichend großer Spielplatz für Kleinkinder anzulegen. Dies gilt nicht, wenn in unmittelbarer Nähe eine Gemeinschaftsanlage oder ein sonstiger nutzbarer Spielplatz vorhanden oder geschaffen wird oder ein solcher Spielplatz wegen der Art und Lage der Wohnung nicht erforderlich ist."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "Baugrundstück",
+            "entityType": "plot",
+            "description": "Grundstück, auf dem ein Gebäude mit mehr als drei Wohnungen errichtet wird"
+          }
+        ],
+        "conditions": {
+          "kind": "comparison",
+          "fact": "building.dwelling_count",
+          "operator": ">",
+          "value": 3,
+          "valueType": "integer"
+        }
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "plot.toddler_playground_provided",
+          "value": true,
+          "description": "Auf dem Baugrundstück oder in unmittelbarer Nähe auf einem anderen geeigneten Grundstück, dessen dauerhafte Nutzung öffentlich-rechtlich gesichert ist, ist ein ausreichend großer Spielplatz für Kleinkinder angelegt"
+        }
+      ],
+      "exceptions": [
+        {
+          "kind": "exception",
+          "effect": "disapplies_rule",
+          "description": "Die Pflicht gilt nicht, wenn in unmittelbarer Nähe eine Gemeinschaftsanlage oder ein sonstiger für die Kinder nutzbarer Spielplatz geschaffen wird oder vorhanden ist, oder wenn ein solcher Spielplatz wegen der Art und der Lage der Wohnung nicht erforderlich ist.",
+          "condition": {
+            "kind": "any",
+            "conditions": [
+              {
+                "kind": "comparison",
+                "fact": "vicinity.community_facility_or_playground_available_or_created",
+                "operator": "==",
+                "value": true,
+                "valueType": "boolean"
+              },
+              {
+                "kind": "comparison",
+                "fact": "playground.not_required_due_to_dwelling_type_or_location",
+                "operator": "==",
+                "value": true,
+                "valueType": "boolean"
+              }
+            ]
+          }
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    },
+    {
+      "schemaVersion": "2.0",
+      "id": "mbo-par-8-abs-2-satz-3",
+      "source": {
+        "documentId": "mbo",
+        "documentTitle": "MUSTERBAUORDNUNG",
+        "documentVersion": "2002-11",
+        "language": "de",
+        "citation": "§ 8 Abs. 2 Satz 3",
+        "elements": [
+          {
+            "elementId": "doc/teil-2/par-8/abs-2",
+            "sentenceId": "doc/teil-2/par-8/abs-2/satz-3",
+            "role": "primary",
+            "pdfPages": [
+              12
+            ]
+          }
+        ]
+      },
+      "classification": {
+        "type": "permission",
+        "normativeCategory": "substantive",
+        "summary": "Bei bestehenden Gebäuden mit mehr als drei Wohnungen kann die Herstellung von Spielplätzen für Kleinkinder verlangt werden, wenn dies die Gesundheit und der Schutz der Kinder erfordern."
+      },
+      "applicability": {
+        "targets": [
+          {
+            "entity": "bestehendes Gebäude mit mehr als drei Wohnungen",
+            "entityType": "building",
+            "description": "Bestehende Gebäude nach Satz 1"
+          }
+        ],
+        "actors": [
+          {
+            "role": "authority",
+            "entity": "Behörde"
+          },
+          {
+            "role": "beneficiary",
+            "entity": "Kinder"
+          }
+        ],
+        "conditions": {
+          "kind": "all",
+          "conditions": [
+            {
+              "kind": "comparison",
+              "fact": "building.dwelling_count",
+              "operator": ">",
+              "value": 3,
+              "valueType": "integer"
+            },
+            {
+              "kind": "comparison",
+              "fact": "playground.required_for_health_and_protection_of_children",
+              "operator": "==",
+              "value": true,
+              "valueType": "boolean"
+            }
+          ]
+        }
+      },
+      "requirements": [
+        {
+          "kind": "boolean",
+          "fact": "plot.toddler_playground_required_by_authority",
+          "value": true,
+          "description": "Die Herstellung von Spielplätzen für Kleinkinder kann von der Behörde verlangt werden"
+        }
+      ],
+      "review": {
+        "status": "draft",
+        "machineCheckable": false,
+        "checkMethods": [
+          "manual"
+        ],
+        "notes": [
+          "Model: eu.anthropic.claude-sonnet-4-6 (Amazon Bedrock, eu-central-1)",
+          "Generated by an LLM from the Legal JSON; a draft that needs human review."
+        ]
+      }
+    }
+  ]
+}

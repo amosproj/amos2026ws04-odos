@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "allowJs": true, // src/demo/excerpts.mjs
     "noEmit": true,
+    "allowImportingTsExtensions": true, // the Vite config chain (vite.config.ts and its imports) names its .ts files
     "types": ["vite/client", "node"]
   },
   "include": ["src", "vite.config.ts"]

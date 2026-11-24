@@ -1,0 +1,978 @@
+{
+ "downloads": {
+  "https://files.pythonhosted.org/packages/e0/7c/2cabb2174e772636683008f2c5621949b645da7d303c596589e84516a184/tokenizers-0.23.3.tar.gz": {
+   "bytes": 385286,
+   "checksumSource": "PyPI release metadata",
+   "sha256": "cded33237c77caeef62944d32aa9a7ef42bdce2b3497e18d137e072a8c4be438",
+   "usedFor": "tokenizers 0.23.3 sdist",
+   "verified": true
+  },
+  "https://raw.githubusercontent.com/Brooooooklyn/canvas/v1.0.13/LICENSE": {
+   "bytes": 2705,
+   "sha256": "0b8e3b4f0042f33677406344854c1dcce3a2878eb3a3f6baee58c6f5752655ce",
+   "usedFor": "upstream license of npm @napi-rs/canvas-win32-x64-msvc 1.0.13"
+  },
+  "https://raw.githubusercontent.com/docling-project/docling/v2.143.0/LICENSE": {
+   "bytes": 1072,
+   "sha256": "edb765d1e3e60d0c7a7d5fba5f2bb2c3c29f7465cecb5c22cf1185c884954e4c",
+   "usedFor": "upstream license of PyPI docling 2.143.0"
+  },
+  "https://raw.githubusercontent.com/lddubeau/saxes/v6.0.0/LICENSE": {
+   "bytes": 3011,
+   "sha256": "0fac2374380621b22e6b50451057721a9c52935b02d16d106a9f04897f061d0e",
+   "usedFor": "upstream license of npm saxes 6.0.0"
+  },
+  "https://raw.githubusercontent.com/rolldown/rolldown/v1.2.15/LICENSE": {
+   "bytes": 1302,
+   "sha256": "23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734",
+   "usedFor": "upstream license of npm @rolldown/binding-win32-x64-msvc 1.2.15"
+  },
+  "https://raw.githubusercontent.com/roniemartinez/latex2mathml/3.81.1/LICENSE": {
+   "bytes": 1071,
+   "sha256": "4ac1e1da07f6b343d54191c5e1716840534e08591b3f9eaec90d6800cdc47543",
+   "usedFor": "upstream license of PyPI latex2mathml 3.81.1"
+  },
+  "https://registry.npmjs.org/@exodus/bytes/-/bytes-1.16.0.tgz": {
+   "bytes": 145999,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "21ca56f38b849f737b113b4d64c9712a17e5e8f79cf2b50d18e4c1b566cad452a1271205029b59c95aef5515418a6009c490a07373f17a9c64756586e035737c",
+   "usedFor": "npm @exodus/bytes 1.16.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@fontsource-variable/geist/-/geist-5.3.0.tgz": {
+   "bytes": 165491,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "8f49bebcb42e1b95c06281ed18256ed2ca6f946ade477133a44094573905988d664d59c03b7f25fcd10f0c2160675efb271cd82422d29934226c88983e2946ac",
+   "usedFor": "npm @fontsource-variable/geist 5.3.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@fontsource/audiowide/-/audiowide-5.3.0.tgz": {
+   "bytes": 54377,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "10205d5a040f6824aec25172797cd5d22d83006ab448a203ee3c43d681e161339bc77c33dba60ab3717d21cfc43b7ebd027ce577d22ac5f951ba4266ea7571a7",
+   "usedFor": "npm @fontsource/audiowide 5.3.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz": {
+   "bytes": 9622,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "6d12128022233f6d3fb5b5923d63048b9e1054f45913192e0fd9492fe508c542adc15240f305b54eb6f58ccb354455e8d42053359ff98690bd42f98a59da292b",
+   "usedFor": "npm @jridgewell/resolve-uri 3.1.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.6.0.tgz": {
+   "bytes": 18401,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "4fb8dffb9ce0b191f0349e25bd0eff69ecdbca4d27357fb32555a998703b558b04c7b6bbaabe5183921bb4916a920cdee58dacaeeab545463c43cdfb39dee217",
+   "usedFor": "npm @jridgewell/sourcemap-codec 1.6.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz": {
+   "bytes": 30747,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "cf3351f9275048327373c8e869e3fc410a0242bf0db98c76748232b65d507811191c9f6e5ba85e6ecad881bcfc849c1441aa374d608cb667d5f0dbb5b7038b03",
+   "usedFor": "npm @jridgewell/trace-mapping 0.3.31",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-android-arm64/-/canvas-android-arm64-1.0.13.tgz": {
+   "bytes": 12126011,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "b6b9fb01a0f343ec9e780d1ece1902edc0756433eda7851893412f07917caad60bf631155ad56b537d163a9239d83b33a13c5a4ec0a07f93cfe1955a3a53881d",
+   "usedFor": "npm @napi-rs/canvas-android-arm64 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-darwin-arm64/-/canvas-darwin-arm64-1.0.13.tgz": {
+   "bytes": 13762428,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "e98d9d8c47ad2fc728a717cd2ba860ee88a0ff1a93c0e721bf5f6104e9becc135d29cff4d99de48d9379c2b2f3bff9793b4e3f6c0412e88fc0950a700655e03e",
+   "usedFor": "npm @napi-rs/canvas-darwin-arm64 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-darwin-x64/-/canvas-darwin-x64-1.0.13.tgz": {
+   "bytes": 14663914,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "399a0fc30bb84cc320f064c2141ae0f14144c7041353fe798b7b930bf8b30dab7a3c713eae8f5d8a6c90a0e6e815ff75f8d63b3e79fbd12711f1ff08f3e7995f",
+   "usedFor": "npm @napi-rs/canvas-darwin-x64 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-linux-arm-gnueabihf/-/canvas-linux-arm-gnueabihf-1.0.13.tgz": {
+   "bytes": 13140221,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "75949868a44ebacc14d9e5161b96812a774d55eebc7a5a35617f77c6d45ac7babae7cb63f2b604f87c1dba8bd6260b3aab0bf5af5fc22d1eb49c37816f28efca",
+   "usedFor": "npm @napi-rs/canvas-linux-arm-gnueabihf 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-linux-arm64-gnu/-/canvas-linux-arm64-gnu-1.0.13.tgz": {
+   "bytes": 13988451,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "5ba173604f000c723ddc89f5be2f342812fa6ed0ed00cba3e740a1e69b64592f31ba7b72cdb4788792435265e86a4c599f6c8c22792cb9d4c4a95496a05a851a",
+   "usedFor": "npm @napi-rs/canvas-linux-arm64-gnu 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-linux-arm64-musl/-/canvas-linux-arm64-musl-1.0.13.tgz": {
+   "bytes": 12948910,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "fba7d0fab478f619006b8be8876b2d2c8c10fb8b7e826a2c78cf01739dff0e53176fbdc82b29833d62bd03f36d59ea935b88a35a9a58bb2bb14b684f23cb7334",
+   "usedFor": "npm @napi-rs/canvas-linux-arm64-musl 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-linux-riscv64-gnu/-/canvas-linux-riscv64-gnu-1.0.13.tgz": {
+   "bytes": 14529318,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "d7b5c430ededf515bf4ed1ed4857f60246925ae0967736cf7a2773ef3ace15ac07c682d22429e94c8d61379694beb64d9e434d9adfef655242874af251a8a4dc",
+   "usedFor": "npm @napi-rs/canvas-linux-riscv64-gnu 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-gnu/-/canvas-linux-x64-gnu-1.0.13.tgz": {
+   "bytes": 15168214,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "95ce3c23092754706c3735e7f57b393a452c457dfc325dd9d5a3b26d0e7598c13365c926f3ee00d2a44e97260712804fcebd642f7214f19500a836fbc2d757f3",
+   "usedFor": "npm @napi-rs/canvas-linux-x64-gnu 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-linux-x64-musl/-/canvas-linux-x64-musl-1.0.13.tgz": {
+   "bytes": 14018409,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "6c6635af6e92d9bb3c50d14970f59c09235d0856ca7a9e4f013b2fb60b42f40e6ee92460af6fe3244fd19611cbe66f59a62c4d0e15642d8ff9875e8ac7957d60",
+   "usedFor": "npm @napi-rs/canvas-linux-x64-musl 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-win32-arm64-msvc/-/canvas-win32-arm64-msvc-1.0.13.tgz": {
+   "bytes": 14483859,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "daf44f059a1a22f26b5240e16531361e7d18ae7a49442595337109002a012a3b9623a5a03f11ad52844cb3146f882b3292cf1b293485772c35e027a59671b6a8",
+   "usedFor": "npm @napi-rs/canvas-win32-arm64-msvc 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas-win32-x64-msvc/-/canvas-win32-x64-msvc-1.0.13.tgz": {
+   "bytes": 15876897,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "0d4956de564fcfade462c7fc9b1832c99b9ebe1947d13dff0463fd97e35ace1074175fa02fa0f886a65d9e1669c36e03956993a404c373261266524e8be0dd7d",
+   "usedFor": "npm @napi-rs/canvas-win32-x64-msvc 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.13.tgz": {
+   "bytes": 42578,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "6fceee819a50e558b0a950648deaefc69c1ad069893ec2872c136864de86a6359e1f34db0d41abcab8aafb60d85b65db07ec42a92208350cac0b4fc8f3b9cf6f",
+   "usedFor": "npm @napi-rs/canvas 1.0.13",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@oxc-project/types/-/types-0.155.0.tgz": {
+   "bytes": 7629,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "49e13c24fc16d71b35b4778dc9c8d4b5405d868ad16bca388e5be3c24e3d47bfd9dbdd62fb80d06bb2492203a6fd3698419c7e42b3d06d527ff5cf1d30864df1",
+   "usedFor": "npm @oxc-project/types 0.155.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-android-arm-eabi/-/binding-android-arm-eabi-1.2.15.tgz": {
+   "bytes": 6834015,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "68b7202bd808277611bebaed7d205b45adbb1795aba624da3ee967169b073f1a541e01654a09d4e3ce78307c2844610185f4490d6092d9643b9488ec904f4e97",
+   "usedFor": "npm @rolldown/binding-android-arm-eabi 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.15.tgz": {
+   "bytes": 7842207,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c43ec37590ab6d384abb1360ee8a109afa74ef2b3827fa674843131b7fce74e5a5e9d682ebb9bf4387cbefcb111ccc531ff3787c651b62170f334305e5614792",
+   "usedFor": "npm @rolldown/binding-android-arm64 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.2.15.tgz": {
+   "bytes": 7537415,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "9b65ae43aaf4078393631c8fa4d2ed5da3116d10d46c6f18415d90dca4dd4922bc4e1e8a1c29c2f2354226df1bbd87920795a2be490d6dcf3998a69d69274ec4",
+   "usedFor": "npm @rolldown/binding-darwin-arm64 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.2.15.tgz": {
+   "bytes": 7901428,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "e51b67b07337ea7a1d33d59b332fb38a9d0b192fc6fb2e70ae8e511eba4e96be1a736e3ed734a2f64895d8c3f59b265e67f89f1077ee9507168e7017cdcd82d8",
+   "usedFor": "npm @rolldown/binding-darwin-x64 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-freebsd-x64/-/binding-freebsd-x64-1.2.15.tgz": {
+   "bytes": 8259941,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "837974f69c85aa1bbed77e492a46e4c22286426c14e6150c50f27855d0400efbaa47c777dcbe87e7bf2b87c9bbaedc5b769f95997ffe9f323b9ef852665ce951",
+   "usedFor": "npm @rolldown/binding-freebsd-x64 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-linux-arm-gnueabihf/-/binding-linux-arm-gnueabihf-1.2.15.tgz": {
+   "bytes": 7571404,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "9c87b756e808f7b9c642db293f10ea038b17314a5e8a870a20ffc2aa963fbbfbe06d3f9a957f9c571bb50bfa1504f2a0e1f78d4e6628bc4f75bf80e05ef5cdc1",
+   "usedFor": "npm @rolldown/binding-linux-arm-gnueabihf 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.2.15.tgz": {
+   "bytes": 7849083,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "8930635f1f81e504af808f3d9497e6aa1e304e1f0d69b47561920837784dc78cd21b41157d5aa43af2ee94da46e36e75a5b77afc802667f2de7d5935638acf87",
+   "usedFor": "npm @rolldown/binding-linux-arm64-gnu 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-linux-arm64-musl/-/binding-linux-arm64-musl-1.2.15.tgz": {
+   "bytes": 7869508,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "b8ddba5ce9d547baea42ea46dd5f68006d841866ad5a37091ce7833875050a1e1305698fdad1d316854dd776986f07e6d1a1ea240126730840bbab28a088dfa9",
+   "usedFor": "npm @rolldown/binding-linux-arm64-musl 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-linux-ppc64-gnu/-/binding-linux-ppc64-gnu-1.2.15.tgz": {
+   "bytes": 9163112,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "f675a471d77e1fe5e1680ddf408c291e7288adfc7f3d0eab3b4a62bebefc3a0d3bb5795495cb41049a0460b3df85398247f431115767eae3e31d5e52ca63e177",
+   "usedFor": "npm @rolldown/binding-linux-ppc64-gnu 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-linux-s390x-gnu/-/binding-linux-s390x-gnu-1.2.15.tgz": {
+   "bytes": 8492581,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "1a08747221632f022eb0b48bcfb2d96046867713805095c8f90bb92426e13c924712df2f3fe2234404d32617a226c773cd36205221d48b0dd7d446b766930174",
+   "usedFor": "npm @rolldown/binding-linux-s390x-gnu 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.15.tgz": {
+   "bytes": 8302590,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "14783ad2b4ba0c178f01867d5fd17aef1f8939b15d9a09fab6ea40d42fdadc1f82b9f1664c3e265fe7bc33be6d0a200eddfa11ffac70541234290888eec9ffaf",
+   "usedFor": "npm @rolldown/binding-linux-x64-gnu 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-linux-x64-musl/-/binding-linux-x64-musl-1.2.15.tgz": {
+   "bytes": 8286999,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "fdcbd5ffbbf9546cff9a88b3d172918f6744f03cec2b2848bb52a93af2463e3472c20df2b1c38df3cf541af01ef337e224b1eea7b54b8c176ea065a2dc7bac59",
+   "usedFor": "npm @rolldown/binding-linux-x64-musl 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-openharmony-arm64/-/binding-openharmony-arm64-1.2.15.tgz": {
+   "bytes": 7798801,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "332cc2e47aeffec9be67b4d218a3ff8fcd34d513b6c509b5ccea423552f88f4718fd584166f8a5b9d03660543b8b8947e99017c509b495c31d07333ef7d984ef",
+   "usedFor": "npm @rolldown/binding-openharmony-arm64 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-1.2.15.tgz": {
+   "bytes": 7967631,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "f8f818892f801f9a26cba2f8e592f1c9b6ac6ae25a8f733c6eea13f370fe9f33e609ac97971515f61c9d85c882295c8883407fbf406d5cf0c4d6e1aa37008fa6",
+   "usedFor": "npm @rolldown/binding-win32-arm64-msvc 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.2.15.tgz": {
+   "bytes": 8378130,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "1c565dd90350627d496c88be1e977b1feaff9645b171f22edbc9e2ad9e9e0a7d8b69fbaf984c4c95bfcff7a49fc79b5fee93c0af0dfd21d866085f2f995f8d85",
+   "usedFor": "npm @rolldown/binding-win32-x64-msvc 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.1.tgz": {
+   "bytes": 6681,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "da3f5b1ade4987c863faf3ed8333ed97bda3d324711c0cae9a8a3a4cd7c08ec2c1d3852da52bcf6cf703701331cfb9fef42601d1cd46c501716118368e29aa1b",
+   "usedFor": "npm @rolldown/pluginutils 1.0.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz": {
+   "bytes": 9924,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "330e79f28780f5f15bbfae7fcb8987b570ecf5b3e714c6402ff8f174f154a4e1c72175fdd667201076d2e4b6a1afea7064547c03b19095e456788e9c1850b650",
+   "usedFor": "npm @types/chai 5.2.3",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz": {
+   "bytes": 2014,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "73d87d75554c8a030f7386f04ef0b9771aada8967040f78fb168cf96948e9e88dba2bea91aa764e78d657c0ec0a8542be6907505176ad23b98f5d6fcd41c3217",
+   "usedFor": "npm @types/deep-eql 4.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz": {
+   "bytes": 5930,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "1a174f832d5e978fc898fd395f4e54c38730dbf33ddc10949a712f599352b650b310a304e05924f98a680393a21cd426a12ec269f6fc5dadcfc9af26d50af37a",
+   "usedFor": "npm @types/estree 1.0.9",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@types/node/-/node-26.6.5.tgz": {
+   "bytes": 471079,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "b8ccecbfdb2d0dda1f219071e141a1e19f598179c60bdb1e443b1c8a505c4c701e38593aecc660fe4f5b5957cef9b938a99986fa5e768519cbc14887d8b9c94e",
+   "usedFor": "npm @types/node 26.6.5",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.3.0.tgz": {
+   "bytes": 8185,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "648edb538da66575ca1e7fea34b130d88adb888354ed7e7ebdf81d8b10479023696165e32a07d0fcffaec866f90a338b07d51c9d37a0debca542d5768729b8e1",
+   "usedFor": "npm @types/react-dom 19.3.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@types/react/-/react-19.3.0.tgz": {
+   "bytes": 77822,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "374ac50ae1fd628c46f7f9bad65f4c7e924a7e62ce554d1e9bb8a9233e9346049292f45e2c1f6f2fce4607ecabf01b3995eaa9be0f7a252c05e194b5b38be242",
+   "usedFor": "npm @types/react 19.3.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-aix-ppc64/-/typescript-aix-ppc64-7.0.2.tgz": {
+   "bytes": 9671145,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "31328a91607ba7fd04f718b5775b47b59e4f88b90610c22af3ca4ad82b9b6633ac2ed6132ea8602208bacdea456bef461d9ea1d3934c0a443118a88f5ccc57b5",
+   "usedFor": "npm @typescript/typescript-aix-ppc64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-darwin-arm64/-/typescript-darwin-arm64-7.0.2.tgz": {
+   "bytes": 9270373,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "828c336abf4cc12fda456a7a7f76b8294ab34630198ceb2618d08ce8b713817ba6f9d05f82c05530df8082f38209b82e5f289c93a2c986906ccf131e6c9f2cc8",
+   "usedFor": "npm @typescript/typescript-darwin-arm64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-darwin-x64/-/typescript-darwin-x64-7.0.2.tgz": {
+   "bytes": 10057523,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "499f716489ea02936534673db345b5552b24b5848e7bd705a8d388aa63751acf129a48ca65816dd35ec6e15c0fc404889ce0ee01d6d35bbb1788551ff3ddd180",
+   "usedFor": "npm @typescript/typescript-darwin-x64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-freebsd-arm64/-/typescript-freebsd-arm64-7.0.2.tgz": {
+   "bytes": 8865805,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "5b9347e32fc9d29948212e5bdb1bd312453b245c72a9d3003a07fe225865d2f1d05ca3b9759a3177e0bf8c4b6ae7a738177c24ef5441e013114365dd23e6f061",
+   "usedFor": "npm @typescript/typescript-freebsd-arm64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-freebsd-x64/-/typescript-freebsd-x64-7.0.2.tgz": {
+   "bytes": 9636659,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "50c183c79b13a73370dd688f79b1fb97dd0859f26080477e7a01edfeaea9eff0a6df3aa857b5719065edfb70f13c8c3c09c9af001d23dec5557db857f8ce13a7",
+   "usedFor": "npm @typescript/typescript-freebsd-x64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-linux-arm/-/typescript-linux-arm-7.0.2.tgz": {
+   "bytes": 9123633,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "81f7d3df13f3f6c47b8ff6091319323e7b6b2343f610ff576cec96ced876fc6b3446cb4afbdd1105c3b49dc5e85f2fdb798965d525f0f38e8d7f6cdd9c4cf441",
+   "usedFor": "npm @typescript/typescript-linux-arm 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-linux-arm64/-/typescript-linux-arm64-7.0.2.tgz": {
+   "bytes": 8900516,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "421e1e538ff2df20e39df8e3c8f62284c8f9fce0c8966b7e073bb5ece23e7e24910d6e7b4265394a237addec4f44d24f294cdc73520d6b535776b27e32a1e351",
+   "usedFor": "npm @typescript/typescript-linux-arm64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-linux-loong64/-/typescript-linux-loong64-7.0.2.tgz": {
+   "bytes": 9258075,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "b841dc93d8bc8680335cf8984626f53bb9a23a7cf6dd2c4879597a1782d7a31faaa2fd4adf98c77045ba5472af648fa9caf97b7d910fe0c094e4b62f22ad46b9",
+   "usedFor": "npm @typescript/typescript-linux-loong64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-linux-mips64el/-/typescript-linux-mips64el-7.0.2.tgz": {
+   "bytes": 8613623,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "4782af00c9c4e375b941ea9bd0bcb9e8ede658c588020b0ccb3dfa0c26b271de676e0ffd9339b4962c3726871f46ac8963428f9b31636ecc28cd7c96d039c860",
+   "usedFor": "npm @typescript/typescript-linux-mips64el 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-linux-ppc64/-/typescript-linux-ppc64-7.0.2.tgz": {
+   "bytes": 8984686,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "0ce471e5bdec77fe12ede6b2c66e0542ff80ec2ae45081916878b023ca221d3008d5f00f5a1178274bc09640bc6e20251d2555c31310ded8d9dbf0d56e742288",
+   "usedFor": "npm @typescript/typescript-linux-ppc64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-linux-riscv64/-/typescript-linux-riscv64-7.0.2.tgz": {
+   "bytes": 9119178,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c1fd23a840ce8eb3d19cac18472c890d1a35d4a31bbcc16b53eab8cea2b20a1383073be591b84d41f2af2f14027304e974369748765356e8742680ab28250c1d",
+   "usedFor": "npm @typescript/typescript-linux-riscv64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-linux-s390x/-/typescript-linux-s390x-7.0.2.tgz": {
+   "bytes": 9418111,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "224c097372fbca1cad59dfdec23cb13437ce9acc029bd1963094ffb9efdd53869935bc1979801eb6ae365722e6b264a3be85fbcfbe17e996980adcc0af412e1b",
+   "usedFor": "npm @typescript/typescript-linux-s390x 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.0.2.tgz": {
+   "bytes": 9669334,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "11875fd9c360eeb8025899f109d27e177577f4ef2285bdfb78702ed4b2bca00162ce04d06cf38aef31c75db3edf2b5f6e023aa3835de237b087f47c25c6ec7fc",
+   "usedFor": "npm @typescript/typescript-linux-x64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-netbsd-arm64/-/typescript-netbsd-arm64-7.0.2.tgz": {
+   "bytes": 8847820,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "fa9a25605e0c174e1a3e93b9153907ada9fdc94403497ab2e468920caa6c965e63cb7977fa0f502e1a5fdfd4fe78fb5e7e15cb386acb9744088e440fe959de94",
+   "usedFor": "npm @typescript/typescript-netbsd-arm64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-netbsd-x64/-/typescript-netbsd-x64-7.0.2.tgz": {
+   "bytes": 9615512,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "f18213d041ccff776ad7464e545fc0ee973f61232d6dc79c72de2b5ad7b1ae74821ce3dca42d8a4cb5df4c247abc3a674a2635da178d6f51a237fc2ef93fc5c8",
+   "usedFor": "npm @typescript/typescript-netbsd-x64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-openbsd-arm64/-/typescript-openbsd-arm64-7.0.2.tgz": {
+   "bytes": 8857975,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "00f4fcf829589ee626d6ef7e920197a0c8f65735b37329b087680d4905724877e444318e4d592858b8c298e41268ef8fa2a439ec1d1f951a7d480fbb1a79e4cd",
+   "usedFor": "npm @typescript/typescript-openbsd-arm64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-openbsd-x64/-/typescript-openbsd-x64-7.0.2.tgz": {
+   "bytes": 9624925,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c97eecf90d03967d03b7db44cd9b008d75d1ffecad04cec096095aab278c3f142ccc9d4986525d67a8cb03e23395d1ed7e55fcd5e9bb9436a8d715eef9a45192",
+   "usedFor": "npm @typescript/typescript-openbsd-x64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-sunos-x64/-/typescript-sunos-x64-7.0.2.tgz": {
+   "bytes": 9600388,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "74b24319a2d9d43e073d09fadaed67f26043909444c0cb00902764c1de087aac3ec774d4c93b2a634622042b44e87e8ecf38069378ae677bc55914be13cfddd6",
+   "usedFor": "npm @typescript/typescript-sunos-x64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-win32-arm64/-/typescript-win32-arm64-7.0.2.tgz": {
+   "bytes": 8900840,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "1b2975572e8eb167ac2f39aaf843f415bedbe0d89de76df602f700d9215c758ade95da4db58145a1f3e39edeb6cbd850cbb553699a7ae480898ee01045a55c21",
+   "usedFor": "npm @typescript/typescript-win32-arm64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@typescript/typescript-win32-x64/-/typescript-win32-x64-7.0.2.tgz": {
+   "bytes": 9776626,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "d014371e40071e528b4a9d6a46f7f7494846a46b03ba107f8e0170ef982ecaa6f126a11a4b40b0fd514ef22da71e094953340246d30c47f20100a137113302e2",
+   "usedFor": "npm @typescript/typescript-win32-x64 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.2.tgz": {
+   "bytes": 14558,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "7e124d19476c7106b81e4234c45c70a275b28675517823c36d723b147ee39b3a67542ac5408ecf46b85679c3b6eb7eb5d2f3abb3db6bd98e3171ff2e01d1716f",
+   "usedFor": "npm @vitejs/plugin-react 6.1.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@vitest/mocker/-/mocker-5.0.5.tgz": {
+   "bytes": 60175,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c4b2f79640de809670f8c1a819a082b056b20d9b611a0a40b6bdd5ce2c9f738a7bc47f3d2bb2913dc441061fe41189b402a92de43b539a462906d455fc5ac766",
+   "usedFor": "npm @vitest/mocker 5.0.5",
+   "verified": true
+  },
+  "https://registry.npmjs.org/@vitest/spy/-/spy-5.0.5.tgz": {
+   "bytes": 10766,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "970251131b87e35ef6e7b439c2ff5062e80df48309928c5cacaad8c463d0901ce5ef094da535310ffe72357e0448a55421284a3e090672160f14c58e3a4d30cf",
+   "usedFor": "npm @vitest/spy 5.0.5",
+   "verified": true
+  },
+  "https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz": {
+   "bytes": 2472,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "2338bc45071f7ea09e3558058a02a58b5b2c92521ba479c261ce809275c662807a82b26ac9e6f2ee3bf5d895108264c09c80e76dc935bb192c4f87733773d604",
+   "usedFor": "npm assertion-error 2.0.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/bcp-47-match/-/bcp-47-match-2.0.3.tgz": {
+   "bytes": 5846,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "26d4decf36c089bbbc1b447da29f736f7bdc59977d245e8cd3139818f9f47cd09def03a9441d66536987f53f2068119b000c88215801d86ef11b418ff7cccc01",
+   "usedFor": "npm bcp-47-match 2.0.3",
+   "verified": true
+  },
+  "https://registry.npmjs.org/bcp-47/-/bcp-47-2.1.2.tgz": {
+   "bytes": 9774,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c2cbfce94b8d16e3e756278a2f21024d3f823f55920077a8220e4fdf1bb6900f59fbb7d53e82adeddc7349e121b497a5d0023e356ddf216dcab532902940a782",
+   "usedFor": "npm bcp-47 2.1.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/chai/-/chai-6.3.0.tgz": {
+   "bytes": 30712,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "5d602dc09e8e1cefad8f410a0acd18d946a69f23b1b1e65696d538c76536c21f20e008a0763c2fb548ef2cfdadaa403f6afc4712dcf135aa86abf6063707242a",
+   "usedFor": "npm chai 6.3.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz": {
+   "bytes": 138324,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "cf51c629c632db103c00641fc2b9f43c0cbe3c1ed7fc64a3dd45495bda8aca7e37c566be825e675e6538aaa2cc4735952c50bc2aeb145fc4ffd240a2398a4021",
+   "usedFor": "npm csstype 3.2.3",
+   "verified": true
+  },
+  "https://registry.npmjs.org/data-urls/-/data-urls-8.0.0.tgz": {
+   "bytes": 3732,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "25050208afbf08019b186c7ad7c3e51593171fcd49b63eedef7087bfd75dff3556bf18064f6ccb1518e729bf8d838e86230732f9fedff3ca9de1dbaa9652be59",
+   "usedFor": "npm data-urls 8.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/decimal.js/-/decimal.js-10.6.0.tgz": {
+   "bytes": 69924,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "6298108884d6dc95c69edcdd526c9447557cd761e7f13d58557842bbec0edcea52e1e53d97861d0f7aa3ca229d57a9af576f736a990c783dfdd145447f696452",
+   "usedFor": "npm decimal.js 10.6.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz": {
+   "bytes": 7776,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "06d8f604e38ef37a375b21f9f5ef0c817b3111055c6ab9143a9118aee6c1d2eaf09cdd74c90dfae2bb22072535d67665a966199b4e62fe87fb8a8e26ce2841b5",
+   "usedFor": "npm detect-libc 2.1.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/entities/-/entities-9.0.0.tgz": {
+   "bytes": 92324,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "a0914d0c98379133f0003d5c367dbe5a652ae30168a34f67a5cdd875fd43ec40f8b264625abb0a9da2f1ca4ad35a0c8611cbac73cecfe5dc650257a897d92992",
+   "usedFor": "npm entities 9.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-2.3.2.tgz": {
+   "bytes": 59919,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "a681c6a4e4400688c926e72757d29b39abc44d6f250559e98645bbec4479fc1439173ee85d2a0235e93b207def4799d18ddb04cfddba89b1585fc2ad2d099dcb",
+   "usedFor": "npm es-module-lexer 2.3.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz": {
+   "bytes": 3965,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "ed150a7d781230c933b7a66e5e6a9aa4ebab2c63cf7e08fa97db9167b9511a896f934cb6ca871cdf92dd731282e4f419767d8332a8a8010d8da1672b4ca9a6ea",
+   "usedFor": "npm estree-walker 3.0.3",
+   "verified": true
+  },
+  "https://registry.npmjs.org/expect-type/-/expect-type-1.4.0.tgz": {
+   "bytes": 31799,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "29f61b9a9466d156cb8c4bd56bdc86c028bd188df8c6f8bb03f1d761640eeb90920f6bb731ccd4252bb05ca148c651ac801422cd5f6ae49f4d1e3e151b49fea4",
+   "usedFor": "npm expect-type 1.4.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz": {
+   "bytes": 9742,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "b486d8b596ee70eb340511aa3c992c84951874bf920c7edd54cf208f2f84469dd60148cb105244fb4da46a7c87b708d63a7c2b298062c0098cd29e242c90275e",
+   "usedFor": "npm fdir 6.5.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz": {
+   "bytes": 22808,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "e71a037d7f9f2fb7da0139da82658fa5b16dc21fd1efb5a630caaa1c64bae42defbc1d181eb805f81d58999df8e35b4c8f99fade4d36d765cda09c339617df43",
+   "usedFor": "npm fsevents 2.3.3",
+   "verified": true
+  },
+  "https://registry.npmjs.org/html-encoding-sniffer/-/html-encoding-sniffer-7.0.0.tgz": {
+   "bytes": 5202,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "52290de72afbc6c08302af3b3abe68af43c0943dc724938a573334e5acf9f3c5a7a43278531edad80e77422ea0a1f1a0dbf12dbc5fc7e210a2fd35df096e18eb",
+   "usedFor": "npm html-encoding-sniffer 7.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/is-alphabetical/-/is-alphabetical-2.0.1.tgz": {
+   "bytes": 3085,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "156cb263ad0c79337279246990cd88af2d06f61a6befff640f8d260ff706404ba295c6584b8a24cfc48dd90eab2c227c81b0ade9f37eac2fbab4c192f7d2dac5",
+   "usedFor": "npm is-alphabetical 2.0.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/is-alphanumerical/-/is-alphanumerical-2.0.1.tgz": {
+   "bytes": 3050,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "8666d8857ffd314305e6e87bb4e5f22bf9f466f5a969de5c681035ec6b02eafcae0aa696962446e4ad6a4bd8a799484431a381216effc210274b0bde5bf2ed67",
+   "usedFor": "npm is-alphanumerical 2.0.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/is-decimal/-/is-decimal-2.0.1.tgz": {
+   "bytes": 3020,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "00007d862a2642ce435d6711075aeab31194b2d6d1ae814e3cf540a26364ff75c74792721190a13b24d67b6a1ac8a9ec4acaff91c1aa17ecfacae1fa1c7a4dd0",
+   "usedFor": "npm is-decimal 2.0.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/is-potential-custom-element-name/-/is-potential-custom-element-name-1.0.1.tgz": {
+   "bytes": 1905,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "6c261e440dab5626ca65dfacdbadb98069c617fb7b0d2a83b3874fec2acb0359bb8ca5b3ea9a6cd0ba582c937c43ae07b663ca27586b3779f33cd28510a39489",
+   "usedFor": "npm is-potential-custom-element-name 1.0.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/jsdom/-/jsdom-31.0.0.tgz": {
+   "bytes": 851728,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c409210fdcf57b2142e7e4148bd2b6e0269926074243618e18b5b519d543a10be4a7f031107f53434a40a653ce948895f7685f7209c53800d9ca96e381b053e9",
+   "usedFor": "npm jsdom 31.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.33.0.tgz": {
+   "bytes": 3632951,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "804a514da94a768b29e016fca96b5cda23a013949e2079694b5ba9f5b16adb003262197551d4ce6d88877bdf3310cf5242f4a8a906752100f424da60dcc979a6",
+   "usedFor": "npm lightningcss-android-arm64 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.33.0.tgz": {
+   "bytes": 3455710,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "49c89acfc79e9cd4ca9fd6f7b7bfb1af48a94e9f58c4a418e27a704379ab46e2f404054704bc99c687e168a04056dce6b5167fcd3ca8d3fb68e01d6e586fc38e",
+   "usedFor": "npm lightningcss-darwin-arm64 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.33.0.tgz": {
+   "bytes": 3875799,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "67950f031ceb8e558d3721b2ea2eb9709cf3be02790f74fac0cbecfa05a963d77ba9184036bc6a029e8b871220661584c35f117c94c6711c63b8b201afe9bc5d",
+   "usedFor": "npm lightningcss-darwin-x64 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-freebsd-x64/-/lightningcss-freebsd-x64-1.33.0.tgz": {
+   "bytes": 3863824,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "41033f4e2fe141a8c9c0263e4625ae099f6c76d23f5d093b9c32b9bc2f2491dc22c5ecce94382f0f1efe453f908cae857054f8329b2ea019c7228fcedd2b5146",
+   "usedFor": "npm lightningcss-freebsd-x64 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/-/lightningcss-linux-arm-gnueabihf-1.33.0.tgz": {
+   "bytes": 3536007,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "37b15505eea24b6e0c94ce91ff84414f11a14217991aceed890f54df652d17be4dccfe50ef158f46a2c108ac65450464deb6358c220f2f3c7b5b33a1b942112d",
+   "usedFor": "npm lightningcss-linux-arm-gnueabihf 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.33.0.tgz": {
+   "bytes": 3593473,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "8f6bff8ad9b2e0794dc6573abe829762006a362d0d8362d2860e33ec6b9fa4482cd393fedacb815728bd23a607ab9ba8545c7d1138a7dde08484b5725c64272a",
+   "usedFor": "npm lightningcss-linux-arm64-gnu 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-linux-arm64-musl/-/lightningcss-linux-arm64-musl-1.33.0.tgz": {
+   "bytes": 3592480,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "ca23b944e32e6108176c2eb4ca3654e4261215918a5cbd071404d7b7d987267d7ecd6e79a02b4c23d35f7158582cc1432fb815ee804fa27fc498c3068363afb5",
+   "usedFor": "npm lightningcss-linux-arm64-musl 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.33.0.tgz": {
+   "bytes": 3855795,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "6abf89bbb2e670dd09a381692f88691726f0346f7fdc0fc1af9296da7da3c8e0e0dcc1195da0d800375e9a8352f810cd7cc80abf29492e3e12e6dc9101cb6e02",
+   "usedFor": "npm lightningcss-linux-x64-gnu 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-linux-x64-musl/-/lightningcss-linux-x64-musl-1.33.0.tgz": {
+   "bytes": 3853971,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "4588986e4a24c34b6b7caaaacdf179e658229f010fac3dce2437d3b89cc5b3530aea21670de9dacf57ea2cbb57e084c6dce92d2505ce7936b0d5ac2b0409593f",
+   "usedFor": "npm lightningcss-linux-x64-musl 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.33.0.tgz": {
+   "bytes": 3429085,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "d4af8c3df2d2155a69873a5d6df92195693ac01ad339b0734b64fa75bd743cd399811f46a15b005b3c0dcae8546186d3a76de3fb846b9dc7ee8d9e2e0335efc0",
+   "usedFor": "npm lightningcss-win32-arm64-msvc 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.33.0.tgz": {
+   "bytes": 3706526,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "3a5108083c7f5e5d05a92a786ebcbccc59c2bc6a628371a5e200aabaf6301eea892840b5fa7f4d8039e216fa871a632fd5992a0c9ac3a8a292ca44c35fe7a1b8",
+   "usedFor": "npm lightningcss-win32-x64-msvc 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz": {
+   "bytes": 87655,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "5a4503ae88ee26cd3192019fdae756c5adf21814713edc54901efd8ba68264b46073b3ccf1f65ef53a2c7cf0dcbc4a5065bb850129c762644b04b51b98b38820",
+   "usedFor": "npm lightningcss 1.33.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz": {
+   "bytes": 697866,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "53837c160ce65b173c935547f0aafa950835f14ec58ef6f2eb05c75515ff659ec8c166d1320ad16cfd16adbe6ae4d5629ebca9e1241a9a91ca76fb5e708b7152",
+   "usedFor": "npm lru-cache 11.5.3",
+   "verified": true
+  },
+  "https://registry.npmjs.org/magic-string/-/magic-string-1.4.5.tgz": {
+   "bytes": 25636,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "a0b2c2dbe62f4147c06bebf1a2e7c4ff273589c6fceccf625c846a02847fd84844ffc71bdd217ff868b4736072d41fb9573d9edaf42d52f1e2bb5fbadd99e1fb",
+   "usedFor": "npm magic-string 1.4.5",
+   "verified": true
+  },
+  "https://registry.npmjs.org/nanoid/-/nanoid-3.3.20.tgz": {
+   "bytes": 5721,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "b8a760d86dc63422909fd6f260ea716c6aab4f67c63b9291b7927ff1bde9a24f2b4faab119617a871332262118b407fe155c98b83f6145a0ea5f9b8f15827865",
+   "usedFor": "npm nanoid 3.3.20",
+   "verified": true
+  },
+  "https://registry.npmjs.org/obug/-/obug-3.0.0.tgz": {
+   "bytes": 9311,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "e6fbc1e7e5bb78fbfea77baac62f91716d570332d6d3f871b77ff85f82dce2a1ee7733a1981881c0e63a0d1a1be169da9c0106bcd70b8c5f8a34eb9fad4a0443",
+   "usedFor": "npm obug 3.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/parse5-parser-stream/-/parse5-parser-stream-8.1.1.tgz": {
+   "bytes": 3674,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "84c7156db50971098ff2b511594758ad3d5f951881881563abf4581a0b89a435202174aa7582a51340b1b6199d316a1294102e2f96d405aef7834a6db52cbb1f",
+   "usedFor": "npm parse5-parser-stream 8.1.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/parse5/-/parse5-8.1.1.tgz": {
+   "bytes": 69066,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "11c47fe960dc53b6f6377bd04b12802c293d9571ad50c4315e2a34d3c38430113491abeeffb24b7c111e14fce2e379cca950d26c49f74022be04c09cf733bfff",
+   "usedFor": "npm parse5 8.1.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.4.299.tgz": {
+   "bytes": 8539589,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "015975dfccc02ed7da00fbc00ee944d0f65385b6330814bbf672f8a4e48bffa4a6ff8007e40db5043f551edf7b3a50aecc9b82a66799b40b648a78ac17855bd6",
+   "usedFor": "npm pdfjs-dist 6.4.299",
+   "verified": true
+  },
+  "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz": {
+   "bytes": 2625,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c5c787dac9e1b5be4cf658aa0ec984c39ea57b7efa993664117fe311bfd1c4d1727a036e97b78db250973fd1438ff2dcbb45fc284c8c71e3f69eda5a1eb0c454",
+   "usedFor": "npm picocolors 1.1.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz": {
+   "bytes": 24326,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "a9c26ef3c436216a89b030f9dbd24a31dc069bf76f2275b81ef427470887f49b62849bf318eb1c0ed1c4df1d6904a794393cac43c91598b9c9da426eef285c18",
+   "usedFor": "npm picomatch 4.0.7",
+   "verified": true
+  },
+  "https://registry.npmjs.org/postcss/-/postcss-8.5.32.tgz": {
+   "bytes": 52987,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "2c994a08201414a3ae6718a951d630d4dcc821312c3dc832386f4b92f449bee2a3fdb4736ee458d00457bcbd29586a6c66f9fc8e4bbe2cc7a9d9e534b1e1e9f2",
+   "usedFor": "npm postcss 8.5.32",
+   "verified": true
+  },
+  "https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz": {
+   "bytes": 7603,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "bd8b7b503d54f5683ad77f2c84bb4b3af740bbef03b02fe2945b44547707fb0c9d712a4d136d007d239db9fe8c91115a84be4563b5f5a14ee7295645b5fabc16",
+   "usedFor": "npm punycode 2.3.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/react-dom/-/react-dom-19.3.1.tgz": {
+   "bytes": 1410652,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "6346c0473e77961102d4d302012b34fe3f9f681ff3aaddd1f21a6f8357bcfbad59549e142f451d0b87016d77d931c22e86b7e07882d32def9978109abd03ed29",
+   "usedFor": "npm react-dom 19.3.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/react/-/react-19.3.1.tgz": {
+   "bytes": 26394,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "40d85676dee7ae05565901b9f10b86b004778efdc76dee266f8bf3ef0d9cb271dabdc89926075ad423cd6a5745e9e571bfdd2e7778d45e92a51cbebd80edfccb",
+   "usedFor": "npm react 19.3.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/rolldown/-/rolldown-1.2.15.tgz": {
+   "bytes": 203090,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "ea874d0fe7de979cd5c3723861cd9eebd82f82e0e75f408000688d0d94aae2293959471a2eb903d862eea20d1770e0dba2bdf5859e5ac843205439e8f8a3d5e6",
+   "usedFor": "npm rolldown 1.2.15",
+   "verified": true
+  },
+  "https://registry.npmjs.org/saxes/-/saxes-6.0.0.tgz": {
+   "bytes": 35374,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c4083b48e9c486b9b9cc8de9b8e38acb2d4e31c32520965834963bc4b0704b37b452384f2e759f8f6185d84a53d239b368928858a1cbb1a4926a37f7e5b7189c",
+   "usedFor": "npm saxes 6.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/scheduler/-/scheduler-0.28.0.tgz": {
+   "bytes": 10011,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "8eea2b7c2988908c3cb53fa9e415d29ba3c98d017fc9c11898acb3511088b7f45a64884bf8fba56d0f58bb6cf51dd3890dda834e5c40d7ec4a0661d726c73303",
+   "usedFor": "npm scheduler 0.28.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.2.tgz": {
+   "bytes": 36349,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "2868fff18e37c77e5a6550edb7e27898ad61a0b18750b3187d290e0c93508cd0c2de85b53ea3e8c4cc28d292d4b1633f5041b338dfcdc5e1f2c047cd5cd3f757",
+   "usedFor": "npm source-map-js 1.2.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/std-env/-/std-env-4.3.0.tgz": {
+   "bytes": 6608,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "3ad53f1204359089b92b0a90a410ba644317ad946e8b5d70f3381f4d6a7c71d3bd07c39a3ec6c0f1b4c73b63fe1cda3556551318c541c0f87276eea9a1e5e26a",
+   "usedFor": "npm std-env 4.3.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/tinybench/-/tinybench-6.2.2.tgz": {
+   "bytes": 25292,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "9c8676376745a6306c8368608ad2aeee603e16fb0826e1893b0cac4678265514665a047f5323e3c098fc73f7d3fdd866f049079c5e443a88117fed19daaae298",
+   "usedFor": "npm tinybench 6.2.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/tinyexec/-/tinyexec-1.3.1.tgz": {
+   "bytes": 9187,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "182bc1ddaa32b3de88b8314131c4c1e3a24e47a99d32d013a2ac225bc2655a1b288759a11e2ff19fdb2cfc383b379e791a227212ddaace81bf3470b033a87510",
+   "usedFor": "npm tinyexec 1.3.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz": {
+   "bytes": 7873,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "c1747f758a5ca8a99f5a911d66388a24ec023459dd0f40cc9eb5bf7188d51adb449017d581c2c51e836b963e3b9a339589cf72c8dbbae5a96c805e0d4324dada",
+   "usedFor": "npm tinyglobby 0.2.17",
+   "verified": true
+  },
+  "https://registry.npmjs.org/tldts-core/-/tldts-core-7.4.22.tgz": {
+   "bytes": 84784,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "351ca1ae5bc9713c2fa1189b13474466fa7a0b9470578471a6c5f5cdb908d64ec5936a73221990f8cbecc0911de4a2a5dd544544c0d38a95ec7bf7a387f95dff",
+   "usedFor": "npm tldts-core 7.4.22",
+   "verified": true
+  },
+  "https://registry.npmjs.org/tldts/-/tldts-7.4.22.tgz": {
+   "bytes": 687312,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "4e62f09026751853311a429f836a284213c5f2b0ccbae5ef2474b1162394d5fa1f876ecbe8d68ee53f4a4a54170895f67a84add7823c178b1a48c20b3a65e669",
+   "usedFor": "npm tldts 7.4.22",
+   "verified": true
+  },
+  "https://registry.npmjs.org/tough-cookie/-/tough-cookie-6.1.0.tgz": {
+   "bytes": 163949,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "153c5cf2ef0a976b73d0b6add6ef24b2f732f1bc0747210c6b0c135b26e8e7526a682e8eed2bdfba100a83e2dde95ab221ed9044907363d1c0ef2d96c85453db",
+   "usedFor": "npm tough-cookie 6.1.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/tr46/-/tr46-7.0.0.tgz": {
+   "bytes": 65623,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "05c0d20d6f922065953a7b35666e9883dd6af40123ede6880f440363da08a890f503c76c70dc0c725f529acd837ae582368bf55f4fe85da9c719840148bc19b2",
+   "usedFor": "npm tr46 7.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/typescript/-/typescript-7.0.2.tgz": {
+   "bytes": 365612,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "f0561abbdea8dcd28e85b8ca8bfa8dbc6fd6e63873c646dd9b9b23f406d9ff94f9b16aa7de12602df1b1dbbb11299593bf2cc23fc74b4414dfe6d05349155434",
+   "usedFor": "npm typescript 7.0.2",
+   "verified": true
+  },
+  "https://registry.npmjs.org/undici-types/-/undici-types-8.9.0.tgz": {
+   "bytes": 29764,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "2930f2453617f2c5a629702290f1c74b273adc244f11331cb728ca16ea5c0ba3812d74f7c6c3747bd685ee6fa6217bad156a545ee79db68c06ee22cece9d2442",
+   "usedFor": "npm undici-types 8.9.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/undici/-/undici-8.12.4.tgz": {
+   "bytes": 547266,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "f0cc7eb8d28a111d9b03801db5e764a916f050220916bda725c91745ee72ac3ab378fab02cfed535c72d37cfd77660d26c5ee64be8c9288b3394bfaf6da9b554",
+   "usedFor": "npm undici 8.12.4",
+   "verified": true
+  },
+  "https://registry.npmjs.org/vite/-/vite-8.3.5.tgz": {
+   "bytes": 587457,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "cf56298e2789f60d1e6d3990a4b06ffe8abd13717d10894e7beecb6a15bc4ab1372d3886dee7414545d03a56173fd6fe202daada9847795c63f711a5c37e0e11",
+   "usedFor": "npm vite 8.3.5",
+   "verified": true
+  },
+  "https://registry.npmjs.org/vitest/-/vitest-5.0.5.tgz": {
+   "bytes": 710235,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "70f38338c17c627922898b43747a3a9f8c16981ace0416ce2181f6777dcce25dc274d9fbda1faa3263bab977df50de80e406455cd343fddfa4ad2f668245d17e",
+   "usedFor": "npm vitest 5.0.5",
+   "verified": true
+  },
+  "https://registry.npmjs.org/w3c-xmlserializer/-/w3c-xmlserializer-6.0.0.tgz": {
+   "bytes": 5340,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "e0db32f0ae53afa48f0c7f6384a24e1dfec2843adcd73b9f65355217bc7bda1c2e11706ac6a93d1ba70af8ad8d454b41de210b449aa35dbe093c33018cc4e5d9",
+   "usedFor": "npm w3c-xmlserializer 6.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-8.0.1.tgz": {
+   "bytes": 7326,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "04c84b0ff4b0f866c90b6d42fd48326995f8d673edf1b51383e8d6c837a0edeed8378c4e334e583d221771e0029d756dab2130fcb30295440cb4c67e3c61a9a9",
+   "usedFor": "npm webidl-conversions 8.0.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/whatwg-mimetype/-/whatwg-mimetype-5.0.0.tgz": {
+   "bytes": 10895,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "b1770d707382e75b8f185d0ffc3e0d56dae48d25367cdb26f62a20e19bd926c2f7ae3a030335d98649b6316b75cbe3d476080a01856830021872cefcc09e750b",
+   "usedFor": "npm whatwg-mimetype 5.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/whatwg-url/-/whatwg-url-17.3.0.tgz": {
+   "bytes": 24818,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "2b038026ba5ff864e006f70140970fdfcb0c1740ec40a770b46f93c4cda95b8e0fe84e64d210db5ab0e6cae243205d1479fd1a42ad19a09b3ee6823e93c75d86",
+   "usedFor": "npm whatwg-url 17.3.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-3.2.1.tgz": {
+   "bytes": 3722,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "4dbd85521078bd4b064257d2aae40b62402992e3c01505c6173c562871ee995cf674af97d51526fc79c80f8f937c819827591373039a0a4fdbb9808426be988d",
+   "usedFor": "npm why-is-node-running 3.2.1",
+   "verified": true
+  },
+  "https://registry.npmjs.org/xml-name-validator/-/xml-name-validator-5.0.0.tgz": {
+   "bytes": 4678,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "12f18af042770e16877db465113396012e693bd31921379ab87289c9bf30c9a8d47d051e9e4220d8cbcb0d36784ff4e021c9b71d4d1314181659ba00677d141e",
+   "usedFor": "npm xml-name-validator 5.0.0",
+   "verified": true
+  },
+  "https://registry.npmjs.org/xmlchars/-/xmlchars-2.2.0.tgz": {
+   "bytes": 11752,
+   "checksumSource": "package-lock.json integrity",
+   "sha512": "2599c328af01d11083c3ce0535d0c022964af89b89c3eb3b2f3f2792c23b488b94dd45c926c954b61b22fae5815183b03c5c16ed6ecf44b45f50aa718ed8c50b",
+   "usedFor": "npm xmlchars 2.2.0",
+   "verified": true
+  }
+ },
+ "images": {
+  "backend": {
+   "architecture": "arm64/linux",
+   "id": "sha256:f8ca89e8228d1b8f7e7cd21e28e89d74e6b6ee1b956d12d96f481c012fbd0179",
+   "image": "amos2026ws04-odos-next-backend:latest",
+   "repoDigests": [
+    "amos2026ws04-odos-next-backend@sha256:f8ca89e8228d1b8f7e7cd21e28e89d74e6b6ee1b956d12d96f481c012fbd0179"
+   ]
+  }
+ },
+ "notes": {}
+}

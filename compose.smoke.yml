@@ -1,0 +1,24 @@
+# compose.smoke.yml — CI smoke-test override
+#
+# Replaces the build directives in compose.yaml with pre-built CI images so
+# `docker compose up` does not trigger a fresh image build.  All other
+# settings — postgres credentials, ODOS_DATABASE_ENABLED=1, ODOS_STORAGE_DIR,
+# depends_on conditions — are inherited unchanged from compose.yaml, making
+# this a real integration smoke test: the backend connects to postgres at
+# startup and /api/documents exercises that connection.
+#
+# Usage (CI — images must be loaded first with docker/build-push-action load:true):
+#   POSTGRES_USER=ci POSTGRES_PASSWORD=ci POSTGRES_DB=odos_ci \
+#     docker compose -f compose.yaml -f compose.smoke.yml \
+#       up -d --wait --wait-timeout 180
+#
+# Usage (local — images must exist in the local daemon):
+#   POSTGRES_USER=ci POSTGRES_PASSWORD=ci POSTGRES_DB=odos_ci \
+#     docker compose -f compose.yaml -f compose.smoke.yml up -d --wait
+
+services:
+  backend:
+    image: odos-backend:ci
+
+  frontend:
+    image: odos-frontend:ci

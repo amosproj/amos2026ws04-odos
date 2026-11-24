@@ -49,6 +49,25 @@ The raw panel requires the corresponding frontend component and the `DOCLING_RAW
 
 PDF highlights use provenance in `document_model.json`. Custom Legal JSON 2.0 omits technical source coordinates. Its node IDs link back to the model.
 
+## Rule extraction and human review
+
+*Continue to Rule Extraction* in Document Review opens the **LLM Rule Extraction & Review** page. It needs the ODOS backend (documents opened from the library or processed through the API); for a document without it the page explains that rules cannot be extracted.
+
+| Step | What happens |
+|---|---|
+| Open | An existing `rules.json` is shown at once; nothing is sent to Amazon Bedrock. A run that is still going is picked up again. |
+| Start / Restart | *Start Rule Extraction* sends the whole document to Amazon Bedrock (a paid request). *Restart Extraction* asks for confirmation first; a failed run never replaces existing results. |
+| Progress | The page shows the status the backend reports (queued, running) and the elapsed time. No percentage is shown because none is reported; a running extraction cannot be cancelled. |
+| Results | Overview (human-review counts, separate from the automated ODOS checks), filters, search, the Rule JSON with syntax highlighting, line numbers and a copy button, source text, and the review information stored in the rule. No confidence value is shown. |
+| Sources | Every source element of a rule is a link. *Show in PDF* (or the citation) returns to Document Review with that element selected and highlighted. On the way back the page restores the selected rule, filter, search and scroll position. |
+
+**Human review** stores decisions in PostgreSQL (`rule_reviews`, see [review-state-design.md](../Documentation/review-state-design.md)):
+
+* Enter a **reviewer name** (self-declared, not authenticated), then **Accept**, **Reject** (reason required) or **Edit JSON** (validated by the backend as Rule JSON 2.0; the extracted record is kept and the rule returns to pending). The audit trail lists every event of the rule and keeps events of earlier extractions apart as history.
+* **Download approved rules** saves the accepted rules (edited content where edited) as Rule JSON 2.0 with `review.status: approved`. `rules.json` itself is never changed.
+* Decisions belong to one extraction. If another extraction replaces the rules while the page is open (for example in a second tab), the page shows *The extraction has changed*, disables every review action and offers **Reload results**; no decision is applied to rules it was not made on.
+* The controls stay disabled, with the backend's explanation, when the database is off, the `002_rule_reviews.sql` migration has not been applied to an existing database ([database-poc.md](../Documentation/database-poc.md)), or the backend cannot be reached.
+
 ## Commands
 
 Run these commands inside `frontend`:
@@ -80,7 +99,11 @@ The frontend submits `POST /api/jobs`, polls `GET /api/jobs/{id}`, and retrieves
 |---|---|
 | `src/main.tsx` | Application entry point |
 | `src/demo/DemoApp.tsx` | Upload, progress, result tabs and raw JSON panel |
-| `src/demo/live.ts` | Upload, polling, result loading and selected-node lookup |
+| `src/demo/live.ts` | Upload, polling, result loading, selected-node lookup, rule extraction and review API client |
+| `src/demo/RuleExtraction.tsx` | Rule Extraction page: start, progress, results, overview, rule detail and sources |
+| `src/demo/ReviewControls.tsx`, `useRuleReviews.ts` | Human review: Accept / Reject / Edit, audit trail, review state bound to the displayed extraction |
+| `src/demo/ruleResults.ts` | Maps the stored `rules.json` to what the page shows (no invented values) |
+| `src/components/JsonViewer.tsx` | JSON with syntax highlighting, line numbers and copy |
 | `src/demo/excerpts.mjs` | JSON formatting and presentation names |
 | `src/demo/fixtures.ts` | Shared `DemoResult` type only after cleanup; update imports if renamed |
 | `src/components/` | PDF viewer, structure tree and icons |

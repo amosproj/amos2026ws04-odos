@@ -2,14 +2,33 @@ import { useEffect, useMemo, useState } from "react";
 import { Icon } from "./Icon";
 import { TYPE_LABELS, buildTree, clickAction, visibleKeys, type TreeNode } from "../structure";
 import type { DocumentModel } from "../types";
+import { STATE_LABEL, type Counts, type ElementMarks, type ReviewState } from "../demo/reviewMarks";
 
 interface Props {
   model: DocumentModel;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** Persisted review decisions of the rules that cite each element (Document Review); absent when none are known. */
+  marks?: Map<string, ElementMarks>;
 }
 
-export function StructureTree({ model, selectedId, onSelect }: Props) {
+const STATES: ReviewState[] = ["accepted", "pending", "rejected"];
+
+/** The review state of the rules citing an element: one coloured count per state (never merged into one colour), a blue dot when some
+ *  were edited. Rules of sub-elements are shown fainter, so a collapsed § still tells where decisions are open. */
+function MarkDots({ id, m }: { id: string; m: ElementMarks }) {
+  const part = (c: Counts, below: boolean) => (
+    <>
+      {STATES.filter((st) => c[st] > 0).map((st) => (
+        <span key={st} className={`rm ${st}${below ? " below" : ""}`} title={`${c[st]} ${STATE_LABEL[st].toLowerCase()}${below ? " in sub-elements" : ""}`} aria-label={`${c[st]} rule${c[st] === 1 ? "" : "s"} ${STATE_LABEL[st].toLowerCase()}${below ? " in sub-elements" : ""}`}>{c[st]}</span>
+      ))}
+      {c.edited > 0 && <span className={`rm edited${below ? " below" : ""}`} title={`${c.edited} edited${below ? " in sub-elements" : ""}`} aria-label={`${c.edited} edited`} />}
+    </>
+  );
+  return <span className="marks" data-element={id}>{part(m.own, false)}{part(m.below, true)}</span>;
+}
+
+export function StructureTree({ model, selectedId, onSelect, marks }: Props) {
   const { roots, byKey, parentOf } = useMemo(() => buildTree(model), [model]);
   const [open, setOpen] = useState<Set<string>>(() => new Set(roots.filter((r) => r.element?.region === "body").map((r) => r.key)));
   const [query, setQuery] = useState("");
@@ -49,6 +68,7 @@ export function StructureTree({ model, selectedId, onSelect }: Props) {
           {e && <span className={`kind kind-${e.type}`}>{TYPE_LABELS[e.type] ?? e.type}</span>}
           {n.toc && <span className="kind kind-toc_entry">TOC</span>}
           <span className="label">{n.label}</span>
+          {e && marks?.get(e.id) && <MarkDots id={e.id} m={marks.get(e.id)!} />}
           {e?.pages[0] != null && <span className="pg" title="Source page">p.{e.pages[0]}</span>}
         </div>
         {kids.length > 0 && expanded && <ul role="group">{kids.map((c) => row(c, depth + 1))}</ul>}

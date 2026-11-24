@@ -54,6 +54,14 @@ backend/tests/private/
 **/storage/documents/
 **/docling_raw.json
 **/pdf_text_lines.json
+# pytest-cov output (generated during test runs; not source-controlled)
+backend/.coverage
+backend/.coverage.*
+backend/coverage.xml
+backend/coverage-slow.xml
+backend/coverage/
+backend/htmlcov/
+
 # secrets and local tool configuration
 .env
 .env.*
