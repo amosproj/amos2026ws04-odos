@@ -1,204 +1,146 @@
-# ODOS: build, test and run with Docker
+# ODOS Build Documentation
 
-These instructions cover the local Docker workflow for the current project: clone a clean repository, configure it, build the images, run automated tests, and open the frontend. PDF processing is not required for the startup check.
+This guide explains how to build, test and run the ODOS project locally using Docker. It covers the required software, database and API-key configuration, automated tests, and the commands for starting and updating the application.
 
-Run the commands in a **PowerShell terminal**, one at a time. Unless stated otherwise, stay in the repository root: the folder containing `compose.yaml`, `backend` and `frontend`. Stop and investigate if a command fails.
+## 1. Requirements
 
-## Requirements
+Install Git and Docker Desktop (Linux containers; WSL 2 on Windows). Start Docker before continuing. Host ports 5173, 8000 and 5433 must be available. Python 3.12, Node.js 22 and PostgreSQL 17 run in containers. All commands below use PowerShell. Internet access is required for initial downloads; allow several GB of free disk space.
 
-- Git and VS Code.
-- Docker Desktop running with Linux containers; on Windows, use the WSL 2 backend.
-- Internet access for container images and dependencies.
-- Several GB of free disk space and sufficient Docker memory. The existing Docker guide suggests an 8 GB starting allocation for document processing; actual needs depend on the workload.
-- Available host ports 5173, 8000 and 5433.
+## 2. Clone, configure and build
 
-Python and Node.js run inside the containers; separate host installations are not required for this workflow. Stop any older ODOS stack before starting a new checkout: this configuration uses the fixed container name `odos-postgres`.
-
-## 1. Clone a clean checkout
-
-The branch must contain the version you intend to demonstrate.
-
-```
-git clone --branch main https://github.com/amosproj/amos2026ws04-odos.git ODOS
+```powershell
+git clone --branch main `
+  https://github.com/amosproj/amos2026ws04-odos.git ODOS
 cd ODOS
-git status
-git log -1 --oneline
-```
 
-Open this folder in VS Code.
-
-## 2. Configure the environment
-
-For a new checkout:
-
-```
 Copy-Item .env.example .env
 ```
 
-Edit `.env`, keeping `POSTGRES_USER=odos` and `POSTGRES_DB=odos` for the commands below. Replace `POSTGRES_PASSWORD` with a local password. Do not commit this file or display its password in a recording.
+The commands use the main branch. If you already have a clone, open its root folder instead of cloning again. Skip the copy if .env already exists; do not overwrite your local settings.
 
-If `.env` already exists, edit it instead of overwriting it. Existing database volumes retain their original database credentials; editing `.env` does not change a password already stored in PostgreSQL.
+### Configure the PostgreSQL password and optional API key
 
-Validate the configuration without printing the resolved credentials:
+Open .env, not .env.example, in your editor. Keep POSTGRES_USER=odos and POSTGRES_DB=odos from the template for the commands below. Set these values:
 
+```text
+POSTGRES_PASSWORD=your_local_database_password
+AWS_BEARER_TOKEN_BEDROCK=
 ```
+
+PostgreSQL password: replace your_local_database_password with a password you choose for your local database. Do not leave the template placeholder. Compose supplies it to PostgreSQL and the backend so they can connect. Existing database volumes retain their original credentials: changing .env alone does not change an already initialized database password.
+
+Bedrock API key: an authorized key is required only for real LLM rule extraction. It is not supplied in the repository. Request access from the project maintainer or the person responsible for the project's AWS/Bedrock account. Once provided, enter it after AWS_BEARER_TOKEN_BEDROCK=, save the .env file, and run docker compose up -d to apply it.
+
+Until you receive a key, leave the API-key value empty. You can still build, run tests, open the frontend and process supported PDFs into Legal JSON. Paid rule extraction will be unavailable. Do not share or commit passwords or API keys. Starting real extraction uses the project's Bedrock account and incurs charges.
+
+### Check the configuration
+
+```powershell
 docker compose config --quiet
 ```
 
-No output normally means validation succeeded.
+### Build the application
 
-## 3. Build the images
-
-```
+```powershell
 docker compose build
 ```
 
-The frontend image runs `npm ci` and `npm run build`. The build performs TypeScript checking and generates `dist/`.
+### Start the database
 
-The backend image installs its system and Python dependencies, installs the ODOS package and runs `pip check`.
-
-Continue only when the build succeeds.
-
-## 4. Start PostgreSQL and create the test database
-
-```
+```powershell
 docker compose up -d postgres
+```
+
+```powershell
 docker compose ps
 ```
 
-Wait until PostgreSQL is healthy, then run:
+### Create the test database (only needed for backend tests)
 
-```
+```powershell
 docker compose exec postgres createdb -U odos odos_test
 ```
 
-Create this database once per PostgreSQL volume. A message that `odos_test` already exists means it is already available. Other errors need investigation.
+Wait for PostgreSQL to be healthy before creating odos_test. Successful creation normally prints nothing. “Already exists” means the database is already created, which is fine.
 
-The tests enforce a database name ending in `_test` and use `odos_test` by default. They create the test table and clear its records between tests. The application uses the separate `odos` database.
+The frontend build checks TypeScript and compiles the app. The backend installs dependencies and runs pip check. Cached builds can be much faster.
 
-If you changed `POSTGRES_USER`, replace `odos` after `-U` with that username.
+## 3. Run tests
 
-## 5. Run the backend tests
+### Backend tests
 
-Run the following as one command:
-
-```
-docker compose run --rm --no-deps -v ./backend/tests:/app/backend/tests:ro -v ./backend/db:/app/backend/db:ro -v ./dev-fixtures:/app/dev-fixtures:ro backend python -m pytest -v -m "not slow" tests
-```
-
-The mounts supply tests, database initialization SQL and rule examples that are not copied into the backend image. Compose supplies the database connection settings; PostgreSQL must already be running.
-
-This selection covers:
-
-- API behavior with and without database persistence.
-- PostgreSQL repository and persistence integration.
-- Legal JSON schema compatibility.
-- Rule JSON schema and example validation.
-- Legal text continued across page breaks and its source geometry.
-- PDF rendering with non-embedded fonts.
-
-The command excludes tests marked `slow`, which process complete reference PDFs. Two additional Rule JSON source-reference checks skip unless `ODOS_MBO_LEGAL_JSON_PATH` and `ODOS_EU_LEGAL_JSON_PATH` are configured with accessible Legal JSON files. Read the final pytest summary and skip reasons. Skipped tests are not passed tests.
-
-For full reference-document tests, see `backend/data/input/SOURCE.md`, `DOCKER.md` and `Documentation/database-poc.md`. Partner PDFs are not included in Git. They are unnecessary for the selected startup demonstration.
-
-## 6. Run the frontend tests
-
-```
-docker compose run --rm --no-deps frontend npm test
+```powershell
+docker compose run --rm --no-deps `
+  -e AWS_BEARER_TOKEN_BEDROCK= `
+  -e ODOS_RULE_EXTRACTION_ARCHIVE_DIR= `
+  -e ODOS_RULE_EXTRACTION_REPORT_DIR= `
+  -v ./backend/tests:/app/backend/tests:ro `
+  -v ./backend/db:/app/backend/db:ro `
+  -v ./dev-fixtures:/app/dev-fixtures:ro `
+  backend python -m pytest -v -m "not slow" tests
 ```
 
-The frontend tests cover document upload and processing states, document lists, hierarchy navigation, JSON views, source highlights and interface interactions. Read the final Vitest result and resolve failures before proceeding.
+### Frontend tests
 
-This checkout has no GitHub Actions workflow. Run the tests locally as above.
-
-## 7. Start the complete application
-
+```powershell
+docker compose run --rm --no-deps `
+  -v ./backend:/app/backend:ro `
+  -v ./compose.yaml:/app/compose.yaml:ro `
+  -v ./LICENSE:/app/LICENSE:ro `
+  frontend npm test -- --testTimeout=20000 --maxWorkers=2
 ```
+
+Read the final summaries: failures/errors require investigation; deselected tests include the excluded slow suite. Optional PDF/processed-JSON checks may skip, but database tests skipping due to a failed connection need attention.
+
+## 4. Start and verify the local application
+
+### Start
+
+```powershell
 docker compose up -d
+```
+
+### Check status
+
+```powershell
 docker compose ps
 ```
 
-Wait for PostgreSQL and the backend to become healthy and the frontend to be running. The frontend has no separate health check in this configuration.
+Open http://localhost:5173; API docs are http://localhost:8000/docs. PostgreSQL is exposed on host port 5433. Database/backend should be healthy and frontend running. Refresh with Ctrl+F5. Extraction preview prepares an estimate without calling the LLM. Starting real Bedrock extraction incurs charges.
 
-Open:
+### For subsequent build-and-start runs use
 
-- Frontend: [http://localhost:5173](http://localhost:5173/)
-- API documentation: [http://localhost:8000/docs](http://localhost:8000/docs)
-
-The startup check is complete when the frontend opens and the services have the expected status. This demonstrates startup; it does not demonstrate the PDF-processing workflow.
-
-The frontend container starts Vite's development server. These instructions describe local development, not a production deployment.
-
-## 8. Stop or restart later
-
-Stop the stack while retaining its named volumes:
-
-```
-docker compose down
+```powershell
+docker compose up --build -d
 ```
 
-Start it again:
+This is local deployment: the frontend runs Vite's development server. Digital-twin validation is currently a preview, not a working validation check.
 
+## 5. Stored data and database setup
+
+ODOS keeps uploaded documents, results and review decisions in Docker volumes between sessions.
+
+Stop it with docker compose down and restart with docker compose up -d. Do not use down --volumes for routine restarts, since it deletes stored data.
+
+## 6. Updating ODOS and checking changes
+
+Preserve local changes first. From a clean checkout, update main and rebuild/start the application:
+
+```powershell
+git switch main
+git pull --ff-only origin main
+docker compose up --build -d
 ```
-docker compose up -d
-```
 
-After source or dependency changes:
+Rerun the tests after updates. After changing only .env, use docker compose up -d to apply the settings.
 
-```
-docker compose build
-docker compose up -d
-```
+## 7. Build-process video
 
-Avoid `docker compose down --volumes` unless you intend to delete the stored database, result files and downloaded model cache.
+The narrated [build-process video](https://github.com/amosproj/amos2026ws04-odos/blob/main/Deliverables/sprint-05/build-process-video.mp4) demonstrates the build process workflow: cloning the repository, configuring the environment, building the images, running backend and frontend tests, and starting the application. It concludes by opening the frontend in the browser.
 
-## Troubleshooting
+Repository path: Deliverables/sprint-05/build-process-video.mp4
 
-| **Problem**                           | **What to check**                                                                   |
-| ------------------------------------- | ----------------------------------------------------------------------------------- |
-| Missing POSTGRES variables            | Create and fill in the root `.env` file before running Compose.                     |
-| Docker cannot connect to its engine   | Start Docker Desktop and wait until it is ready.                                    |
-| Container name or port already in use | Stop the previous ODOS stack or conflicting local server.                           |
-| Backend unhealthy                     | Run `docker compose logs --tail 100 backend`.                                       |
-| Database authentication fails         | Verify the credentials match those used when the volume was initialized.            |
-| Database tests skip unexpectedly      | Check PostgreSQL is healthy and `odos_test` exists.                                 |
-| Missing test/example files            | Use the backend test command above with all three mounts, from the repository root. |
-| Frontend does not open                | Check `docker compose ps` and `docker compose logs --tail 100 frontend`.            |
+## 8. Versioning
 
-## Build-process video
+The main branch contains the project version used in this guide. Release tags identify specific versions of the code. To check the exact revision currently downloaded, run git rev-parse HEAD.
 
-The narrated [build-process video](Deliverables/sprint-05/build-process-video.mp4) demonstrates the local Docker workflow: cloning the repository, configuring the environment, building the images, running backend and frontend tests, and starting the application. It concludes by opening the frontend in the browser.
-
-The recording is stored in `Deliverables/sprint-05/build-process-video.mp4`.
-
-## Configuration and storage
-
-| **Variable**              | **Purpose**                                                                      |
-| ------------------------- | -------------------------------------------------------------------------------- |
-| `ODOS_STORAGE_DIR`        | Backend job-file location; temporary storage is used by default                  |
-| `ODOS_MAX_UPLOAD_MB`      | Upload size limit; default 50 MB                                                 |
-| `ODOS_API_URL`            | Vite proxy's backend address; default `http://127.0.0.1:8000`                   |
-| `AWS_BEARER_TOKEN_BEDROCK`| Optional: Amazon Bedrock API key for LLM rule extraction; see [backend/README.md](backend/README.md#8-configuration) |
-
-Set variables before starting the corresponding process. Jobs are processed one at a time. Uploaded PDFs are deleted after processing; the browser displays its own local copy. Temporary storage is removed on shutdown, and old completed jobs may be deleted as the job limit is reached.
-
-Setting `ODOS_STORAGE_DIR` retains files but does not restore the in-memory job registry after restart. Do not commit uploaded PDFs, generated document data, virtual environments or `node_modules`.
-
-Optional persistence: with a local PostgreSQL 17 database (Docker Compose) and `ODOS_DATABASE_ENABLED=1`, jobs and their Legal JSON are stored as JSONB and restored after a backend restart; the uploaded PDF and result files are kept, and old jobs are not removed automatically. See the [PostgreSQL proof of concept](https://github.com/amosproj/amos2026ws04-odos/blob/main/Documentation/database-poc.md). [DOCKER.md](https://github.com/amosproj/amos2026ws04-odos/blob/main/DOCKER.md) runs PostgreSQL, backend and frontend with Docker Compose, with this persistence enabled. To start the stack and inspect the stored Legal JSON with `psql`, see the [Docker and PostgreSQL developer guide](https://github.com/amosproj/amos2026ws04-odos/blob/main/Documentation/docker-postgresql-guide.md).
-
-## Repository layout
-
-| **Folder**       | **Contents**                                                                                                                  |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `backend/`       | Python pipeline, API, CLI and Legal JSON schema                                                                               |
-| `frontend/`      | React/TypeScript application and Vite configuration                                                                           |
-| `Documentation/` | [Architecture and development documentation](https://github.com/amosproj/amos2026ws04-odos/blob/main/Documentation/README.md) |
-| `Deliverables/`  | Sprint submission materials                                                                                                   |
-
-
-
-For command-line processing, parsing details and schema changes, see [Documentation/README.md](Documentation/README.md).
-
-## LLM input views
-
-ODOS now keeps the original Custom Legal JSON and generates Reduced LLM input JSON V1 and LLM applicability input JSON V2. All three are available in the frontend with separate downloads. LLM rule extraction uses V2. See [the reduction and applicability guide](Documentation/llm-input-reduction.md) for the exact Excel exclusions, running instructions and verification limits.
