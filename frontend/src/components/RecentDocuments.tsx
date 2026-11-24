@@ -16,6 +16,7 @@ const STATUS: Record<StoredDocument["status"], { label: string; tone: "ok" | "bu
   queued: { label: "Queued", tone: "busy" },
   unsupported: { label: "Not recognized", tone: "warn" },
   failed: { label: "Failed", tone: "danger" },
+  cancelled: { label: "Cancelled", tone: "warn" },
 };
 
 /** Only a completed document has a result to open; the backend refuses to delete one that is still being processed. */
@@ -62,6 +63,7 @@ const formatDate = (iso: string) => {
   return Number.isNaN(date.getTime()) ? null : new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date);
 };
 
+const POLL_MS = 3000;
 const messageOf = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 interface Props {
@@ -115,6 +117,15 @@ export function RecentDocuments({ refreshKey = 0, onOpen, openingId = null, open
     load();
     return () => { latest.current++; };
   }, [refreshKey, load]);
+
+  // a document that is still queued or processing (also one being cancelled) is re-read until it has settled, so the
+  // list never stays on "Processing" after the backend finished (or cancelled) it
+  const unsettled = state.kind === "ready" && state.documents.some((d) => d.status === "queued" || d.status === "processing");
+  useEffect(() => {
+    if (!unsettled) return;
+    const timer = window.setInterval(() => load(true), POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [unsettled, load]);
 
   const confirmDelete = async (doc: StoredDocument) => {
     if (deleting.current) return;

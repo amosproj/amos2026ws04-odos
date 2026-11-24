@@ -173,11 +173,12 @@ The recording is stored in `Deliverables/sprint-05/build-process-video.mp4`.
 
 ## Configuration and storage
 
-| **Variable**         | **Purpose**                                                     |
-| -------------------- | --------------------------------------------------------------- |
-| `ODOS_STORAGE_DIR`   | Backend job-file location; temporary storage is used by default |
-| `ODOS_MAX_UPLOAD_MB` | Upload size limit; default 50 MB                                |
-| `ODOS_API_URL`       | Vite proxy's backend address; default `http://127.0.0.1:8000`   |
+| **Variable**              | **Purpose**                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| `ODOS_STORAGE_DIR`        | Backend job-file location; temporary storage is used by default                  |
+| `ODOS_MAX_UPLOAD_MB`      | Upload size limit; default 50 MB                                                 |
+| `ODOS_API_URL`            | Vite proxy's backend address; default `http://127.0.0.1:8000`                   |
+| `AWS_BEARER_TOKEN_BEDROCK`| Optional: Amazon Bedrock API key for LLM rule extraction; see [backend/README.md](backend/README.md#8-configuration) |
 
 Set variables before starting the corresponding process. Jobs are processed one at a time. Uploaded PDFs are deleted after processing; the browser displays its own local copy. Temporary storage is removed on shutdown, and old completed jobs may be deleted as the job limit is reached.
 
@@ -197,3 +198,7 @@ Optional persistence: with a local PostgreSQL 17 database (Docker Compose) and `
 
 
 For command-line processing, parsing details and schema changes, see [Documentation/README.md](Documentation/README.md).
+
+## LLM input views
+
+ODOS now keeps the original Custom Legal JSON and generates Reduced LLM input JSON V1 and LLM applicability input JSON V2. All three are available in the frontend with separate downloads. LLM rule extraction uses V2. See [the reduction and applicability guide](Documentation/llm-input-reduction.md) for the exact Excel exclusions, running instructions and verification limits.

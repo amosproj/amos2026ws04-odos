@@ -1,0 +1,27 @@
+.twin-body { width: min(100% - 40px, 860px); margin: 36px auto 60px; }
+.twin-body h1 { margin: 8px 0 12px; font-size: clamp(26px, 3vw, 38px); }
+.twin-card { margin-top: 24px; padding: clamp(18px, 3vw, 30px); border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--panel, var(--bg)); }
+.twin-card h2 { margin: 22px 0 16px; font-size: 20px; }
+.twin-source, .twin-note { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); }
+.twin-source { overflow-wrap: anywhere; font-size: 14px; }
+.twin-source svg, .twin-note svg { flex: 0 0 auto; }
+.twin-upload { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 16px; border: 1px dashed var(--border); border-radius: var(--r-sm); background: var(--bg); cursor: pointer; text-align: center; }
+.twin-upload:hover { border-color: var(--accent); }
+.twin-upload svg { color: var(--accent); }
+.twin-upload span, .twin-file small { color: var(--muted); font-size: 13px; }
+.twin-card input[type="file"][hidden] { display: none; }
+.twin-file { display: flex; align-items: center; gap: 12px; margin: 16px 0; padding: 14px; border: 1px solid var(--border); border-radius: var(--r-sm); }
+.twin-file > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.twin-file small { display: block; margin-top: 4px; }
+.twin-actions { margin-top: 22px; }
+.twin-actions .btn { min-width: 150px; }
+.twin-note { margin: 18px 0 0; font-size: 13px; line-height: 1.6; }
+.twin-demo-result { margin-top: 20px; padding: 16px; border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--r-sm); }
+.twin-demo-result p { margin-bottom: 0; line-height: 1.6; }
+@media (max-width: 600px) { .twin-file { flex-wrap: wrap; } .twin-validation .docbar { flex-wrap: wrap; } }
+
+.twin-upload:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.twin-source { align-items: center; flex-wrap: wrap; }
+.twin-source > span { flex: 1; min-width: 160px; }
+.twin-source small { display: block; margin-top: 4px; font-size: 12px; }
+.twin-source-actions { display: flex; flex-wrap: wrap; gap: 8px; }

@@ -58,7 +58,26 @@ export interface TocEntry {
   evidence: string;
 }
 
+/** A half-open range [start, end) of code points of an element's `content_text`; `text_sha256` is that text's SHA-256 (UTF-8). */
+export interface SentenceRange {
+  element_id: string;
+  start: number;
+  end: number;
+  text_sha256: string;
+}
+
+/** A legal sentence as ranges over element texts (the text itself is never copied into the model). */
+export interface Sentence {
+  id: string;
+  unit_id: string;
+  number?: string | null;
+  ranges: SentenceRange[];
+  status?: string;
+  method?: string;
+}
+
 export interface DocumentModel {
+  sentences?: Sentence[];
   profile?: string | null; // "eu_legislation"; absent for the German-law parser
   metadata?: { title?: string | null };
   source: { num_pages: number };

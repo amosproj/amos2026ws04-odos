@@ -8,9 +8,11 @@ import type { DemoResult } from "./fixtures";
 export interface Job {
   id: string;
   filename: string;
-  status: "queued" | "processing" | "completed" | "unsupported" | "failed";
+  status: "queued" | "processing" | "completed" | "unsupported" | "failed" | "cancelled";
   stage: string | null;
   message: string | null;
+  /** True while the backend is stopping an in-progress document processing run. */
+  cancelRequested?: boolean;
   /** The backend keeps the job (database persistence, see Documentation/database-poc.md); absent from older backends. */
   persistent?: boolean;
 }
@@ -21,6 +23,9 @@ export interface LiveData {
   jobId: string;
   persistent: boolean;
   legal: { title?: string | null; frontMatter: unknown[]; tableOfContents: unknown[]; structure: unknown[] };
+  llmInputV1?: unknown | null;
+  llmInputV2?: unknown | null;
+  llmInputReport?: { characters?: Record<string, number>; applicability?: { policy?: string | null; removed?: unknown[] } } | null;
   ruleJson: unknown | null;
   ruleDownload: { href: string; name: string };
 }
@@ -44,6 +49,7 @@ export const STAGE_LABELS: Record<string, string> = {
   extracting: "Analyzing document structure…",
   normalizing: "Preparing structured legal data…",
   completed: "Document processing complete. Opening results…",
+  cancelling: "Stopping document processing…",
 };
 
 export const stageLabel = (stage: string) => STAGE_LABELS[stage] ?? "Processing document…";
@@ -55,6 +61,14 @@ export class ProcessingError extends Error {
     super(message);
     this.name = "ProcessingError";
     this.kind = kind;
+  }
+}
+
+/** The user cancelled document processing before a result was produced. */
+export class ProcessingCancelled extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProcessingCancelled";
   }
 }
 
@@ -70,16 +84,38 @@ const UNREACHABLE = "The ODOS backend is not reachable. Start it (see the README
 export const pdfUrl = (job: string) => `${API}/jobs/${job}/pdf`;
 export const fileUrl = (job: string, name: string, download = false) => `${API}/jobs/${job}/files/${name}${download ? "?download=true" : ""}`;
 
+/** A backend answer that was not OK; `status` lets the caller tell e.g. "already running" (409) from a real failure. */
+export class HttpError extends Error {
+  status: number;
+  /** The backend's stable reason (`X-ODOS-Error`), when it sends one. */
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "HttpError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+/** The backend could not be reached at all (as opposed to answering with an error). */
+export class UnreachableError extends Error {
+  constructor() {
+    super(UNREACHABLE);
+    this.name = "UnreachableError";
+  }
+}
+
 async function request(url: string, init?: RequestInit): Promise<Response> {
   let res: Response;
   try {
     res = await fetch(url, init);
   } catch {
-    throw new Error(UNREACHABLE);
+    throw new UnreachableError();
   }
   if (!res.ok) {
     const detail = await res.json().then((b: { detail?: unknown }) => (typeof b.detail === "string" ? b.detail : null), () => null);
-    throw new Error(detail ?? (res.status >= 500 ? UNREACHABLE : `The request failed (HTTP ${res.status}).`));
+    throw new HttpError(detail ?? (res.status >= 500 ? UNREACHABLE : `The request failed (HTTP ${res.status}).`), res.status,
+                        res.headers.get("X-ODOS-Error") ?? undefined);
   }
   return res;
 }
@@ -92,17 +128,20 @@ async function callOptional<T>(url: string): Promise<T | null> {
   try {
     res = await fetch(url);
   } catch {
-    throw new Error(UNREACHABLE);
+    throw new UnreachableError();
   }
   if (res.status === 404) return null;
   if (!res.ok) {
     const detail = await res.json().then((b: { detail?: unknown }) => (typeof b.detail === "string" ? b.detail : null), () => null);
-    throw new Error(detail ?? (res.status >= 500 ? UNREACHABLE : `The request failed (HTTP ${res.status}).`));
+    throw new HttpError(detail ?? (res.status >= 500 ? UNREACHABLE : `The request failed (HTTP ${res.status}).`), res.status);
   }
   return res.json() as Promise<T>;
 }
 
 export const deleteJob = (id: string) => fetch(`${API}/jobs/${id}`, { method: "DELETE" }).catch(() => undefined);
+
+/** Asks the backend to stop document processing for this job. Returns the updated job. */
+export const cancelJob = (id: string) => call<Job>(`${API}/jobs/${id}/cancel`, { method: "POST" });
 
 /** Frees a job the frontend is done with; a job the backend keeps (database persistence) stays stored. */
 export function releaseJob(id: string, persistent = false): void {
@@ -130,16 +169,34 @@ export const listDocuments = () => call<StoredDocument[]>(`${API}/documents`);
 
 /** Uploads the PDF, polls its job until it ends and loads the results; `onStage` gets the current stage. The backend
  *  recognizes German or EU legislation itself. Throws an Error with the backend's explanation when the PDF is refused
- *  or the backend is unreachable, and a ProcessingError when its type is not recognised or processing fails. */
-export async function processPdf(file: File, onStage: (stage: string) => void): Promise<DemoResult> {
+ *  or the backend is unreachable, a ProcessingError when its type is not recognised or processing fails, and a
+ *  ProcessingCancelled when the user aborted via `signal`. */
+export async function processPdf(file: File, onStage: (stage: string) => void, signal?: AbortSignal): Promise<DemoResult> {
   onStage("uploading");
   const form = new FormData();
   form.append("file", file);
   let job = await call<Job>(`${API}/jobs`, { method: "POST", body: form });
+  let cancellationRequested = false;
+  const requestCancel = async () => {
+    if (!signal?.aborted || cancellationRequested) return;
+    cancellationRequested = true;
+    onStage("cancelling");
+    await cancelJob(job.id).catch(() => undefined);
+  };
+  await requestCancel(); // aborted while the upload was still running: the job exists now, stop it at once
   while (job.status === "queued" || job.status === "processing") {
-    onStage(job.stage ?? job.status);
-    await new Promise((r) => setTimeout(r, 1000));
+    onStage(cancellationRequested ? "cancelling" : (job.stage ?? job.status));
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(done, 1000);
+      function done() { clearTimeout(timer); signal?.removeEventListener("abort", done); resolve(); }
+      signal?.addEventListener("abort", done, { once: true }); // an abort sends the cancel request without waiting for the poll
+    });
+    await requestCancel();
     job = await call<Job>(`${API}/jobs/${job.id}`);
+  }
+  if (job.status === "cancelled") {
+    releaseJob(job.id, job.persistent);
+    throw new ProcessingCancelled(job.message ?? "Processing was cancelled.");
   }
   if (job.status !== "completed") {
     releaseJob(job.id, job.persistent);
@@ -150,10 +207,13 @@ export async function processPdf(file: File, onStage: (stage: string) => void): 
 }
 
 async function loadLiveResult(job: Job): Promise<DemoResult> {
-  const [model, legal, ruleJson] = await Promise.all([
+  const [model, legal, ruleJson, llmInputV1, llmInputV2, llmInputReport] = await Promise.all([
     call<DocumentModel>(fileUrl(job.id, "document_model.json")),
     call<LiveData["legal"]>(fileUrl(job.id, "document.json")),
     callOptional<unknown>(fileUrl(job.id, "rules.json")),
+    callOptional<unknown>(fileUrl(job.id, "llm_input_v1.json")),
+    callOptional<unknown>(fileUrl(job.id, "llm_applicability_input_v2.json")),
+    callOptional<LiveData["llmInputReport"]>(fileUrl(job.id, "llm_input_report.json")),
   ]);
   const stem = job.filename.replace(/\.pdf$/i, "");
   return {
@@ -166,10 +226,251 @@ async function loadLiveResult(job: Job): Promise<DemoResult> {
       jobId: job.id,
       persistent: job.persistent ?? false,
       legal,
-      ruleJson,
+      ruleJson, llmInputV1, llmInputV2, llmInputReport,
       ruleDownload: { href: fileUrl(job.id, "rules.json", true), name: `${stem}.rules.json` },
     },
   };
+}
+
+// ── LLM rule extraction (Amazon Bedrock; POST/GET /api/jobs/{id}/rule-extraction, result = the job's rules.json) ──────
+
+/** The backend's RuleExtraction (backend/src/odos/rule_extraction_jobs.py). Only `status` is guaranteed; the rest is
+ *  what the backend reports for the run and is shown as given. */
+export interface RuleExtractionStatus {
+  status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  scope?: string[] | "document";
+  maxModelCalls?: 1 | 3 | null;
+  stopRequested?: boolean;
+  requestedAt?: string;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  /** preparing, then finding (the model request), then checking. Absent on older backends. */
+  stage?: "preparing" | "finding" | "checking" | null;
+  cancelRequested?: boolean;
+  /** True once a model request was sent. Cancelling after that may still cost money. */
+  externalRequestStarted?: boolean;
+  message?: string | null;
+  errorCode?: string | null;
+  errorDetail?: Record<string, unknown>;
+  modelId?: string | null;
+  promptVersion?: string | null;
+  counts?: Record<string, number>;
+  rulesFile?: string | null;
+}
+
+export const RULE_STEPS = ["Preparing document", "Finding rules", "Checking results", "Ready for review"] as const;
+
+/** Which rule step is current. -1 means stopping: no step is claimed as finished or in progress. */
+export function ruleStep(status: RuleExtractionStatus): number {
+  if (status.cancelRequested && (status.status === "queued" || status.status === "running")) return -1;
+  if (status.stage === "checking") return 2;
+  if (status.stage === "finding" || (status.status === "running" && status.stage !== "preparing")) return 1;
+  if (status.status === "completed") return 3;
+  return 0;
+}
+
+/** A real section count, or null. Never invents one. */
+export function sectionProgress(status: RuleExtractionStatus): string | null {
+  const raw = status as unknown as Record<string, unknown>;
+  const completed = raw.progress && typeof raw.progress === "object"
+    ? (raw.progress as Record<string, number>).completed : undefined;
+  const total = raw.progress && typeof raw.progress === "object"
+    ? (raw.progress as Record<string, number>).total : undefined;
+  if (!Number.isInteger(completed) || !Number.isInteger(total) || total == null || completed == null) return null;
+  if (total < 1 || completed < 0 || completed > total) return null;
+  return `${completed} of ${total} sections`;
+}
+
+export const EXTRACTION_ERRORS: Record<string, string> = {
+  not_configured: "Finding rules is not available right now.",
+  bedrock_auth: "Finding rules could not sign in. Try again later.",
+  bedrock_throttled: "The language service is busy. Try again later.",
+  bedrock_timeout: "The language service did not answer in time.",
+  bedrock_unavailable: "The language service is not available.",
+  too_large: "This document is too long to process in one pass.",
+  bedrock_request: "The language service rejected the request.",
+  model_response: "No usable answer came back. Nothing was saved.",
+  output_truncated: "The answer was too long to use. Nothing was saved.",
+  malformed_output: "The answer could not be read. Nothing was saved.",
+  invalid_scope: "The selected part of the document could not be used.",
+  interrupted: "Finding rules was interrupted. You can try again.",
+  internal: "Finding rules failed.",
+  bedrock_error: "Finding rules failed.",
+};
+
+/** Plain wording for a failed extraction. The code stays available separately for the advanced details. */
+export function friendlyExtractionMessage(message?: string | null, code?: string | null): string {
+  if (code && code !== "cancelled" && EXTRACTION_ERRORS[code]) return EXTRACTION_ERRORS[code];
+  const text = message?.trim() || "Finding rules failed.";
+  return text.replace(/Amazon Bedrock/g, "the language service");
+}
+
+export const extractionActive = (s: RuleExtractionStatus | null | undefined) => s?.status === "queued" || s?.status === "running";
+
+const ruleExtractionUrl = (job: string) => `${API}/jobs/${job}/rule-extraction`;
+
+/** Starts a rule extraction of the whole document (a paid Amazon Bedrock call; the backend refuses a second one while one
+ *  is queued or running with 409). Resolves with the queued status at once; the extraction runs on the server. */
+export interface RuleExtractionPreview {
+  inputView: string; modelId: string; chunks: number; readyChunks: number; blockedChunks: number;
+  canStart: boolean; maxModelCalls: 1 | 3; maximumModelCalls: number;
+  estimatedInitialInputTokens: number; maximumOutputTokens: number; outputTokensPerCall: number;
+  estimateNote: string;
+  articleIds?: string[] | null;
+  availableArticles?: Array<{ id: string; type: string; number: string; title: string; eligible: boolean }>;
+  sampleSeed?: number | null; selectedArticleIds?: string[];
+  sampleArticles?: Array<{ id: string; type: string; number: string; title: string; group: number }>;
+  sampleChunks?: 1 | 3 | null; protectedChunksSkipped?: number; preservedRules?: number; eligibleChunks?: number;
+}
+export const previewRuleExtraction = (jobId: string, maxModelCalls: 1 | 3, articleIds: string[] | null = null) =>
+  call<RuleExtractionPreview>(`${ruleExtractionUrl(jobId)}/preview`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ maxModelCalls, articleIds }),
+  });
+export const startRuleExtraction = (jobId: string, maxModelCalls: 1 | 3 = 1, articleIds: string[] | null = null) =>
+  call<RuleExtractionStatus>(ruleExtractionUrl(jobId), {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ maxModelCalls, articleIds }),
+  });
+
+export const stopRuleExtraction = (jobId: string) =>
+  call<RuleExtractionStatus>(`${ruleExtractionUrl(jobId)}/stop`, { method: "POST" });
+
+/** Asks the backend to stop this job's rule extraction. Does not affect any other job. */
+export const cancelRuleExtraction = (jobId: string) => call<RuleExtractionStatus>(`${ruleExtractionUrl(jobId)}/cancel`, { method: "POST" });
+
+/** The latest extraction of the job; null when none was ever started. */
+export const getRuleExtraction = (jobId: string) => callOptional<RuleExtractionStatus>(ruleExtractionUrl(jobId));
+
+/** The job's stored `rules.json`; null when it has none. Reading it never starts an extraction. */
+export const loadRules = (jobId: string) => callOptional<unknown>(fileUrl(jobId, "rules.json"));
+
+/** Why waiting for an extraction stopped without a final status. The extraction itself keeps running on the server. */
+export class ExtractionWaitError extends Error {
+  kind: "timeout" | "connection";
+  constructor(kind: "timeout" | "connection", message: string) {
+    super(message);
+    this.name = "ExtractionWaitError";
+    this.kind = kind;
+  }
+}
+
+export const EXTRACTION_POLL_MS = 2000;
+/** Longest wait of one watch: the backend allows up to 10 minutes per Bedrock attempt (and retries), so a long run is normal. */
+export const EXTRACTION_TIMEOUT_MS = 30 * 60 * 1000;
+const POLL_FAILURES = 3; // consecutive unreachable answers before the watch gives up (the extraction goes on)
+
+/** Polls the extraction until it is completed or failed and returns that final status. `onStatus` gets every status seen.
+ *  Throws ExtractionWaitError when `timeoutMs` passes or the backend stays unreachable; resolves with the last status
+ *  and never throws when `signal` is aborted (the caller left the page). */
+export async function watchRuleExtraction(jobId: string, onStatus: (s: RuleExtractionStatus) => void, opts: { signal?: AbortSignal; intervalMs?: number; timeoutMs?: number } = {}): Promise<RuleExtractionStatus | null> {
+  const { signal, intervalMs = EXTRACTION_POLL_MS, timeoutMs = EXTRACTION_TIMEOUT_MS } = opts;
+  const deadline = Date.now() + timeoutMs;
+  let failures = 0;
+  let last: RuleExtractionStatus | null = null;
+  for (;;) {
+    if (signal?.aborted) return last;
+    try {
+      const status = await getRuleExtraction(jobId);
+      failures = 0;
+      if (!status) throw new HttpError("No rule extraction was started for this job.", 404);
+      if (signal?.aborted) return last;
+      last = status;
+      onStatus(status);
+      if (!extractionActive(status)) return status;
+    } catch (e) {
+      if (!(e instanceof UnreachableError || (e instanceof HttpError && e.status >= 500))) throw e; // a restarting backend is a pause, not an answer
+      if (++failures >= POLL_FAILURES) throw new ExtractionWaitError("connection", "The connection to the ODOS backend was lost. The extraction may still be running on the server.");
+    }
+    if (Date.now() >= deadline) throw new ExtractionWaitError("timeout", "The extraction is taking longer than expected. It may still be running on the server.");
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+}
+
+// ── human review of the extracted rules (GET/POST /api/jobs/{id}/rule-reviews; decisions are events in PostgreSQL) ───────
+
+export type HumanState = "pending" | "accepted" | "rejected";
+export type ReviewAction = "accept" | "reject" | "edit" | "reset";
+
+/** The review state of one rule: the decision, whether its content was edited, and the edited record. The extracted
+ *  record in `rules.json` never changes; `effectiveRule` is the reviewer's edit (null = the original is in force). */
+export interface RuleReviewEntry {
+  ruleSha256: string;
+  state: HumanState;
+  edited: boolean;
+  /** Advisory result of ODOS's automated checks, not a decision. Only "flagged" and "unverified" exist so far. */
+  verification: "flagged" | "unverified";
+  lastEventId: number;
+  reviewer: string | null;
+  reason: string | null;
+  at: string | null;
+  effectiveRule: Record<string, unknown> | null;
+}
+
+export interface RuleReviews {
+  extractionId: string;
+  criteriaVersion: number;
+  counts: { pending: number; accepted: number; rejected: number; edited: number };
+  rules: Record<string, RuleReviewEntry>;
+  /** Decisions of other extractions of this document: kept as history, never applied to these rules. */
+  earlierExtractionEvents: number;
+}
+
+export interface RuleHistoryEvent {
+  id: number;
+  extractionId: string;
+  action: ReviewAction;
+  decision: HumanState;
+  reviewer: string;
+  reason: string | null;
+  at: string;
+  edited: boolean;
+  ruleSha256: string;
+}
+
+export interface ReviewRequest {
+  ruleId: string;
+  extractionId: string;
+  expectedRuleSha256: string;
+  expectedLastEventId: number;
+  action: ReviewAction;
+  reviewer: string;
+  reason?: string;
+  editedRule?: Record<string, unknown>;
+}
+
+const reviewsUrl = (job: string) => `${API}/jobs/${job}/rule-reviews`;
+
+export const getRuleReviews = (jobId: string) => call<RuleReviews>(reviewsUrl(jobId));
+
+/** Appends one review event; resolves with the rule's new entry. Throws an HttpError whose message is the backend's
+ *  explanation (409: the rule or the rules changed meanwhile, 422: invalid edit or request, 503: storage unavailable). */
+export const postRuleReview = (jobId: string, body: ReviewRequest) =>
+  call<RuleReviewEntry>(reviewsUrl(jobId), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+export const getRuleHistory = (jobId: string, ruleId: string) => call<RuleHistoryEvent[]>(`${reviewsUrl(jobId)}/history?ruleId=${encodeURIComponent(ruleId)}`);
+
+/** The accepted rules as Rule JSON 2.0 (`review.status: approved`); rejected and pending rules are not in it. */
+export const approvedExportUrl = (jobId: string) => `${reviewsUrl(jobId)}/approved-export?download=true`;
+
+/** The file name the backend proposes (`Content-Disposition`), or null. */
+function dispositionName(header: string | null): string | null {
+  const star = header?.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
+  if (star) { try { return decodeURIComponent(star); } catch { /* fall through to the plain form */ } }
+  return header?.match(/filename="?([^";]+)"?/i)?.[1] ?? null;
+}
+
+/** Fetches the approved export and saves it as a file. A failed request (409, 503, backend down) throws with the backend's
+ *  explanation and saves nothing: an error answer is never written to disk as if it were an approved-rules file. */
+export async function downloadApprovedRules(jobId: string): Promise<void> {
+  const res = await request(approvedExportUrl(jobId));
+  const blob = await res.blob();
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = dispositionName(res.headers.get("Content-Disposition")) ?? "approved.rules.json";
+  document.body.append(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(href), 1000);
 }
 
 /** Accept an array of individual Rule JSON records, a `{ rules }` collection, or a single record. */

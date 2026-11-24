@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "../components/AppHeader";
 import { Icon } from "../components/Icon";
-import { Logo } from "../components/Logo";
+import { BrandButton } from "../components/BrandButton";
 import { PdfViewer } from "../components/PdfViewer";
 import { ProcessingStatus } from "../components/ProcessingStatus";
 import { RecentDocuments, type DocumentProblem } from "../components/RecentDocuments";
@@ -10,11 +10,18 @@ import { StructureTree } from "../components/StructureTree";
 import { TYPE_LABELS, firstPage, fullText, highlightsOf } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
-import { ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
+import { fileUrl, ProcessingCancelled, ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
+import { RuleExtractionView, type RulesNav } from "./RuleExtraction";
+import { DigitalTwinValidation } from "./DigitalTwinValidation";
+import { applyReview, toRuleResults } from "./ruleResults";
+import { STATE_LABEL, marksByElement, type ElementMarks } from "./reviewMarks";
+import { toneOf } from "./sourceMap";
+import { useRuleReviews } from "./useRuleReviews";
 import "./demo.css";
 
 
-type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string };
+/** `focusId`: a Legal JSON element the result view opens with selected and highlighted (from "Show in PDF" of a rule). */
+type Phase = { kind: "idle" } | { kind: "busy"; stage: string } | { kind: "done"; result: DemoResult; pdfUrl: string; focusId?: string } | { kind: "rules"; result: DemoResult; pdfUrl: string } | { kind: "validation"; result: DemoResult; pdfUrl: string };
 /** What went wrong: the file cannot be used ("invalid"), its structure was not recognized, or the upload/processing failed. */
 type Problem = { kind: "invalid" | "unsupported" | "failed"; message: string };
 
@@ -34,10 +41,13 @@ export default function DemoApp() {
   const [refreshKey, setRefreshKey] = useState(0); // reloads the recent documents after a run ended without a result
   const [opening, setOpening] = useState<string | null>(null); // the stored document being opened
   const [openProblem, setOpenProblem] = useState<DocumentProblem | null>(null);
+  const [confirmStopDoc, setConfirmStopDoc] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const rulesNav = useRef<RulesNav | null>(null); // the reviewer's place on the Rule Extraction page while it is left for Document Review
   const running = useRef(false); // processing or opening; set synchronously: the disabled state only follows after the next render
+  const processAbort = useRef<AbortController | null>(null);
 
-  const pdfUrl = phase.kind === "done" ? phase.pdfUrl : null;
+  const pdfUrl = phase.kind === "done" || phase.kind === "rules" || phase.kind === "validation" ? phase.pdfUrl : null;
   useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
 
   const choose = (f: File | undefined) => {
@@ -60,20 +70,52 @@ export default function DemoApp() {
   const process = async () => {
     if (!file || running.current) return;
     running.current = true;
+    const abort = new AbortController();
+    processAbort.current = abort;
     setProblem(null);
     setPhase({ kind: "busy", stage: "uploading" });
     try {
       const result = await processPdf(file, (stage) => {
+        if (processAbort.current !== abort) return; // abandoned by confirm-cancel
         setPhase({ kind: "busy", stage });
-      });
+      }, abort.signal);
+      if (processAbort.current !== abort) {
+        // finished before the cancellation took effect: nobody will open it, so the temporary job is released
+        if (result.live) releaseJob(result.live.jobId, result.live.persistent);
+        setRefreshKey((k) => k + 1);
+        return;
+      }
       setPhase({ kind: "done", result, pdfUrl: URL.createObjectURL(file) });
     } catch (e) {
+      if (processAbort.current !== abort) {
+        // abandoned: the user confirmed cancel and the UI is already idle; refresh the library
+        // once the backend has settled the cancellation (this catch runs ~1-2 s after confirm)
+        setRefreshKey((k) => k + 1);
+        return;
+      }
       setPhase({ kind: "idle" });
-      setProblem({ kind: e instanceof ProcessingError ? e.kind : "failed", message: e instanceof Error ? e.message : String(e) });
-      setRefreshKey((k) => k + 1);
+      if (!(e instanceof ProcessingCancelled)) {
+        setProblem({ kind: e instanceof ProcessingError ? e.kind : "failed", message: e instanceof Error ? e.message : String(e) });
+        setRefreshKey((k) => k + 1);
+      }
     } finally {
-      running.current = false;
+      if (processAbort.current === abort) {
+        running.current = false;
+        processAbort.current = null;
+      }
+      setConfirmStopDoc(false);
     }
+  };
+
+  /** Confirm document processing cancellation: immediately return to idle; let processPdf settle in the background. */
+  const confirmCancelDoc = () => {
+    const abort = processAbort.current;
+    abort?.abort();
+    processAbort.current = null; // detach: process()'s catch/finally will not touch state
+    running.current = false;     // allow a new process to start immediately
+    setConfirmStopDoc(false);
+    setPhase({ kind: "idle" });
+    setRefreshKey((k) => k + 1); // best-effort early refresh; a second refresh fires when processPdf settles
   };
 
   /** Opens a stored document in the result view. Nothing is uploaded or processed: the backend serves what it stored. */
@@ -94,7 +136,8 @@ export default function DemoApp() {
   };
 
   const reset = () => {
-    if (phase.kind === "done" && phase.result.live) releaseJob(phase.result.live.jobId, phase.result.live.persistent);
+    rulesNav.current = null;
+    if ((phase.kind === "done" || phase.kind === "rules" || phase.kind === "validation") && phase.result.live) releaseJob(phase.result.live.jobId, phase.result.live.persistent);
     setPhase({ kind: "idle" });
     setFile(null);
     setProblem(null);
@@ -102,7 +145,28 @@ export default function DemoApp() {
     if (input.current) input.current.value = "";
   };
 
-  if (phase.kind === "done") return <ResultView result={phase.result} pdfUrl={phase.pdfUrl} onReset={reset} />;
+  if (phase.kind === "done") {
+    const { result, pdfUrl, focusId } = phase;
+    // "Open rule": Rule Validation with that rule selected (the reviewer's earlier filters are replaced, so the rule is certainly in view)
+    const openRule = (ruleId: string) => {
+      if (result.live) rulesNav.current = { jobId: result.live.jobId, filter: "all", search: "", selectedId: ruleId, category: "all", pageScroll: 0 };
+      setPhase({ kind: "rules", result, pdfUrl });
+    };
+    return <ResultView result={result} pdfUrl={pdfUrl} initialSelectedId={focusId} onReset={reset} onContinueToRules={() => setPhase({ kind: "rules", result, pdfUrl })} onOpenRule={openRule} />;
+  }
+  if (phase.kind === "validation") {
+    const { result, pdfUrl } = phase;
+    return <DigitalTwinValidation documentName={result.filename ?? result.title} ruleSourceName={result.live?.ruleDownload.name}
+                                  onBack={() => setPhase({ kind: "rules", result, pdfUrl })} />;
+  }
+  if (phase.kind === "rules") {
+    const { result, pdfUrl } = phase;
+    // Keep the stored rules on the result so reopening Rule Extraction reuses them without a new model call.
+    const rulesLoaded = (ruleJson: unknown) => setPhase((p) => (p.kind === "rules" && p.result.live ? { ...p, result: { ...p.result, live: { ...p.result.live, ruleJson } } } : p));
+    return <RuleExtractionView result={result} pdfUrl={pdfUrl} onBack={() => setPhase({ kind: "done", result, pdfUrl })} onHome={reset}
+                               onShowInPdf={(focusId) => setPhase({ kind: "done", result, pdfUrl, focusId })} onRulesLoaded={rulesLoaded} nav={rulesNav}
+                               onContinueToValidation={() => setPhase({ kind: "validation", result, pdfUrl })} />;
+  }
 
   const busy = phase.kind === "busy";
   const locked = busy || opening !== null; // one thing at a time: a run or opening a stored document
@@ -143,7 +207,26 @@ export default function DemoApp() {
             <button type="button" className="btn primary demo-process" onClick={() => void process()} disabled={!file || locked} aria-busy={busy}>
               {busy ? <><span className="spinner" aria-hidden="true" /> Processing…</> : "Process document"}
             </button>
-            {phase.kind === "busy" && <ProcessingStatus stage={phase.stage} />}
+            {phase.kind === "busy" && (
+              <>
+                <ProcessingStatus stage={phase.stage} />
+                {phase.stage !== "cancelling" && (
+                  <button type="button" className="btn small" onClick={() => setConfirmStopDoc(true)}>
+                    Stop processing
+                  </button>
+                )}
+              </>
+            )}
+            {confirmStopDoc && (
+              <div role="alertdialog" aria-modal="true" aria-labelledby="stop-doc-title" className="cancel-confirm">
+                <strong id="stop-doc-title">Stop document processing?</strong>
+                <p>The pipeline will finish its current stage, then stop. No result will be saved. Any previous result for this document is unaffected.</p>
+                <div className="cancel-confirm-actions">
+                  <button type="button" className="btn danger" onClick={confirmCancelDoc}>Stop processing</button>
+                  <button type="button" className="btn" onClick={() => setConfirmStopDoc(false)}>Keep running</button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
         <RecentDocuments refreshKey={refreshKey} onOpen={(doc) => void open(doc)} openingId={opening} openError={openProblem} openDisabled={busy} />
@@ -152,17 +235,30 @@ export default function DemoApp() {
   );
 }
 
-export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pdfUrl: string; onReset: () => void }) {
+export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onContinueToRules, onOpenRule }: { result: DemoResult; pdfUrl: string; initialSelectedId?: string; onReset: () => void; onContinueToRules?: () => void; onOpenRule?: (ruleId: string) => void }) {
   const { model } = result;
   const [tab, setTab] = useState<"structure" | "artifacts">("structure");
-  const [selected, setSelected] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  // opened from a rule's "Show in PDF": that element is selected (the PDF shows its page and highlights it)
+  const initial = initialSelectedId ? model.elements.find((e) => e.id === initialSelectedId) : undefined;
+  const [selected, setSelected] = useState<string | null>(initial?.id ?? null);
+  const [page, setPage] = useState(firstPage(initial) ?? 1);
   const [full, setFull] = useState(false); // live Artifacts: the complete document instead of the selected element
-  const [artifactView, setArtifactView] = useState<"legal" | "rule">("legal");
   const [split, setSplit] = useState(DEFAULT_SPLIT); // the PDF panel's share of the width
   const splitRef = useRef<HTMLDivElement>(null);
   const element = useMemo(() => model.elements.find((e) => e.id === selected) ?? null, [model, selected]);
+  // the persisted review decisions of the document's rules (loaded again whenever the document is opened); nothing without review storage
+  const ruleResults = useMemo(() => toRuleResults(result.live?.ruleJson ?? null), [result.live?.ruleJson]);
+  const reviewJob = result.live && ruleResults && ruleResults.items.length ? result.live.jobId : undefined;
+  const { api: reviewApi } = useRuleReviews(reviewJob, ruleResults?.generation?.generatedAt ?? null);
+  const elementsById = useMemo(() => new Map(model.elements.map((e) => [e.id, e])), [model]);
+  const marks = useMemo(() => (ruleResults && reviewApi.kind === "ready"
+    ? marksByElement(ruleResults.items.map((r) => applyReview(r, reviewApi.data.rules[r.id])), elementsById) : undefined), [ruleResults, reviewApi, elementsById]);
+  const elementMarks = element ? marks?.get(element.id) : undefined;
   const hl = highlightsOf(element);
+  // one rule on the element: its meaning (fill) and review state (outline); several rules: the plain highlight, each rule listed beside
+  const single = elementMarks?.rules.length === 1 ? elementMarks.rules[0] : null;
+  const groups = useMemo(() => (single && hl.boxes.length ? [{ boxes: hl.boxes, approximate: hl.approximate, tone: toneOf(single.rule.type, single.role),
+    status: single.role === "primary" || single.role === "definition" ? single.mark.state : undefined, edited: single.mark.edited }] : undefined), [single, hl.boxes, hl.approximate]);
 
   const select = useCallback((id: string) => {
     setSelected(id);
@@ -173,16 +269,17 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
   return (
     <main className="workspace demo-result">
       <div className="docbar">
-        <Logo compact />
+        <BrandButton onClick={onReset} />
         <span className="docbar-sep" aria-hidden="true" />
         <h2 title={result.filename ? `${result.filename} · ${result.title}` : result.title}>{result.filename ?? result.title}</h2>
         <span className="demo-status ok">Completed</span>{/* a result is only ever shown for a completed document */}
         <span className="spacer" />
         <button className="btn" onClick={onReset}><Icon name="back" size={16} />Back to documents</button>
+        {onContinueToRules && <button className="btn primary" onClick={onContinueToRules}>Continue to Rule Extraction<Icon name="chevron-right" size={16} /></button>}
       </div>
       <div className="split" ref={splitRef} style={splitVars(split)}>
         <section className="pane left" aria-label="Original PDF">
-          <PdfViewer url={pdfUrl} page={page} onPageChange={setPage} highlights={hl.boxes} approximate={hl.approximate} />
+          <PdfViewer url={pdfUrl} page={page} onPageChange={setPage} highlights={hl.boxes} approximate={hl.approximate} groups={groups} />
         </section>
         <SplitDivider containerRef={splitRef} value={split} onCommit={setSplit} />
         <section className="pane right" aria-label="Recognized legal structure">
@@ -193,11 +290,11 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
           <div className="tabbody">
             {tab === "structure" && (
               <div className="structure">
-                <StructureTree model={model} selectedId={selected} onSelect={select} />
-                <SourceDetail element={element} page={page} onGoToPage={setPage} />
+                <StructureTree model={model} selectedId={selected} onSelect={select} marks={marks} />
+                <SourceDetail element={element} page={page} onGoToPage={setPage} marks={elementMarks} onOpenRule={onOpenRule} />
               </div>
             )}
-            {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} artifactView={artifactView} onArtifactViewChange={setArtifactView} />}
+            {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} />}
           </div>
         </section>
       </div>
@@ -205,7 +302,7 @@ export function ResultView({ result, pdfUrl, onReset }: { result: DemoResult; pd
   );
 }
 
-export function SourceDetail({ element: e, page, onGoToPage }: { element: DocElement | null; page: number; onGoToPage: (page: number) => void }) {
+export function SourceDetail({ element: e, page, onGoToPage, marks, onOpenRule }: { element: DocElement | null; page: number; onGoToPage: (page: number) => void; marks?: ElementMarks; onOpenRule?: (ruleId: string) => void }) {
   if (!e) return <div className="detail empty"><Icon name="info" size={20} /><span>Select an element to highlight its source text in the PDF.</span></div>;
   return (
     <div className="detail">
@@ -221,11 +318,27 @@ export function SourceDetail({ element: e, page, onGoToPage }: { element: DocEle
         <dt>Source</dt><dd><code>{e.source_refs.join(", ") || "—"}</code></dd>
         <dt>Element id</dt><dd><code>{e.id}</code></dd>
       </dl>
+      {marks && marks.rules.length > 0 && (
+        <section className="elrules" aria-label="Rules citing this element">
+          <h4>Rules ({marks.rules.length})</h4>
+          <ul>
+            {marks.rules.map(({ rule, mark, sentenceIds }) => (
+              <li key={rule.id}>
+                <span className={`rm-chip ${mark.state}`}>{STATE_LABEL[mark.state]}</span>
+                {mark.edited && <span className="rm-chip edited">Edited</span>}
+                <span className="elrules-title">{rule.title}</span>
+                {sentenceIds.length > 0 && <span className="muted"> · {sentenceIds.map((id) => `Satz ${id.split("/").pop()?.replace(/^satz-/, "") ?? id}`).join(", ")}</span>}
+                {onOpenRule && <button type="button" className="btn small" onClick={() => onOpenRule(rule.id)} aria-label={`Open rule ${rule.id} in Rule Validation`}>Open rule</button>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
 
-function DoclingRaw({ jobId }: { jobId: string }) {
+function DoclingRaw({ jobId, filename }: { jobId: string; filename: string }) {
   const [json, setJson] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -263,8 +376,13 @@ function DoclingRaw({ jobId }: { jobId: string }) {
         }
       }}
     >
-      <summary style={{ cursor: "pointer", padding: "12px" }}>
-        Docling Raw JSON anzeigen / ausblenden
+      <summary style={{ cursor: "pointer", padding: "10px 12px" }}>
+        <span style={{ display: "inline-flex", width: "calc(100% - 20px)", justifyContent: "space-between", alignItems: "center", gap: "12px", verticalAlign: "middle" }}>
+          <h3 style={{ display: "inline", fontSize: "14px", margin: 0 }}>Docling Raw JSON</h3>
+          <a className="btn small" href={fileUrl(jobId, "docling_raw.json", true)}
+             download={`${filename.replace(/\.pdf$/i, "")}.docling-raw.json`}
+             onClick={event => event.stopPropagation()}>Download</a>
+        </span>
       </summary>
 
       {loading && <p>Wird geladen …</p>}
@@ -292,7 +410,7 @@ function DoclingRaw({ jobId }: { jobId: string }) {
 }
 
 
-export function Artifacts({ result, element = null, full, onFull, artifactView, onArtifactViewChange }: {
+export function Artifacts({ result, element = null, full, onFull }: {
   result: DemoResult;
   element?: DocElement | null;
   full?: boolean;
@@ -300,41 +418,31 @@ export function Artifacts({ result, element = null, full, onFull, artifactView, 
   artifactView?: "legal" | "rule";
   onArtifactViewChange?: (artifact: "legal" | "rule") => void;
 }) {
-  const [internalArtifact, setInternalArtifact] = useState<"legal" | "rule">("legal");
-  const artifact = artifactView ?? internalArtifact;
-  const selectArtifact = (next: "legal" | "rule") => {
-    setInternalArtifact(next);
-    onArtifactViewChange?.(next);
-  };
   const json = (!full && result.live && nodeJson(result.live, element)) || result.json;
-  const availableRules = result.live ? ruleEntries(result.live.ruleJson) : [];
   return (
     <div className="demo-artifacts">
-      <ArtifactSwitch selected={artifact} onChange={selectArtifact} />
       <section className="demo-artifact">
         <div className="demo-artifact-head">
-          <h3>{artifact === "legal" ? "Custom Legal JSON" : "Rule JSON"}</h3>
+          <h3>Custom Legal JSON</h3>
           {onFull && (
-            <div className="demo-toggle" role="group" aria-label={`${artifact === "legal" ? "Custom Legal JSON" : "Rule JSON"} preview`}>
+            <div className="demo-toggle" role="group" aria-label="Custom Legal JSON preview">
               {[false, true].map((f) => (
                 <button key={String(f)} className="btn small" aria-pressed={!!full === f} onClick={() => onFull(f)}>{f ? "Full document" : "Selected element"}</button>
               ))}
             </div>
           )}
-          {artifact === "legal" && <a className="btn small" href={result.download.href} download={result.download.name}>Download</a>}
-          {artifact === "rule" && availableRules.length > 0 && result.live && (
-            <a className="btn small" href={result.live.ruleDownload.href} download={result.live.ruleDownload.name}>Download</a>
-          )}
+          <a className="btn small" href={result.download.href} download={result.download.name}>Download</a>
+
         </div>
-        {artifact === "legal"
-          ? <pre className="preview demo-code" tabIndex={0}>{json.replace(/\n$/, "")}</pre>
-          : <RuleJsonPreview result={result} element={element} full={!!full} />}
+        <pre className="preview demo-code" tabIndex={0}>{json.replace(/\n$/, "")}</pre>
       </section>
       
+      {result.live && <LlmInputViews result={result} />}
       {result.live && (
         <DoclingRaw
           key={result.live.jobId}
           jobId={result.live.jobId}
+          filename={result.filename ?? result.title}
         />
       )}
     </div>
@@ -362,4 +470,27 @@ export function RuleJsonPreview({ result, element, full }: { result: DemoResult;
     return <p className="demo-artifact-empty" role="status">{message}</p>;
   }
   return <pre className="preview demo-code" tabIndex={0}>{JSON.stringify(visibleRules, null, 2)}</pre>;
+}
+
+
+export function LlmInputViews({ result }: { result: DemoResult }) {
+  const live = result.live;
+  if (!live) return null;
+  const stem = (result.filename ?? result.title).replace(/\.pdf$/i, "");
+  const variants = [
+    { key: "v1", title: "Reduced LLM input JSON V1", file: "llm_input_v1.json", suffix: "llm-input-v1", data: live.llmInputV1 },
+    { key: "v2", title: "LLM applicability input JSON V2", file: "llm_applicability_input_v2.json", suffix: "llm-applicability-input-v2", data: live.llmInputV2 },
+  ];
+  return <>
+    {variants.map(v => <details className="demo-artifact" key={v.key}>
+      <summary style={{ cursor: "pointer", padding: "10px 12px" }}>
+        <span style={{ display: "inline-flex", width: "calc(100% - 20px)", justifyContent: "space-between", alignItems: "center", gap: "12px", verticalAlign: "middle" }}>
+          <h3 style={{ display: "inline", fontSize: "14px", margin: 0 }}>{v.title}</h3>
+          {v.data != null && <a className="btn small" href={fileUrl(live.jobId, v.file, true)} download={`${stem}.${v.suffix}.json`} onClick={event => event.stopPropagation()}>Download</a>}
+        </span>
+      </summary>
+      {v.data == null ? <p>This input view is not available. Reprocess the document with the updated backend.</p>
+        : <pre className="preview demo-code" tabIndex={0}>{JSON.stringify(v.data, null, 2)}</pre>}
+    </details>)}
+  </>;
 }

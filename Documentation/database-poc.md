@@ -125,6 +125,17 @@ docker exec -i odos-postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -
 
 Messages such as `relation "documents" already exists, skipping` are expected.
 
+**Cancelled documents.** `backend/db/003_cancelled_status.sql` lets `documents.status` be `cancelled`. It is additive and idempotent (it only widens the CHECK constraint, no row is touched). A fresh volume gets it automatically; for an existing database the API applies the same statement itself when it starts with `ODOS_DATABASE_ENABLED=1` (if that fails it is logged and the file can be applied manually like `001_documents.sql`). Until it is applied, a cancelled document stays `processing` in the database and the next start marks it `failed`.
+
+**Review decisions (optional second table).** Human review of extracted rules stores its decisions in `rule_reviews`, created by `backend/db/002_rule_reviews.sql` (design: [review-state-design.md](review-state-design.md)). A fresh volume creates it automatically. **An existing database does not get it by itself, and the API never migrates:** until it is applied, the review endpoints answer `503` with this instruction and the frontend keeps the Accept / Reject / Edit controls disabled. The file is additive and idempotent (it does not touch `documents` or any row). Take a backup first, then apply it:
+
+```bash
+docker exec odos-postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' > odos-backup.sql
+docker exec -i odos-postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1' < backend/db/002_rule_reviews.sql
+```
+
+Rollback: `DROP TABLE rule_reviews;` (nothing else depends on it). Deleting a document deletes its review history (`ON DELETE CASCADE`). The test fixture applies both files to the `odos_test` database and empties both tables.
+
 ### 4. Create the test database (once)
 
 ```bash

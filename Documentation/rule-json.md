@@ -4,7 +4,7 @@ Rule JSON is a source-traceable representation of an interpreted requirement or 
 
 **Language policy:** Human-readable Rule JSON content follows the original document language by default. Schema keys and enum values remain language-neutral technical identifiers.
 
-The schema is document-neutral. Legal JSON 2.0 preserves source structure and text; Rule JSON records an interpretation and points back to exact Legal JSON element IDs. Rule JSON does not replace or amend Legal JSON. The schema does not extract rules: no Rule JSON is shipped as application data, and the Artifacts viewer displays an empty state until an extractor stores a job's `rules.json` artifact. The viewer shows records with `schemaVersion` `2.0` and maps them to the selected element through `source.elements[].elementId`.
+The schema is document-neutral. Legal JSON 2.0 preserves source structure and text; Rule JSON records an interpretation and points back to exact Legal JSON element IDs. Rule JSON does not replace or amend Legal JSON. The schema does not extract rules: no Rule JSON is shipped as application data. The LLM extractor ([bedrock-rule-extraction.md](bedrock-rule-extraction.md)) stores a job's `rules.json` artifact, which the **LLM Rule Extraction & Review** page and the Artifacts viewer display; both show an empty state until one exists. They show records with `schemaVersion` `2.0` and map them to the selected element through `source.elements[].elementId`.
 
 ## Objective
 
@@ -358,7 +358,7 @@ ODOS_MBO_LEGAL_JSON_PATH=/path/to/mbo/document.json ODOS_EU_LEGAL_JSON_PATH=/pat
 
 ## Future Rule Interpreter
 
-LLM integration and rule extraction are out of scope. A future interpreter can receive the relevant Legal JSON source nodes, this schema or a constrained structured-output equivalent, and extraction instructions to preserve modality, actors, conditions, exceptions, references and unresolved meaning. It should cite only IDs from the supplied document, treat recitals as context unless supported by operative provisions, and emit `draft` records for human review.
+The schema itself does no extraction. A first LLM extractor on Amazon Bedrock exists ([bedrock-rule-extraction.md](bedrock-rule-extraction.md)): it sends Legal JSON to the model, rewrites the provenance from the Legal JSON and stores validated `draft` records as `rules.json`. An interpreter can receive the relevant Legal JSON source nodes, this schema or a constrained structured-output equivalent, and extraction instructions to preserve modality, actors, conditions, exceptions, references and unresolved meaning. It should cite only IDs from the supplied document, treat recitals as context unless supported by operative provisions, and emit `draft` records for human review.
 
 ## Files
 

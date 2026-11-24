@@ -24,6 +24,7 @@
   --hl: rgba(224, 177, 94, .32); --hl-b: #E0B15E;
   /* scale */
   --r: 14px; --r-sm: 10px;
+  --footer-h: 56px;         /* the footer's height: screens that fill the window leave this much room */
   --font-display: Audiowide, "Arial Black", Arial, sans-serif;
   --font-mono: monospace;
   color-scheme: dark;
@@ -146,3 +147,43 @@ select { cursor: pointer; }
 .preview { flex: 1; margin: 0; padding: 12px; overflow: auto; font: 12px/1.5 ui-monospace, "SF Mono", Menlo, monospace; white-space: pre; background: var(--bg); min-height: 200px; }
 /* an error from the PDF viewer sits inside the workspace */
 .workspace .alert { margin: 6px 0; }
+/* ---- application shell and footer (one footer under every screen) ---------------------------------------------- */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.app-page, .app > main { flex: 1 0 auto; min-width: 0; }
+.site-footer { flex: none; min-height: var(--footer-h); display: flex; align-items: center; border-top: 1px solid var(--border); background: var(--bar); color: var(--muted); font-size: 13px; }
+.site-footer-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; padding: 10px 0; }
+.site-footer a { color: var(--accent-hover); }
+@media (max-width: 760px) { .site-footer { font-size: 12px; } }
+
+/* Highlights with a meaning. Fill = what the passage is (the rule's classification or the source's role); outline = the review state of
+   its rule; a blue underline marks an edited rule. Two layers: a tone never says "accepted" and a status never says "obligation". */
+.hl[class*="tone-"] { --tone: 45, 212, 191; background: rgba(var(--tone), .16); border: 1.5px solid rgba(var(--tone), .7); }
+.hl.tone-obligation, .hl.tone-procedural { --tone: 45, 212, 191; }   /* ODOS teal */
+.hl.tone-definition { --tone: 187, 164, 247; }                        /* purple */
+.hl.tone-conditional { --tone: 165, 177, 214; }                       /* slate indigo, as conditions */
+.hl.tone-permission { --tone: 56, 189, 248; }                         /* sky */
+.hl.tone-prohibition { --tone: 244, 114, 182; }                       /* pink */
+.hl.tone-context { --tone: 148, 163, 184; background: rgba(var(--tone), .07); border-style: dashed; border-width: 1px; }
+.hl.approx[class*="tone-"] { background: rgba(var(--tone), .1); border-style: dashed; }
+.hl.st-accepted { outline: 2px solid #4ADE80; outline-offset: 2px; }
+.hl.tone-exception { --tone: 212, 147, 106; }                        /* muted copper */
+.hl.tone-condition { --tone: 165, 177, 214; }                        /* slate indigo */
+.hl.focus { box-shadow: 0 0 0 3px rgba(255, 255, 255, .85), 0 0 0 6px rgba(4, 16, 26, .55); z-index: 2; }
+/* pending (needs review) is the normal state: no outline, so the page stays readable */
+.hl.st-rejected { outline: 2px solid #F87171; outline-offset: 2px; }
+.hl.edited { box-shadow: 0 4px 0 -1px rgba(96, 165, 250, .85); }
+
+/* review state of the rules that cite an element (Document Review): a layer apart from what the passage means */
+.marks { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; flex: none; }
+.rm { display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; font-size: 10.5px; font-weight: 700; color: #04101A; font-variant-numeric: tabular-nums; }
+.rm.accepted { background: #4ADE80; } .rm.pending { background: #FACC15; } .rm.rejected { background: #F87171; }
+.rm.edited { min-width: 8px; width: 8px; height: 8px; padding: 0; background: #60A5FA; }
+.rm.below { background: none; color: inherit; border: 1.5px solid currentColor; opacity: .7; }
+.rm.below.accepted { color: #4ADE80; } .rm.below.pending { color: #FACC15; } .rm.below.rejected { color: #F87171; } .rm.below.edited { background: #60A5FA; border: 0; color: #60A5FA; }
+.elrules { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); }
+.elrules h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
+.elrules ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.elrules li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 13px; }
+.elrules-title { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
+.rm-chip { padding: 0 8px; border: 1.5px solid currentColor; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.rm-chip.accepted { color: #4ADE80; } .rm-chip.pending { color: #FACC15; } .rm-chip.rejected { color: #F87171; } .rm-chip.edited { color: #60A5FA; }
