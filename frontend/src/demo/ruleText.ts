@@ -5,6 +5,9 @@
 // marked incomplete and the page points to the complete structured rule. Fact names are shown as the record names them
 // (underscores and dots read as spaces); they are not translated or interpreted.
 
+import { formulaOf, unitText, type Formula } from "./ruleMath";
+export { unitText };
+
 export interface TextLine {
   text: string;
   /** The record's own wording for this part (a `description`), shown beside the exact statement, never instead of it. */
@@ -12,6 +15,21 @@ export interface TextLine {
   children?: TextLine[];
   /** Text the record itself could not express precisely (`unresolved`), or a part this formatter cannot show. */
   unclear?: boolean;
+  /** A numeric requirement's own fields, exactly as stored (shown as Parameter / Operator / Value / Unit). Only set for
+   *  `kind: "numeric"`; nothing is derived or filled in. `unit` is absent when the record has none. */
+  threshold?: Threshold;
+  /** A `formula` requirement written as mathematics (ruleMath.ts); absent when the expression is not one it can state unambiguously,
+   *  and then only the plain-language `text` is shown. */
+  formula?: Formula;
+  /** Which kind of exception an exception line is ("Exception", "Alternative", …); `text` still starts with it. */
+  tag?: string;
+}
+
+export interface Threshold {
+  fact: string;
+  operator: string;
+  value: unknown;
+  unit?: string;
 }
 
 export interface TextBlock {
@@ -45,9 +63,6 @@ export const KIND_LABEL: Record<string, string> = {
 /** `fire_wall_height_above_roof` → "fire wall height above roof"; `building.height` → "building height". The name, not a translation. */
 export const factName = (fact: unknown): string => (s(fact) ?? "(unnamed fact)").replace(/[_.]+/g, " ").trim();
 
-const UNIT_SYMBOL: Record<string, string> = { m2: "m²", m3: "m³", cm2: "cm²", mm2: "mm²", Cel: "°C", deg: "°", "kN/m2": "kN/m²" };
-/** The unit as it is printed; a code without a common symbol stays as written. `1` (dimensionless) prints nothing. */
-export const unitText = (u: unknown): string => { const x = s(u); return !x || x === "1" ? "" : UNIT_SYMBOL[x] ?? x; };
 
 const num = (v: unknown, unit?: unknown) => { const u = unitText(unit); return `${String(v)}${u ? ` ${u}` : ""}`; };
 const scalar = (v: unknown): string => (typeof v === "string" ? `“${v}”` : typeof v === "boolean" ? (v ? "yes" : "no") : String(v));
@@ -112,7 +127,8 @@ class Reader {
     const note = s(x?.description);
     switch (x?.kind) {
       case "boolean": return { text: `${factName(x.fact)}: ${x.value === true ? "yes" : x.value === false ? "no" : String(x.value)}`, note };
-      case "numeric": return { text: `${factName(x.fact)} ${OPERATOR[s(x.operator) ?? ""] ?? `(${String(x.operator)})`} ${num(x.value, x.unit)}`, note };
+      case "numeric": return { text: `${factName(x.fact)} ${OPERATOR[s(x.operator) ?? ""] ?? `(${String(x.operator)})`} ${num(x.value, x.unit)}`, note,
+                               threshold: { fact: String(x.fact ?? ""), operator: String(x.operator ?? ""), value: x.value, ...(unitText(x.unit) ? { unit: unitText(x.unit) } : {}) } };
       case "text": {
         const op = s(x.operator) ?? "";
         const v = Array.isArray(x.value) ? list(x.value.map(scalar), "or") : scalar(x.value);
@@ -122,7 +138,8 @@ class Reader {
         const op = s(x.operator) ?? "";
         const word = op === "==" ? "equals" : OPERATOR[op] ?? `(${op})`;
         const u = unitText(x.unit);
-        return { text: `${factName(x.fact)} ${word} ${this.arithmetic(x.expression, `${where} › formula`, false)}${u ? ` (in ${u})` : ""}`, note };
+        const formula = formulaOf(x);
+        return { text: `${factName(x.fact)} ${word} ${this.arithmetic(x.expression, `${where} › formula`, false)}${u ? ` (in ${u})` : ""}`, note, ...(formula ? { formula } : {}) };
       }
       case "temporal": return { text: this.temporal(x, modality), note };
       case "unresolved": return this.unresolvedLine(x);
@@ -258,7 +275,7 @@ export function readRule(rule: Record<string, unknown>): ReadableRule {
     if (effect) children.push({ text: `Effect: ${EFFECT[effect] ?? effect.replace(/_/g, " ")}` });
     const refs = r.references(x.references);
     if (refs.length) children.push({ text: "Refers to:", children: refs });
-    return { text: `${EXCEPTION_KIND[kind]}: ${s(x.description) ?? "(no description)"}`, children, unclear: kind === "unresolved" } as TextLine;
+    return { text: `${EXCEPTION_KIND[kind]}: ${s(x.description) ?? "(no description)"}`, tag: EXCEPTION_KIND[kind], children, unclear: kind === "unresolved" } as TextLine;
   });
   if (exceptions.length) blocks.push({ key: "exceptions", title: exceptions.length > 1 ? "Exceptions" : "Exception", lines: exceptions });
 
@@ -276,7 +293,7 @@ export function readRule(rule: Record<string, unknown>): ReadableRule {
 function compact(line: TextLine): TextLine {
   const children = line.children?.map(compact);
   if (line.text.endsWith(":") && !line.note && children?.length === 1 && !children[0].children?.length && !children[0].unclear) {
-    return { text: `${line.text} ${children[0].text}`, note: children[0].note, unclear: line.unclear };
+    return { text: `${line.text} ${children[0].text}`, note: children[0].note, unclear: line.unclear, ...(children[0].threshold ? { threshold: children[0].threshold } : {}), ...(children[0].formula ? { formula: children[0].formula } : {}) };
   }
   return children ? { ...line, children } : line;
 }

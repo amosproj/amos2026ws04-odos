@@ -443,3 +443,347 @@ button.rex-side-row.warn:hover { box-shadow: 0 0 0 1px var(--warn-line) inset; }
 .rex-article-option span { min-width: 0; overflow-wrap: anywhere; }
 .rex-article-option small { display: block; color: var(--muted); }
 .rex-article-option:has(input:disabled) { opacity: .6; cursor: default; }
+
+/* ==== Rule Validation: three panels (rule navigation · selected rule · document context) ============================
+   Scoped to .rv so the extraction stages above keep their own look. Dark ODOS tokens only; no new hues: the main rule is
+   teal (accent), conditions a neutral slate, exceptions amber (warn), rejection red (danger). */
+.rex-results.rv { max-width: 1920px; gap: 14px; }
+.rv .alert { margin: 0; }
+.rv-spacer { flex: 1; }
+.rv-count { margin-left: auto; min-width: 30px; padding: 1px 8px; border-radius: 999px; background: rgba(148, 163, 184, .12); color: var(--text); font-size: 12px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* page header: title and document card */
+.rv-pagehead { display: flex; align-items: center; justify-content: space-between; gap: 14px 24px; flex-wrap: wrap; }
+.rv-pagehead-title { display: flex; align-items: center; gap: 16px; min-width: 0; flex: 1 1 520px; }
+.rv-pagehead-icon { flex: none; color: var(--accent); display: inline-grid; }
+.rv-h1 { margin: 0; font-family: var(--font-display); font-size: clamp(22px, 2vw, 30px); font-weight: 400; letter-spacing: .01em; }
+.rv-lead { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+.rv-doccard { display: flex; align-items: center; gap: 12px; flex: 0 1 460px; min-width: 260px; padding: 10px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r); box-shadow: 0 6px 24px rgba(0, 0, 0, .25); }
+.rv-doccard-icon { display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 10px; background: var(--info-bg); color: var(--accent); }
+.rv-doccard-text { min-width: 0; flex: 1; }
+.rv-doccard-name { margin: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-doccard-meta { margin: 0; color: var(--muted); font-size: 12.5px; }
+.rv-pill { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 3px 10px; border: 1px solid var(--warn-line); border-radius: 999px; background: var(--warn-bg); color: var(--warn); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.rv-pill.done { border-color: var(--info-line); background: var(--info-bg); color: var(--accent-hover); }
+.rv-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* the three panels */
+.rv-layout { grid-template-columns: minmax(220px, 270px) minmax(0, 1fr) minmax(360px, .85fr); gap: 16px; align-items: start; }
+.rv-side, .rv-center .rex-card, .rv-context { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r); box-shadow: 0 8px 30px rgba(0, 0, 0, .28); }
+
+/* left: rule navigation */
+.rex-side.rv-side { display: flex; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; gap: 14px; padding: 16px 12px; border-radius: var(--r); }
+.rv-side-head { display: flex; align-items: center; gap: 10px; padding: 0 4px 10px; border-bottom: 1px solid var(--border); color: var(--accent); }
+.rv-side-head h2 { margin: 0; flex: 1; color: var(--text); font-size: 17px; font-weight: 700; }
+.rv-list-btn { width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 10px; }
+.rv-side-h { display: flex; align-items: center; gap: 6px; margin: 12px 6px 6px; color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.rv-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.rv-nav-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 1px solid transparent; border-radius: 10px; background: none; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
+.rv-nav-row > .icon { flex: none; color: var(--accent); }
+.rv-nav-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-nav-row:hover { background: var(--hover); }
+.rv-nav-row:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 1px; }
+.rv-nav-row[aria-pressed="true"] { background: var(--sel); border-color: var(--info-line); font-weight: 600; }
+.rv-nav-row[aria-pressed="true"] .rv-count { background: var(--accent); color: #04101A; }
+.rv-status { padding-top: 4px; border-top: 1px solid var(--border); }
+.rv-box { display: inline-grid; place-items: center; flex: none; width: 18px; height: 18px; border: 2px solid #4A6271; border-radius: 5px; color: #04101A; }
+.rv-status-row[aria-pressed="true"] .rv-box { border-color: var(--accent); background: var(--accent); }
+.rv-status-row.accepted .rv-box { border-color: var(--accent); }
+.rv-status-row.rejected .rv-box { border-color: var(--danger); }
+.rv-status-row.rejected[aria-pressed="true"] .rv-box { background: var(--danger); }
+.rv-status-row.edited .rv-box { border-color: var(--accent-hover); border-style: dashed; }
+.rv-status-row.flagged .rv-box { border-color: var(--warn); }
+.rv-status-row.flagged[aria-pressed="true"] .rv-box { background: var(--warn); }
+.rv-side .rex-side-foot { flex-direction: column; padding-top: 12px; }
+.rv-side .rex-side-btn { justify-content: flex-start; font-size: 13px; }
+.rv-side .rex-menu { align-self: flex-end; }
+.rv-side .rex-side-note { padding: 0 4px; }
+
+/* centre: the selected rule */
+.rv-center { gap: 10px; }
+.rv-center-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.rv-center .rex-pager { gap: 8px; }
+.rv-center .rex-pager-btn { width: 38px; height: 38px; border-radius: 10px; box-shadow: none; }
+.rv-center .rex-pager-pos { margin-left: 6px; font-size: 15px; font-weight: 600; }
+.rv-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rv-chips .rex-kind { background: var(--info-bg); }
+.rv-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px 14px; flex-wrap: wrap; }
+.rv-title { margin: 0; min-width: 0; font-size: 19px; }
+.rv-id { padding: 0; background: none; font: 600 18px/1.3 ui-monospace, "SF Mono", Menlo, monospace; color: var(--text); overflow-wrap: anywhere; word-break: normal; }
+.rv-center .rex-card { gap: 16px; padding: 18px; border-radius: var(--r); }
+
+.rex-suggest.rv-content { gap: 12px; padding: 0; background: none; border: 0; }
+.rv-content > :not(.rex-sec-head) { margin-left: 0; }
+.rv-sec { border: 1px solid var(--border); border-radius: 12px; background: var(--bg); overflow: hidden; }
+.rv-sec > summary { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; list-style: none; }
+.rv-sec > summary::-webkit-details-marker { display: none; }
+.rv-sec > summary:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: -2px; border-radius: 12px; }
+.rv-sec > summary > .icon { flex: none; }
+.rv-sec-label { font-weight: 700; font-size: 15px; }
+.rv-sec-sub { padding: 1px 9px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: 12px; }
+.rv-sec .rv-count { margin-left: 0; }
+.rv-sec-chev { margin-left: auto; display: inline-grid; color: var(--muted); transition: transform .15s; }
+.rv-sec:not([open]) .rv-sec-chev { transform: rotate(-90deg); }
+.rv-sec-body { padding: 2px 16px 14px 42px; }
+.rv-sec.main { border-color: var(--info-line); background: linear-gradient(180deg, rgba(45, 212, 191, .07), rgba(45, 212, 191, .03)); }
+.rv-sec.main > summary > .icon { color: var(--accent); }
+.rv-sec.cond { border-color: rgba(148, 163, 184, .35); background: rgba(148, 163, 184, .05); }
+.rv-sec.cond > summary > .icon { color: #B6C6D0; }
+.rv-sec.exc { border-color: var(--warn-line); background: var(--warn-bg); }
+.rv-sec.exc > summary > .icon { color: var(--warn); }
+.rv-sec.plain > summary > .icon { color: var(--muted); }
+.rv .rex-line-text { font-size: 15px; }
+.rv .rex-lines .rex-lines .rex-line-text { font-size: 14px; }
+.rv .rex-line-note { font-size: 13px; }
+.rv-sec.cond .rex-lines > li::before { background: #B6C6D0; }
+.rv-sec.exc .rex-lines > li::before { background: var(--warn); }
+.rv-sec.exc .rex-lines .rex-lines > li::before { background: none; border-color: var(--warn); }
+
+.rv-def { display: grid; gap: 4px; }
+.rv-field-label { margin: 6px 0 0; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.rv-term { margin: 0; padding: 8px 12px; border-radius: 10px; background: rgba(148, 163, 184, .1); font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+.rv-def-text { margin: 0; padding: 10px 12px; border-radius: 10px; background: rgba(148, 163, 184, .06); font-size: 15px; line-height: 1.6; overflow-wrap: anywhere; }
+
+.rv-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 2px; }
+.rv-tile { flex: 1 1 84px; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); }
+.rv-tile:first-child { flex: 3 1 180px; } /* the parameter: fact names are long */
+.rv-tile dt { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11.5px; }
+.rv-tile dt .icon { color: var(--accent); }
+.rv-tile dd { margin: 2px 0 0; font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
+.rv-tile dd code { padding: 0; background: none; font-size: 13px; font-weight: 600; word-break: normal; overflow-wrap: anywhere; }
+.rv-sec.exc .rv-tile dt .icon { color: var(--sem-exc); }
+
+.rv-exc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; counter-reset: exc; }
+.rv-exc { padding: 10px 12px; border: 1px solid var(--sem-exc-line); border-radius: 10px; background: rgba(4, 16, 26, .55); }
+.rv-exc-head { margin: 0 0 6px; font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+.rv-exc.unclear { border-style: dashed; }
+.rv-content .rex-gap { padding: 10px 12px; }
+
+/* source */
+.rex-source.rv-source { gap: 8px; padding: 12px 14px; border-radius: 12px; }
+.rv-source .rex-sec-head { gap: 8px 10px; }
+.rv-source .rex-sec-head h2 { font-size: 15px; }
+.rv-source .rex-sec-head > .icon { color: var(--accent); }
+.rv-source .rex-cite { font-size: 12.5px; }
+.rv-source-doc { min-width: 0; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 13px; }
+.rv-source .rex-view-btn { padding: 3px 10px; border-radius: var(--r-sm); font-size: 12.5px; background: var(--bg); }
+.rv-origtext > summary, .rv-source .rex-related > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--accent-hover); font-size: 13px; list-style: none; }
+.rv-origtext > summary::-webkit-details-marker, .rv-source .rex-related > summary::-webkit-details-marker { display: none; }
+.rv-origtext > summary .icon, .rv-source .rex-related > summary .icon { transition: transform .15s; }
+.rv-origtext[open] > summary .icon, .rv-source .rex-related[open] > summary .icon { transform: rotate(90deg); }
+.rv-origtext .rex-quotes { padding: 8px 0 0 4px; }
+.rv-source .rex-related { padding-left: 0; }
+.rv .rex-quote { font-size: 14.5px; padding-left: 14px; border-left-width: 3px; }
+
+/* checks */
+.rv-check { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--muted); font-size: 13px; cursor: help; }
+.rv-check > .icon { flex: none; color: var(--accent); }
+.rv-check-info { display: inline-grid; opacity: .7; }
+.rv .rex-issue { margin: 0; padding: 10px 12px; border: 1px solid var(--warn-line); border-radius: 12px; background: var(--warn-bg); }
+.rv .rex-issue-btn { border: 0; padding: 0; background: none; }
+.rv .rex-issue-list { background: rgba(4, 16, 26, .45); }
+
+/* decision: the action bar */
+.rv .rex-decide { gap: 12px; padding-top: 0; }
+.rv .rex-decided { justify-content: flex-start; font-size: 14px; }
+.rv .rex-decided-reason { margin: -6px 0 0; text-align: left; font-size: 13px; }
+.rv .rex-choices { gap: 12px; }
+.rv .rex-choice { min-height: 46px; gap: 10px; padding: 8px 14px; border-radius: 12px; border-color: #3B5566; }
+.rv .rex-choice-main { font-size: 16px; }
+.rv .rex-choice.yes .rex-choice-main { font-size: 16px; }
+.rv .rex-choice.yes { box-shadow: 0 4px 16px rgba(15, 129, 118, .3); }
+.rv .rex-choice.no { border-color: var(--danger-line); color: var(--danger); }
+.rv .rex-decide-foot { justify-content: space-between; }
+
+/* right: document context */
+.rv-context { position: sticky; top: 12px; display: flex; flex-direction: column; height: calc(100vh - 24px); min-height: 520px; overflow: hidden; }
+.rv-tabs { display: flex; flex: none; border-bottom: 1px solid var(--border); background: var(--bar); }
+.rv-tabs button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 10px 11px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; }
+.rv-tabs button:hover { color: var(--text); background: var(--hover); }
+.rv-tabs button.active { color: var(--text); border-bottom-color: var(--accent); }
+.rv-tabs button.active .icon { color: var(--accent); }
+.rv-tabs button:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: -3px; }
+.rv-panels { position: relative; flex: 1; min-height: 0; }
+.rv-panel { position: absolute; inset: 0; display: flex; flex-direction: column; min-height: 0; }
+.rv-panel[hidden] { display: none; }
+.rv-panel-off { visibility: hidden; pointer-events: none; }
+.rv-pdf .pdf { flex: 1; min-height: 0; }
+.rv-pdf .pdf-toolbar { padding: 8px 10px; gap: 6px; font-size: 13.5px; }
+.rv-pdf .pdf-toolbar button { width: 34px; height: 34px; border-radius: 9px; }
+.rv-pdf .pdf-scroll { padding: 12px; }
+.rv-pdf-note { display: flex; align-items: center; gap: 8px; flex: none; margin: 0; padding: 8px 12px; border-top: 1px solid var(--border); background: var(--bar); color: var(--muted); font-size: 12.5px; }
+.rv-hl-swatch { flex: none; width: 18px; height: 10px; border: 2px solid var(--hl-b); border-radius: 3px; background: var(--hl); }
+/* The JSON tab is a chain of flex columns whose last link scrolls: panel (fixed by the context panel) → body (fills it) → .jsonv
+   (fills the body, clips its rounded corners) → .jsonv-scroll (takes the rest and scrolls both ways). Every link needs
+   min-height: 0, else a flex item keeps its content height and .jsonv's overflow: hidden cuts the lines off unreachably. */
+.rv-json { padding: 12px; gap: 10px; overflow: hidden; }
+.rv-json-body { display: flex; flex-direction: column; gap: 10px; flex: 1 1 auto; min-height: 0; min-width: 0; }
+.rv-json-body > p, .rv-json-body > .rex-jsonview { flex: none; }
+.rv-json .jsonv { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.rv-json .jsonv-bar { flex: none; }
+.rv-json .jsonv-scroll { flex: 1 1 auto; min-height: 0; max-height: none; overscroll-behavior: contain; }
+.rv-empty { display: flex; align-items: center; gap: 8px; margin: 16px; color: var(--muted); font-size: 13.5px; }
+
+/* footer: back, review progress, next step */
+.rv-footer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px 24px; padding: 12px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r); }
+.rv-progress-wrap { display: flex; align-items: center; justify-content: center; gap: 14px; min-width: 0; }
+.rv-progress-text { white-space: nowrap; font-size: 14px; }
+.rv-progress { position: relative; flex: 0 1 460px; height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.rv-progress > span { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--accent); box-shadow: 0 0 8px rgba(45, 212, 191, .5); transition: width .3s ease; }
+.rv-progress-pct { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* narrower desktops: the document context moves below the rule, full width */
+@media (max-width: 1280px) {
+  .rv-layout { grid-template-columns: minmax(210px, 250px) minmax(0, 1fr); }
+  .rv-context { grid-column: 1 / -1; position: static; height: 78vh; }
+}
+/* tablets and phones: one column; the navigation becomes a compact block above the rule */
+@media (max-width: 900px) {
+  .rv-layout { grid-template-columns: minmax(0, 1fr); }
+  .rex-side.rv-side { position: static; max-height: none; display: flex; }
+  .rv-context { height: 72vh; min-height: 420px; }
+  .rv-footer { grid-template-columns: 1fr; justify-items: stretch; }
+  .rv-progress-wrap { justify-content: flex-start; }
+}
+@media (max-width: 760px) {
+  .rv .rex-choices { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .rv .rex-choice { min-height: 44px; justify-content: center; padding: 6px; }
+  .rv-sec-body { padding-left: 16px; }
+  .rv-doccard { min-width: 0; flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .rv-sec-chev, .rv-progress > span { transition: none; } }
+
+/* original wording: a compact disclosure; the summary the model wrote with the rule sits under the exact text */
+.rv-summary { display: grid; gap: 2px; margin: 8px 0 0 4px; padding: 8px 12px; border: 1px solid var(--border); border-left: 3px solid #3B5566; border-radius: 10px; background: var(--panel); }
+.rv-summary .rex-summary-text { margin: 0; font-size: 13.5px; font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
+
+/* ==== semantic colours: what a part of the rule MEANS, never its review status ===================================
+   teal (ODOS accent) the main requirement · purple definitions and terms · blue formulas and numbers · green limits ·
+   amber conditions and exceptions. Used as borders, icons, badges and the type on numbers; backgrounds stay at the panel's
+   dark surface with at most a faint tint. Review status (accepted / pending / rejected / edited) keeps its own marks. */
+.rv {
+  --sem-main: var(--accent);
+  --sem-def: #BBA4F7;  --sem-def-line: rgba(187, 164, 247, .42); --sem-def-bg: rgba(187, 164, 247, .07);   /* 9.3:1 on --bg */
+  --sem-num: #7DB4FF;  --sem-num-line: rgba(125, 180, 255, .42); --sem-num-bg: rgba(125, 180, 255, .07);   /* 8.9:1 */
+  --sem-lim: #6FD99A;  --sem-lim-line: rgba(111, 217, 154, .42); --sem-lim-bg: rgba(111, 217, 154, .07);   /* 11:1 */
+  --sem-cond: #A5B1D6; --sem-cond-line: rgba(165, 177, 214, .38); --sem-cond-bg: rgba(165, 177, 214, .05);  /* slate indigo, 8.6:1 */
+  --sem-exc: #D4936A;  --sem-exc-line: rgba(212, 147, 106, .4);  --sem-exc-bg: rgba(212, 147, 106, .045);  /* muted copper, 7.4:1 */
+}
+/* the main requirement leads: the only section with a filled accent edge */
+.rv-sec.main { border-color: var(--info-line); border-left: 4px solid var(--sem-main); background: var(--bg); }
+.rv-sec.main > summary { padding-block: 13px; }
+.rv-sec.main .rv-sec-label { font-size: 16.5px; }
+.rv-sec.main .rex-lines > li > .rex-line-text { font-size: 16px; font-weight: 500; }
+/* definitions and terms: purple */
+.rv-sec.def { border-color: var(--sem-def-line); border-left: 4px solid var(--sem-def); background: var(--bg); }
+.rv-sec.def > summary > .icon { color: var(--sem-def); }
+.rv-sec.def .rv-term { border: 1px solid var(--sem-def-line); background: var(--sem-def-bg); color: var(--sem-def); }
+.rv-sec.def .rv-def-text { border-left: 3px solid var(--sem-def-line); background: transparent; }
+.rex-kind.def { color: var(--sem-def); border-color: var(--sem-def-line); background: var(--sem-def-bg); }
+/* conditions (when the rule applies): quiet slate indigo, dashed · exceptions (when it does not, or changes): muted copper.
+   Neither is a warning: yellow is kept for review attention and genuine problems. */
+.rv-sec.cond { border-color: var(--sem-cond-line); border-style: dashed; background: var(--bg); }
+.rv-sec.cond > summary > .icon { color: var(--sem-cond); }
+.rv-sec.cond .rex-lines > li::before { background: var(--sem-cond); }
+.rv-sec.exc { border-color: var(--sem-exc-line); border-left: 3px solid var(--sem-exc); background: var(--sem-exc-bg); }
+.rv-sec.exc > summary > .icon { color: var(--sem-exc); }
+.rv-sec.exc .rex-lines > li::before { background: var(--sem-exc); }
+.rv-sec.exc .rex-lines .rex-lines > li::before { background: none; border-color: var(--sem-exc); }
+
+.rv-exc { background: var(--bg); }
+.rv-exc-tag { display: inline-block; margin-right: 8px; padding: 0 8px; border: 1px solid var(--sem-exc-line); border-radius: 999px; color: var(--sem-exc); font-size: 11.5px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; vertical-align: 1px; }
+.rv-exc-tag.alternative { border-style: dashed; }
+.rv-sec.plain { background: transparent; }
+.rv-sec.plain .rv-sec-label { font-weight: 600; font-size: 14.5px; color: var(--muted); }
+
+/* mathematics, as in printed documentation: a muted slate panel, a hairline border, soft white notation in a text serif. One-letter
+   variables are italic (mathematical convention); variables written as words are upright. The legend names each exact identifier. */
+.rv { --math-bg: rgba(148, 163, 184, .06); --math-line: rgba(148, 163, 184, .22); --math-ink: #E6EBF1; --math-soft: #A9B6C4;
+      --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", "Times New Roman", Georgia, serif; }
+.rv-formula, .rv-limit { margin: 8px 0 2px; padding: 10px 14px 8px; border: 1px solid var(--math-line); border-left: 3px solid rgba(45, 212, 191, .55); border-radius: 8px; background: var(--math-bg); }
+.rv-sec.exc .rv-formula, .rv-sec.exc .rv-limit { border-left-color: rgba(212, 147, 106, .65); } /* alternative / exception formulas */
+.rv-sec.cond .rv-limit, .rv-sec.def .rv-limit { border-left-color: var(--math-line); }
+.rv-eq { margin: 0 0 6px; font: 400 19px/1.55 var(--math-font); color: var(--math-ink); overflow-wrap: anywhere; letter-spacing: .005em; }
+.rv-m-fact { color: var(--math-ink); font-style: normal; }
+.rv-m-fact.sym { font-style: italic; padding: 0 .06em; }
+.rv-m-num { color: var(--math-ink); font-variant-numeric: lining-nums tabular-nums; }
+.rv-m-op { color: var(--math-ink); white-space: pre-wrap; }
+.rv-m-punct { color: var(--math-soft); white-space: pre-wrap; }
+.rv-m-rel { margin: 0 .45em; color: var(--math-ink); }
+.rv-m-unit { color: var(--math-soft); }
+.rv-m-in { margin-left: .5em; font-size: .8em; }
+.rv-params { display: grid; gap: 2px; margin: 0; padding-top: 6px; border-top: 1px solid var(--math-line); }
+.rv-params > div { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }
+.rv-params dt { margin: 0; min-width: 1.6em; font: 400 15px/1.4 var(--math-font); color: var(--math-ink); }
+.rv-params dd { margin: 0; color: var(--muted); font-size: 12.5px; }
+.rv-params dd code { padding: 0; background: none; color: var(--math-soft); font-size: 12px; word-break: normal; overflow-wrap: anywhere; }
+/* cited passages (replaces the original wording) and the highlight legend */
+.rv-cites { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.rv-cite { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 13.5px; }
+.rv-cite-name { font-weight: 600; }
+.rv-tonedot { flex: none; width: 10px; height: 10px; border-radius: 3px; background: rgb(var(--tone, 45, 212, 191)); }
+.tone-obligation, .tone-procedural { --tone: 45, 212, 191; }
+.tone-definition { --tone: 187, 164, 247; }
+.tone-conditional { --tone: 165, 177, 214; }
+.tone-permission { --tone: 56, 189, 248; }
+.tone-prohibition { --tone: 244, 114, 182; }
+.tone-context { --tone: 148, 163, 184; }
+.tone-exception { --tone: 212, 147, 106; }
+.tone-condition { --tone: 165, 177, 214; }
+.rv-prec { padding: 0 8px; border: 1px solid var(--info-line); border-radius: 999px; color: var(--accent-hover); font-size: 11.5px; font-weight: 600; }
+.rv-prec.fallback { border-color: var(--warn-line); color: var(--warn); }
+.rv-prec.missing { border-color: var(--border); color: var(--muted); }
+.rv-source .rex-related { padding-left: 0; }
+.rv-source .rex-related .rex-actions { display: flex; gap: 6px; margin: 4px 0 6px 18px; }
+.rv-summary-line { margin: 0; padding: 8px 12px; border-left: 3px solid #3B5566; font-size: 13.5px; font-weight: 400; color: var(--muted); }
+.rv-summary-line .rv-field-label { display: inline; margin: 0 8px 0 0; }
+.rv-legend { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.rv-legend ul { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; }
+.rv-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.rv-legend-precision { margin: 0; }
+.rv-statusdot { width: 10px; height: 10px; border-radius: 50%; border: 3px solid currentColor; }
+.rv-legend-status.accepted { color: #4ADE80; } .rv-legend-status.pending { color: #FACC15; } .rv-legend-status.rejected { color: #F87171; }
+.rv-legend-edited { color: #60A5FA; }
+
+/* ==== demo polish ================================================================================================ */
+/* source controls beside the citation */
+.rv-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rv-iconbtn { display: inline-grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg); color: var(--accent-hover); cursor: pointer; }
+.rv-iconbtn:hover:not(:disabled) { border-color: var(--accent); background: var(--hover); }
+.rv-iconbtn:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
+.rv-iconbtn:disabled { opacity: .4; cursor: default; }
+.rv-srcwarn { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border: 1px solid var(--warn-line); border-radius: 999px; background: var(--warn-bg); color: var(--warn); font-size: 12px; font-weight: 600; cursor: help; }
+/* the decision stays in reach: a sticky bar at the bottom of the viewport, opaque, so it never shows text through it; it is the last
+   thing in the rule card's flow except its own forms, which open below it */
+.rv .rv-actionbar { position: sticky; bottom: 0; z-index: 5; display: flex; flex-direction: column; gap: 10px; margin: 0 -18px -18px; padding: 12px 18px 14px; border-top: 1px solid var(--border); border-radius: 0 0 var(--r) var(--r); background: var(--panel); box-shadow: 0 -10px 24px rgba(0, 0, 0, .35); }
+/* the decision section only groups its parts: the bar must be a child of the tall rule card to stick within it */
+.rv .rex-decide { display: contents; }
+.rv .rex-decide:has(.rex-form) .rv-actionbar, .rv .rex-decide:has(> .alert) .rv-actionbar { margin-bottom: 0; border-radius: 0; }
+/* sidebar labels are never cut off */
+.rv-nav-label { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
+.rv-nav-row .rv-count { margin-left: auto; flex: none; }
+@media (max-width: 760px) { .rv .rv-actionbar { margin: 0 -14px -14px; padding: 10px 14px; } }
+.rv-editline { width: 16px; height: 0; border-bottom: 3px solid #60A5FA; }
+/* definitions: an enumeration in the text as compact items; a long definition scrolls in its own area */
+.rv-def-scroll { max-height: 360px; overflow: auto; overscroll-behavior: contain; padding-right: 6px; border-radius: 10px; }
+.rv-def-scroll:focus-visible { outline: 2px solid var(--sem-def); outline-offset: 2px; }
+.rv-def-intro { margin-bottom: 8px !important; }
+.rv-def-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rv-def-list > li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 10px; border: 1px solid var(--sem-def-line); border-radius: 10px; background: var(--sem-def-bg); font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; }
+.rv-def-list.nested { margin-top: 6px; gap: 4px; }
+.rv-def-list.nested > li { padding: 2px 0 2px 2px; border: 0; background: none; font-size: 14px; }
+.rv-def-marker { flex: none; min-width: 2.2em; color: var(--sem-def); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rv-def-item { min-width: 0; flex: 1; }
+/* informational check notes: neutral, not a warning */
+.rv-checknote { font-size: 13px; color: var(--muted); }
+.rv-checknote-btn { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
+.rv-checknote-btn .icon { flex: none; color: #94A3B8; }
+.rv-checknote-btn:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
+.rv-checknote-list { margin: 6px 0 0; padding: 8px 12px 8px 28px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); line-height: 1.5; overflow-wrap: anywhere; }
+/* the source of one part of the rule: a compact citation; dashed when only its whole element can be highlighted */
+.rv-pcite { display: inline-flex; align-items: center; margin-left: 8px; padding: 0 7px; border: 1px solid rgba(148, 163, 184, .35); border-radius: 6px; background: rgba(148, 163, 184, .08); color: var(--muted); font: 600 11.5px/1.6 var(--font-body, inherit); font-style: normal; letter-spacing: .01em; white-space: nowrap; vertical-align: 1px; cursor: pointer; }
+.rv-pcite.approx { border-style: dashed; }
+.rv-pcite:hover { color: var(--text); border-color: var(--accent); }
+.rv-pcite[aria-pressed="true"] { color: var(--text); border-color: var(--text); background: rgba(255, 255, 255, .08); }
+.rv-pcite:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
+.rv-focusdot { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; box-shadow: 0 0 0 2px rgba(255, 255, 255, .85); vertical-align: -1px; }

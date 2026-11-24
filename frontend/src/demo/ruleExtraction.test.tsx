@@ -102,19 +102,23 @@ const type = async (input: HTMLInputElement, value: string) => {
 };
 const text = () => document.body.textContent ?? "";
 /** The page's text without the review-progress ring (the one real percentage on the page: decisions of people). */
-const textWithoutRing = () => { const c = document.body.cloneNode(true) as HTMLElement; c.querySelectorAll(".rex-ring").forEach((r) => r.remove()); return c.textContent ?? ""; };
+const textWithoutRing = () => { const c = document.body.cloneNode(true) as HTMLElement; c.querySelectorAll(".rv-progress-wrap").forEach((r) => r.remove()); return c.textContent ?? ""; };
 /** Restart Extraction lives in the ⋯ menu: open it first. */
 const restart = async () => { await click(q('button[aria-label="More actions"]')); await click(button("Restart Extraction")); };
-const openOverview = () => click(button("All rules"));
+const openOverview = () => click(q('button[aria-label="Rule list"]'));
+/** The count beside a review-status filter in the left panel; undefined when that filter is not offered. */
+const statusCount = (label: string) => { const row = qa(".rv-status-row").find((r) => r.querySelector(".rv-nav-label")?.textContent === label); return row ? Number(row.querySelector(".rv-count")?.textContent) : undefined; };
+
 const closeOverview = () => click(q('.rex-dialog button[aria-label="Close"]'));
 /** The citation line of each rule in the overview, without the fixtures' "§ 1 " prefix: stands for the rule's id. */
 const queued = () => qa(".rex-dialog .rex-rule-sub").map((t) => t.textContent!.replace("§ 1 ", ""));
 const current = () => q(".rex-card")?.getAttribute("aria-label");
-const pager = () => q(".rex-pager-pos")?.textContent;
+const pager = () => q(".rex-pager-pos")?.textContent?.replace(/^Rule /, ""); // "Rule 1 of 3" → "1 of 3"
 const side = () => q(".rex-side")?.textContent ?? "";
 const next = () => click(q('button[aria-label="Next rule"]'));
 const choices = () => qa<HTMLButtonElement>(".rex-choice");
-const view = () => button("View in document");
+const view = () => q<HTMLButtonElement>(".rex-view-btn");
+const goTitle = () => q(".rv-goto")?.getAttribute("title") ?? "";
 
 beforeEach(() => { vi.useFakeTimers(); Element.prototype.scrollIntoView = () => {}; });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.useRealTimers(); vi.unstubAllGlobals(); });
@@ -138,7 +142,7 @@ describe("before an extraction", () => {
     await mount(<RuleExtractionView result={demoResult()} onBack={() => {}} />);
     for (const gone of ["Ontology", "Digital Twin", "Coming Soon", "Upload", "mock", "Auto-Accepted", "80%", "Confidence", "Validation"]) expect(text(), gone).not.toContain(gone);
     expect(q('input[type="file"]')).toBeNull();
-    expect(qa(".rex-step").map((s) => s.querySelector(".rex-step-label")?.textContent)).toEqual(["Document", "Rules extracted", "Review"]);
+    expect(qa(".rex-step").map((s) => s.querySelector(".rex-step-label")?.textContent)).toEqual(["Document", "Rules extracted", "Rule validation"]);
     expect(qa(".rex-step")[1].className).toContain("current"); // before the rules exist, "Rules extracted" is the step in progress
     expect(qa(".rex-step")[1].getAttribute("aria-current")).toBe("step");
   });
@@ -430,7 +434,7 @@ describe("a stored rules.json", () => {
   it("is rendered on the first paint, before the backend answered anything", () => {
     installBackend();
     const html = renderToStaticMarkup(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} />);
-    expect(html).toContain("Review Rule");
+    expect(html).toContain("Rule Validation");
     expect(html).toContain("Türen müssen eine lichte Breite");
   });
 
@@ -462,22 +466,25 @@ describe("the review page: one rule at a time", () => {
   it("shows the original text and ODOS's suggestion of one rule, and the three decisions in the mockup's order", async () => {
     await openStored();
     expect(qa(".rex-card")).toHaveLength(1);
-    expect(q(".rex-main-title")?.textContent).toBe("Review Rule");
-    expect(q(".rex-source .rex-cite")?.textContent).toBe("§ 1 tuer-breite");
-    expect(q(".rex-quote")?.textContent).toBe("(1) Türen müssen mindestens 0,90 m breit sein."); // the exact wording of the document
-    expect(q(".rex-summary-text")?.textContent).toBe(RULE_DOOR.classification.summary);
+    expect(q(".rv-h1")?.textContent).toBe("Rule Validation");
+    expect(q(".rv-id")?.textContent).toBe("tuer-breite");
+    expect(q(".rv-center-head .rex-cite")?.textContent).toBe("§ 1 tuer-breite");
+    // the document text is in the PDF beside the rule, not repeated in the page; the cited passage is named in the source control
+    expect(q(".rex-quote, .rv-origtext, .rex-source")).toBeNull();
+    expect(goTitle()).toContain("Absatz (1)");
+    expect(q(".rex-summary-text")).toBeNull(); // the structured rule states the rule: the model's summary adds nothing here
     expect(q(".rex-suggest")?.textContent).toContain("tuer lichte breite is at least 0.9 m"); // derived from the record, operator and unit as stored
     expect(q(".rex-suggest")?.textContent).toContain("gebaeude hoehe is more than 7 m");
-    expect(q(".rex-question")?.textContent).toBe("Is this rule suggestion correct?");
-    expect(choices().map((b) => b.querySelector(".rex-choice-main")?.textContent)).toEqual(["Yes, correct", "Adjust", "No, incorrect"]);
-    expect(q(".rex-source")!.compareDocumentPosition(q(".rex-suggest")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(q(".rex-suggest")!.compareDocumentPosition(q(".rex-choices")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(q(".rex-decide h2")?.textContent).toBe("Is this rule correct?"); // for screen readers; the actions say the rest
+    expect(choices().map((b) => b.querySelector(".rex-choice-main")?.textContent)).toEqual(["Accept", "Edit", "Reject"]);
+    // the rule, then the decision in its sticky action bar
+    expect(q(".rex-suggest")!.compareDocumentPosition(q(".rv-actionbar .rex-choices")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("keeps the record unchanged: the Rule JSON under Advanced details is exactly the stored record, nested structures included", async () => {
+  it("keeps the record unchanged: the Rule JSON tab shows exactly the stored record, nested structures included", async () => {
     await openStored();
     expect(q(".jsonv-code")).toBeNull(); // no JSON in the default view
-    await click(q(".rex-adv-toggle"));
+    await click(q("#rv-tab-json"));
     const shown = JSON.parse(q(".jsonv-code")!.textContent!);
     expect(shown).toEqual(RULE_DOOR);
     expect(shown.applicability.conditions).toEqual(NESTED);
@@ -491,28 +498,22 @@ describe("the review page: one rule at a time", () => {
     expect(text()).not.toMatch(/auto-?(accepted|verified|approved)/i);
     expect(text()).not.toMatch(/\b(is|are) verified\b/i);
     expect(textWithoutRing()).not.toMatch(/\b\d+\s?%/); // the only percentage is the share of rules people reviewed
-    expect(side()).toContain("1 with potential issues");
-    expect(side()).toContain("2 waiting for review"); // the unflagged rule waits too; the third is marked reviewed in the file
+    expect(statusCount("Potential issues")).toBe(1);
+    expect(statusCount("Pending")).toBe(2); // the unflagged rule waits too; the third is marked reviewed in the file
     expect(side()).toContain("Every rule is a draft");
-    await click(q(".rex-side-issues button"));
-    expect(q(".rex-side-why")?.textContent).toContain("A rule without such a notice is not verified");
+    expect(q(".rv-check")).toBeNull(); // the first rule is flagged: its notice is shown, not a "nothing noticed" line
+    expect(q(".rex-issue")).not.toBeNull();
+    await next();
+    expect(q(".rv-check")?.textContent).toContain("No issues flagged by automatic checks");
+    expect(q(".rv-check")?.getAttribute("title")).toContain("do not verify legal meaning"); // an unflagged rule is not called correct or valid
   });
 
-  it("states only counts the stored result supports, and keeps everything technical behind Advanced details", async () => {
+  it("states only counts the stored result supports, and shows no technical details panel", async () => {
     await openStored();
-    expect(side()).toContain("3 rules found");
-    expect(q(".rex-ring")?.getAttribute("aria-valuenow")).toBe("33"); // one of three rules is marked reviewed in the file
-    expect(side()).toContain("1 of 3 reviewed");
-    expect(q(".rex-adv-body")).toBeNull();
-    await click(q(".rex-adv-toggle"));
-    const rows = qa(".rex-tech-list > div").map((d) => [d.querySelector("dt")?.textContent, d.querySelector("dd")?.textContent]);
-    expect(rows).toEqual(expect.arrayContaining([
-      ["Rule ID", "tuer-breite"], ["Model", "eu.anthropic.claude-sonnet-4-6"], ["Refused by checks", "1"], ["Repaired by schema repair", "0"],
-      ["Text units cited by a rule", expect.stringContaining("8 of 10")], ["Provisions with a rule", expect.stringContaining("1 of 1")],
-    ]));
-    expect(q(".rex-rejected")?.textContent).toContain("abgelehnt-1");
-    expect(q(".rex-rejected")?.textContent).toContain("unknown operator");
-    expect(q(".rex-advanced")?.textContent).toContain("Der Begriff 'Tür' ist nicht definiert."); // the model's notes
+    expect(side()).toContain("Rules (3)");
+    expect(q(".rv-progress")?.getAttribute("aria-valuenow")).toBe("33"); // one of three rules is marked reviewed in the file
+    expect(q(".rv-footer")?.textContent).toContain("1 / 3 rules reviewed");
+    expect(q(".rex-advanced, .rex-adv-toggle, .rex-tech-list")).toBeNull(); // model, counts and history are not shown (they stay in the data)
     await openOverview();
     expect(qa(".rex-dialog .rex-rule")).toHaveLength(3); // the refused candidate is not a rule
   });
@@ -524,12 +525,12 @@ describe("the review page: one rule at a time", () => {
     expect(shown).not.toContain("doc/par-1/abs-1");
     expect(shown).not.toContain("tuer-breite\""); // no JSON
     expect(q(".rex-list")).toBeNull();
-    expect(qa('[role="tab"]')).toHaveLength(0); // no tabs
+    expect(qa('[role="tab"]').map((t) => [t.textContent, t.getAttribute("aria-selected")])).toEqual([["PDF Preview", "true"], ["Rule JSON", "false"]]); // the document context
   });
 
   it("explains a potential issue only when asked", async () => {
     await openStored();
-    expect(q(".rex-issue-btn")?.textContent).toContain("Potential issue");
+    expect(q(".rex-issue-btn")?.textContent).toContain("1 issue flagged by automatic checks");
     expect(q(".rex-issue-list")).toBeNull();
     await click(q(".rex-issue-btn"));
     expect(q(".rex-issue-list")?.textContent).toContain("unit of 'tuer.lichte_breite' is not stated in the source text");
@@ -552,7 +553,7 @@ describe("the review page: one rule at a time", () => {
     expect(pager()).toBe("1 of 1");
     expect(current()).toBe("bare"); // no summary: the id
     expect(view()?.disabled).toBe(true);
-    expect(q(".rex-source")?.textContent).toContain("names no passage of the document");
+    expect(q(".rv-srcwarn")?.textContent).toBe("No source"); // a missing source is never hidden
     expect(q(".rex-gap")?.textContent).toContain("cannot be shown in plain language"); // no requirement at all: said so, not hidden
   });
 
@@ -560,7 +561,7 @@ describe("the review page: one rule at a time", () => {
     const odd = rule("odd", "Eine Regel mit unbekannter Form.", ABS1, {}, { requirements: [{ kind: "spline", fact: "x" }] });
     await openStored(rulesFile([odd]));
     expect(q(".rex-gap")?.textContent).toContain("not the complete rule");
-    expect(q(".rex-gap")?.textContent).toContain("Advanced details → Rule JSON");
+    expect(q(".rex-gap")?.textContent).toContain("Rule JSON tab");
   });
 });
 
@@ -575,7 +576,7 @@ describe("the overview of all rules (hidden by default)", () => {
     await open();
     expect(qa(".rex-dialog .rex-rule-title").map((t) => t.textContent)).toEqual([RULE_DOOR.classification.summary, RULE_FIRE.classification.summary, "Regel mit Quelle außerhalb des Dokuments."]);
     expect(queued()).toEqual(["tuer-breite", "brandabschnitt", "fremd"]);
-    expect(qa(".rex-dialog .rex-rule .rex-chips").map((s) => s.textContent)).toEqual(["OpenPotential issue", "Open", "Reviewed"]);
+    expect(qa(".rex-dialog .rex-rule .rex-chips").map((s) => s.textContent)).toEqual(["PendingPotential issue", "Pending", "Reviewed"]);
   });
 
   it("searches by id, summary and citation; Previous and Next then walk the matches", async () => {
@@ -596,7 +597,7 @@ describe("the overview of all rules (hidden by default)", () => {
 
   it("filters by review status and by the checks' notices", async () => {
     await open();
-    expect(qa(".rex-tabs button").map((b) => [b.textContent, b.getAttribute("aria-pressed")])).toEqual([["All (3)", "true"], ["To review (2)", "false"], ["Potential issues (1)", "false"], ["Reviewed (1)", "false"]]);
+    expect(qa(".rex-tabs button").map((b) => [b.textContent, b.getAttribute("aria-pressed")])).toEqual([["All (3)", "true"], ["Pending (2)", "false"], ["Potential issues (1)", "false"], ["Reviewed (1)", "false"]]);
     await click(button(/^Potential issues \(1\)/));
     expect(queued()).toEqual(["tuer-breite"]);
     await click(button(/^Reviewed \(1\)/));
@@ -644,7 +645,7 @@ describe("PDF source navigation", () => {
   it("offers exactly one way into the document for the rule's passage", async () => {
     installBackend({ status: status("completed"), rules: STORED });
     await mount(<RuleExtractionView result={demoResult(STORED)} onBack={() => {}} onShowInPdf={() => {}} />);
-    expect(qa("button").filter((b) => /document|PDF/i.test(`${b.textContent} ${b.getAttribute("aria-label") ?? ""}`) && !/Back to Document/i.test(b.textContent ?? "") && !/Back to Document Review/.test(b.getAttribute("aria-label") ?? ""))).toHaveLength(1);
+    expect(qa("button:not([role='tab'])").filter((b) => /document|PDF/i.test(`${b.textContent} ${b.getAttribute("aria-label") ?? ""}`) && !/Back to Document/i.test(b.textContent ?? "") && !/Back to Document Review/.test(b.getAttribute("aria-label") ?? ""))).toHaveLength(1);
   });
 
   it("is unavailable for a rule whose source is not in the document, and never invents a page", async () => {
@@ -653,8 +654,8 @@ describe("PDF source navigation", () => {
     await next();
     await next();
     expect(view()?.disabled).toBe(true);
-    expect(q(".rex-source")?.textContent).toContain("not part of the opened document");
-    expect(q(".rex-pages")?.textContent).toBe("p. 3"); // the page the record itself states, nothing else
+    expect(q(".rv-srcwarn")?.textContent).toBe("1 source not found");
+    expect(q(".rv-goto")?.hasAttribute("disabled")).toBe(true); // no page is invented
   });
 
   it("Document Review opens with that element selected, on its page, with its source highlighted", async () => {
@@ -686,46 +687,43 @@ describe("source references", () => {
   it("shows the citation and the pages of the passage", async () => {
     await open([RULE_DOOR]);
     expect(q(".rex-cite")?.textContent).toBe("§ 1 tuer-breite");
-    expect(q(".rex-pages")?.textContent).toBe("p. 3");
+    expect(goTitle()).toContain("(p. 3)");
   });
 
   it("shows every primary passage with its name, and opens the first one", async () => {
     const multi = withSource("multi", [{ elementId: ABS1, pdfPages: [3] }, { elementId: ABS2, pdfPages: [4, 5] }], "§ 1 Abs. 1 und 2");
     const onShowInPdf = await open([multi]);
-    expect(qa(".rex-quote-label").map((l) => l.textContent)).toEqual(["Absatz (1) · p. 3", "Absatz (2) · p. 4–5"]);
-    expect(qa(".rex-quote").map((x) => x.textContent)).toEqual(["(1) Türen müssen mindestens 0,90 m breit sein.", "(2) Brandabschnitte sind zu begrenzen."]);
-    expect(q(".rex-pages")?.textContent).toBe("p. 3–5");
+    expect(goTitle()).toContain("Absatz (1)");
+    expect(goTitle()).toContain("Absatz (2)");
+    expect(goTitle()).toContain("(p. 3–5)");
     await click(view());
     expect(onShowInPdf).toHaveBeenLastCalledWith(ABS1);
   });
 
-  it("puts context and definition passages behind “Related passages”, each with its own way into the document", async () => {
+  it("shows context passages in the PDF as related context, apart from the direct source", async () => {
     const ctx = withSource("ctx", [{ elementId: ABS1, role: "primary", pdfPages: [3] }, { elementId: ABS2, role: "context", pdfPages: [4] }]);
-    const onShowInPdf = await open([ctx]);
-    expect(qa(".rex-quote")).toHaveLength(2); // the related one is in the closed disclosure, rendered but folded
-    expect(q(".rex-related summary")?.textContent).toBe("Related passages (1)");
-    expect(q(".rex-related .rex-quote-label")?.textContent).toBe("Absatz (2) · context · p. 4");
-    await click(q('.rex-related button[aria-label="View Absatz (2) in the document"]'));
-    expect(onShowInPdf).toHaveBeenLastCalledWith(ABS2);
+    await open([ctx]);
+    expect(goTitle()).toContain("Absatz (1)");
+    expect(goTitle()).not.toContain("Absatz (2)"); // the direct source only
   });
 
   it("opens the first primary passage that is part of the document", async () => {
     const mixed = withSource("mixed", [{ elementId: "doc/missing", pdfPages: [2] }, { elementId: ABS2, pdfPages: [4] }]);
     const onShowInPdf = await open([mixed]);
-    expect(q(".rex-source")?.textContent).toContain("not part of the opened document");
+    expect(q(".rv-srcwarn")?.textContent).toBe("1 source not found"); // the missing passage stays visible
     await click(view());
     expect(onShowInPdf).toHaveBeenLastCalledWith(ABS2);
   });
 
   it("drops page numbers that cannot be pages of this document instead of guessing, and falls back to the element's own pages", async () => {
     await open([withSource("odd", [{ elementId: ABS1, pdfPages: [0, 999, 3.5, -1] }])]);
-    expect(q(".rex-pages")?.textContent).toBe("p. 3"); // the document element's page, not a made-up one
+    expect(goTitle()).toContain("(p. 3)"); // the document element's page, not a made-up one
   });
 
   it("handles a rule without citation or source elements", async () => {
     await open([withSource("bare", [], null)]);
     expect(q(".rex-cite")).toBeNull();
-    expect(q(".rex-source")?.textContent).toContain("names no passage of the document");
+    expect(q(".rv-srcwarn")?.textContent).toBe("No source");
     expect(view()?.disabled).toBe(true);
   });
 });

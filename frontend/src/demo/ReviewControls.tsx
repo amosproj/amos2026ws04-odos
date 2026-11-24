@@ -11,7 +11,7 @@ export const REVIEW_UNIDENTIFIED = "These rules carry no extraction identifier (
 export const REVIEW_NO_BACKEND = "Review decisions need the ODOS backend, which did not process this document.";
 export const NAME_MISSING = "Enter your name next to “Reviewing as” first.";
 
-const ACTION_LABEL: Record<ReviewAction, string> = { accept: "Accepted", reject: "Rejected", edit: "Adjusted", reset: "Adjustment undone" };
+const ACTION_LABEL: Record<ReviewAction, string> = { accept: "Accepted", reject: "Rejected", edit: "Edited", reset: "Edit reset" };
 export const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : "");
 /** An extraction ID is the generation time of its rules.json: shown as a date when it reads as one. */
 const extractionLabel = (id: string) => (Number.isNaN(Date.parse(id)) ? id : new Date(id).toLocaleString());
@@ -116,9 +116,9 @@ export type ReviewState = ReturnType<typeof useReviewActions>;
 
 /** One line about the rule's current decision; null while nothing is known. */
 export function reviewStateLine(entry: RuleReviewEntry | null): string | null {
-  if (!entry || entry.state === "pending") return entry?.edited ? "Adjusted · not reviewed yet" : null;
+  if (!entry || entry.state === "pending") return entry?.edited ? "Edited · not reviewed yet" : null;
   const base = `${entry.state === "accepted" ? "Accepted" : "Rejected"} by ${entry.reviewer} · ${when(entry.at)}`;
-  return entry.edited ? `${base} · adjusted` : base;
+  return entry.edited ? `${base} · edited` : base;
 }
 
 /** The events of the rule. Those of the extraction on screen decide its state; events of earlier extractions (a rule keeps its ID

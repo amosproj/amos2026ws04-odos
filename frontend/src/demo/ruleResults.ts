@@ -28,6 +28,9 @@ export interface RuleItem {
   machineCheckable: boolean | null;
   /** Review ambiguities written by the backend's automated checks (prefix removed). */
   checkFlags: string[];
+  /** Automated-check results that are informational for this rule, not potential issues: for a definition, a number that appears
+   *  only in its descriptive text (a definition describes; it need not restate its numbers as conditions). Kept as written. */
+  checkNotes: string[];
   /** The other review ambiguities, as the model wrote them. */
   ambiguities: string[];
   notes: string[];
@@ -84,6 +87,18 @@ function sourcesOf(rule: Record<string, unknown>): SourceElementRef[] {
   });
 }
 
+/** The backend's two quantity checks ("a threshold only in a description cannot be checked" / "express it as a predicate or
+ *  requirement"): they report numbers of the text that the record's logic does not contain. */
+const DESCRIPTIVE_NUMBER = [/a threshold only in a description cannot be checked\.?$/, /which the record's conditions and requirements do not contain; express it as a predicate or requirement\.?$/];
+
+/** Splits the automated checks of a rule into potential issues and informational notes. Only for definitions, and only the
+ *  "number only in descriptive text" result becomes a note; every other check (sources, units, values, form) stays an issue. */
+export function splitChecks(flags: string[], type: string | null): { checkFlags: string[]; checkNotes: string[] } {
+  if (type !== "definition") return { checkFlags: flags, checkNotes: [] };
+  const descriptive = (f: string) => DESCRIPTIVE_NUMBER.some((re) => re.test(f.trim()));
+  return { checkFlags: flags.filter((f) => !descriptive(f)), checkNotes: flags.filter(descriptive) };
+}
+
 export function toRuleItem(rule: Record<string, unknown>): RuleItem {
   const review = record(rule.review) ?? {};
   const classification = record(rule.classification);
@@ -97,7 +112,7 @@ export function toRuleItem(rule: Record<string, unknown>): RuleItem {
     sources: sourcesOf(rule),
     reviewStatus: str(review.status) ?? "draft",
     machineCheckable: typeof review.machineCheckable === "boolean" ? review.machineCheckable : null,
-    checkFlags: ambiguities.filter((a) => a.startsWith(CHECK_FLAG_PREFIX)).map((a) => a.slice(CHECK_FLAG_PREFIX.length)),
+    ...splitChecks(ambiguities.filter((a) => a.startsWith(CHECK_FLAG_PREFIX)).map((a) => a.slice(CHECK_FLAG_PREFIX.length)), str(classification?.type) ?? null),
     ambiguities: ambiguities.filter((a) => !a.startsWith(CHECK_FLAG_PREFIX)),
     notes: strings(review.notes),
     human: null, edited: false, effective: rule, entry: null,
@@ -110,7 +125,7 @@ export function applyReview(item: RuleItem, entry: RuleReviewEntry | undefined):
   if (!entry) return item;
   const effective = entry.effectiveRule ?? item.rule;
   const now = toRuleItem(effective);
-  return { ...item, title: now.title, machineCheckable: now.machineCheckable, checkFlags: now.checkFlags, ambiguities: now.ambiguities,
+  return { ...item, title: now.title, machineCheckable: now.machineCheckable, checkFlags: now.checkFlags, checkNotes: now.checkNotes, ambiguities: now.ambiguities,
            notes: now.notes, human: entry.state, edited: entry.edited, effective, entry };
 }
 
@@ -160,7 +175,8 @@ export function pagesLabel(pages: number[]): string {
 /** `_generation.generatedAt` of a stored `rules.json`: tells two extractions apart. */
 export const generatedAt = (data: unknown): string | null => str(record(record(data)?._generation)?.generatedAt) ?? null;
 
-export type ReviewFilter = "all" | "pending" | "accepted" | "rejected" | "flagged" | "reviewed";
+/** "edited" is an attribute, not a state: an edited rule keeps its decision (accepted, rejected or pending). */
+export type ReviewFilter = "all" | "pending" | "accepted" | "rejected" | "flagged" | "reviewed" | "edited";
 
 /** Pending / reviewed as stored: the reviewer's decision when the backend keeps decisions, else the status in the file. */
 export const isPending = (r: RuleItem) => (r.human ? r.human === "pending" : r.reviewStatus === "draft");
@@ -171,7 +187,53 @@ export const reviewLabel = (status: string) => REVIEW_LABEL[status] ?? status;
 
 export function matchesFilter(r: RuleItem, f: ReviewFilter): boolean {
   return f === "all" || (f === "pending" && isPending(r)) || (f === "accepted" && r.human === "accepted") || (f === "rejected" && r.human === "rejected")
-    || (f === "flagged" && r.checkFlags.length > 0) || (f === "reviewed" && isReviewed(r));
+    || (f === "flagged" && r.checkFlags.length > 0) || (f === "reviewed" && isReviewed(r)) || (f === "edited" && r.edited);
+}
+
+// ── rule categories: the record's own type, and what its structure contains ──────────────────────────────────────────
+
+/** What the record in force contains. Read from the Rule JSON 2.0 structure only; a rule has a part only when the record states it.
+ *  `conditions`: the rule's own applicability conditions or scope exclusions (an exception's condition belongs to the exception).
+ *  `thresholds`: a numeric requirement anywhere in the record (requirements, requirement expression, exceptions, definition). */
+export interface RuleFacets { exceptions: boolean; conditions: boolean; thresholds: boolean }
+
+function hasNumeric(v: unknown): boolean {
+  const x = record(v);
+  if (Array.isArray(v)) return v.some(hasNumeric);
+  if (!x) return false;
+  if (x.kind === "numeric") return true;
+  return hasNumeric(x.requirement) || hasNumeric(x.requirements) || hasNumeric(x.meaning);
+}
+
+export function ruleFacets(rule: Record<string, unknown>): RuleFacets {
+  const app = record(rule.applicability);
+  const exceptions = Array.isArray(rule.exceptions) ? rule.exceptions : [];
+  return {
+    exceptions: exceptions.length > 0,
+    conditions: (app?.conditions !== undefined && app.conditions !== null) || (Array.isArray(app?.scopeExclusions) && app.scopeExclusions.length > 0),
+    thresholds: hasNumeric(rule.requirements) || hasNumeric(rule.requirementExpression) || hasNumeric(record(rule.definition)?.meaning)
+      || exceptions.some((e) => hasNumeric(record(e)?.requirements)),
+  };
+}
+
+/** "all", a classification type ("type:obligation") or a structural facet ("has:exceptions"). */
+export type RuleCategory = string;
+export const FACETS = ["conditions", "exceptions", "thresholds"] as const;
+
+export function matchesCategory(r: RuleItem, c: RuleCategory): boolean {
+  if (c === "all") return true;
+  if (c.startsWith("type:")) return (r.type ?? "") === c.slice(5);
+  if (c.startsWith("has:")) return ruleFacets(r.effective)[c.slice(4) as keyof RuleFacets] === true;
+  return true;
+}
+
+/** The classification types that occur in `items`, in the schema's order, with their counts. Types that do not occur are left out. */
+export const TYPE_ORDER = ["definition", "obligation", "prohibition", "permission", "conditional_requirement", "procedural_requirement"];
+export function typeCounts(items: RuleItem[]): Array<{ type: string; count: number }> {
+  const counts = new Map<string, number>();
+  for (const r of items) if (r.type) counts.set(r.type, (counts.get(r.type) ?? 0) + 1);
+  const rank = (t: string) => { const i = TYPE_ORDER.indexOf(t); return i < 0 ? TYPE_ORDER.length : i; };
+  return [...counts].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([type, count]) => ({ type, count }));
 }
 
 /** Search over what a person reads of a rule: id, summary, citation and type. */

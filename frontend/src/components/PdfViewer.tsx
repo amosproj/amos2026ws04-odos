@@ -7,15 +7,30 @@ import type { Provenance } from "../types";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
+/** A set of boxes drawn together. `tone` is what the passage means (a semantic colour), `status` the review state of its rule (the
+ *  outline): two separate layers. `edited` adds a blue secondary mark; `approximate` draws a dashed box. */
+export interface HighlightGroup {
+  boxes: Provenance[];
+  tone?: string;
+  status?: "accepted" | "pending" | "rejected";
+  edited?: boolean;
+  approximate?: boolean;
+  /** The passage the reviewer just navigated to (a part of the rule): drawn with a focus ring. */
+  focus?: boolean;
+  title?: string;
+}
+
 interface Props {
   url: string;
   page: number;
   onPageChange: (page: number) => void;
   highlights: Provenance[]; // only those on `page` are drawn
   approximate?: boolean; // the box covers a whole Docling item that holds more than this element
+  /** Several differently styled highlights; when given, `highlights` is not drawn. */
+  groups?: HighlightGroup[];
 }
 
-export function PdfViewer({ url, page, onPageChange, highlights, approximate = false }: Props) {
+export function PdfViewer({ url, page, onPageChange, highlights, approximate = false, groups }: Props) {
   const [pdf, setPdf] = useState<pdfjs.PDFDocumentProxy | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -76,10 +91,12 @@ export function PdfViewer({ url, page, onPageChange, highlights, approximate = f
   }, [pdf, pageNo, width, zoom]);
 
   const pageHeight = useRef(0);
-  const rects: Rect[] = useMemo(() => {
+  const drawn: Array<{ rect: Rect; group: HighlightGroup }> = useMemo(() => {
     if (!size || rendered !== pageNo) return []; // never draw boxes over a stale page image
-    return rectsOnPage(highlights, pageNo, pageHeight.current, size.scale);
-  }, [highlights, pageNo, size, rendered]);
+    const all: HighlightGroup[] = groups ?? [{ boxes: highlights, approximate }];
+    return all.flatMap((group) => rectsOnPage(group.boxes, pageNo, pageHeight.current, size.scale).map((rect) => ({ rect, group })));
+  }, [groups, highlights, approximate, pageNo, size, rendered]);
+  const rects = useMemo(() => drawn.map((d) => d.rect), [drawn]);
 
   useEffect(() => {
     if (rects.length && wrap.current) {
@@ -110,8 +127,10 @@ export function PdfViewer({ url, page, onPageChange, highlights, approximate = f
         {!pdf && <p className="muted pad">Loading PDF…</p>}
         <div className="pdf-page" style={size ? { width: size.w, height: size.h } : undefined}>
           <canvas ref={canvas} />
-          {rects.map((r, i) => (
-            <div key={i} className={`hl${approximate ? " approx" : ""}`} title={approximate ? "Box of the whole source item; this element is only part of its text" : undefined} style={{ left: r.left - 2, top: r.top - 2, width: r.width + 4, height: r.height + 4 }} />
+          {drawn.map(({ rect: r, group: g }, i) => (
+            <div key={i} className={`hl${g.approximate ? " approx" : ""}${g.tone ? ` tone-${g.tone}` : ""}${g.status ? ` st-${g.status}` : ""}${g.edited ? " edited" : ""}${g.focus ? " focus" : ""}`}
+                 title={g.title ?? (g.approximate ? "Box of the whole source item; this element is only part of its text" : undefined)}
+                 style={{ left: r.left - 2, top: r.top - 2, width: r.width + 4, height: r.height + 4 }} />
           ))}
         </div>
       </div>
