@@ -323,7 +323,7 @@ export function SourceDetail({ element: e, page, onGoToPage, marks, onOpenRule }
           <h4>Rules ({marks.rules.length})</h4>
           <ul>
             {marks.rules.map(({ rule, mark, sentenceIds }) => (
-              <li key={rule.id}>
+              <li key={rule.id} className={`elrule ${mark.state}`} data-state={mark.state}>
                 <span className={`rm-chip ${mark.state}`}>{STATE_LABEL[mark.state]}</span>
                 {mark.edited && <span className="rm-chip edited">Edited</span>}
                 <span className="elrules-title">{rule.title}</span>

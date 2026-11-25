@@ -742,7 +742,7 @@ button.rex-side-row.warn:hover { box-shadow: 0 0 0 1px var(--warn-line) inset; }
 .rv-legend li { display: inline-flex; align-items: center; gap: 6px; }
 .rv-legend-precision { margin: 0; }
 .rv-statusdot { width: 10px; height: 10px; border-radius: 50%; border: 3px solid currentColor; }
-.rv-legend-status.accepted { color: #4ADE80; } .rv-legend-status.pending { color: #FACC15; } .rv-legend-status.rejected { color: #F87171; }
+.rv-legend-status.accepted { color: #4ADE80; } .rv-legend-status.pending { color: #FBBF24; } .rv-legend-status.rejected { color: #F87171; }
 .rv-legend-edited { color: #60A5FA; }
 
 /* ==== demo polish ================================================================================================ */
