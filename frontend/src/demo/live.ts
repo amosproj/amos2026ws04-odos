@@ -403,13 +403,19 @@ export interface RuleReviewEntry {
   reason: string | null;
   at: string | null;
   effectiveRule: Record<string, unknown> | null;
+  /** Whether the record in force is valid Rule JSON 2.0, and if not, why (`path: what is wrong`). Not a decision and not a check. */
+  validity?: { valid: boolean; issues: string[] };
 }
+
+/** Which accepted rules stop the approved export (they are not valid Rule JSON 2.0). */
+export interface ExportReadiness { accepted: number; invalid: number; blockedBy: string[]; ready: boolean }
 
 export interface RuleReviews {
   extractionId: string;
   criteriaVersion: number;
   counts: { pending: number; accepted: number; rejected: number; edited: number };
   rules: Record<string, RuleReviewEntry>;
+  export?: ExportReadiness;
   /** Decisions of other extractions of this document: kept as history, never applied to these rules. */
   earlierExtractionEvents: number;
 }

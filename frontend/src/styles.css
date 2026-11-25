@@ -112,7 +112,20 @@ select { cursor: pointer; }
 .tabs button:hover { color: var(--text); background: none; }
 .tabs button.active, .tabs button[aria-selected="true"] { color: var(--accent-hover); border-bottom-color: var(--accent); }
 .tabbody { flex: 1; min-height: 0; overflow: auto; }
-.structure { display: grid; grid-template-rows: minmax(120px, 1fr) auto; height: 100%; min-height: 0; }
+.structure { position: relative; display: grid; grid-template-rows: 1fr 0px 0fr; height: 100%; min-height: 0; }
+.structure.anim { transition: grid-template-rows .2s ease; }
+.structure.open { grid-template-rows: var(--tree, 450fr) 12px var(--det, 550fr); }
+.structure:not(.open) .rowsplit { visibility: hidden; border-top: 0; }
+.structure:not(.open) .tree-list { padding-bottom: 56px; }
+.detail-hint { position: absolute; left: 14px; right: 14px; bottom: 12px; display: flex; align-items: center; gap: 10px; padding: 9px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bar); color: var(--muted); font-size: 13px; pointer-events: none; }
+.detail-close { margin-left: 4px; display: inline-grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 8px; background: none; color: var(--muted); cursor: pointer; }
+.detail-close:hover { color: var(--text); border-color: var(--accent-hover); }
+.detail-close:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .structure.anim { transition: none; } }
+.rowsplit { position: relative; cursor: row-resize; touch-action: none; display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--border); background: var(--bar); }
+.rowsplit::before { content: ""; width: 44px; height: 4px; border-radius: 2px; background: var(--border); transition: background-color .15s; }
+.rowsplit:hover::before, .rowsplit.active::before { background: var(--accent); }
+.rowsplit:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: -2px; }
 .tree { overflow: auto; min-height: 0; }
 .tree-tools { display: flex; gap: 10px; padding: 14px 20px; position: sticky; top: 0; background: var(--panel); z-index: 1; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--border); }
 .tree-search { display: flex; flex: 1; min-width: 160px; align-items: center; gap: 10px; height: 46px; padding: 0 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bar); color: var(--muted); }
@@ -125,6 +138,7 @@ select { cursor: pointer; }
 .tree-list > li { padding: 3px 0; border-bottom: 1px solid var(--border); }
 .tree-list > li:last-child { border-bottom: 0; }
 .node { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; border: 1px solid transparent; border-radius: 10px; font-size: clamp(14px, 1.15vw, 17px); }
+.node { padding-left: calc(10px + var(--depth, 0) * var(--indent, 22px)); }
 .node:hover { background: var(--hover); }
 .node.selected { background: rgba(45, 212, 191, .16); border-color: rgba(45, 212, 191, .55); } /* the selected element, and it stays while the tree is used */
 .twisty { display: inline-grid; place-items: center; width: 22px; height: 22px; border: 0; background: none; cursor: pointer; padding: 0; color: var(--text); }
@@ -135,7 +149,7 @@ select { cursor: pointer; }
 .label { flex: 1; overflow-wrap: anywhere; }
 .pg { color: var(--muted); font-size: .85em; white-space: nowrap; }
 /* ---- the selected element's details ------------------------------------------------------------------------- */
-.detail { max-height: min(42vh, 380px); padding: 16px 22px 18px; overflow: auto; border-top: 1px solid var(--border); font-size: clamp(13px, 1.05vw, 16px); }
+.detail { min-height: 0; padding: 14px 20px 18px; overflow: auto; overscroll-behavior: contain; font-size: clamp(13px, 1.05vw, 16px); }
 .detail.empty { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: clamp(14px, 1.1vw, 16px); }
 .detail.empty .icon { color: var(--muted); }
 .detail h3 { margin: 0 0 4px; font-size: clamp(15px, 1.2vw, 18px); }
@@ -165,36 +179,127 @@ select { cursor: pointer; }
 .hl.tone-prohibition { --tone: 244, 114, 182; }                       /* pink */
 .hl.tone-context { --tone: 148, 163, 184; background: rgba(var(--tone), .07); border-style: dashed; border-width: 1px; }
 .hl.approx[class*="tone-"] { background: rgba(var(--tone), .1); border-style: dashed; }
-.hl.st-accepted { outline: 2px solid #4ADE80; outline-offset: 2px; }
 .hl.tone-exception { --tone: 212, 147, 106; }                        /* muted copper */
 .hl.tone-condition { --tone: 165, 177, 214; }                        /* slate indigo */
-.hl.focus { box-shadow: 0 0 0 3px rgba(255, 255, 255, .85), 0 0 0 6px rgba(4, 16, 26, .55); z-index: 2; }
-/* pending (needs review) is the normal state: no outline, so the page stays readable */
-.hl.st-rejected { outline: 2px solid #F87171; outline-offset: 2px; }
-.hl.edited { box-shadow: 0 4px 0 -1px rgba(96, 165, 250, .85); }
 
-/* review state of the rules that cite an element (Document Review): a layer apart from what the passage means */
-.marks { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; flex: none; }
-.rm { display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; font-size: 10.5px; font-weight: 700; color: #04101A; font-variant-numeric: tabular-nums; }
-.rm.accepted { background: #4ADE80; } .rm.pending { background: #FBBF24; } .rm.rejected { background: #F87171; }
-.rm.edited { min-width: 8px; width: 8px; height: 8px; padding: 0; background: #60A5FA; }
-.rm.below { background: none; color: inherit; border: 1.5px solid currentColor; opacity: .7; }
-.rm.below.accepted { color: #4ADE80; } .rm.below.pending { color: #FBBF24; } .rm.below.rejected { color: #F87171; } .rm.below.edited { background: #60A5FA; border: 0; color: #60A5FA; }
-.elrules { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); }
-.elrules h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
-.elrules ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.elrules li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 13px; }
-.elrules-title { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
-.rm-chip { padding: 0 8px; border: 1.5px solid currentColor; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
-.rm-chip.accepted { color: #4ADE80; } .rm-chip.pending { color: #FBBF24; } .rm-chip.rejected { color: #F87171; } .rm-chip.edited { color: #60A5FA; }
+/* ── Review state (issues #91, #89) ─────────────────────────────────────────────────────────────────────────────────── */
+:root { --st-accepted: #4ADE80; --st-pending: #FBBF24; --st-rejected: #F87171; --st-edited: #60A5FA; }
 
-/* legend and per-rule accent: subtle left border in the state colour; the state word stays in the chip */
-.marks-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 6px 10px; font-size: 12px; color: var(--muted); }
+/* tree: compact status chips (icon + count). Solid = the element's own rules, dashed and fainter = rules of its sub-elements */
+.marks { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; flex: none; flex-wrap: wrap; justify-content: flex-end; }
+.rm { --c: var(--st-pending); display: inline-flex; align-items: center; gap: 3px; height: 22px; padding: 0 7px 0 5px; border-radius: 7px; border: 1px solid color-mix(in srgb, var(--c) 35%, transparent); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--c); font-size: 12px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.rm.accepted { --c: var(--st-accepted); } .rm.pending { --c: var(--st-pending); } .rm.rejected { --c: var(--st-rejected); } .rm.edited { --c: var(--st-edited); padding: 0 5px; }
+.rm.below { background: transparent; border-style: dashed; border-color: color-mix(in srgb, var(--c) 60%, transparent); opacity: .8; }
+
+/* legend: always visible above the tree */
+.marks-legend { flex: 1 0 100%; list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin: 0; padding: 0 2px; font-size: 12.5px; color: var(--muted); }
 .marks-legend li { display: inline-flex; align-items: center; gap: 6px; }
-.rm-dot { width: 9px; height: 9px; border-radius: 50%; }
-.rm-dot.accepted { background: #4ADE80; } .rm-dot.pending { background: #FBBF24; } .rm-dot.rejected { background: #F87171; }
-.elrules li.elrule { padding-left: 8px; border-left: 3px solid transparent; }
-.elrules li.elrule.accepted { border-left-color: #4ADE80; } .elrules li.elrule.pending { border-left-color: #FBBF24; } .elrules li.elrule.rejected { border-left-color: #F87171; }
-.elrules li.elrule .rm-chip { order: 0; }
-.elrules li.elrule .elrules-title { order: 1; flex: 1 1 100%; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.elrules li.elrule .muted, .elrules li.elrule .btn { order: 2; }
+.rm-dot { --c: var(--st-pending); display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 6px; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); }
+.rm-dot.accepted { --c: var(--st-accepted); } .rm-dot.rejected { --c: var(--st-rejected); }
+.marks-legend .scope:first-of-type { margin-left: 6px; padding-left: 14px; border-left: 1px solid var(--border); }
+.rm-sample { width: 18px; height: 12px; border-radius: 5px; border: 1px solid var(--muted); background: color-mix(in srgb, var(--muted) 25%, transparent); }
+.rm-sample.below { background: transparent; border-style: dashed; }
+
+/* selected element: header, original text, technical details, extracted rules */
+.detail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.detail-head h3 { margin: 0; }
+.detail-pages { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.detail-pages .link { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); font-size: 12.5px; }
+.detail-label { margin: 12px 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.techref { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+.techref summary { cursor: pointer; }
+.techref .kv { margin: 8px 0 0; }
+.elrules { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.elrules-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.elrules h4 { margin: 0; font-size: 15px; }
+.elrules-count { padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(45, 212, 191, .14); color: var(--accent-hover); }
+.elrules-hint { margin: 4px 0 10px; font-size: 12.5px; color: var(--muted); }
+.elrules-name { display: flex; align-items: center; gap: 8px; margin: 0 0 0 auto; font-size: 12.5px; color: var(--muted); }
+.elrules-name input { width: 150px; min-width: 0; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 5px 9px; font: inherit; font-size: 13px; }
+.elrules ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+/* one extracted rule = one card; the state is a chip with icon and word, and a side bar in the state colour */
+.elrule { --c: var(--st-pending); position: relative; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 12px 16px; border: 1px solid var(--border); border-radius: 12px; background: color-mix(in srgb, var(--bg) 55%, transparent); overflow: hidden; }
+.elrule::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--c); }
+.elrule.accepted { --c: var(--st-accepted); } .elrule.rejected { --c: var(--st-rejected); }
+.elrule-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.elrule-chips { display: inline-flex; gap: 6px; }
+.rm-chip { --c: var(--st-pending); display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px 2px 7px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); }
+.rm-chip.accepted { --c: var(--st-accepted); } .rm-chip.rejected { --c: var(--st-rejected); } .rm-chip.edited { --c: var(--st-edited); }
+.elrules-title { margin: 0; font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
+.elrules-title.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.elrule-more { align-self: flex-start; background: none; border: 0; padding: 0; color: var(--accent-hover); font: inherit; font-size: 12.5px; cursor: pointer; }
+.elrule-src { margin: 0; display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--muted); }
+.elrule-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rv-act { --c: var(--st-accepted); display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); background: color-mix(in srgb, var(--c) 10%, transparent); color: var(--c); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s; }
+.rv-act.reject { --c: var(--st-rejected); }
+.rv-act:hover:not(:disabled) { background: color-mix(in srgb, var(--c) 22%, transparent); border-color: var(--c); }
+.rv-act:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+.rv-act:disabled { cursor: default; opacity: .45; }
+.rv-act[aria-busy="true"] { opacity: .7; cursor: progress; }
+.elrule-reject { display: flex; flex-direction: column; gap: 6px; }
+.elrule-reject textarea { width: 100%; box-sizing: border-box; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 6px 8px; font: inherit; font-size: 13px; resize: vertical; }
+.elrule-reject span { display: inline-flex; gap: 6px; }
+.elrule-reject .btn.reject:not(:disabled) { border-color: var(--st-rejected); color: var(--st-rejected); }
+.elrule-error { margin: 0; color: var(--st-rejected); font-size: 12.5px; }
+.elrule-open { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; text-align: left; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+.elrule-open:hover { border-color: var(--accent-hover); background: var(--hover); }
+.elrule-open > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.elrule-open strong { font-size: 13.5px; color: var(--accent-hover); }
+.elrule-open small { font-size: 12px; color: var(--muted); }
+
+/* PDF highlight: one translucent fill and one clean border per region. The review state is the side bar and the border colour,
+   not a second outline around the box (that doubled the border: the tone border plus the outline). Pending keeps the tone only. */
+.hl { box-shadow: var(--sh-status, 0 0 #0000), var(--sh-edit, 0 0 #0000), var(--sh-focus, 0 0 #0000); }
+.hl.st-accepted, .hl.st-rejected { --st: var(--st-accepted); background: color-mix(in srgb, var(--st) 14%, transparent); border: 1px solid color-mix(in srgb, var(--st) 55%, transparent); --sh-status: inset 4px 0 0 var(--st); }
+.hl.st-rejected { --st: var(--st-rejected); }
+.hl.edited { --sh-edit: 0 4px 0 -1px rgba(96, 165, 250, .85); }
+.hl.focus { --sh-focus: 0 0 0 3px rgba(255, 255, 255, .85), 0 0 0 6px rgba(4, 16, 26, .55); z-index: 2; }
+
+/* ── Refinement: element details, rule cards, highlights ─────────────────────────────────────────────────────────────── */
+.detail-head h3 { font-size: clamp(16px, 1.3vw, 19px); }
+.detail .title { margin: 2px 0 0; color: var(--muted); font-weight: 500; font-size: 13.5px; }
+.srctext, .techref { margin-top: 10px; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--bg) 60%, transparent); }
+.srctext > summary, .techref > summary { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; font-size: 13px; color: var(--muted); }
+.srctext > summary .detail-label { margin: 0; color: var(--text); font-size: 12.5px; }
+.srctext > summary small { font-size: 12px; color: var(--muted); }
+.srctext .origtext { margin: 0 12px 8px; max-height: 220px; overflow: auto; }
+.srctext-copy { margin: 0 12px 10px; padding: 2px 10px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--accent-hover); font: inherit; font-size: 12.5px; cursor: pointer; }
+.techref .kv { margin: 0; padding: 0 12px 10px; }
+.elrule { min-height: 168px; }
+.elrule-kind { color: var(--text); }
+.elrules-title.clamp { -webkit-line-clamp: 4; }
+.elrule-open { width: auto; align-self: flex-start; gap: 6px; padding: 4px 2px; border: 0; background: none; color: var(--accent-hover); font-size: 13px; font-weight: 600; }
+.elrule-open:hover { background: none; text-decoration: underline; }
+.elrule-actions { margin-top: auto; }
+
+/* PDF highlight, refined: a very light fill, one thin border, and (for a decided rule) a 2px bar just OUTSIDE the box so it never covers text */
+.hl[class*="tone-"] { background: rgba(var(--tone), .10); border: 1px solid rgba(var(--tone), .5); }
+.hl.st-accepted, .hl.st-rejected { background: color-mix(in srgb, var(--st) 7%, transparent); border: 1px solid color-mix(in srgb, var(--st) 45%, transparent); --sh-status: -2px 0 0 0 var(--st); }
+
+/* phones: the toolbar and legend scroll with the tree instead of taking its whole height */
+@media (max-width: 600px) {
+  .tree { --indent: 9px; }
+  .node { flex-wrap: wrap; row-gap: 2px; }
+  .node .label { order: 9; flex: 1 1 100%; min-width: 0; }
+  .tree-tools { position: static; padding: 10px 12px; gap: 8px; }
+  .tree-tools button { height: 38px; padding: 0 12px; }
+  .marks-legend { gap: 4px 10px; font-size: 12px; }
+  .elrules-name { margin-left: 0; }
+  .srctext > summary { flex-wrap: wrap; gap: 2px 10px; }
+}
+
+/* the same icon tiles in the Legal Structure legend and in the Rule Validation filters */
+.rm-dot.edited { --c: var(--st-edited); }
+.rm-dot.flagged { --c: var(--warn, #F59E0B); }
+.rm-dot.all, .rm-dot.reviewed { --c: var(--muted); }
+
+/* structural validity of the Rule JSON: a fact of its own, with its own colour, never merged with the decision */
+:root { --st-invalid: #C084FC; }
+.rm.invalid { --c: var(--st-invalid); }
+.rm-dot.invalid, .rm-dot.invalidkey { --c: var(--st-invalid); }
+.rm-chip.invalid { --c: var(--st-invalid); }
+.elrule-invalid { padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--st-invalid) 45%, transparent); border-radius: 8px; background: color-mix(in srgb, var(--st-invalid) 8%, transparent); font-size: 12.5px; }
+.elrule-invalid ul { margin: 0 0 4px; padding-left: 16px; overflow-wrap: anywhere; }
+.elrule-invalid p { margin: 0; color: var(--muted); }
+.node:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: -2px; }

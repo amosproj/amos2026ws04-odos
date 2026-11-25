@@ -176,7 +176,11 @@ export function pagesLabel(pages: number[]): string {
 export const generatedAt = (data: unknown): string | null => str(record(record(data)?._generation)?.generatedAt) ?? null;
 
 /** "edited" is an attribute, not a state: an edited rule keeps its decision (accepted, rejected or pending). */
-export type ReviewFilter = "all" | "pending" | "accepted" | "rejected" | "flagged" | "reviewed" | "edited";
+export type ReviewFilter = "all" | "pending" | "accepted" | "rejected" | "flagged" | "invalid" | "reviewed" | "edited";
+
+/** Why the record in force is not valid Rule JSON 2.0 (from the backend's validation); null when it is valid or nothing is known. A fact of its
+ *  own: not the decision, not an automatic check, not machine-checkability. */
+export const invalidIssues = (r: RuleItem): string[] | null => (r.entry?.validity && !r.entry.validity.valid ? r.entry.validity.issues : null);
 
 /** Pending / reviewed as stored: the reviewer's decision when the backend keeps decisions, else the status in the file. */
 export const isPending = (r: RuleItem) => (r.human ? r.human === "pending" : r.reviewStatus === "draft");
@@ -187,7 +191,7 @@ export const reviewLabel = (status: string) => REVIEW_LABEL[status] ?? status;
 
 export function matchesFilter(r: RuleItem, f: ReviewFilter): boolean {
   return f === "all" || (f === "pending" && isPending(r)) || (f === "accepted" && r.human === "accepted") || (f === "rejected" && r.human === "rejected")
-    || (f === "flagged" && r.checkFlags.length > 0) || (f === "reviewed" && isReviewed(r)) || (f === "edited" && r.edited);
+    || (f === "flagged" && r.checkFlags.length > 0) || (f === "invalid" && invalidIssues(r) !== null) || (f === "reviewed" && isReviewed(r)) || (f === "edited" && r.edited);
 }
 
 // ── rule categories: the record's own type, and what its structure contains ──────────────────────────────────────────
@@ -252,6 +256,7 @@ export interface Overview {
   rejected: number;
   edited: number;
   flagged: number;
+  invalid: number;
   autoRejected: number;
 }
 
@@ -266,6 +271,7 @@ export function overviewOf(results: RuleResults): Overview {
     rejected: items.filter((r) => r.human === "rejected").length,
     edited: items.filter((r) => r.edited).length,
     flagged: items.filter((r) => r.checkFlags.length > 0).length,
+    invalid: items.filter((r) => invalidIssues(r) !== null).length,
     autoRejected: results.autoRejected.length,
   };
 }

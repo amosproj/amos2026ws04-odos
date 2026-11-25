@@ -109,3 +109,30 @@ export function SplitDivider({ containerRef, value, onCommit, minPx = MIN_PANEL_
     />
   );
 }
+
+export const DEFAULT_ROW_SPLIT = 0.45; // the tree's share of the legal-structure panel's height
+const ROW_MIN = 0.2, ROW_MAX = 0.8;
+
+/** A draggable, keyboard-operable divider between two stacked panels (WAI-ARIA window splitter, horizontal separator). `value` is the
+ *  upper panel's share of the container's height; the choice stays while the content of the panels changes. */
+export function RowDivider({ containerRef, value, onChange }: { containerRef: RefObject<HTMLElement | null>; value: number; onChange: (fraction: number) => void }) {
+  const [active, setActive] = useState(false);
+  const clamp = (f: number) => Math.min(ROW_MAX, Math.max(ROW_MIN, f));
+  const move = (ev: PointerEvent<HTMLDivElement>) => {
+    const box = containerRef.current?.getBoundingClientRect();
+    if (!active || !box || box.height <= 0) return;
+    onChange(clamp((ev.clientY - box.top) / box.height));
+  };
+  const key = (ev: KeyboardEvent<HTMLDivElement>) => {
+    const step = ev.key === "ArrowUp" ? -0.05 : ev.key === "ArrowDown" ? 0.05 : ev.key === "Home" ? ROW_MIN - value : ev.key === "End" ? ROW_MAX - value : 0;
+    if (step === 0) return;
+    ev.preventDefault();
+    onChange(clamp(value + step));
+  };
+  return (
+    <div className={`rowsplit${active ? " active" : ""}`} role="separator" aria-orientation="horizontal" aria-label="Resize the structure tree and the element details"
+         aria-valuemin={20} aria-valuemax={80} aria-valuenow={Math.round(value * 100)} tabIndex={0}
+         onPointerDown={(ev) => { ev.currentTarget.setPointerCapture?.(ev.pointerId); setActive(true); }}
+         onPointerMove={move} onPointerUp={() => setActive(false)} onPointerCancel={() => setActive(false)} onKeyDown={key} />
+  );
+}

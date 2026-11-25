@@ -223,7 +223,7 @@ def test_end_to_end_a_repairable_record_is_accepted_and_an_unrepairable_one_kept
     assert [r["id"] for r in result.rules] == ["mbo-repairable"]
     assert any("schema repair" in f and "Neigung unter 70 Grad" in f for f in flags_of(result.rules[0]))
     gen = result.to_json_dict()["_generation"]
-    assert gen["promptVersion"] == PROMPT_VERSION == "4"
+    assert gen["promptVersion"] == PROMPT_VERSION == "5"
     assert gen["schemaRepairs"] == [{"id": "mbo-repairable", "repairs": [
         "applicability/conditions: removed 'description' (not allowed here): 'Neigung unter 70 Grad'"]}]
     [rejected] = gen["rulesRejected"]
@@ -398,3 +398,14 @@ def test_the_german_glossary_lists_english_terms_and_temporal_wording():
     text, _ = instructions_for({"language": "de", "documentType": "de_legislation"})
     assert "Gebäudeklasse -> building_class" in LANGUAGE_GLOSSARIES["de"] and "Hersteller -> manufacturer" in text
     assert "innerhalb von" in text and "no_later_than" in LANGUAGE_GLOSSARIES["en"]
+
+
+def test_the_instructions_say_that_informational_is_a_category_and_not_a_rule_type():
+    # `informational` once came back as a `classification.type` (a normativeCategory value) and made a record invalid
+    from odos.llm.rule_extraction import rule_schema
+    types = rule_schema()["$defs"]["Classification"]["properties"]["type"]["enum"] if "Classification" in rule_schema().get("$defs", {}) else None
+    text = GENERAL_INSTRUCTIONS
+    assert "15. TYPES AND INFORMATIONAL STATEMENTS" in text and "never a `type`" in text and "write no record for it" in text
+    for name in (types or ["definition", "obligation", "prohibition", "permission", "conditional_requirement", "procedural_requirement"]):
+        assert f"`{name}`" in text  # every schema type is named, and no other one
+    assert "informational" not in (types or [])

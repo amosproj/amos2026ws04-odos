@@ -53,6 +53,24 @@ export const TYPE_LABELS: Record<string, string> = {
   signature: "Signature",
 };
 
+const CONTAINER_TYPES = new Set(["document", "teil", "kapitel", "abschnitt", "unterabschnitt", "chapter", "section", "front_matter", "preamble", "toc"]);
+
+/** The legal reference of an element as a reader cites it: the element and the provisions that contain it, e.g. "Artikel 7 · Paragraph (2)"
+ *  or "§ 6 · Absatz (3) · Nummer 1.". Only the document's own markers and type names are used; chapters and parts are left out. */
+export function legalReference(e: DocElement, byId: Map<string, DocElement>): string {
+  const chain: DocElement[] = [];
+  for (let cur: DocElement | undefined = e, n = 0; cur && n < 12; cur = cur.parent_id ? byId.get(cur.parent_id) : undefined, n++) {
+    if (!CONTAINER_TYPES.has(cur.type)) chain.unshift(cur);
+  }
+  const part = (x: DocElement) => {
+    const label = TYPE_LABELS[x.type] ?? x.type;
+    const marker = x.marker?.trim();
+    if (!marker) return label;
+    return marker.toLowerCase().startsWith(label.toLowerCase()) || x.type === "article" || x.type === "paragraph" ? marker : `${label} ${marker}`;
+  };
+  return chain.length ? chain.map(part).join(" · ") : (TYPE_LABELS[e.type] ?? e.type);
+}
+
 /** A split element's box is the box of the whole Docling item, not of its own text — unless the backend proved
  *  exact per-line rectangles from the PDF glyphs (`highlight_boxes`). */
 export function hasPartialBox(e: DocElement): boolean {

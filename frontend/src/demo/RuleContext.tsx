@@ -107,7 +107,7 @@ function HighlightLegend({ plan, mark, exceptionIds, focused }: { plan: SourceHi
     <div className="rv-pdf-note rv-legend">
       <ul aria-label="Highlight colours">
         {tones.map((t) => <li key={t}><span className={`rv-tonedot tone-${t}`} aria-hidden="true" />{TONE_LABEL[t]}</li>)}
-        {mark && mark.state !== "pending" && <li className={`rv-legend-status ${mark.state}`}><span className="rv-statusdot" aria-hidden="true" />{STATE_LABEL[mark.state]} (outline)</li>}
+        {mark && mark.state !== "pending" && <li className={`rv-legend-status ${mark.state}`}><span className="rv-statusdot" aria-hidden="true" />{STATE_LABEL[mark.state]} (side bar)</li>}
         {mark?.edited && <li className="rv-legend-edited"><span className="rv-editline" aria-hidden="true" />Edited (underline)</li>}
       </ul>
       {related > 0 && <p className="rv-legend-precision">{direct} direct source{direct === 1 ? "" : "s"} (solid) · {related} related passage{related === 1 ? "" : "s"} the rule cites as context (dashed, fainter).</p>}

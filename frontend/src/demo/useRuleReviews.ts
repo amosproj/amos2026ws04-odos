@@ -59,7 +59,10 @@ export function useRuleReviews(jobId: string | undefined, shownId: string | null
       const states = Object.values(rules);
       const counts = { pending: states.filter((e) => e.state === "pending").length, accepted: states.filter((e) => e.state === "accepted").length,
                        rejected: states.filter((e) => e.state === "rejected").length, edited: states.filter((e) => e.edited).length };
-      return { ...cur, api: { kind: "ready", data: { ...cur.api.data, rules, counts } } };
+      const accepted = Object.entries(rules).filter(([, e]) => e.state === "accepted");
+      const blockedBy = accepted.filter(([, e]) => e.validity && !e.validity.valid).map(([id]) => id);
+      const exportState = { accepted: accepted.length, invalid: states.filter((e) => e.validity && !e.validity.valid).length, blockedBy, ready: accepted.length > 0 && blockedBy.length === 0 };
+      return { ...cur, api: { kind: "ready", data: { ...cur.api.data, rules, counts, ...(cur.api.data.export ? { export: exportState } : {}) } } };
     });
   }, []);
 

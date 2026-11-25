@@ -2,13 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../components/Icon";
 import { HttpError, getRuleHistory, postRuleReview, type RuleHistoryEvent, type RuleReviewEntry, type ReviewAction } from "./live";
 import { applyFields, editableFields, parseField, pathKey, type EditField, type Path } from "./ruleEdit";
-import type { RuleItem } from "./ruleResults";
+import { invalidIssues, type RuleItem } from "./ruleResults";
 import type { ReviewApi } from "./useRuleReviews";
 
 export const REVIEW_UNAVAILABLE = "Review decisions cannot be saved right now.";
 export const REVIEW_STALE = "The rules on this page are not the current extraction of this job: another extraction has replaced them since they were loaded. Review actions are disabled until the current results are loaded.";
 export const REVIEW_UNIDENTIFIED = "These rules carry no extraction identifier (_generation.generatedAt), so a decision cannot be tied to them. Review actions are disabled; run a new extraction to review rules.";
 export const REVIEW_NO_BACKEND = "Review decisions need the ODOS backend, which did not process this document.";
+export const NOT_ACCEPTABLE = "This rule is not valid Rule JSON 2.0, so it cannot be accepted. Edit it so that it is valid, or reject it.";
 export const NAME_MISSING = "Enter your name next to “Reviewing as” first.";
 
 const ACTION_LABEL: Record<ReviewAction, string> = { accept: "Accepted", reject: "Rejected", edit: "Edited", reset: "Edit reset" };
@@ -49,6 +50,8 @@ export function useReviewActions({ jobId, rule, api, reviewer, onEntry, onReload
   const sending = useRef(false); // set synchronously: a second click must not send a second event
   const name = reviewer.trim();
   const fields = useMemo(() => editableFields(rule.effective), [rule.effective]);
+  /** Why the rule is not valid Rule JSON 2.0 (null when it is): such a rule can be edited into shape or rejected, never newly accepted. */
+  const issues = invalidIssues(rule);
 
   // another rule, or other rules (a new extraction, a changed record): a clean form, so a draft written for one record is never sent for another
   const ruleHash = entry?.ruleSha256 ?? null;
@@ -58,6 +61,7 @@ export function useReviewActions({ jobId, rule, api, reviewer, onEntry, onReload
   const send = async (action: ReviewAction, extra: { reason?: string; editedRule?: Record<string, unknown> } = {}) => {
     if (!entry || !extractionId || sending.current) return;
     if (!name) { setError(NAME_MISSING); return; }
+    if (action === "accept" && issues) { setError(`${NOT_ACCEPTABLE} ${issues[0] ?? ""}`.trim()); return; }
     sending.current = true;
     setBusy(true);
     setError(null);
@@ -78,7 +82,7 @@ export function useReviewActions({ jobId, rule, api, reviewer, onEntry, onReload
   };
 
   /** Opens the editor: the simple form when the record has values it can change, else the JSON editor. */
-  const openEdit = (mode: EditMode = fields.length ? "simple" : "json") => {
+  const openEdit = (mode: EditMode = fields.length && !issues ? "simple" : "json") => { // a rule that is not valid usually needs the structure changed, not a value
     setDraft(JSON.stringify(rule.effective, null, 2));
     setValues(Object.fromEntries(fields.map((f) => [pathKey(f.path), f.kind === "boolean" ? (f.value as boolean) : String(f.value)])));
     setEditMode(mode);
@@ -108,7 +112,7 @@ export function useReviewActions({ jobId, rule, api, reviewer, onEntry, onReload
 
   const setValue = (f: EditField, v: string | boolean) => setValues((cur) => ({ ...cur, [pathKey(f.path)]: v }));
 
-  return { api, rule, jobId, entry, extractionId, form, setForm, rejectReason, setRejectReason, editReason, setEditReason, draft, setDraft,
+  return { api, rule, jobId, entry, issues, extractionId, form, setForm, rejectReason, setRejectReason, editReason, setEditReason, draft, setDraft,
            editMode, setEditMode, fields, values, setValue, busy, error, setError, send, openEdit, saveEdit };
 }
 

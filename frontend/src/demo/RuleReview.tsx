@@ -7,7 +7,7 @@ import { createContext, useContext, useEffect, useId, useMemo, useRef, useState,
 import { createPortal } from "react-dom";
 import { Icon, type IconName } from "../components/Icon";
 import type { DocElement } from "../types";
-import { NAME_MISSING, REVIEW_NO_BACKEND, REVIEW_STALE, REVIEW_UNAVAILABLE, REVIEW_UNIDENTIFIED, reviewStateLine, type ReviewState } from "./ReviewControls";
+import { NAME_MISSING, NOT_ACCEPTABLE, REVIEW_NO_BACKEND, REVIEW_STALE, REVIEW_UNAVAILABLE, REVIEW_UNIDENTIFIED, reviewStateLine, type ReviewState } from "./ReviewControls";
 import { RuleStatus } from "./RuleQueue";
 import type { SourceHighlight } from "./sourceMap";
 import { ComponentNavContext } from "./componentSource";
@@ -31,7 +31,8 @@ export function reviewProgress(ov: Overview, api: ReviewApi) {
 
 // ── page header and footer ─────────────────────────────────────────────────────────────────────────────────────────────
 
-export function ValidationHeader({ filename, numPages, total, decided }: { filename: string; numPages: number; total: number; decided: number }) {
+export function ValidationHeader({ filename, numPages, total, decided, tally }: { filename: string; numPages: number; total: number; decided: number; tally?: { accepted: number; pending: number; rejected: number } | null }) {
+  const pct = (n: number) => `${total ? (n / total) * 100 : 0}%`;
   return (
     <header className="rv-pagehead">
       <div className="rv-pagehead-title">
@@ -50,6 +51,14 @@ export function ValidationHeader({ filename, numPages, total, decided }: { filen
         <span className={`rv-pill${decided === total && total > 0 ? " done" : ""}`} title="Rules with a human decision (accepted or rejected)">
           <span className="rv-pill-dot" aria-hidden="true" />{decided} / {total} reviewed
         </span>
+        {tally && (
+          <div className="rv-tally" aria-label="Review progress by decision">
+            <span className="rv-seg" aria-hidden="true"><span className="accepted" style={{ width: pct(tally.accepted) }} /><span className="rejected" style={{ width: pct(tally.rejected) }} /></span>
+            <span className="rm accepted" title={`${tally.accepted} accepted`} aria-label={`${tally.accepted} accepted`}><Icon name="check" size={12} />{tally.accepted}</span>
+            <span className="rm pending" title={`${tally.pending} pending`} aria-label={`${tally.pending} pending`}><Icon name="clock" size={12} />{tally.pending}</span>
+            <span className="rm rejected" title={`${tally.rejected} rejected`} aria-label={`${tally.rejected} rejected`}><Icon name="x" size={12} />{tally.rejected}</span>
+          </div>
+        )}
       </div>
     </header>
   );
@@ -88,7 +97,7 @@ const FACET_UI: Record<(typeof FACETS)[number], { label: string; icon: IconName;
   thresholds: { label: "Limits / thresholds", icon: "chart", title: "Rules with a numeric requirement (parameter, operator, value)" },
 };
 export const STATUS_LABEL: Record<ReviewFilter, string> = {
-  all: "All statuses", pending: "Pending", accepted: "Accepted", rejected: "Rejected", edited: "Edited", flagged: "Potential issues", reviewed: "Reviewed (in file)",
+  all: "All statuses", pending: "Pending", accepted: "Accepted", rejected: "Rejected", edited: "Edited", flagged: "Potential issues", invalid: "Invalid Rule JSON", reviewed: "Reviewed (in file)",
 };
 
 interface SidebarProps {
@@ -103,15 +112,20 @@ interface SidebarProps {
   /** Rules of the chosen category with this status. */
   countOf: (f: ReviewFilter) => number;
   onOverview: () => void;
+  search: string;
+  onSearch: (q: string) => void;
+  /** Rules left in the sequence by the current filters and search. */
+  shown: number;
   exporting: boolean;
   onDownload: () => void;
   ruleDownload?: { href: string; name: string };
   menu: ReactNode;
 }
 
-export function ReviewSidebar({ ov, api, items, category, onCategory, filters, filter, onFilter, countOf, onOverview, exporting, onDownload, ruleDownload, menu }: SidebarProps) {
+export function ReviewSidebar({ ov, api, items, category, onCategory, filters, filter, onFilter, countOf, onOverview, search, onSearch, shown, exporting, onDownload, ruleDownload, menu }: SidebarProps) {
   const ready = api.kind === "ready";
   const accepted = ready ? api.data.counts.accepted : 0;
+  const exportInfo = ready ? api.data.export : undefined;
   const types = useMemo(() => typeCounts(items), [items]);
   const facets = useMemo(() => {
     const all = items.map((r) => ruleFacets(r.effective));
@@ -121,6 +135,15 @@ export function ReviewSidebar({ ov, api, items, category, onCategory, filters, f
     <li key={key}>
       <button type="button" className="rv-nav-row" aria-pressed={category === key} onClick={() => onCategory(key)} title={title}>
         <Icon name={icon} size={18} /><span className="rv-nav-label">{label}</span><span className="rv-count">{count}</span>
+      </button>
+    </li>
+  );
+  const STATUS_ICON: Record<ReviewFilter, IconName> = { all: "layers", pending: "clock", accepted: "check", rejected: "x", edited: "edit", flagged: "alert", invalid: "braces", reviewed: "check-square" };
+  const statusRow = (f: ReviewFilter) => (
+    <li key={f}>
+      <button type="button" className={`rv-nav-row rv-status-row ${f}`} aria-pressed={filter === f} onClick={() => onFilter(f)}>
+        <span className={`rm-dot ${f}`} aria-hidden="true"><Icon name={STATUS_ICON[f]} size={12} /></span>
+        <span className="rv-nav-label">{STATUS_LABEL[f]}</span><span className="rv-count">{countOf(f)}</span>
       </button>
     </li>
   );
@@ -134,33 +157,49 @@ export function ReviewSidebar({ ov, api, items, category, onCategory, filters, f
         </button>
       </div>
 
-      <nav aria-label="Rule types">
-        <ul className="rv-nav">
-          {cat("all", "All rules", "layers", ov.total)}
-          {types.map(({ type, count }) => cat(`type:${type}`, TYPE_PLURAL[type] ?? KIND_LABEL[type] ?? type.replace(/_/g, " "), TYPE_ICON[type] ?? "file", count, `classification.type: ${type}`))}
-        </ul>
-        {facets.length > 0 && <>
-          <h3 className="rv-side-h">Contains</h3>
-          <ul className="rv-nav">
-            {facets.map(({ facet, count }) => cat(`has:${facet}`, FACET_UI[facet].label, FACET_UI[facet].icon, count, FACET_UI[facet].title))}
-          </ul>
-        </>}
-      </nav>
+      <label className="rex-search rv-find">
+        <Icon name="search" size={14} />
+        <input type="search" placeholder="Find a rule…" value={search} onChange={(e) => onSearch(e.target.value)} aria-label="Find a rule by title or citation" />
+      </label>
+      {search.trim() && <p className="rex-side-note" role="status">{shown} of {ov.total} rules match</p>}
 
       <div className="rv-status" role="group" aria-labelledby="rv-status-h">
-        <h3 className="rv-side-h" id="rv-status-h"><Icon name="filter" size={14} />Review status</h3>
+        <h3 className="rv-side-h" id="rv-status-h">Review status</h3>
         <ul className="rv-nav">
-          {filters.map((f) => (
-            <li key={f}>
-              <button type="button" className={`rv-nav-row rv-status-row ${f}`} aria-pressed={filter === f} onClick={() => onFilter(f)}>
-                <span className="rv-box" aria-hidden="true">{filter === f && <Icon name="check" size={12} />}</span>
-                <span className="rv-nav-label">{STATUS_LABEL[f]}</span><span className="rv-count">{countOf(f)}</span>
-              </button>
-            </li>
-          ))}
+          {filters.filter((f) => f !== "flagged" && f !== "invalid").map((f) => statusRow(f))}
         </ul>
+        {filters.includes("flagged") && (
+          <>
+            <h3 className="rv-side-h" id="rv-checks-h">Automatic checks</h3>
+            <ul className="rv-nav" aria-labelledby="rv-checks-h">{statusRow("flagged")}</ul>
+          </>
+        )}
+        {filters.includes("invalid") && (
+          <>
+            <h3 className="rv-side-h" id="rv-valid-h">Rule JSON validity</h3>
+            <ul className="rv-nav" aria-labelledby="rv-valid-h">{statusRow("invalid")}</ul>
+          </>
+        )}
         {ov.flagged > 0 && !filters.includes("flagged") && <p className="rex-side-note">{ov.flagged} with potential issues</p>}
       </div>
+
+      <nav aria-label="Rule types">
+        <details className="rv-group" open>
+          <summary className="rv-side-h">Rule types</summary>
+          <ul className="rv-nav">
+            {cat("all", "All rules", "layers", ov.total)}
+            {types.map(({ type, count }) => cat(`type:${type}`, TYPE_PLURAL[type] ?? KIND_LABEL[type] ?? type.replace(/_/g, " "), TYPE_ICON[type] ?? "file", count, `classification.type: ${type}`))}
+          </ul>
+        </details>
+        {facets.length > 0 && (
+          <details className="rv-group">
+            <summary className="rv-side-h">Contains</summary>
+            <ul className="rv-nav">
+              {facets.map(({ facet, count }) => cat(`has:${facet}`, FACET_UI[facet].label, FACET_UI[facet].icon, count, FACET_UI[facet].title))}
+            </ul>
+          </details>
+        )}
+      </nav>
 
       <div className="rex-side-foot">
         {ready && (
@@ -168,6 +207,11 @@ export function ReviewSidebar({ ov, api, items, category, onCategory, filters, f
                   title={accepted > 0 ? "The accepted rules as Rule JSON 2.0 (status approved); rejected and open rules are not included" : "No rule has been accepted yet"}>
             <Icon name="download" size={16} />Download approved rules{accepted > 0 ? ` (${accepted})` : ""}
           </button>
+        )}
+        {ready && exportInfo && exportInfo.accepted > 0 && (
+          exportInfo.blockedBy.length > 0
+            ? <p className="rv-exportnote blocked" role="status"><Icon name="braces" size={14} /><span>Export blocked: {exportInfo.blockedBy.length} accepted {exportInfo.blockedBy.length === 1 ? "rule is" : "rules are"} not valid Rule JSON 2.0. <button type="button" className="link" onClick={() => onFilter("invalid")}>Show {exportInfo.blockedBy.length === 1 ? "it" : "them"}</button></span></p>
+            : <p className="rv-exportnote ok" role="status"><Icon name="check" size={14} /><span>{exportInfo.accepted} accepted {exportInfo.accepted === 1 ? "rule is" : "rules are"} ready to export</span></p>
         )}
         {ruleDownload && <a className="btn rex-side-btn" href={ruleDownload.href} download={ruleDownload.name} title="The extracted rules.json as stored, without review decisions"><Icon name="download" size={16} />Download Rule JSON</a>}
         {menu}
@@ -196,9 +240,12 @@ interface CardProps {
   review: ReviewState;
   reviewer: string;
   onReviewer: (name: string) => void;
+  /** Go on to the next pending rule after a decision (the same option as in the rule list). */
+  advance?: boolean;
+  onAdvance?: (on: boolean) => void;
 }
 
-export function ReviewMain({ rule, position, count, scope, onPrevious, onNext, onShowInPdf, onGoToSource, highlights, review, reviewer, onReviewer }: CardProps) {
+export function ReviewMain({ rule, position, count, scope, onPrevious, onNext, onShowInPdf, onGoToSource, highlights, review, reviewer, onReviewer, advance, onAdvance }: CardProps) {
   const reading = useMemo(() => readRule(rule.effective), [rule.effective]);
   return (
     <section className="rex-main rv-center" aria-label="Review rule">
@@ -210,21 +257,37 @@ export function ReviewMain({ rule, position, count, scope, onPrevious, onNext, o
         </nav>
         <div className="rv-chips">
           <span className={`rex-kind${rule.type === "definition" ? " def" : ""}`} title={rule.type ? `classification.type: ${rule.type}` : undefined}>{reading.kind}</span>
-          {rule.citation && <span className="rex-cite">{rule.citation}</span>}
           <SourceButtons highlights={highlights} onShowInPdf={onShowInPdf} onGoToSource={onGoToSource} />
         </div>
       </header>
       <div className="rv-title-row">
-        <h2 className="rv-title"><code className="rv-id">{rule.id}</code></h2>
+        <h2 className="rv-title">{rule.citation ? <span className="rex-cite">{rule.citation}</span> : <span className="rv-title-fallback">{rule.title}</span>}</h2>
         <RuleStatus rule={rule} />
       </div>
+      <p className="rv-meta"><span>Rule ID</span><code className="rv-id">{rule.id}</code></p>
 
       <article className="rex-card" aria-label={rule.title}>
         <RuleContent rule={rule} reading={reading} />
         <CheckStatus rule={rule} />
-        <Decision review={review} reviewer={reviewer} onReviewer={onReviewer} />
+        {review.issues && <InvalidNotice issues={review.issues} />}
+        <Decision review={review} reviewer={reviewer} onReviewer={onReviewer} advance={advance} onAdvance={onAdvance} />
       </article>
     </section>
+  );
+}
+
+/** The record is not valid Rule JSON 2.0: what is wrong, and the two ways out. Structural validity is its own fact, apart from the decision and
+ *  from the automatic checks (which can say "no issues" for a record the schema refuses). */
+function InvalidNotice({ issues }: { issues: string[] }) {
+  return (
+    <div className="rv-invalid" role="note" aria-label="Rule JSON validation">
+      <Icon name="braces" size={18} />
+      <div>
+        <strong>Not valid Rule JSON 2.0: this rule cannot be accepted yet.</strong>
+        <ul>{issues.map((i) => <li key={i}><code>{i}</code></li>)}</ul>
+        <p>Correct it with <em>Edit</em> (advanced editor), or reject it if the passage is not an operative rule. The decision and the automatic checks are separate from this.</p>
+      </div>
+    </div>
   );
 }
 
@@ -514,7 +577,7 @@ function RuleContent({ rule, reading }: { rule: RuleItem; reading: ReadableRule 
 
 // ── decision ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-function Decision({ review, reviewer, onReviewer }: { review: ReviewState; reviewer: string; onReviewer: (name: string) => void }) {
+function Decision({ review, reviewer, onReviewer, advance, onAdvance }: { review: ReviewState; reviewer: string; onReviewer: (name: string) => void; advance?: boolean; onAdvance?: (on: boolean) => void }) {
   const { api, entry, busy, form, setForm, send, openEdit, setError, error, rule, jobId } = review;
   const ready = api.kind === "ready" && !!entry;
   const off = !ready || busy;
@@ -528,7 +591,7 @@ function Decision({ review, reviewer, onReviewer }: { review: ReviewState; revie
       {entry && entry.state !== "pending" && entry.reason && <p className="rex-muted rex-decided-reason">Reason: {entry.reason}</p>}
       <h2 className="sr-only">Is this rule correct?</h2>
       <div className="rex-choices" role="group" aria-label="Review actions">
-        <button type="button" className="rex-choice yes" disabled={off || entry?.state === "accepted"} title={offTitle ?? "The rule is correct"} onClick={() => void send("accept")}>
+        <button type="button" className="rex-choice yes" disabled={off || entry?.state === "accepted" || !!review.issues} title={review.issues ? NOT_ACCEPTABLE : offTitle ?? "The rule is correct"} onClick={() => void send("accept")}>
           <Icon name="check" size={18} /><span className="rex-choice-main">Accept</span>
         </button>
         <button type="button" className="rex-choice" disabled={off} title={offTitle ?? "Change the rule"} aria-expanded={form === "edit"} onClick={() => (form === "edit" ? setForm(null) : openEdit())}>
@@ -550,6 +613,9 @@ function Decision({ review, reviewer, onReviewer }: { review: ReviewState; revie
         </div>
       ) : (
         <ReviewUnavailable api={api} rule={rule} hasJob={!!jobId} />
+      )}
+      {ready && onAdvance && (
+        <label className="rex-check rv-auto"><input type="checkbox" checked={!!advance} onChange={(e) => onAdvance(e.target.checked)} />Open the next pending rule after a decision</label>
       )}
       </div>
 

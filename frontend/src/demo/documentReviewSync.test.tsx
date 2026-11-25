@@ -90,7 +90,7 @@ describe("review decisions in Document Review", () => {
     install({ "regel-a": { state: "accepted", edited: true } });
     await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS2} onReset={() => {}} />);
     expect(marksOf(ABS1).map((m) => m[0])).toEqual(["accepted", "pending", "edited"]);
-    expect(chips()).toEqual([["Regel C", ["Needs review"]]]);
+    expect(chips()).toEqual([["Regel C", ["Pending"]]]);
   });
 
   it("colours the PDF highlight by meaning and outlines it by state when one rule cites the element", async () => {
@@ -116,10 +116,38 @@ describe("review decisions in Document Review", () => {
     install({ "regel-a": { state: "accepted" }, "regel-b": { state: "rejected" } });
     await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS1} onReset={() => {}} />);
     expect(qa(".elrules li").map((li) => li.dataset.state)).toEqual(["accepted", "rejected"]);
-    expect(qa(".marks-legend li").map((li) => li.textContent)).toEqual(["Accepted", "Needs review", "Rejected"]);
+    expect(qa(".marks-legend li.st").map((li) => li.textContent)).toEqual(["Accepted", "Pending", "Rejected"]);
+    expect(qa(".marks-legend li.scope").map((li) => li.textContent)).toEqual(["This element", "Sub-elements"]);
     expect(qa(".marks-legend .rm-dot").map((d) => d.className)).toEqual(["rm-dot accepted", "rm-dot pending", "rm-dot rejected"]);
     await click(q(`[id="node-${ABS2}"]`));
-    expect(qa(".elrules li").map((li) => [li.dataset.state, li.querySelector(".rm-chip")?.textContent])).toEqual([["pending", "Needs review"]]); // default state
+    expect(qa(".elrules li").map((li) => [li.dataset.state, li.querySelector(".rm-chip")?.textContent])).toEqual([["pending", "Pending"]]); // default state
+  });
+
+  it("labels the tree chips for assistive technology, with an icon, and keeps own and sub-element counts apart", async () => {
+    install({ "regel-a": { state: "accepted" }, "regel-b": { state: "rejected" } });
+    await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS1} onReset={() => {}} />);
+    const own = qa(`[id="node-${ABS1}"] .rm`);
+    expect(own.map((c) => c.getAttribute("aria-label"))).toEqual(["1 rule accepted", "1 rule rejected"]);
+    expect(own.every((c) => c.querySelector("svg") && !c.classList.contains("below"))).toBe(true);
+    const parent = qa('[id="node-doc/par-1"] .rm');
+    expect(parent.length).toBeGreaterThan(0);
+    expect(parent.every((c) => c.classList.contains("below") && /in sub-elements$/.test(c.getAttribute("aria-label")!))).toBe(true);
+  });
+
+  it("presents the selected element as original source text with technical details apart, and the rules as extracted rules", async () => {
+    install({ "regel-c": { state: "pending" } });
+    await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS2} onReset={() => {}} onOpenRule={() => {}} />);
+    expect(q(".detail-label")?.textContent).toBe("Original source text");
+    expect(q(".detail details.srctext")?.hasAttribute("open")).toBe(false); // collapsed: the text is already highlighted in the PDF
+    expect(q(".detail details.srctext")?.textContent).toContain("Highlighted in the PDF");
+    expect(q(".detail details.srctext .origtext")?.textContent).toBeTruthy(); // never removed, only folded
+    expect(q(".detail h3")?.textContent).toMatch(/\(\d+\)|Absatz|Paragraph/);
+    expect(q(".detail details.techref")?.hasAttribute("open")).toBe(false);
+    expect(q(".detail details.techref")?.textContent).toContain(ABS2);
+    expect(q(".elrules h4")?.textContent).toBe("Extracted rules");
+    expect(q(".elrules-hint")?.textContent).toContain("AI-extracted");
+    expect(q(".elrule-no")?.textContent).toMatch(/^Rule 01/);
+    expect(q(".elrule-open")?.textContent).toContain("View full rule details");
   });
 
   it("shows no legend without review storage", async () => {
@@ -140,6 +168,118 @@ describe("review decisions in Document Review", () => {
     await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS1} onReset={() => {}} onOpenRule={onOpenRule} />);
     await click(q('button[aria-label="Open rule regel-b in Rule Validation"]'));
     expect(onOpenRule).toHaveBeenCalledWith("regel-b");
+  });
+});
+
+// Accept / Reject directly on the rules of the selected element (Legal structure panel), through the same review state as Rule Validation.
+describe("rules that are not valid Rule JSON in the legal structure", () => {
+  const BAD = { valid: false, issues: ["classification/type: 'informational' is not one of ['definition', 'obligation']"] };
+  const rowBtn = (verb: string) => q<HTMLButtonElement>(`button[aria-label^="${verb} rule regel-c"]`)!;
+  it("flags the rule on its card, in the tree and in the legend, and does not offer Accept", async () => {
+    install({ "regel-c": { validity: BAD } });
+    window.localStorage.setItem("odos.reviewer", "Dana");
+    await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS2} onReset={() => {}} />);
+    expect(q(".elrule .rm-chip.invalid")?.textContent).toBe("Invalid Rule JSON");
+    expect(q(".elrule-invalid")?.textContent).toContain("classification/type");
+    expect(rowBtn("Accept").disabled).toBe(true);
+    expect(rowBtn("Accept").title).toContain("not valid Rule JSON 2.0");
+    expect(rowBtn("Reject").disabled).toBe(false);
+    await click(rowBtn("Accept"));
+    expect(calls.filter((c) => c.startsWith("POST"))).toHaveLength(0);
+    expect(qa(`[id="node-${ABS2}"] .rm.invalid`).map((c) => c.getAttribute("aria-label"))).toEqual(["1 not valid Rule JSON"]);
+    expect(q(".marks-legend .invalidkey")?.textContent).toBe("Invalid Rule JSON");
+  });
+  it("shows an old acceptance of an invalid rule as accepted and invalid, without changing the decision", async () => {
+    install({ "regel-c": { state: "accepted", validity: BAD } });
+    await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS2} onReset={() => {}} />);
+    expect(q(".elrule")?.dataset.state).toBe("accepted");
+    expect(qa(".elrule .rm-chip").map((c) => c.textContent)).toEqual(["Accepted", "Invalid Rule JSON"]);
+  });
+  it("shows no validity marks when every rule is valid", async () => {
+    install();
+    await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS2} onReset={() => {}} />);
+    expect(qa(".rm.invalid, .rm-chip.invalid, .invalidkey, .elrule-invalid")).toHaveLength(0);
+  });
+});
+
+describe("deciding in the legal structure panel", () => {
+  const setName = (name = "Dana") => window.localStorage.setItem("odos.reviewer", name);
+  const rowBtn = (ruleId: string, verb: "Accept" | "Reject") => q<HTMLButtonElement>(`button[aria-label="${verb} rule ${ruleId}"]`)!;
+  const states = () => qa(".elrules li").map((li) => li.dataset.state);
+  const posts = () => calls.filter((c) => c.startsWith("POST"));
+  const reject = async (id: string, reason: string, opened = false) => {
+    if (!opened) await click(rowBtn(id, "Reject"));
+    await act(async () => { const t = q<HTMLTextAreaElement>(".elrule-reject textarea")!; Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(t, reason); t.dispatchEvent(new Event("input", { bubbles: true })); });
+    await click([...document.querySelectorAll<HTMLButtonElement>(".elrule-reject button")].find((b) => b.textContent === "Reject rule"));
+  };
+  const show = (id = ABS2) => mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={id} onReset={() => {}} />);
+
+  it("offers both buttons on every rule, pending by default, and disables the current state's button", async () => {
+    install({ "regel-a": { state: "accepted" }, "regel-b": { state: "rejected" } }); setName();
+    await show(ABS1);
+    expect(states()).toEqual(["accepted", "rejected"]);
+    expect([rowBtn("regel-a", "Accept").disabled, rowBtn("regel-a", "Reject").disabled]).toEqual([true, false]);
+    expect([rowBtn("regel-b", "Accept").disabled, rowBtn("regel-b", "Reject").disabled]).toEqual([false, true]);
+  });
+
+  it("accepts a pending rule: state, colour, tree counter and PDF outline change at once, and one event is sent", async () => {
+    install(); setName();
+    await show();
+    expect(states()).toEqual(["pending"]);
+    await click(rowBtn("regel-c", "Accept"));
+    expect(states()).toEqual(["accepted"]);
+    expect(marksOf(ABS2)).toEqual([["accepted", "1"]]);
+    expect(pdf.last?.groups).toEqual([expect.objectContaining({ status: "accepted" })]);
+    expect(posts()).toHaveLength(1);
+    expect(reviews!["regel-c"]).toMatchObject({ state: "accepted", reviewer: "Dana" });
+  });
+
+  it("rejects only with a reason, then shows red", async () => {
+    install(); setName();
+    await show();
+    await click(rowBtn("regel-c", "Reject"));
+    expect([...document.querySelectorAll<HTMLButtonElement>(".elrule-reject button")].find((b) => b.textContent === "Reject rule")!.disabled).toBe(true);
+    expect(posts()).toHaveLength(0);
+    await reject("regel-c", "Wrong threshold", true);
+    expect(states()).toEqual(["rejected"]);
+    expect(marksOf(ABS2)).toEqual([["rejected", "1"]]);
+    expect(reviews!["regel-c"]).toMatchObject({ state: "rejected", reason: "Wrong threshold" });
+  });
+
+  it("changes a decision later in both directions", async () => {
+    install({ "regel-c": { state: "accepted" } }); setName();
+    await show();
+    await reject("regel-c", "On second thought");
+    expect(states()).toEqual(["rejected"]);
+    await click(rowBtn("regel-c", "Accept"));
+    expect(states()).toEqual(["accepted"]);
+    expect(posts()).toHaveLength(2);
+  });
+
+  it("needs a reviewer name and sends nothing without one", async () => {
+    install();
+    await show();
+    await click(rowBtn("regel-c", "Accept"));
+    expect(posts()).toHaveLength(0);
+    expect(q(".elrule-error")?.textContent).toContain("Enter your name");
+    expect(states()).toEqual(["pending"]);
+  });
+
+  it("a failed request keeps the old state and shows the error", async () => {
+    install(); setName();
+    await show();
+    failPost = true;
+    await click(rowBtn("regel-c", "Accept"));
+    expect(states()).toEqual(["pending"]);
+    expect(marksOf(ABS2)).toEqual([["pending", "1"]]);
+    expect(q(".elrule-error")?.textContent).toContain("boom");
+    expect(rowBtn("regel-c", "Accept").disabled).toBe(false); // can be retried
+  });
+
+  it("shows no controls while the review state is unavailable", async () => {
+    install({}, false); setName();
+    await show();
+    expect(qa(".elrule-actions")).toHaveLength(0);
   });
 });
 

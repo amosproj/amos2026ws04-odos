@@ -17,7 +17,7 @@ from dataclasses import dataclass
 
 from odos.llm.terminology import prompt_terms
 
-PROMPT_VERSION = "4"  # recorded in rules.json `_generation`; raise it whenever the instructions change
+PROMPT_VERSION = "5"  # recorded in rules.json `_generation`; raise it whenever the instructions change
 
 GENERAL_INSTRUCTIONS = """1. ONE RECORD PER REQUIREMENT, NO DUPLICATES. Split a provision with several independent requirements into several records. Never express the same requirement twice: not in two records, and not once as a record and again as an exception of another record.
 
@@ -57,7 +57,9 @@ GENERAL_INSTRUCTIONS = """1. ONE RECORD PER REQUIREMENT, NO DUPLICATES. Split a 
 
 13. UNCERTAINTY. If a requirement cannot be expressed faithfully with the schema, use an `unresolved` requirement or predicate, set `review.machineCheckable` to false and explain in `review.ambiguities`. `review.status` is always "draft".
 
-14. LANGUAGE. Human-readable content (`summary`, `entity`, `description`, `citation`, `text`) is in the language of the document; keys, enum values and fact identifiers are as in the schema and rule 5."""
+14. LANGUAGE. Human-readable content (`summary`, `entity`, `description`, `citation`, `text`) is in the language of the document; keys, enum values and fact identifiers are as in the schema and rule 5.
+
+15. TYPES AND INFORMATIONAL STATEMENTS. `classification.type` is exactly one of `definition`, `obligation`, `prohibition`, `permission`, `conditional_requirement`, `procedural_requirement`. `informational` is only a value of `normativeCategory` (for a record that is still an operative rule), never a `type`. A sentence that only states a fact, lists or points to an annex or describes something, without requiring, forbidding, permitting, defining or prescribing a procedure, is not a rule: write no record for it, and never relabel it as an obligation or permission."""
 
 LANGUAGE_GLOSSARIES = {
     "de": """GERMAN WORDING.

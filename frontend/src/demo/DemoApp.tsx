@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "../components/AppHeader";
 import { Icon } from "../components/Icon";
 import { BrandButton } from "../components/BrandButton";
 import { PdfViewer } from "../components/PdfViewer";
 import { ProcessingStatus } from "../components/ProcessingStatus";
 import { RecentDocuments, type DocumentProblem } from "../components/RecentDocuments";
-import { DEFAULT_SPLIT, SplitDivider, splitVars } from "../components/SplitDivider";
+import { DEFAULT_ROW_SPLIT, DEFAULT_SPLIT, RowDivider, SplitDivider, splitVars } from "../components/SplitDivider";
 import { StructureTree } from "../components/StructureTree";
-import { TYPE_LABELS, firstPage, fullText, highlightsOf } from "../structure";
+import { TYPE_LABELS, firstPage, fullText, highlightsOf, legalReference } from "../structure";
 import type { DocElement } from "../types";
 import type { DemoResult } from "./fixtures";
 import { fileUrl, ProcessingCancelled, ProcessingError, nodeJson, openStoredDocument, pdfProblem, processPdf, releaseJob, ruleEntries, rulesForElement, type StoredDocument } from "./live";
@@ -16,7 +16,10 @@ import { DigitalTwinValidation } from "./DigitalTwinValidation";
 import { applyReview, toRuleResults } from "./ruleResults";
 import { STATE_LABEL, marksByElement, type ElementMarks } from "./reviewMarks";
 import { toneOf } from "./sourceMap";
-import { useRuleReviews } from "./useRuleReviews";
+import { useReviewerName, useRuleReviews, type ReviewApi } from "./useRuleReviews";
+import { NOT_ACCEPTABLE, useReviewActions } from "./ReviewControls";
+import type { RuleReviewEntry } from "./live";
+import type { RuleItem } from "./ruleResults";
 import "./demo.css";
 
 
@@ -245,11 +248,18 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
   const [full, setFull] = useState(false); // live Artifacts: the complete document instead of the selected element
   const [split, setSplit] = useState(DEFAULT_SPLIT); // the PDF panel's share of the width
   const splitRef = useRef<HTMLDivElement>(null);
+  const [rowSplit, setRowSplit] = useState(DEFAULT_ROW_SPLIT); // the tree's share of the panel; kept while other elements are selected
+  const structureRef = useRef<HTMLDivElement>(null);
+  const [anim, setAnim] = useState(false); // the panel animates only while the details open or close, never while the divider is dragged
+  const detailsOpen = selected !== null;
+  useEffect(() => { setAnim(true); const t = setTimeout(() => setAnim(false), 320); return () => clearTimeout(t); }, [detailsOpen]);
   const element = useMemo(() => model.elements.find((e) => e.id === selected) ?? null, [model, selected]);
   // the persisted review decisions of the document's rules (loaded again whenever the document is opened); nothing without review storage
   const ruleResults = useMemo(() => toRuleResults(result.live?.ruleJson ?? null), [result.live?.ruleJson]);
   const reviewJob = result.live && ruleResults && ruleResults.items.length ? result.live.jobId : undefined;
-  const { api: reviewApi } = useRuleReviews(reviewJob, ruleResults?.generation?.generatedAt ?? null);
+  const { api: reviewApi, reload: reloadReviews, setEntry } = useRuleReviews(reviewJob, ruleResults?.generation?.generatedAt ?? null);
+  const [reviewer, setReviewer] = useReviewerName();
+  const review: RuleReview | undefined = reviewJob ? { jobId: reviewJob, api: reviewApi, reviewer, setReviewer, onEntry: setEntry, onReload: reloadReviews } : undefined;
   const elementsById = useMemo(() => new Map(model.elements.map((e) => [e.id, e])), [model]);
   const marks = useMemo(() => (ruleResults && reviewApi.kind === "ready"
     ? marksByElement(ruleResults.items.map((r) => applyReview(r, reviewApi.data.rules[r.id])), elementsById) : undefined), [ruleResults, reviewApi, elementsById]);
@@ -289,9 +299,12 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
           </div>
           <div className="tabbody">
             {tab === "structure" && (
-              <div className="structure">
+              <div className={`structure${element ? " open" : ""}${anim ? " anim" : ""}`} ref={structureRef} style={{ "--tree": `${(rowSplit * 1000).toFixed(0)}fr`, "--det": `${((1 - rowSplit) * 1000).toFixed(0)}fr` } as React.CSSProperties}>
                 <StructureTree model={model} selectedId={selected} onSelect={select} marks={marks} />
-                <SourceDetail element={element} page={page} onGoToPage={setPage} marks={elementMarks} onOpenRule={onOpenRule} />
+                <RowDivider containerRef={structureRef} value={rowSplit} onChange={setRowSplit} />
+                {element
+                  ? <SourceDetail element={element} elements={elementsById} page={page} onGoToPage={setPage} marks={elementMarks} onOpenRule={onOpenRule} review={review} onClose={() => setSelected(null)} />
+                  : <div className="detail-hint"><Icon name="info" size={16} /><span>Select an element to highlight its source text in the PDF.</span></div>}
               </div>
             )}
             {tab === "artifacts" && <Artifacts result={result} element={element} full={full} onFull={result.live ? setFull : undefined} />}
@@ -302,35 +315,124 @@ export function ResultView({ result, pdfUrl, initialSelectedId, onReset, onConti
   );
 }
 
-export function SourceDetail({ element: e, page, onGoToPage, marks, onOpenRule }: { element: DocElement | null; page: number; onGoToPage: (page: number) => void; marks?: ElementMarks; onOpenRule?: (ruleId: string) => void }) {
-  if (!e) return <div className="detail empty"><Icon name="info" size={20} /><span>Select an element to highlight its source text in the PDF.</span></div>;
+/** What the rule rows need to save a decision: the same review state and actions Rule Validation uses (one source of truth). */
+export interface RuleReview {
+  jobId: string; api: ReviewApi; reviewer: string; setReviewer: (name: string) => void;
+  onEntry: (ruleId: string, entry: RuleReviewEntry) => void; onReload: () => Promise<void>;
+}
+
+/** One extracted rule of the selected element as a card: type, state, a four-line preview of its text, and the review actions. A decision
+ *  can be changed later: only the button of the current state is disabled. Nothing changes on screen until the backend has answered. */
+function RuleRow({ rule, mark, sentenceIds, index, review, onOpenRule }: { rule: RuleItem; mark: { state: "accepted" | "pending" | "rejected"; edited: boolean }; sentenceIds: string[]; index: number; review?: RuleReview; onOpenRule?: (ruleId: string) => void }) {
+  const r = useReviewActions({ jobId: review?.jobId ?? "", rule, api: review?.api ?? { kind: "unavailable", reason: null }, reviewer: review?.reviewer ?? "", onEntry: review?.onEntry ?? (() => {}), onReload: review?.onReload ?? (async () => {}) });
+  const [full, setFull] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const text = useRef<HTMLParagraphElement>(null);
+  // "Show full text" only when the preview really cuts the text (measured, so it follows the panel's width)
+  useLayoutEffect(() => {
+    const el = text.current;
+    if (!el || full) return;
+    const check = () => setOverflows(el.scrollHeight > el.clientHeight + 1);
+    check();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [full, rule.title]);
+  const can = !!review && !!r.entry && !r.busy;
+  const icon = mark.state === "accepted" ? "check" : mark.state === "rejected" ? "x" : "clock";
+  const kind = rule.type ? rule.type.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()) : null;
   return (
-    <div className="detail">
-      <h3>{TYPE_LABELS[e.type] ?? e.type} {e.marker ?? ""}</h3>
-      {e.title && <p className="title">{e.title}</p>}
-      <blockquote className="origtext">{fullText(e) || <em>(no text)</em>}</blockquote>
-      <dl className="kv">
-        <dt>Pages</dt>
-        <dd>{e.pages.length ? e.pages.map((p) => (
+    <li className={`elrule ${mark.state}`} data-state={mark.state}>
+      <div className="elrule-head">
+        <span className="elrule-no">Rule {String(index + 1).padStart(2, "0")}{kind ? <> · <span className="elrule-kind">{kind}</span></> : null}</span>
+        <span className="elrule-chips">
+          <span className={`rm-chip ${mark.state}`}><Icon name={icon} size={12} />{STATE_LABEL[mark.state]}</span>
+          {mark.edited && <span className="rm-chip edited"><Icon name="edit" size={12} />Edited</span>}
+          {r.issues && <span className="rm-chip invalid" title="The record is not valid Rule JSON 2.0"><Icon name="braces" size={12} />Invalid Rule JSON</span>}
+        </span>
+      </div>
+      <p ref={text} className={`elrules-title${full ? "" : " clamp"}`}>{rule.title}</p>
+      {(overflows || full) && <button type="button" className="elrule-more" aria-expanded={full} onClick={() => setFull(!full)}>{full ? "Show less" : "Show full text"}</button>}
+      {r.issues && (
+        <div className="elrule-invalid" role="note">
+          <ul>{r.issues.map((i) => <li key={i}>{i}</li>)}</ul>
+          <p>It cannot be accepted until it is valid: correct it in Rule Validation (Edit), or reject it if the passage is not a rule.</p>
+        </div>
+      )}
+      {sentenceIds.length > 0 && <p className="elrule-src"><Icon name="link" size={12} />Source: {sentenceIds.map((id) => `Satz ${id.split("/").pop()?.replace(/^satz-/, "") ?? id}`).join(", ")}</p>}
+      {review && (
+        <div className="elrule-actions">
+          <button type="button" className="rv-act accept" disabled={!can || mark.state === "accepted" || !!r.issues} aria-busy={r.busy || undefined} title={r.issues ? NOT_ACCEPTABLE : undefined}
+                  onClick={() => void r.send("accept")} aria-label={`Accept rule ${rule.id}`}><Icon name="check" size={16} />Accept</button>
+          <button type="button" className="rv-act reject" disabled={!can || mark.state === "rejected"} aria-expanded={r.form === "reject"}
+                  onClick={() => r.setForm(r.form === "reject" ? null : "reject")} aria-label={`Reject rule ${rule.id}`}><Icon name="x" size={16} />Reject</button>
+        </div>
+      )}
+      {r.form === "reject" && (
+        <form className="elrule-reject" onSubmit={(ev) => { ev.preventDefault(); if (r.rejectReason.trim()) void r.send("reject", { reason: r.rejectReason.trim() }); }}>
+          <textarea autoFocus value={r.rejectReason} onChange={(ev) => r.setRejectReason(ev.target.value)} rows={2} placeholder="Why is this rule incorrect? (required)" aria-label={`Reason for rejecting ${rule.id}`} />
+          <span><button type="submit" className="btn small reject" disabled={!can || !r.rejectReason.trim()}>Reject rule</button>
+          <button type="button" className="btn small" onClick={() => r.setForm(null)}>Cancel</button></span>
+        </form>
+      )}
+      {r.error && <p className="elrule-error" role="alert">{r.error}</p>}
+      {onOpenRule && (
+        <button type="button" className="elrule-open" onClick={() => onOpenRule(rule.id)} aria-label={`Open rule ${rule.id} in Rule Validation`} title="Opens Rule Validation: conditions, exceptions and source references">
+          <Icon name="file" size={15} />View full rule details<Icon name="chevron-right" size={14} />
+        </button>
+      )}
+    </li>
+  );
+}
+
+/** Copies the complete original text of the selected element. */
+function CopyText({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return <button type="button" className="srctext-copy" onClick={() => { void navigator.clipboard?.writeText(text).then(() => setCopied(true), () => {}); }}>{copied ? "Copied" : "Copy text"}</button>;
+}
+
+export function SourceDetail({ element: e, elements, page, onGoToPage, marks, onOpenRule, review, onClose }: { onClose?: () => void; element: DocElement | null; elements?: Map<string, DocElement>; page: number; onGoToPage: (page: number) => void; marks?: ElementMarks; onOpenRule?: (ruleId: string) => void; review?: RuleReview }) {
+  if (!e) return <div className="detail empty"><Icon name="info" size={20} /><span>Select an element to highlight its source text in the PDF.</span></div>;
+  const reference = elements ? legalReference(e, elements) : `${TYPE_LABELS[e.type] ?? e.type} ${e.marker ?? ""}`.trim();
+  const text = fullText(e);
+  return (
+    <div className="detail" key={e.id}>{/* keyed: another element starts at the top of the details */}
+      <div className="detail-head">
+        <h3>{reference}</h3>
+        <span className="detail-pages">{e.pages.length ? e.pages.map((p) => (
           <button key={p} className="link" onClick={() => onGoToPage(p)} aria-current={p === page ? "page" : undefined}
-                  title={`Show page ${p} with the highlighted source text`}>p. {p}</button>
-        )) : "—"}</dd>
-        <dt>Source</dt><dd><code>{e.source_refs.join(", ") || "—"}</code></dd>
-        <dt>Element id</dt><dd><code>{e.id}</code></dd>
-      </dl>
+                  title={`Show page ${p} with the highlighted source text`}><Icon name="file" size={13} />Page {p}</button>
+        )) : null}</span>
+        {onClose && <button type="button" className="detail-close" onClick={onClose} aria-label="Close details" title="Close details"><Icon name="x" size={16} /></button>}
+      </div>
+      {e.title && <p className="title">{e.title}</p>}
+      <details className="srctext">
+        <summary><span className="detail-label">Original source text</span><small>Highlighted in the PDF</small></summary>
+        <blockquote className="origtext">{text || <em>(no text)</em>}</blockquote>
+        {text && <CopyText key={e.id} text={text} />}
+      </details>
+      <details className="techref">
+        <summary>Technical details</summary>
+        <dl className="kv">
+          <dt>Source</dt><dd><code>{e.source_refs.join(", ") || "—"}</code></dd>
+          <dt>Element id</dt><dd><code>{e.id}</code></dd>
+        </dl>
+      </details>
       {marks && marks.rules.length > 0 && (
-        <section className="elrules" aria-label="Rules citing this element">
-          <h4>Rules ({marks.rules.length})</h4>
+        <section className="elrules" aria-label="Extracted rules linked to this element">
+          <div className="elrules-head">
+            <h4>Extracted rules</h4>
+            <span className="elrules-count">{marks.rules.length} rule{marks.rules.length === 1 ? "" : "s"}</span>
+            {review && (
+              <label className="elrules-name">Reviewer
+                <input value={review.reviewer} onChange={(ev) => review.setReviewer(ev.target.value)} placeholder="Your name" maxLength={100} aria-label="Reviewing as (your name, saved with each decision)" title="Saved with each decision; not a login." />
+              </label>
+            )}
+          </div>
+          <p className="elrules-hint">AI-extracted rules linked to this legal text. Review them before use.</p>
           <ul>
-            {marks.rules.map(({ rule, mark, sentenceIds }) => (
-              <li key={rule.id} className={`elrule ${mark.state}`} data-state={mark.state}>
-                <span className={`rm-chip ${mark.state}`}>{STATE_LABEL[mark.state]}</span>
-                {mark.edited && <span className="rm-chip edited">Edited</span>}
-                <span className="elrules-title">{rule.title}</span>
-                {sentenceIds.length > 0 && <span className="muted"> · {sentenceIds.map((id) => `Satz ${id.split("/").pop()?.replace(/^satz-/, "") ?? id}`).join(", ")}</span>}
-                {onOpenRule && <button type="button" className="btn small" onClick={() => onOpenRule(rule.id)} aria-label={`Open rule ${rule.id} in Rule Validation`}>Open rule</button>}
-              </li>
-            ))}
+            {marks.rules.map(({ rule, mark, sentenceIds }, i) => <RuleRow key={rule.id} rule={rule} mark={mark} sentenceIds={sentenceIds} index={i} review={review} onOpenRule={onOpenRule} />)}
           </ul>
         </section>
       )}

@@ -118,7 +118,7 @@ def test_extraction_returns_at_once_runs_in_the_background_and_saves_the_rules_a
     assert done["coverage"]["coveredByExceptionTextIds"] == []
     assert done["modelOutput"] == {"requests": 3, "parse": "workflow", "partial": False, "diagnostics": 0}
     assert done["review"]["status"] == "draft" and done["review"]["rulesWithIssues"] == 1
-    assert done["startedAt"] and done["finishedAt"] and done["promptVersion"] == "4"
+    assert done["startedAt"] and done["finishedAt"] and done["promptVersion"] == "5"
     rules = client.get(f"/api/jobs/{job_id}/files/{RULE_JSON}").json()
     assert [r["id"] for r in rules["rules"]] == ["demo-bo-par-6-abs-1", "demo-bo-bad"]
     assert rules["rules"][0]["source"]["documentId"] == "demo-bo" and rules["rules"][0]["review"]["status"] == "draft"

@@ -164,15 +164,15 @@ describe("Legal structure detail of an element that runs over a page break (MBO 
     const html = renderToStaticMarkup(<SourceDetail element={merged} page={9} onGoToPage={() => {}} />);
     expect(html).toContain("(1) 1 Vor den Außenwänden sind Abstandsflächen von oberirdischen Gebäuden freizuhalten.");
     expect(html).not.toContain("von\noberirdischen");
-    expect(html.match(/>p\. \d+</g)).toEqual([">p. 9<", ">p. 10<"]);
-    expect(html).toMatch(/aria-current="page"[^>]*>p\. 9</); // the page the viewer shows
+    expect(html.match(/Page (?:<!-- -->)?\d+</g)?.map((m) => m.replace(/<!-- -->|</g, ""))).toEqual(["Page 9", "Page 10"]);
+    expect(html).toMatch(/aria-current="page"[^>]*>.*?Page (?:<!-- -->)?9</); // the page the viewer shows
   });
 
   it("navigates the PDF to the clicked page", () => {
     const visited: number[] = [];
     const tree = SourceDetail({ element: merged, page: 9, onGoToPage: (p) => visited.push(p) });
     const buttons = allElements(tree).filter((n) => n.type === "button");
-    expect(buttons.map((b) => b.props.children)).toEqual([["p. ", 9], ["p. ", 10]]);
+    expect(buttons.map((b) => (b.props.children as unknown[]).slice(1))).toEqual([["Page ", 9], ["Page ", 10]]);
     (buttons[1].props.onClick as () => void)();
     (buttons[0].props.onClick as () => void)();
     expect(visited).toEqual([10, 9]);

@@ -512,7 +512,13 @@ def get_rule_review_history(job_id: str, ruleId: str) -> list[dict]:
 def get_approved_rules(job_id: str, download: bool = False) -> JSONResponse:
     """The accepted rules as Rule JSON 2.0 (`review.status: approved`); rejected and pending rules are not included."""
     job, directory = _review_job(job_id)
-    body = _review_db(lambda: rv.approved_export(job.id, directory))
+    try:
+        body = _review_db(lambda: rv.approved_export(job.id, directory))
+    except rv.ExportBlocked as blocked:  # a validation failure the reviewer can fix, not a server error
+        shown = "; ".join(f"{b['id']}: {b['issues'][0]}" for b in blocked.invalid[:5])
+        more = f" (and {len(blocked.invalid) - 5} more)" if len(blocked.invalid) > 5 else ""
+        return JSONResponse({"detail": f"{len(blocked.invalid)} accepted rule(s) are not valid Rule JSON 2.0, so nothing was exported. "
+                                       f"Edit or reject them first: {shown}{more}", "invalidRules": blocked.invalid}, status_code=422)
     headers = {}
     if download:
         name = urllib.parse.quote(f"{Path(job.filename).stem}.approved.rules.json")

@@ -468,7 +468,7 @@ describe("the review page: one rule at a time", () => {
     expect(qa(".rex-card")).toHaveLength(1);
     expect(q(".rv-h1")?.textContent).toBe("Rule Validation");
     expect(q(".rv-id")?.textContent).toBe("tuer-breite");
-    expect(q(".rv-center-head .rex-cite")?.textContent).toBe("§ 1 tuer-breite");
+    expect(q(".rv-title .rex-cite")?.textContent).toBe("§ 1 tuer-breite");
     // the document text is in the PDF beside the rule, not repeated in the page; the cited passage is named in the source control
     expect(q(".rex-quote, .rv-origtext, .rex-source")).toBeNull();
     expect(goTitle()).toContain("Absatz (1)");

@@ -139,7 +139,7 @@ describe("selecting an element", () => {
 
   it("shows the element's own data in the details: type, marker, title, text, pages, source and id, and nothing invented", async () => {
     await mount();
-    expect(q(".detail.empty")?.textContent).toBe("Select an element to highlight its source text in the PDF.");
+    expect(q(".detail-hint")?.textContent).toBe("Select an element to highlight its source text in the PDF.");
     await expandAll();
     await click(node(ABS));
     const detail = q(".detail")!;
@@ -147,16 +147,56 @@ describe("selecting an element", () => {
     expect(detail.querySelector("h3")?.textContent).toMatch(/\(1\)/); // type label and marker
     expect(detail.querySelector(".origtext")?.textContent).toBe("(1) Vor den Außenwänden von Gebäuden sind Abstandsflächen freizuhalten.");
     const rows = Object.fromEntries([...detail.querySelectorAll("dt")].map((dt) => [dt.textContent, dt.nextElementSibling?.textContent]));
-    expect(rows).toEqual({ Pages: "p. 10", Source: "#/texts/147", "Element id": ABS });
+    expect(rows).toEqual({ Source: "#/texts/147", "Element id": ABS }); // the technical details; the page is in the header
+    expect(detail.querySelector(".detail-pages")?.textContent).toBe("Page 10");
+    expect(detail.querySelector(".detail-label")?.textContent).toBe("Original source text");
     await click(node(PAR));
     expect(q(".detail .title")?.textContent).toBe("Abstandsflächen");
-    expect(q(".detail dd")?.textContent).toBe("p. 9p. 10");
+    expect(q(".detail .detail-pages")?.textContent).toBe("Page 9Page 10");
+  });
+
+  it("uses the whole panel for the tree until an element is selected, and the close button gives it back", async () => {
+    await mount();
+    await expandAll();
+    expect(q(".structure")?.classList.contains("open")).toBe(false);
+    expect(q(".detail-hint")).not.toBeNull();
+    expect(q(".detail")).toBeNull();
+    await click(node(ABS));
+    expect(q(".structure")?.classList.contains("open")).toBe(true);
+    expect(q(".detail-hint")).toBeNull();
+    expect(q(".node.selected")?.id).toBe(`node-${ABS}`);
+    await click(q('button[aria-label="Close details"]'));
+    expect(q(".structure")?.classList.contains("open")).toBe(false);
+    expect(q(".detail")).toBeNull();
+    expect(q(".detail-hint")).not.toBeNull();
+    await click(node(ABS)); // the divider's position is kept in the component, the tree reopens the details
+    expect(q(".detail h3")).not.toBeNull();
+  });
+
+  it("can be used from the keyboard: arrows move between rows, Enter selects, → and ← open and close a branch", async () => {
+    await mount();
+    const key = async (el: Element, k: string) => { await act(async () => { el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true })); }); await settle(); };
+    const qa = (sel: string) => [...host.querySelectorAll<HTMLElement>(sel)];
+    const first = q<HTMLElement>(".node")!;
+    expect(first.tabIndex).toBe(0); // one tab stop for the whole tree
+    expect(qa(".node").filter((n) => n.tabIndex === 0)).toHaveLength(1);
+    const branch = qa(".node").find((n) => n.querySelector(".twisty:not([disabled])") && n.parentElement?.getAttribute("aria-expanded") === "false")!;
+    await key(branch, "ArrowRight");
+    expect(branch.parentElement?.getAttribute("aria-expanded")).toBe("true");
+    await key(branch, "ArrowLeft");
+    expect(branch.parentElement?.getAttribute("aria-expanded")).toBe("false");
+    await expandAll();
+    const target = node(ABS);
+    await key(target, "Enter");
+    expect(q(".node.selected")?.id).toBe(`node-${ABS}`);
+    expect(node(ABS).getAttribute("aria-current")).toBe("true");
+    expect(node(ABS).tabIndex).toBe(0);
   });
 
   it("goes to another page of the element from the details, keeping the selection", async () => {
     await mount();
     await click(node(PAR));
-    await click([...host.querySelectorAll(".detail button.link")].find((b) => b.textContent === "p. 10"));
+    await click([...host.querySelectorAll(".detail button.link")].find((b) => b.textContent === "Page 10"));
     expect(stub().getAttribute("data-page")).toBe("10");
     expect(q(".node.selected")?.id).toBe(`node-${PAR}`);
   });
