@@ -100,7 +100,7 @@ describe("mapping a stored rules.json", () => {
   it("counts only well-defined review statuses", () => {
     const approved = rule("a", "A", "doc/par-1/abs-1", { status: "approved" });
     const r = toRuleResults(rulesFile([RULE_DOOR, RULE_FIRE, RULE_FOREIGN, approved]))!;
-    expect(overviewOf(r)).toEqual({ total: 4, pending: 2, reviewed: 1, approved: 1, accepted: 0, rejected: 0, edited: 0, flagged: 1, autoRejected: 1 });
+    expect(overviewOf(r)).toEqual({ total: 4, pending: 2, reviewed: 1, approved: 1, accepted: 0, rejected: 0, edited: 0, flagged: 1, invalid: 0, autoRejected: 1 });
   });
 
   it("filters and searches", () => {

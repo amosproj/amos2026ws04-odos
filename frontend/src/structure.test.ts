@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PAGE_BREAK_MERGED, TYPE_LABELS, bboxToRect, buildTree, clickAction, firstPage, fullText, hasPartialBox, highlightsOf, rectsOnPage, visibleKeys } from "./structure";
+import { PAGE_BREAK_MERGED, legalReference, TYPE_LABELS, bboxToRect, buildTree, clickAction, firstPage, fullText, hasPartialBox, highlightsOf, rectsOnPage, visibleKeys } from "./structure";
 import { box, el, modelOf } from "./testing";
 import type { TocEntry } from "./types";
 
@@ -152,3 +152,18 @@ describe("an element whose text runs over a page break", () => {
   });
 });
 
+
+describe("legal reference of an element", () => {
+  const byId = new Map(model.elements.map((e) => [e.id, e]));
+  it("cites the element with the provisions that contain it, without chapters or parts", () => {
+    expect(legalReference(byId.get("a1")!, byId)).toBe("§ 1 · Absatz (1)");
+    expect(legalReference(byId.get("p1")!, byId)).toBe("§ 1");
+  });
+  it("uses the type name for an element without a marker, and never invents a number", () => {
+    const m = modelOf([el("d", "document", null, ["c"], { region: "document" }), el("c", "chapter", "d", ["a"], { marker: "KAPITEL I" }), el("a", "article", "c", ["pp"], { marker: "Artikel 7" }),
+                       el("pp", "article_paragraph", "a", ["t"], { marker: "(2)" }), el("t", "text", "pp", [], {})]);
+    const ids = new Map(m.elements.map((e) => [e.id, e]));
+    expect(legalReference(ids.get("pp")!, ids)).toBe("Artikel 7 · Paragraph (2)");
+    expect(legalReference(ids.get("t")!, ids)).toBe("Artikel 7 · Paragraph (2) · Text");
+  });
+});

@@ -102,7 +102,9 @@ function install(over: Record<string, Partial<RuleReviewEntry>> = {}) {
     if (url.endsWith("/rule-reviews")) {
       const counts = { pending: 0, accepted: 0, rejected: 0, edited: 0 };
       for (const e of Object.values(entries)) { counts[e.state]++; counts.edited += e.edited ? 1 : 0; }
-      return json({ extractionId: EXTRACTION, criteriaVersion: 1, counts, rules: entries, earlierExtractionEvents: 0 });
+      const acc = Object.entries(entries).filter(([, e]) => e.state === "accepted");
+      const blockedBy = acc.filter(([, e]) => e.validity && !e.validity.valid).map(([id]) => id);
+      return json({ extractionId: EXTRACTION, criteriaVersion: 1, counts, rules: entries, export: { accepted: acc.length, invalid: Object.values(entries).filter((e) => e.validity && !e.validity.valid).length, blockedBy, ready: acc.length > 0 && !blockedBy.length }, earlierExtractionEvents: 0 });
     }
     return json({ detail: "unexpected request" }, 500);
   }));
@@ -194,12 +196,94 @@ describe("adaptive rule rendering", () => {
   });
 });
 
+describe("structural validity of the Rule JSON", () => {
+  const BAD = { valid: false, issues: ["classification/type: 'informational' is not one of ['definition', 'obligation']"] };
+  it("names the problem, keeps Accept off, and still allows Edit and Reject", async () => {
+    install({ [DEF.id]: { validity: BAD } });
+    await open();
+    await goTo(DEF.id);
+    expect(q(".rv-invalid")?.textContent).toContain("classification/type");
+    expect(q(".rv-invalid")?.textContent).toContain("cannot be accepted yet");
+    const buttons = qa<HTMLButtonElement>(".rex-choice");
+    expect(buttons.map((b) => [b.querySelector(".rex-choice-main")?.textContent, b.disabled])).toEqual([["Accept", true], ["Edit", false], ["Reject", false]]);
+    await click(buttons[0]);
+    expect(calls.filter((c) => c.startsWith("POST"))).toHaveLength(0); // nothing is sent for a rule the backend would refuse
+    expect(q(".rv-title-row .rex-tag.invalid")?.textContent).toBe("Invalid Rule JSON");
+  });
+
+  it("keeps validity apart from the decision and the automatic checks: it has its own filter", async () => {
+    install({ [DEF.id]: { validity: BAD } });
+    await open();
+    expect(q("#rv-valid-h")?.textContent).toBe("Rule JSON validity");
+    expect(countOf("Invalid Rule JSON")).toBe(1);
+    expect(q(".rv-status-row.invalid .rm-dot.invalid")).not.toBeNull();
+    await click(navRow("Invalid Rule JSON"));
+    expect(ruleId()).toBe(DEF.id);
+  });
+
+  it("says when the export is blocked by an accepted rule that is not valid, and what to do", async () => {
+    install({ [DEF.id]: { state: "accepted", validity: BAD }, [SIMPLE.id]: { state: "accepted" } });
+    await open();
+    expect(q(".rv-exportnote.blocked")?.textContent).toContain("Export blocked: 1 accepted rule is not valid Rule JSON 2.0");
+    await click(q(".rv-exportnote .link"));
+    expect(ruleId()).toBe(DEF.id);
+    expect(q(".rv-title-row .rex-state")?.textContent).toBe("Accepted"); // the decision is untouched
+  });
+
+  it("says the export is ready when every accepted rule is valid", async () => {
+    install({ [SIMPLE.id]: { state: "accepted" } });
+    await open();
+    expect(q(".rv-exportnote.ok")?.textContent).toContain("1 accepted rule is ready to export");
+  });
+});
+
+describe("review workspace refinements", () => {
+  it("shows the review states in the sidebar with the icons of the Legal Structure, apart from the automatic checks", async () => {
+    install({ tuer: { state: "accepted" } });
+    await open();
+    const rows = qa(".rv-status-row");
+    expect(rows.length).toBeGreaterThan(2);
+    expect(rows.every((r) => r.querySelector(".rm-dot svg"))).toBe(true);
+    expect(q(".rv-status-row.accepted .rm-dot")?.classList.contains("accepted")).toBe(true);
+    expect(q(".rv-status-row.pending .rm-dot")?.classList.contains("pending")).toBe(true);
+    expect(q(".rv-status")?.textContent).toContain("Review status");
+    expect(q("#rv-checks-h")?.textContent).toBe("Automatic checks"); // potential issues are a different thing than a decision
+    expect(q(".rv-status ul[aria-labelledby=rv-checks-h] .rv-status-row.flagged")).not.toBeNull();
+  });
+
+  it("tallies accepted, pending and rejected in the page header", async () => {
+    install();
+    await open();
+    expect(qa(".rv-tally .rm").map((c) => c.getAttribute("aria-label"))).toEqual(expect.arrayContaining([expect.stringMatching(/accepted$/), expect.stringMatching(/pending$/), expect.stringMatching(/rejected$/)]));
+    expect(q(".rv-doccard-name")?.getAttribute("title")).toBeTruthy(); // the full name stays available when it is cut
+  });
+
+  it("finds a rule from the sidebar and says how many rules match", async () => {
+    install();
+    await open();
+    const input = q<HTMLInputElement>('input[aria-label="Find a rule by title or citation"]')!;
+    await act(async () => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "zzz-no-such-rule"); input.dispatchEvent(new Event("input", { bubbles: true })); });
+    await flush();
+    expect(q(".rv-side .rex-side-note")?.textContent).toMatch(/^0 of \d+ rules match$/);
+  });
+
+  it("offers the next-pending-rule option beside the decision buttons", async () => {
+    install();
+    const nav: { current: RulesNav | null } = { current: null };
+    await open(nav);
+    const box = q<HTMLInputElement>(".rv-auto input")!;
+    expect(box.checked).toBe(true);
+    await click(box);
+    expect(nav.current?.advance).toBe(false);
+  });
+});
+
 describe("left panel: rule navigation", () => {
   it("offers the types and facets that occur, with counts, and filters Previous / Next by them", async () => {
     install();
     await open();
     expect(q(".rv-side-head")?.textContent).toContain("Rules (3)");
-    expect(qa(".rv-nav-row .rv-nav-label").slice(0, 6).map((l) => l.textContent)).toEqual(["All rules", "Definitions", "Obligations", "With conditions", "With exceptions", "Limits / thresholds"]);
+    expect(qa("nav[aria-label=\"Rule types\"] .rv-nav-row .rv-nav-label").slice(0, 6).map((l) => l.textContent)).toEqual(["All rules", "Definitions", "Obligations", "With conditions", "With exceptions", "Limits / thresholds"]);
     expect(navRow("Prohibitions")).toBeUndefined(); // a type with no rule is not offered
     expect(countOf("Obligations")).toBe(2);
     await click(navRow("With exceptions"));
@@ -321,7 +405,7 @@ describe("simplified rule view", () => {
     await open();
     expect(q(".rv-goto")?.getAttribute("aria-label")).toBe("Go to source");
     expect(q(".rex-view-btn")?.getAttribute("aria-label")).toBe("View in document");
-    expect(q(".rv-center-head .rex-cite")?.textContent).toBe("§ 1 aufenthaltsraum");
+    expect(q(".rv-title .rex-cite")?.textContent).toBe("§ 1 aufenthaltsraum");
     expect(q(".rv-goto")?.getAttribute("title")).toContain("Absatz (1)");
     expect(q(".rex-source")).toBeNull(); // no separate Source card
   });

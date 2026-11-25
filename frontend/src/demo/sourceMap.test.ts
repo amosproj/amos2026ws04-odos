@@ -135,16 +135,16 @@ describe("marksByElement", () => {
     const a = withState("a", "accepted", false, S1.id), b = withState("b", "rejected", true, S1.id), c = withState("c", "pending", false, S1.id);
     const m = marksByElement([a, b, c], elements).get("doc/p1/a1")!;
     expect(m.rules.map((r) => [r.rule.id, r.mark.state, r.mark.edited])).toEqual([["a", "accepted", false], ["b", "rejected", true], ["c", "pending", false]]);
-    expect(m.own).toEqual({ accepted: 1, pending: 1, rejected: 1, edited: 1 });
+    expect(m.own).toEqual({ accepted: 1, pending: 1, rejected: 1, edited: 1, invalid: 0 });
   });
 
   it("counts an edited and accepted rule as accepted (edited is an extra attribute)", () => {
-    expect(markOf(withState("a", "accepted", true))).toEqual({ state: "accepted", edited: true });
+    expect(markOf(withState("a", "accepted", true))).toEqual({ state: "accepted", edited: true, invalid: false });
   });
 
   it("rolls the counts up to the containing elements, separately from their own", () => {
     const marks = marksByElement([withState("a", "accepted", false)], elements);
-    expect(marks.get("doc/p1")!.own).toEqual({ accepted: 0, pending: 0, rejected: 0, edited: 0 });
+    expect(marks.get("doc/p1")!.own).toEqual({ accepted: 0, pending: 0, rejected: 0, edited: 0, invalid: 0 });
     expect(marks.get("doc/p1")!.below.accepted).toBe(1);
     expect(marks.get("doc")!.below.accepted).toBe(1);
   });
