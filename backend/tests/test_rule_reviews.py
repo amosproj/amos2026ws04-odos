@@ -124,6 +124,70 @@ def test_rejecting_needs_a_reason_and_keeps_the_rule_in_the_history(reviewed):
     assert reviewed.unchanged()
 
 
+def test_a_decision_can_be_changed_in_both_directions_and_only_the_current_accepted_rules_are_exported(reviewed):
+    export = f"{reviewed.url}/approved-export"
+    assert reviewed.state().json()["rules"][ID1]["state"] == "pending"  # the default
+    assert reviewed.post(ID1, "reject", reason="Wrong").json()["state"] == "rejected"
+    assert reviewed.client.get(export).json()["rules"] == []  # rejected is not approved
+    assert reviewed.post(ID1, "accept").json()["state"] == "accepted"  # rejected -> accepted
+    assert [r["id"] for r in reviewed.client.get(export).json()["rules"]] == [ID1]
+    assert reviewed.post(ID1, "reject", reason="Changed my mind").json()["state"] == "rejected"  # accepted -> rejected
+    assert reviewed.client.get(export).json()["rules"] == []
+    state = reviewed.state().json()  # read back from the database: the decision is stored, not held in the page
+    assert state["rules"][ID1]["state"] == "rejected" and state["rules"][ID2]["state"] == "pending"
+    history = reviewed.client.get(f"{reviewed.url}/history", params={"ruleId": ID1}).json()
+    assert [h["decision"] for h in history] == ["rejected", "accepted", "rejected"]
+
+
+def _make_invalid(review):
+    data = json.loads(review.rules_path.read_bytes())
+    data["rules"][0]["classification"]["type"] = "informational"  # a normativeCategory value, not a rule type
+    review.rules_path.write_text(json.dumps(data), encoding="utf-8")
+
+
+def test_the_state_reports_structural_validity_apart_from_the_decision_and_the_checks(reviewed):
+    first = reviewed.state().json()
+    assert first["rules"][ID1]["validity"] == {"valid": True, "issues": []} and first["export"]["invalid"] == 0
+    _make_invalid(reviewed)
+    state = reviewed.state().json()
+    entry = state["rules"][ID1]
+    assert (entry["state"], entry["validity"]["valid"]) == ("pending", False)  # a pending rule can be invalid; validity is not a decision
+    assert "classification/type" in entry["validity"]["issues"][0] and "informational" not in "".join(state["rules"][ID2]["validity"]["issues"])
+    assert state["export"] == {"accepted": 0, "invalid": 1, "blockedBy": [], "ready": False}
+
+
+def test_a_rule_that_is_not_valid_rule_json_cannot_be_accepted_but_can_be_rejected_or_edited(reviewed):
+    _make_invalid(reviewed)
+    refused = reviewed.post(ID1, "accept")
+    assert refused.status_code == 422 and "cannot be accepted" in refused.json()["detail"] and "classification/type" in refused.json()["detail"]
+    assert reviewed.state().json()["rules"][ID1]["state"] == "pending"  # nothing was stored
+    assert reviewed.post(ID1, "reject", reason="No operative content: not a rule").json()["state"] == "rejected"
+    fixed = copy.deepcopy(json.loads(reviewed.rules_path.read_bytes())["rules"][0])
+    fixed["classification"]["type"] = "obligation"
+    assert reviewed.post(ID1, "edit", editedRule=fixed).status_code == 201  # the existing edit workflow validates the correction
+    assert reviewed.state().json()["rules"][ID1]["validity"]["valid"] is True
+    assert reviewed.post(ID1, "accept").status_code == 201  # valid after the edit
+
+
+def test_an_invalid_rule_that_is_already_accepted_blocks_the_export_with_422_and_keeps_every_decision(reviewed, monkeypatch):
+    reviewed.post(ID2, "accept")
+    _make_invalid(reviewed)
+    with monkeypatch.context() as m:  # an acceptance from before the gate existed
+        m.setattr(rv, "schema_issues", lambda record: [])
+        assert reviewed.post(ID1, "accept").status_code == 201
+    state = reviewed.state().json()
+    assert state["rules"][ID1]["state"] == "accepted" and state["rules"][ID1]["validity"]["valid"] is False  # the decision is untouched
+    assert state["export"] == {"accepted": 2, "invalid": 1, "blockedBy": [ID1], "ready": False}
+    export = reviewed.client.get(f"{reviewed.url}/approved-export")
+    assert export.status_code == 422
+    body = export.json()
+    assert [r["id"] for r in body["invalidRules"]] == [ID1] and "classification/type" in body["invalidRules"][0]["issues"][0]
+    assert ID1 in body["detail"] and "nothing was exported" in body["detail"]
+    assert reviewed.post(ID1, "reject", reason="not a rule").status_code == 201  # the way out: reject (or edit) it
+    export = reviewed.client.get(f"{reviewed.url}/approved-export")
+    assert export.status_code == 200 and [r["id"] for r in export.json()["rules"]] == [ID2]  # pending and rejected rules stay out
+
+
 def test_the_reviewer_is_required_and_validated(reviewed):
     for reviewer in ("", "   ", "x" * 101, "bad\nname"):
         assert reviewed.post(reviewer=reviewer).status_code == 422, reviewer

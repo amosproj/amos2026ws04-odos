@@ -10,6 +10,7 @@ Nothing here puts rule text, reviewer names or reasons into a log or an error me
 from __future__ import annotations
 
 import copy
+import functools
 import hashlib
 import json
 import re
@@ -23,7 +24,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from odos import rule_review_repository as repo
 from odos.artifact_names import RULE_JSON
 from odos.llm.rule_checks import FLAG_PREFIX, add_flags, check_rule
-from odos.llm.rule_extraction import rule_validator
+from odos.llm.rule_extraction import describe_schema_error, rule_validator
 
 CRITERIA_VERSION = 1  # of `verification`: only "flagged" and "unverified" exist until the criteria are calibrated
 MAX_EDIT_BYTES = 200_000
@@ -117,8 +118,36 @@ def verification_of(rule: dict) -> str:
     return "flagged" if any(isinstance(a, str) and a.startswith(FLAG_PREFIX) for a in ambiguities) else "unverified"
 
 
+MAX_ISSUES = 6
+
+
+@functools.lru_cache(maxsize=4096)
+def _issues_of(record_json: str) -> tuple[str, ...]:
+    record = json.loads(record_json)
+    record.setdefault("review", {})["status"] = "approved"  # the form in which an accepted rule is exported
+    errors = sorted(rule_validator().iter_errors(record), key=lambda e: [str(p) for p in e.absolute_path])
+    return tuple(describe_schema_error(e) for e in errors[:MAX_ISSUES])
+
+
+def schema_issues(record: dict) -> list[str]:
+    """Why a record is not valid Rule JSON 2.0 (empty when it is), as readable `path: what is wrong` lines.
+
+    Structural validity is its own fact: it is neither the human decision, nor the advisory automatic checks, nor
+    `review.machineCheckable` (a valid rule may be not machine-checkable and can still be accepted)."""
+    return list(_issues_of(json.dumps(record, sort_keys=True, ensure_ascii=False)))
+
+
+class ExportBlocked(Exception):
+    """Accepted rules that are not valid Rule JSON 2.0: nothing is exported (and nothing is silently left out)."""
+
+    def __init__(self, invalid: list[dict]):
+        self.invalid = invalid
+        super().__init__(f"{len(invalid)} accepted rule(s) are not valid Rule JSON 2.0")
+
+
 def _entry(rule: dict, event: dict | None) -> dict:
     edited = event["edited_rule"] if event else None
+    issues = schema_issues(edited or rule)
     return {
         "ruleSha256": canonical_sha256(rule),
         "state": event["decision"] if event else "pending",
@@ -129,6 +158,7 @@ def _entry(rule: dict, event: dict | None) -> dict:
         "reason": event["reason"] if event else None,
         "at": event["created_at"].isoformat() if event else None,
         "effectiveRule": edited,
+        "validity": {"valid": not issues, "issues": issues},
     }
 
 
@@ -162,7 +192,10 @@ def review_state(document_id: str, directory: Path) -> dict:
     entries = {rule_id: _entry(rule, events.get(rule_id)) for rule_id, rule in rules.items()}
     counts = {state: sum(e["state"] == state for e in entries.values()) for state in ("pending", "accepted", "rejected")}
     counts["edited"] = sum(e["edited"] for e in entries.values())
+    blocking = [rid for rid, e in entries.items() if e["state"] == "accepted" and not e["validity"]["valid"]]
+    invalid = sum(not e["validity"]["valid"] for e in entries.values())
     return {"extractionId": extraction_id, "criteriaVersion": CRITERIA_VERSION, "counts": counts, "rules": entries,
+            "export": {"accepted": counts["accepted"], "invalid": invalid, "blockedBy": blocking, "ready": counts["accepted"] > 0 and not blocking},
             "earlierExtractionEvents": repo.earlier_event_count(document_id, extraction_id)}
 
 
@@ -220,6 +253,11 @@ def record_review(document_id: str, directory: Path, request: ReviewRequest) -> 
         edited = None
     else:
         edited = current_edit  # the decision is on exactly the content that is in force now
+        if request.action == "accept":
+            issues = schema_issues(edited or original)
+            if issues:  # a rule that is not valid Rule JSON 2.0 can be edited into shape or rejected, never newly approved
+                raise HTTPException(422, f"The rule is not valid Rule JSON 2.0 and cannot be accepted: {'; '.join(issues)}. "
+                                         "Edit it so that it is valid, or reject it.")
     try:
         event = repo.append_event(document_id, extraction_id, request.ruleId, request.expectedRuleSha256, request.expectedLastEventId,
                                   request.action, DECISION_OF[request.action], request.reviewer, request.reason, edited)
@@ -244,7 +282,7 @@ def approved_export(document_id: str, directory: Path) -> dict:
     Rejected and pending rules are left out. Built on request; rules.json is not modified."""
     extraction_id, rules = load_rules(directory)
     events = effective_events(document_id, directory, extraction_id, rules)
-    out = []
+    out, invalid = [], []
     for rule_id, original in rules.items():
         event = events.get(rule_id)
         if not event or event["decision"] != "accepted":
@@ -253,9 +291,12 @@ def approved_export(document_id: str, directory: Path) -> dict:
         review = record.setdefault("review", {})
         review["status"] = "approved"
         review["notes"] = [*review.get("notes", []), f"Approved by {event['reviewer']} on {event['created_at'].date().isoformat()} (ODOS review)."]
-        problems = list(rule_validator().iter_errors(record))
-        if problems:
-            raise HTTPException(500, f"The approved rule {rule_id!r} is not valid Rule JSON 2.0 and was not exported.")
+        issues = schema_issues(record)
+        if issues:
+            invalid.append({"id": rule_id, "issues": issues})
+            continue
         out.append(record)
+    if invalid:
+        raise ExportBlocked(invalid)
     return {"_review": {"extractionId": extraction_id, "exportedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                         "source": "human-accepted", "count": len(out)}, "rules": out}

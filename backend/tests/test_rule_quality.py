@@ -395,7 +395,7 @@ def test_end_to_end_german_law_profile_normalization_and_flags():
     result = extract_rules(MBO_LIKE, client=client)
     assert "German legislation" in client.system and "GERMAN WORDING" in client.system
     gen = result.to_json_dict()["_generation"]
-    assert (gen["profile"], gen["promptVersion"]) == ("german_legislation", "4")
+    assert (gen["profile"], gen["promptVersion"]) == ("german_legislation", "5")
     assert gen["factRenames"] == {"setbackDepth": "setback_depth", "H": "h"}
     assert gen["selfReferencesRemoved"] == 1 and gen["rulesFlagged"] == 1
     rule = result.rules[0]

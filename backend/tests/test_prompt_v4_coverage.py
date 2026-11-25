@@ -60,8 +60,8 @@ class FakeClient:
 
 
 def test_the_prompt_version_is_4_and_is_recorded():
-    assert PROMPT_VERSION == "4"
-    assert extract_rules(LEGAL, client=FakeClient(rule(1, 2))).generation["promptVersion"] == "4"
+    assert PROMPT_VERSION == "5"
+    assert extract_rules(LEGAL, client=FakeClient(rule(1, 2))).generation["promptVersion"] == "5"
 
 
 def test_the_instructions_state_that_the_requirement_forms_are_exclusive_and_when_to_use_each():
