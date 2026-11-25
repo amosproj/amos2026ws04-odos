@@ -1,9 +1,9 @@
 import { Fragment, type RefObject } from "react";
 import { Icon } from "../components/Icon";
 import { type Provision, type QueueOrder, type ReviewFilter, type RuleItem } from "./ruleResults";
-import { isReviewed } from "./ruleResults";
+import { invalidIssues, isReviewed } from "./ruleResults";
 
-export const FILTER_LABEL: Record<ReviewFilter, string> = { all: "All", pending: "Pending", accepted: "Accepted", rejected: "Rejected", flagged: "Potential issues", reviewed: "Reviewed", edited: "Edited" };
+export const FILTER_LABEL: Record<ReviewFilter, string> = { all: "All", pending: "Pending", accepted: "Accepted", rejected: "Rejected", flagged: "Potential issues", invalid: "Invalid Rule JSON", reviewed: "Reviewed", edited: "Edited" };
 
 /** The reviewer's decision (or, without stored decisions, the status written in the file) as one word. */
 export function stateOf(rule: RuleItem): { key: "pending" | "accepted" | "rejected" | "reviewed"; label: string } {
@@ -21,6 +21,7 @@ export function RuleStatus({ rule, compact = false }: { rule: RuleItem; compact?
         <span className={compact ? "sr-only" : undefined}>{label}</span>
       </span>
       {rule.edited && <span className="rex-tag edited" title="A reviewer edited this rule; the extracted record is kept unchanged">Edited</span>}
+      {invalidIssues(rule) && <span className="rex-tag invalid" title="The record is not valid Rule JSON 2.0 and cannot be accepted until it is corrected">Invalid Rule JSON</span>}
       {rule.checkFlags.length > 0 && <span className="rex-tag flag" title="ODOS's automatic checks noticed a potential issue">Potential issue</span>}
     </span>
   );

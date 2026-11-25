@@ -1,23 +1,23 @@
 // The review state of a rule as the pages show it, and how rules sharing a source are summarised. The state is the persisted
 // decision of the backend's review storage (accepted / rejected, or still pending); "needs review" is only the way a pending rule is
-// presented (yellow), never a stored status. Without review storage nothing is known and nothing is shown.
+// presented (amber), never a stored status. Without review storage nothing is known and nothing is shown.
 import type { DocElement } from "../types";
-import type { RuleItem } from "./ruleResults";
+import { invalidIssues, type RuleItem } from "./ruleResults";
 
 export type ReviewState = "accepted" | "pending" | "rejected";
-export interface ReviewMark { state: ReviewState; edited: boolean }
+export interface ReviewMark { state: ReviewState; edited: boolean; /** The record in force is not valid Rule JSON 2.0 (a fact apart from the decision). */ invalid: boolean }
 
-export const STATE_LABEL: Record<ReviewState, string> = { accepted: "Accepted", pending: "Needs review", rejected: "Rejected" };
+export const STATE_LABEL: Record<ReviewState, string> = { accepted: "Accepted", pending: "Pending", rejected: "Rejected" };
 
 /** The persisted decision of a rule (with the review state applied), or null when the backend keeps none for it. Edited is an
  *  additional attribute: an edited, accepted rule is accepted. */
 export function markOf(rule: RuleItem): ReviewMark | null {
-  return rule.human ? { state: rule.human, edited: rule.edited } : null;
+  return rule.human ? { state: rule.human, edited: rule.edited, invalid: invalidIssues(rule) !== null } : null;
 }
 
-export interface Counts { accepted: number; pending: number; rejected: number; edited: number }
-const empty = (): Counts => ({ accepted: 0, pending: 0, rejected: 0, edited: 0 });
-const add = (c: Counts, m: ReviewMark) => { c[m.state] += 1; if (m.edited) c.edited += 1; };
+export interface Counts { accepted: number; pending: number; rejected: number; edited: number; invalid: number }
+const empty = (): Counts => ({ accepted: 0, pending: 0, rejected: 0, edited: 0, invalid: 0 });
+const add = (c: Counts, m: ReviewMark) => { c[m.state] += 1; if (m.edited) c.edited += 1; if (m.invalid) c.invalid += 1; };
 
 /** What the rules say about one element: its own rules (one entry per rule, never merged) and the counts of the rules of the
  *  element and, separately, of everything below it. Two rules on one sentence with different decisions both stay visible. */
