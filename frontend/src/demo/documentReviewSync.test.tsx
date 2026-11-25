@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Document Review shows the persisted review decisions of the rules on the elements they cite, and leads from a cited element to
 // its rules. The backend is faked; with no review storage nothing is shown and nothing is invented.
-import { act } from "react";
+import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ResultView } from "./DemoApp";
@@ -30,14 +30,24 @@ const json = (body: unknown, code = 200) => new Response(JSON.stringify(body), {
 
 let reviews: Record<string, RuleReviewEntry> | null;
 let calls: string[];
+let failPost = false;
 const install = (over: Record<string, Partial<RuleReviewEntry>> = {}, enabled = true) => {
   reviews = Object.fromEntries(["regel-a", "regel-b", "regel-c"].map((id) => [id, entry(over[id] ?? {})]));
   calls = [];
+  failPost = false;
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     calls.push(`${init?.method ?? "GET"} ${url}`);
     if (url.endsWith("/rule-extraction")) return json({ status: "completed", scope: "document", requestedAt: "2026-11-20T10:00:00+00:00" });
     if (url.endsWith("/files/rules.json")) return json(FILE);
+    if (url.endsWith("/rule-reviews") && init?.method === "POST") {
+      if (failPost) return json({ detail: "boom" }, 500);
+      const b = JSON.parse(String(init.body)) as { ruleId: string; action: string; reviewer: string; reason?: string };
+      const cur = reviews![b.ruleId];
+      reviews![b.ruleId] = { ...cur, state: b.action === "accept" ? "accepted" : b.action === "reject" ? "rejected" : "pending", edited: b.action === "reset" ? false : cur.edited,
+        lastEventId: cur.lastEventId + 1, reviewer: b.reviewer, reason: b.reason ?? null, at: "2026-11-21T10:00:00+00:00" };
+      return json(reviews![b.ruleId], 201);
+    }
     if (url.endsWith("/rule-reviews")) {
       if (!enabled) return json({ detail: "Review storage is not initialised" }, 503);
       return json({ extractionId: EXTRACTION, criteriaVersion: 1, counts: { pending: 0, accepted: 0, rejected: 0, edited: 0 }, rules: reviews, earlierExtractionEvents: 0 });
@@ -102,6 +112,22 @@ describe("review decisions in Document Review", () => {
     expect(qa(".rm, .rm-chip, .elrules")).toHaveLength(0);
   });
 
+  it("colours each rule by its state (accepted, rejected, pending), with the state word and a legend", async () => {
+    install({ "regel-a": { state: "accepted" }, "regel-b": { state: "rejected" } });
+    await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS1} onReset={() => {}} />);
+    expect(qa(".elrules li").map((li) => li.dataset.state)).toEqual(["accepted", "rejected"]);
+    expect(qa(".marks-legend li").map((li) => li.textContent)).toEqual(["Accepted", "Needs review", "Rejected"]);
+    expect(qa(".marks-legend .rm-dot").map((d) => d.className)).toEqual(["rm-dot accepted", "rm-dot pending", "rm-dot rejected"]);
+    await click(q(`[id="node-${ABS2}"]`));
+    expect(qa(".elrules li").map((li) => [li.dataset.state, li.querySelector(".rm-chip")?.textContent])).toEqual([["pending", "Needs review"]]); // default state
+  });
+
+  it("shows no legend without review storage", async () => {
+    install({}, false);
+    await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS1} onReset={() => {}} />);
+    expect(qa(".marks-legend")).toHaveLength(0);
+  });
+
   it("does not ask the backend for decisions when the document has no rules", async () => {
     install();
     await mount(<ResultView result={{ ...demoResult(null), model: doc }} pdfUrl="blob:pdf" onReset={() => {}} />);
@@ -114,6 +140,74 @@ describe("review decisions in Document Review", () => {
     await mount(<ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS1} onReset={() => {}} onOpenRule={onOpenRule} />);
     await click(q('button[aria-label="Open rule regel-b in Rule Validation"]'));
     expect(onOpenRule).toHaveBeenCalledWith("regel-b");
+  });
+});
+
+// The colours follow the stored decision when the reviewer moves between Rule Validation and the legal structure, without a page reload.
+describe("review decisions made in Rule Validation show in the legal structure panel", () => {
+  const NAV = () => ({ current: { jobId: "j1", filter: "all", search: "", selectedId: "regel-c", category: "all", pageScroll: 0 } as RulesNav | null });
+  function Flow() {
+    const [view, setView] = useState<"doc" | "rules">("doc");
+    return view === "doc"
+      ? <ResultView result={result()} pdfUrl="blob:pdf" initialSelectedId={ABS2} onReset={() => {}} onOpenRule={() => setView("rules")} onContinueToRules={() => setView("rules")} />
+      : <RuleExtractionView result={result()} pdfUrl="blob:pdf" onBack={() => setView("doc")} nav={NAV()} />;
+  }
+  const btn = (re: RegExp) => qa<HTMLButtonElement>("button").find((b) => re.test((b.textContent ?? "").trim()));
+  const states = () => qa(".elrules li").map((li) => li.dataset.state);
+  const fill = async (el: HTMLInputElement | HTMLTextAreaElement, v: string) => {
+    await act(async () => { Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), "value")!.set!.call(el, v); el.dispatchEvent(new Event("input", { bubbles: true })); });
+  };
+  const choice = (name: string) => qa<HTMLButtonElement>(".rex-choice").find((b) => b.querySelector(".rex-choice-main")?.textContent === name)!;
+
+  it("starts pending, turns accepted after Accept", async () => {
+    install();
+    await mount(<Flow />);
+    expect(states()).toEqual(["pending"]);
+    await click(btn(/Continue to Rule Extraction/));
+    await fill(q<HTMLInputElement>('input[aria-label^="Reviewing as"]')!, "Dana");
+    await click(choice("Accept"));
+    await click(btn(/Back to (Document|documents)/));
+    await click(q(`[id="node-${ABS2}"]`));
+    expect(states()).toEqual(["accepted"]);
+    expect(marksOf(ABS2)).toEqual([["accepted", "1"]]);
+  });
+
+  it("turns rejected after Reject with a reason", async () => {
+    install();
+    await mount(<Flow />);
+    await click(btn(/Continue to Rule Extraction/));
+    await fill(q<HTMLInputElement>('input[aria-label^="Reviewing as"]')!, "Dana");
+    await click(choice("Reject"));
+    await fill(q<HTMLTextAreaElement>(".rex-form textarea")!, "Wrong");
+    await click(btn(/^Reject rule$/));
+    await click(btn(/Back to (Document|documents)/));
+    await click(q(`[id="node-${ABS2}"]`));
+    expect(states()).toEqual(["rejected"]);
+  });
+
+  it("Reset edit returns an edited, accepted rule to pending", async () => {
+    install({ "regel-c": { state: "accepted", edited: true } });
+    await mount(<Flow />);
+    expect(states()).toEqual(["accepted"]);
+    await click(btn(/Continue to Rule Extraction/));
+    await fill(q<HTMLInputElement>('input[aria-label^="Reviewing as"]')!, "Dana");
+    await click(btn(/^Reset edit$/));
+    await click(btn(/Back to (Document|documents)/));
+    await click(q(`[id="node-${ABS2}"]`));
+    expect(states()).toEqual(["pending"]);
+    expect(qa(".elrules .rm-chip.edited")).toHaveLength(0);
+  });
+
+  it("a failed request leaves the stored state, so no wrong colour is shown", async () => {
+    install();
+    await mount(<Flow />);
+    await click(btn(/Continue to Rule Extraction/));
+    await fill(q<HTMLInputElement>('input[aria-label^="Reviewing as"]')!, "Dana");
+    failPost = true;
+    await click(choice("Accept"));
+    await click(btn(/Back to (Document|documents)/));
+    await click(q(`[id="node-${ABS2}"]`));
+    expect(states()).toEqual(["pending"]);
   });
 });
 

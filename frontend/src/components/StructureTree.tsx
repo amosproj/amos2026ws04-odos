@@ -28,6 +28,15 @@ function MarkDots({ id, m }: { id: string; m: ElementMarks }) {
   return <span className="marks" data-element={id}>{part(m.own, false)}{part(m.below, true)}</span>;
 }
 
+/** Explains the review colours; shown only when review decisions are known. The words are always part of the chips, so colour is never the only signal. */
+function MarksLegend() {
+  return (
+    <ul className="marks-legend" aria-label="Review status legend">
+      {STATES.map((st) => <li key={st}><span className={`rm-dot ${st}`} aria-hidden="true" />{STATE_LABEL[st]}</li>)}
+    </ul>
+  );
+}
+
 export function StructureTree({ model, selectedId, onSelect, marks }: Props) {
   const { roots, byKey, parentOf } = useMemo(() => buildTree(model), [model]);
   const [open, setOpen] = useState<Set<string>>(() => new Set(roots.filter((r) => r.element?.region === "body").map((r) => r.key)));
@@ -86,6 +95,7 @@ export function StructureTree({ model, selectedId, onSelect, marks }: Props) {
         <button onClick={() => setOpen(new Set(byKey.keys()))}>Expand all</button>
         <button onClick={() => setOpen(new Set())}>Collapse all</button>
       </div>
+      {marks && <MarksLegend />}
       <ul className="tree-list" role="tree">{roots.map((r) => row(r, 0))}</ul>
       {visible && visible.size === 0 && <p className="muted pad">No matching elements.</p>}
     </div>

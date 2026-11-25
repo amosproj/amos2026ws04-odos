@@ -176,14 +176,25 @@ select { cursor: pointer; }
 /* review state of the rules that cite an element (Document Review): a layer apart from what the passage means */
 .marks { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; flex: none; }
 .rm { display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; font-size: 10.5px; font-weight: 700; color: #04101A; font-variant-numeric: tabular-nums; }
-.rm.accepted { background: #4ADE80; } .rm.pending { background: #FACC15; } .rm.rejected { background: #F87171; }
+.rm.accepted { background: #4ADE80; } .rm.pending { background: #FBBF24; } .rm.rejected { background: #F87171; }
 .rm.edited { min-width: 8px; width: 8px; height: 8px; padding: 0; background: #60A5FA; }
 .rm.below { background: none; color: inherit; border: 1.5px solid currentColor; opacity: .7; }
-.rm.below.accepted { color: #4ADE80; } .rm.below.pending { color: #FACC15; } .rm.below.rejected { color: #F87171; } .rm.below.edited { background: #60A5FA; border: 0; color: #60A5FA; }
+.rm.below.accepted { color: #4ADE80; } .rm.below.pending { color: #FBBF24; } .rm.below.rejected { color: #F87171; } .rm.below.edited { background: #60A5FA; border: 0; color: #60A5FA; }
 .elrules { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); }
 .elrules h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
 .elrules ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .elrules li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 13px; }
 .elrules-title { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
 .rm-chip { padding: 0 8px; border: 1.5px solid currentColor; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
-.rm-chip.accepted { color: #4ADE80; } .rm-chip.pending { color: #FACC15; } .rm-chip.rejected { color: #F87171; } .rm-chip.edited { color: #60A5FA; }
+.rm-chip.accepted { color: #4ADE80; } .rm-chip.pending { color: #FBBF24; } .rm-chip.rejected { color: #F87171; } .rm-chip.edited { color: #60A5FA; }
+
+/* legend and per-rule accent: subtle left border in the state colour; the state word stays in the chip */
+.marks-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 6px 10px; font-size: 12px; color: var(--muted); }
+.marks-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.rm-dot { width: 9px; height: 9px; border-radius: 50%; }
+.rm-dot.accepted { background: #4ADE80; } .rm-dot.pending { background: #FBBF24; } .rm-dot.rejected { background: #F87171; }
+.elrules li.elrule { padding-left: 8px; border-left: 3px solid transparent; }
+.elrules li.elrule.accepted { border-left-color: #4ADE80; } .elrules li.elrule.pending { border-left-color: #FBBF24; } .elrules li.elrule.rejected { border-left-color: #F87171; }
+.elrules li.elrule .rm-chip { order: 0; }
+.elrules li.elrule .elrules-title { order: 1; flex: 1 1 100%; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.elrules li.elrule .muted, .elrules li.elrule .btn { order: 2; }
