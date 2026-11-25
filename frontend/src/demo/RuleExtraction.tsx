@@ -578,7 +578,7 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
   const provisionById = useMemo(() => new Map(view.items.map((r) => [r.id, provisionOf(r, elements)])), [view.items, elements]);
 
   const reviewedCount = view.items.filter(isReviewed).length;
-  const filters: ReviewFilter[] = api.kind === "ready" ? ["all", "pending", "accepted", "rejected", "edited", "flagged"]
+  const filters: ReviewFilter[] = api.kind === "ready" ? ["all", "pending", "accepted", "rejected", "edited", "flagged", "invalid"]
     : reviewedCount ? ["all", "pending", "flagged", "reviewed"] : ["all", "pending", "flagged"];
   const activeFilter = filters.includes(filter) ? filter : "all"; // a filter that is not offered now (e.g. a saved "Accepted") does not hide everything
   // the order in which Previous / Next walk the rules: all rules (or those of the filter chosen in the overview)
@@ -705,9 +705,9 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
 
   return (
     <section className="rex-results rv" aria-label="Extracted rules">
-      <ValidationHeader filename={filename} numPages={numPages} total={ov.total} decided={progress.decided} />
+      <ValidationHeader filename={filename} numPages={numPages} total={ov.total} decided={progress.decided} tally={api.kind === "ready" ? { accepted: ov.accepted, pending: ov.pending, rejected: ov.rejected } : null} />
       {confirmRestart && <RestartConfirm onConfirm={onRestart} onCancel={onCancelRestart} />}
-      {exportState.error && <div className="alert error" role="alert">The approved rules were not downloaded: {exportState.error}</div>}
+      {exportState.error && <div className="alert error" role="alert">The approved rules were not downloaded: {exportState.error}{ov.invalid > 0 && <> <button type="button" className="btn small" onClick={() => { setPinned(null); setFilter("invalid"); }}>Show the invalid rules</button></>}</div>}
       {api.kind === "stale" && !api.unidentified && <StaleBanner onReload={onReloadRules} />}
       {notice && <div className="alert warn" role="status"><Icon name="info" size={14} />{notice}</div>}
       {results.skipped > 0 && <div className="alert warn" role="status"><Icon name="info" size={14} />{results.skipped} record{results.skipped === 1 ? " in the result file is" : "s in the result file are"} not valid Rule JSON 2.0 and cannot be shown.</div>}
@@ -719,7 +719,7 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
       ) : (
         <div className="rex-layout rv-layout">
           <ReviewSidebar ov={ov} api={api} items={view.items} category={category} onCategory={onCategory} filters={filters} filter={activeFilter} onFilter={onFilter} countOf={countOf}
-                         onOverview={() => setOverview(true)} exporting={exportState.busy} onDownload={() => void download()} ruleDownload={ruleDownload}
+                         onOverview={() => setOverview(true)} search={search} onSearch={(q) => { setPinned(null); setSearch(q); }} shown={sequence.length} exporting={exportState.busy} onDownload={() => void download()} ruleDownload={ruleDownload}
                          menu={(
                            <MoreMenu>
                              {(close) => (
@@ -733,7 +733,7 @@ function ResultsPanel({ result, results, notice, confirmRestart, canRestart, onA
           {selected ? (
             <ComponentNavContext.Provider value={componentNav}>
             <RuleView key={selected.id} rule={selected} position={position} count={sequence.length} scope={scope} onPrevious={() => move(-1)} onNext={() => move(1)}
-                      elements={elements} numPages={numPages} onShowInPdf={onShowInPdf} onGoToSource={goToSource} jobId={jobId} api={api} reviewer={reviewer} onReviewer={setReviewer}
+                      elements={elements} numPages={numPages} onShowInPdf={onShowInPdf} onGoToSource={goToSource} jobId={jobId} api={api} reviewer={reviewer} onReviewer={setReviewer} advance={advance} onAdvance={api.kind === "ready" ? setAdvance : undefined}
                       onEntry={setEntry} onReload={reload} onDecided={onDecided} onConflict={setPinned} highlights={plan} />
             </ComponentNavContext.Provider>
           ) : (
@@ -762,7 +762,7 @@ function RuleView({ rule, jobId, api, reviewer, onEntry, onReload, onDecided, on
   rule: RuleItem; position: number; count: number; scope: string | null; onPrevious: () => void; onNext: () => void;
   elements: Map<string, DocElement>; numPages: number; onShowInPdf?: (elementId: string) => void; onGoToSource?: (elementId: string) => void;
   highlights: SourceHighlight[];
-  jobId: string | undefined; api: ReviewApi; reviewer: string; onReviewer: (name: string) => void;
+  jobId: string | undefined; api: ReviewApi; reviewer: string; onReviewer: (name: string) => void; advance?: boolean; onAdvance?: (on: boolean) => void;
   onEntry: (ruleId: string, entry: RuleReviewEntry) => void; onReload: () => Promise<void>; onDecided: (ruleId: string) => void; onConflict: (ruleId: string) => void;
 }) {
   const review = useReviewActions({ jobId: jobId ?? "", rule, api: jobId ? api : { kind: "unavailable", reason: null }, reviewer: jobId ? reviewer : "", onEntry, onReload, onDecided, onConflict });
